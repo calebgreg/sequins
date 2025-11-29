@@ -51,6 +51,15 @@ export default function AIChatWidget({ messages: initialMessages }) {
       setMessages(prev => [...prev, aiMsg]);
     } catch (e) {
       console.error(e);
+      // Fallback/Simulation if integration is not enabled or fails
+      setTimeout(() => {
+         const fallbackMsg = { 
+           content: "I can help you with that! (AI integration simulation: Backend functions might be disabled)", 
+           sender: 'ai', 
+           timestamp: new Date().toISOString() 
+         };
+         setMessages(prev => [...prev, fallbackMsg]);
+      }, 1000);
     } finally {
       setLoading(false);
     }
