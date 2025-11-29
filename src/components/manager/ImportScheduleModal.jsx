@@ -4,7 +4,10 @@ import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Save, ArrowLeft, Trash2 } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, Trash2, Sparkles, Upload } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import ClassImport from './ClassImport';
 import ConflictAlert from './ConflictAlert';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,7 +22,10 @@ const formatTime = (val) => {
 };
 
 export default function ImportScheduleModal({ isOpen, onOpenChange, existingClasses }) {
-  const [step, setStep] = useState('upload'); // 'upload' | 'review'
+  const [step, setStep] = useState('input'); // 'input' | 'review'
+  const [inputType, setInputType] = useState('upload'); // 'upload' | 'generate'
+  const [generationPrompt, setGenerationPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   const [importedClasses, setImportedClasses] = useState([]);
   const [conflicts, setConflicts] = useState([]);
   
@@ -34,9 +40,10 @@ export default function ImportScheduleModal({ isOpen, onOpenChange, existingClas
   });
 
   const handleClose = () => {
-    setStep('upload');
+    setStep('input');
     setImportedClasses([]);
     setConflicts([]);
+    setGenerationPrompt("");
     onOpenChange(false);
   };
 
@@ -88,6 +95,54 @@ export default function ImportScheduleModal({ isOpen, onOpenChange, existingClas
     setStep('review');
   };
 
+  const handleGenerate = async () => {
+    if (!generationPrompt.trim()) return;
+    
+    setIsGenerating(true);
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `
+          You are a master scheduler for a dance studio. 
+          Generate a JSON list of dance classes based on the following requirements from the studio staff:
+          "${generationPrompt}"
+          
+          Constraints & Rules:
+          - Return a JSON object with a key "classes" containing an array.
+          - Each class object MUST have: title, day (M,T,W,R,F,S,U), start_time (number 0-24), duration (number), teacher (string), room (string).
+          - Optimize for efficient room usage and teacher schedules (minimize gaps if not requested).
+          - If specific teachers or rooms aren't mentioned, invent plausible ones (e.g. "Studio A", "Ms. Sarah").
+        `,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            classes: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  day: { type: "string" },
+                  start_time: { type: "number" },
+                  duration: { type: "number" },
+                  teacher: { type: "string" },
+                  room: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      if (res?.classes) {
+        handleImport(res.classes);
+      }
+    } catch (error) {
+      console.error("Generation failed", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handlePublish = () => {
     createClassesMutation.mutate(importedClasses);
   };
@@ -100,11 +155,11 @@ export default function ImportScheduleModal({ isOpen, onOpenChange, existingClas
         <div className="p-6 border-b border-gray-100 bg-white">
           <DialogHeader>
             <DialogTitle className="text-2xl font-serif text-[#333333]">
-              {step === 'upload' ? 'Import Schedule' : 'Review & Publish'}
+              {step === 'input' ? 'Add Classes' : 'Review & Publish'}
             </DialogTitle>
             <DialogDescription>
-              {step === 'upload' 
-                ? 'Upload a PDF or image of your class schedule.' 
+              {step === 'input' 
+                ? 'Upload a schedule file or ask AI to generate one for you.' 
                 : `Found ${importedClasses.length} classes. Please review before publishing.`}
             </DialogDescription>
           </DialogHeader>
@@ -113,14 +168,55 @@ export default function ImportScheduleModal({ isOpen, onOpenChange, existingClas
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <AnimatePresence mode="wait">
-            {step === 'upload' ? (
+            {step === 'input' ? (
               <motion.div
-                key="upload"
+                key="input"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
               >
-                <ClassImport onImportComplete={handleImport} />
+                <Tabs value={inputType} onValueChange={setInputType} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="upload" className="flex items-center gap-2">
+                      <Upload className="w-4 h-4" /> Upload File
+                    </TabsTrigger>
+                    <TabsTrigger value="generate" className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" /> AI Auto-Generate
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="upload" className="mt-0">
+                    <ClassImport onImportComplete={handleImport} />
+                  </TabsContent>
+                  
+                  <TabsContent value="generate" className="mt-0">
+                    <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-base font-medium text-[#333333]">Describe your schedule needs</Label>
+                          <p className="text-sm text-gray-500">
+                            Include details like class types, preferred days/times, available teachers, and rooms.
+                          </p>
+                          <Textarea 
+                            value={generationPrompt}
+                            onChange={(e) => setGenerationPrompt(e.target.value)}
+                            placeholder="e.g. Create a schedule for 3 Ballet I classes and 2 Jazz II classes. We have Ms. Sarah available Mon/Wed evenings and Studio A is free after 4pm..."
+                            className="min-h-[200px] bg-gray-50 border-gray-200 focus:border-[#F2DCDD] focus:ring-[#F2DCDD] resize-none p-4 rounded-xl"
+                          />
+                        </div>
+                        
+                        <Button 
+                          onClick={handleGenerate} 
+                          disabled={isGenerating || !generationPrompt.trim()}
+                          className="w-full bg-[#333333] hover:bg-black text-white py-6 rounded-xl text-lg gap-2"
+                        >
+                          {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                          {isGenerating ? "Designing Schedule..." : "Generate Optimal Schedule"}
+                        </Button>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </motion.div>
             ) : (
               <motion.div
@@ -138,7 +234,7 @@ export default function ImportScheduleModal({ isOpen, onOpenChange, existingClas
                       variant="ghost" 
                       size="sm" 
                       className="text-gray-400 hover:text-[#333333]"
-                      onClick={() => setStep('upload')}
+                      onClick={() => setStep('input')}
                     >
                       <ArrowLeft className="w-4 h-4 mr-1" /> Back
                     </Button>
