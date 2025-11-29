@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import ImportScheduleModal from '../components/manager/ImportScheduleModal';
 import StudentRecommender from '../components/manager/StudentRecommender';
 import AttendanceModal from '../components/manager/AttendanceModal';
+import AutoAssignModal from '../components/manager/AutoAssignModal';
 import { motion } from 'framer-motion';
 
 const formatTime = (val) => {
@@ -23,6 +24,7 @@ const formatTime = (val) => {
 export default function ClassManager() {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isRecommenderOpen, setIsRecommenderOpen] = useState(false);
+  const [isAutoAssignOpen, setIsAutoAssignOpen] = useState(false);
   const [attendanceClass, setAttendanceClass] = useState(null);
   const [search, setSearch] = useState('');
 
@@ -36,6 +38,11 @@ export default function ClassManager() {
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
+  });
+
+  const { data: teachers = [] } = useQuery({
+    queryKey: ['teachers'],
+    queryFn: () => base44.entities.Teacher.list(),
   });
 
   const filteredClasses = classes.filter(c => 
@@ -59,9 +66,12 @@ export default function ClassManager() {
             </Link>
             <div>
               <h1 className="text-3xl font-serif text-[#333333]">Classes</h1>
-              <p className="text-gray-500">Manage your studio schedule</p>
+              <div className="flex gap-4 text-sm mt-1">
+                 <span className="font-medium text-gray-900 border-b-2 border-black pb-1">Schedule</span>
+                 <Link to={createPageUrl('Teachers')} className="text-gray-500 hover:text-gray-900 transition-colors">Teachers</Link>
+              </div>
             </div>
-          </div>
+            </div>
 
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -80,6 +90,14 @@ export default function ClassManager() {
             >
               <User className="w-4 h-4" />
               Student Advisor
+            </Button>
+             <Button 
+              onClick={() => setIsAutoAssignOpen(true)}
+              variant="outline"
+              className="rounded-full px-4 gap-2 hidden md:flex border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+            >
+              <Sparkles className="w-4 h-4" />
+              Auto-Assign Staff
             </Button>
             <Button 
               onClick={() => setIsImportOpen(true)}
@@ -189,6 +207,13 @@ export default function ClassManager() {
           onOpenChange={(open) => !open && setAttendanceClass(null)}
           classData={attendanceClass}
           students={students}
+        />
+
+        <AutoAssignModal 
+          isOpen={isAutoAssignOpen}
+          onOpenChange={setIsAutoAssignOpen}
+          classes={classes}
+          teachers={teachers}
         />
 
       </div>
