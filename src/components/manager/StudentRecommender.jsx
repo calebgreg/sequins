@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Sparkles, User, Star, PlusCircle, Calendar } from 'lucide-react';
+import { Loader2, Sparkles, User, Star, PlusCircle, Calendar, AlertCircle, Clock } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 
@@ -11,6 +11,8 @@ export default function StudentRecommender({ isOpen, onOpenChange, students, cla
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [recommendations, setRecommendations] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const selectedStudent = students.find(s => s.id === selectedStudentId);
 
   const handleAnalyze = async () => {
     if (!selectedStudentId) return;
@@ -113,6 +115,19 @@ export default function StudentRecommender({ isOpen, onOpenChange, students, cla
               {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Analyze"}
             </Button>
           </div>
+
+          {/* Attendance Context */}
+          {selectedStudent?.attendance_summary && (
+            <div className={`text-sm px-4 py-3 rounded-lg flex items-center gap-2 ${
+              selectedStudent.attendance_alert 
+                ? 'bg-red-50 text-red-700 border border-red-100' 
+                : 'bg-blue-50 text-blue-700 border border-blue-100'
+            }`}>
+              {selectedStudent.attendance_alert ? <AlertCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+              <span className="font-medium">Attendance Insight:</span>
+              {selectedStudent.attendance_summary}
+            </div>
+          )}
 
           {/* Results */}
           {recommendations && (

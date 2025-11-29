@@ -32,6 +32,8 @@ export default function FamilyPortal() {
     ? classes.filter(c => c.student_names?.includes(selectedStudent))
     : classes;
 
+  const activeStudentData = students.find(s => s.name === selectedStudent);
+
   return (
     <div className="bg-[#FAFAFA] rounded-[40px] p-8 md:p-12 shadow-xl min-h-[800px] flex flex-col relative overflow-hidden">
       
@@ -48,9 +50,40 @@ export default function FamilyPortal() {
 
       {/* Main Content Grid */}
       <div className="flex flex-col lg:flex-row gap-12 flex-1">
-        
-        {/* Left Column: Schedule */}
-        <div className="flex-1">
+
+        {/* Left Column: Schedule & Alerts */}
+        <div className="flex-1 space-y-6">
+          <AnimatePresence>
+            {activeStudentData?.attendance_alert && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-start gap-3"
+              >
+                <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-red-900">Attendance Alert</h4>
+                  <p className="text-sm text-red-700 mt-1">{activeStudentData.attendance_summary || "Please review recent attendance."}</p>
+                </div>
+              </motion.div>
+            )}
+            {activeStudentData && !activeStudentData.attendance_alert && activeStudentData.attendance_summary && (
+               <motion.div 
+               initial={{ opacity: 0, height: 0 }}
+               animate={{ opacity: 1, height: 'auto' }}
+               exit={{ opacity: 0, height: 0 }}
+               className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-start gap-3"
+             >
+               <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+               <div>
+                 <h4 className="font-medium text-green-900">Attendance On Track</h4>
+                 <p className="text-sm text-green-700 mt-1">{activeStudentData.attendance_summary}</p>
+               </div>
+             </motion.div>
+            )}
+          </AnimatePresence>
+
           <ScheduleTimeline classes={filteredClasses} />
         </div>
 
