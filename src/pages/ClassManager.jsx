@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Plus, Calendar, MoreHorizontal, Search, Clock, MapPin, User } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, MoreHorizontal, Search, Clock, MapPin, User, CheckSquare } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ImportScheduleModal from '../components/manager/ImportScheduleModal';
 import StudentRecommender from '../components/manager/StudentRecommender';
+import AttendanceModal from '../components/manager/AttendanceModal';
 import { motion } from 'framer-motion';
 
 const formatTime = (val) => {
@@ -22,6 +23,7 @@ const formatTime = (val) => {
 export default function ClassManager() {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isRecommenderOpen, setIsRecommenderOpen] = useState(false);
+  const [attendanceClass, setAttendanceClass] = useState(null);
   const [search, setSearch] = useState('');
 
   // Fetch existing classes
@@ -119,9 +121,20 @@ export default function ClassManager() {
                       >
                         <div className="flex justify-between items-start mb-3">
                           <h4 className="font-medium text-lg text-[#333333]">{cls.title}</h4>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 text-gray-300 group-hover:text-gray-500">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-gray-300 hover:text-[#333333] hover:bg-gray-100"
+                              onClick={() => setAttendanceClass(cls)}
+                              title="Take Attendance"
+                            >
+                              <CheckSquare className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 text-gray-300 group-hover:text-gray-500">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                         
                         <div className="space-y-2">
@@ -169,6 +182,13 @@ export default function ClassManager() {
           onOpenChange={setIsRecommenderOpen}
           students={students}
           classes={classes}
+        />
+
+        <AttendanceModal 
+          isOpen={!!attendanceClass}
+          onOpenChange={(open) => !open && setAttendanceClass(null)}
+          classData={attendanceClass}
+          students={students}
         />
 
       </div>
