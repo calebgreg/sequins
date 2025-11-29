@@ -59,6 +59,7 @@ export default function Teachers() {
   });
 
   const handleGenerateReview = async (teacher) => {
+    setSelectedTeacher(teacher);
     setIsGeneratingReview(true);
     try {
       const teacherClasses = classes.filter(c => c.teacher === teacher.name);
