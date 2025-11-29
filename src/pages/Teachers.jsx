@@ -131,7 +131,7 @@ export default function Teachers() {
                 onSave={(data) => createTeacherMutation.mutate(data)}
                 isSaving={createTeacherMutation.isPending}
               />
-            </DialogContent
+            </DialogContent>
           </Dialog>
         </div>
 
