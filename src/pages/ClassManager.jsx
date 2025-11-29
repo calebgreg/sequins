@@ -127,6 +127,10 @@ export default function ClassManager() {
                               <span>{cls.room}</span>
                             </div>
                           )}
+                          
+                          <div className="pt-2 mt-2 border-t border-gray-50 flex items-center gap-2 text-xs font-medium text-gray-400 uppercase tracking-wide">
+                             <span>{cls.student_names?.length || 0} Students Enrolled</span>
+                          </div>
                         </div>
                       </motion.div>
                     ))}

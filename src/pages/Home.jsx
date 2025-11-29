@@ -24,7 +24,7 @@ export default function Home() {
           to={createPageUrl('ClassManager')}
           className="group bg-white text-[#333333] border border-gray-200 px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-50 transition-all flex items-center gap-2"
         >
-          Manager Engine
+          Studio Staff
         </Link>
       </div>
       
