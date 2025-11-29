@@ -5,6 +5,8 @@ import StudentSelector from '../components/portal/StudentSelector';
 import BillingWidget from '../components/portal/BillingWidget';
 import ScheduleTimeline from '../components/portal/ScheduleTimeline';
 import AIChatWidget from '../components/portal/AIChatWidget';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FamilyPortal() {
   const [selectedStudent, setSelectedStudent] = useState(null);
