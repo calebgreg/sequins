@@ -16,8 +16,15 @@ export default function Home() {
           to={createPageUrl('FamilyPortal')}
           className="group bg-[#333333] text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-black transition-all flex items-center gap-2"
         >
-          Enter Family Portal
+          Family Portal
           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+        </Link>
+        
+        <Link 
+          to={createPageUrl('ClassManager')}
+          className="group bg-white text-[#333333] border border-gray-200 px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-50 transition-all flex items-center gap-2"
+        >
+          Manager Engine
         </Link>
       </div>
       
