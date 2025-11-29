@@ -26,13 +26,22 @@ export default function ScheduleTimeline({ classes }) {
           if (left > 100) return null; 
           
           return (
-            <div 
-              key={h} 
-              className="absolute top-0 -translate-x-1/2 text-center w-8"
-              style={{ left: `${left}%` }}
-            >
-              {h > 12 ? h - 12 : h}{h >= 12 && h < 24 ? 'pm' : 'am'}
-            </div>
+            <React.Fragment key={h}>
+               <div 
+                className="absolute top-0 -translate-x-1/2 text-center w-8 font-serif"
+                style={{ left: `${left}%` }}
+              >
+                {h > 12 ? h - 12 : h}{h >= 12 && h < 24 ? 'pm' : 'am'}
+              </div>
+              {i < HOURS.length - 1 && (
+                <div 
+                   className="absolute top-1.5 -translate-x-1/2 text-center text-gray-300 text-[8px]"
+                   style={{ left: `${left + (100/12/2)}%` }}
+                >
+                  •
+                </div>
+              )}
+            </React.Fragment>
           );
         })}
       </div>
