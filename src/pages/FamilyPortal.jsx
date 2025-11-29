@@ -70,20 +70,7 @@ export default function FamilyPortal() {
                 </div>
               </motion.div>
             )}
-            {activeStudentData && !activeStudentData.attendance_alert && activeStudentData.attendance_summary && (
-               <motion.div 
-               initial={{ opacity: 0, height: 0 }}
-               animate={{ opacity: 1, height: 'auto' }}
-               exit={{ opacity: 0, height: 0 }}
-               className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-start gap-3"
-             >
-               <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-               <div>
-                 <h4 className="font-medium text-green-900">Attendance On Track</h4>
-                 <p className="text-sm text-green-700 mt-1">{activeStudentData.attendance_summary}</p>
-               </div>
-             </motion.div>
-            )}
+            {/* Green status removed to keep UI quiet until issues arise */}
           </AnimatePresence>
 
           <ScheduleTimeline classes={filteredClasses} />

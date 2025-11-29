@@ -94,6 +94,16 @@ export default function AttendanceModal({ isOpen, onOpenChange, classData, stude
                 attendance_alert: update.flag,
                 attendance_summary: update.summary
               });
+
+              // Send Message to Portal if flagged
+              if (update.flag) {
+                await base44.entities.Message.create({
+                  content: `Attendance Alert for ${student.name}: ${update.summary}`,
+                  sender: 'ai',
+                  timestamp: new Date().toISOString(),
+                  is_alert: true
+                });
+              }
             }
           });
           await Promise.all(updatePromises);
