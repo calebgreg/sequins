@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Plus, Calendar, MoreHorizontal, Search, Clock, MapPin, User, CheckSquare } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, MoreHorizontal, Search, Clock, MapPin, User, CheckSquare, Sparkles } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ImportScheduleModal from '../components/manager/ImportScheduleModal';
