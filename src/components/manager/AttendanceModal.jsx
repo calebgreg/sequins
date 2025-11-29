@@ -13,6 +13,7 @@ export default function AttendanceModal({ isOpen, onOpenChange, classData, stude
   const [attendance, setAttendance] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [alertsSent, setAlertsSent] = useState([]);
 
   // Reset when class changes
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function AttendanceModal({ isOpen, onOpenChange, classData, stude
 
   const handleSave = async () => {
     setIsSaving(true);
+    setAlertsSent([]);
     try {
       // 1. Create Attendance Records
       const records = Object.entries(attendance).map(([name, status]) => ({
@@ -103,6 +105,7 @@ export default function AttendanceModal({ isOpen, onOpenChange, classData, stude
                   timestamp: new Date().toISOString(),
                   is_alert: true
                 });
+                setAlertsSent(prev => [...prev, student.name]);
               }
             }
           });
@@ -169,6 +172,11 @@ export default function AttendanceModal({ isOpen, onOpenChange, classData, stude
                           <AlertCircle className="w-3 h-3" /> Low Attendance
                         </div>
                       )}
+                      {alertsSent.includes(name) && (
+                        <div className="flex items-center gap-1 text-[10px] text-blue-600 font-medium animate-in fade-in slide-in-from-left-2">
+                          <Sparkles className="w-3 h-3" /> Alert Sent to Portal
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -216,7 +224,7 @@ export default function AttendanceModal({ isOpen, onOpenChange, classData, stude
             ) : (
               <Sparkles className="w-4 h-4" />
             )}
-            {isSaving ? "Analyzing & Saving..." : saveSuccess ? "Saved!" : "Save & Analyze"}
+            {isSaving ? "Analyzing & Saving..." : saveSuccess ? (alertsSent.length > 0 ? "Saved & Alerts Sent!" : "Saved!") : "Save & Analyze"}
           </Button>
         </DialogFooter>
       </DialogContent>
