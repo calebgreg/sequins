@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import SmartTeacherIntake from '../components/manager/SmartTeacherIntake';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 
@@ -40,14 +41,10 @@ export default function Teachers() {
   });
 
   const createTeacherMutation = useMutation({
-    mutationFn: (data) => base44.entities.Teacher.create({
-      ...data,
-      styles: data.styles.split(',').map(s => s.trim())
-    }),
+    mutationFn: (data) => base44.entities.Teacher.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teachers'] });
       setIsAddOpen(false);
-      setNewTeacher({ name: '', styles: '', availability: '', bio: '' });
     }
   });
 
@@ -126,32 +123,15 @@ export default function Teachers() {
                 <Plus className="w-4 h-4" /> Add Teacher
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-xl">
               <DialogHeader>
                 <DialogTitle>Add New Teacher</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Name</Label>
-                  <Input value={newTeacher.name} onChange={e => setNewTeacher({...newTeacher, name: e.target.value})} placeholder="e.g. Sarah Miller" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Styles (comma separated)</Label>
-                  <Input value={newTeacher.styles} onChange={e => setNewTeacher({...newTeacher, styles: e.target.value})} placeholder="e.g. Ballet, Jazz, Tap" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Availability</Label>
-                  <Input value={newTeacher.availability} onChange={e => setNewTeacher({...newTeacher, availability: e.target.value})} placeholder="e.g. Weekday evenings" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Bio</Label>
-                  <Textarea value={newTeacher.bio} onChange={e => setNewTeacher({...newTeacher, bio: e.target.value})} />
-                </div>
-                <Button onClick={() => createTeacherMutation.mutate(newTeacher)} disabled={createTeacherMutation.isPending} className="w-full">
-                  {createTeacherMutation.isPending ? "Creating..." : "Create Teacher"}
-                </Button>
-              </div>
-            </DialogContent>
+              <SmartTeacherIntake 
+                onSave={(data) => createTeacherMutation.mutate(data)}
+                isSaving={createTeacherMutation.isPending}
+              />
+            </DialogContent
           </Dialog>
         </div>
 
