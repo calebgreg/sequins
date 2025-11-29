@@ -4,6 +4,15 @@ import { motion } from "framer-motion";
 const DAYS = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
 const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
 
+const formatTime = (val) => {
+  const hours = Math.floor(val);
+  const minutes = Math.round((val - hours) * 60);
+  const period = hours >= 12 ? 'pm' : 'am';
+  const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+  const displayMinutes = minutes.toString().padStart(2, '0');
+  return `${displayHours}:${displayMinutes}${period}`;
+};
+
 export default function ScheduleTimeline({ classes }) {
   
   const getPosition = (start, duration) => {
@@ -68,7 +77,7 @@ export default function ScheduleTimeline({ classes }) {
                         ${isPink ? 'bg-[#F2DCDD]' : 'bg-[#555555]'}
                       `}
                       style={{ left, width }}
-                      title={`${cls.title} (${cls.start_time}:00 - ${cls.start_time + cls.duration}:00)`}
+                      title={`${cls.title} (${formatTime(cls.start_time)} - ${formatTime(cls.start_time + cls.duration)})`}
                     >
                       {/* Tooltip or Label could go here, but mockup shows clean pills */}
                     </motion.div>

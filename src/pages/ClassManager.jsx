@@ -8,6 +8,15 @@ import ClassImport from '../components/manager/ClassImport';
 import ConflictAlert from '../components/manager/ConflictAlert';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const formatTime = (val) => {
+  const hours = Math.floor(val);
+  const minutes = Math.round((val - hours) * 60);
+  const period = hours >= 12 ? 'pm' : 'am';
+  const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+  const displayMinutes = minutes.toString().padStart(2, '0');
+  return `${displayHours}:${displayMinutes}${period}`;
+};
+
 export default function ClassManager() {
   const [importedClasses, setImportedClasses] = useState([]);
   const [conflicts, setConflicts] = useState([]);
@@ -182,7 +191,9 @@ export default function ClassManager() {
                         <div className="flex-1">
                           <h4 className="font-medium text-[#333333]">{cls.title}</h4>
                           <div className="flex gap-4 text-sm text-gray-500 mt-1">
-                            <span>{cls.start_time}:00 - {cls.start_time + cls.duration}:00</span>
+                            <span>
+                              {formatTime(cls.start_time)} - {formatTime(cls.start_time + cls.duration)}
+                            </span>
                             {cls.teacher && <span className="text-[#5A4A4B]">• {cls.teacher}</span>}
                             {cls.room && <span>• {cls.room}</span>}
                           </div>
