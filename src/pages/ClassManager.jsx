@@ -7,6 +7,7 @@ import { ArrowLeft, Plus, Calendar, MoreHorizontal, Search, Clock, MapPin, User 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ImportScheduleModal from '../components/manager/ImportScheduleModal';
+import StudentRecommender from '../components/manager/StudentRecommender';
 import { motion } from 'framer-motion';
 
 const formatTime = (val) => {
@@ -20,12 +21,19 @@ const formatTime = (val) => {
 
 export default function ClassManager() {
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isRecommenderOpen, setIsRecommenderOpen] = useState(false);
   const [search, setSearch] = useState('');
 
   // Fetch existing classes
   const { data: classes = [] } = useQuery({
     queryKey: ['classes'],
     queryFn: () => base44.entities.DanceClass.list(),
+  });
+
+  // Fetch students for demographics/recommendations
+  const { data: students = [] } = useQuery({
+    queryKey: ['students'],
+    queryFn: () => base44.entities.Student.list(),
   });
 
   const filteredClasses = classes.filter(c => 
@@ -63,6 +71,14 @@ export default function ClassManager() {
                 className="pl-10 bg-white border-gray-200 rounded-full w-full md:w-64"
               />
             </div>
+            <Button 
+              onClick={() => setIsRecommenderOpen(true)}
+              variant="outline"
+              className="rounded-full px-4 gap-2 hidden md:flex"
+            >
+              <User className="w-4 h-4" />
+              Student Advisor
+            </Button>
             <Button 
               onClick={() => setIsImportOpen(true)}
               className="bg-[#333333] hover:bg-black text-white rounded-full px-6 gap-2"
@@ -145,6 +161,14 @@ export default function ClassManager() {
           isOpen={isImportOpen} 
           onOpenChange={setIsImportOpen}
           existingClasses={classes}
+          students={students}
+        />
+
+        <StudentRecommender 
+          isOpen={isRecommenderOpen}
+          onOpenChange={setIsRecommenderOpen}
+          students={students}
+          classes={classes}
         />
 
       </div>

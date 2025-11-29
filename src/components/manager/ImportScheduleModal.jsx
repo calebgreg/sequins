@@ -21,7 +21,7 @@ const formatTime = (val) => {
   return `${displayHours}:${displayMinutes}${period}`;
 };
 
-export default function ImportScheduleModal({ isOpen, onOpenChange, existingClasses }) {
+export default function ImportScheduleModal({ isOpen, onOpenChange, existingClasses, students = [] }) {
   const [step, setStep] = useState('input'); // 'input' | 'review'
   const [inputType, setInputType] = useState('upload'); // 'upload' | 'generate'
   const [generationPrompt, setGenerationPrompt] = useState("");
@@ -100,11 +100,22 @@ export default function ImportScheduleModal({ isOpen, onOpenChange, existingClas
     
     setIsGenerating(true);
     try {
+      // Analyze Demographics
+      const demographics = students.reduce((acc, s) => {
+        const key = `${s.level || 'unknown'} (${s.age || '?'})`;
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+      const demoString = Object.entries(demographics).map(([k,v]) => `${v} ${k} students`).join(', ');
+
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: `
           You are a master scheduler for a dance studio. 
           Generate a JSON list of dance classes based on the following requirements from the studio staff:
           "${generationPrompt}"
+          
+          Student Demographics (Consider these for class leveling/quantity):
+          ${demoString || "No student data available yet."}
           
           Constraints & Rules:
           - Return a JSON object with a key "classes" containing an array.
