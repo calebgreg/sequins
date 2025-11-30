@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText, Menu, LayoutGrid, List, Calendar as CalendarIcon } from 'lucide-react';
+import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText, Menu, LayoutGrid, List, Calendar as CalendarIcon, Music, Disc } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -79,9 +79,12 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
   );
 };
 
+import LessonPlanner from '../components/teacher/LessonPlanner';
+import MusicManager from '../components/teacher/MusicManager';
+
 // --- SUB-COMPONENT: Class Detail View ---
 const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) => {
-  const [mode, setMode] = useState('dashboard'); // 'dashboard', 'roster', 'notes', 'active_class', 'student'
+  const [mode, setMode] = useState('dashboard'); // 'dashboard', 'roster', 'notes', 'active_class', 'student', 'music', 'lesson_plan'
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [attendance, setAttendance] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -179,6 +182,14 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
     setMode('dashboard');
   };
 
+  if (mode === 'lesson_plan') {
+    return <LessonPlanner classData={classData} onBack={() => setMode('dashboard')} />;
+  }
+
+  if (mode === 'music') {
+    return <MusicManager classData={classData} onBack={() => setMode('dashboard')} />;
+  }
+
   // Student Profile View
   if (mode === 'student' && selectedStudent) {
       return <StudentProfileView student={selectedStudent} teacherName={currentTeacherName} onBack={() => setMode('roster')} />;
@@ -246,9 +257,9 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
 
         <div className="flex-1 px-4 md:px-8 pb-8 flex flex-col max-w-4xl mx-auto w-full justify-center">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Main Status Card */}
-            <div className="bg-white p-8 rounded-[32px] shadow-sm col-span-1 md:col-span-2 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Main Status Card - Spans full width on mobile, 2 cols on large screens */}
+            <div className="bg-white p-8 rounded-[32px] shadow-sm col-span-1 md:col-span-2 lg:col-span-3 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
                <div className="flex items-start gap-6">
                  <div className="w-20 h-20 bg-[#F4F4F6] rounded-full flex items-center justify-center text-[#333333] flex-shrink-0">
                    <span className="font-serif text-3xl">{classData.title.charAt(0)}</span>
@@ -309,6 +320,29 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
                  <Users className="w-6 h-6 text-[#333333]" />
               </div>
               <span className="font-sans text-xl text-[#333333] font-light">view roster</span>
+            </Button>
+
+            {/* New Buttons */}
+            <Button 
+              variant="outline" 
+              className="h-40 rounded-[32px] flex flex-col items-center justify-center gap-4 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all group"
+              onClick={() => setMode('lesson_plan')}
+            >
+              <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
+                 <Sparkles className="w-6 h-6 text-[#333333]" />
+              </div>
+              <span className="font-sans text-xl text-[#333333] font-light">lesson plan</span>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              className="h-40 rounded-[32px] flex flex-col items-center justify-center gap-4 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all group"
+              onClick={() => setMode('music')}
+            >
+              <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
+                 <Play className="w-6 h-6 text-[#333333]" />
+              </div>
+              <span className="font-sans text-xl text-[#333333] font-light">class music</span>
             </Button>
 
             <Button 
