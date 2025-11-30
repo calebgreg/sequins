@@ -368,11 +368,12 @@ export default function TeacherStudio() {
               {/* Header Controls */}
               <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
                  {/* Classes / Admin Toggle */}
-                 <div className="bg-[#333333] p-1.5 rounded-full inline-flex relative shadow-lg">
-                   {[
-                     { id: 'classes', label: 'Classes' },
-                     { id: 'admin', label: 'Admin' }
-                   ].map((tab) => {
+                 <div className="flex items-center gap-3">
+                   <div className="bg-[#333333] p-1.5 rounded-full inline-flex relative shadow-lg">
+                     {[
+                       { id: 'classes', label: 'Classes' },
+                       { id: 'admin', label: 'Admin' }
+                     ].map((tab) => {
                      const isActive = activeTab === tab.id;
                      return (
                        <button
@@ -396,6 +397,15 @@ export default function TeacherStudio() {
                        </button>
                      )
                    })}
+                   </div>
+                   
+                   <Button 
+                     onClick={() => setIsSubRequestOpen(true)}
+                     className="bg-white text-[#333333] border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-100 rounded-full gap-2 shadow-sm h-12 px-6 transition-all"
+                   >
+                     <CalendarX className="w-4 h-4" />
+                     Request Sub
+                   </Button>
                  </div>
 
                  {/* View Modes (List/Week/Month) */}
