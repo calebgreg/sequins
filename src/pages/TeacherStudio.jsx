@@ -17,7 +17,7 @@ import TimeSheetReviewModal from '../components/teacher/TimeSheetReviewModal';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 // --- SUB-COMPONENT: Time Card Widget ---
-const TimeCardWidget = ({ currentTeacherName, classes }) => {
+const TimeCardWidget = ({ currentTeacherName, classes = [] }) => {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   
   // Fetch sub requests to calculate net hours
@@ -83,7 +83,7 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
         </div>
       </div>
       
-      <TimeCardWidget currentTeacherName={currentTeacherName} />
+      <TimeCardWidget currentTeacherName={currentTeacherName} classes={classes} />
 
       <div className="space-y-5">
         {displayClasses.map((cls, idx) => (
