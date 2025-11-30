@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, differenceInMinutes } from 'date-fns';
 import VoiceNoteIntake from '../components/teacher/VoiceNoteIntake';
+import ClassRosterView from '../components/teacher/ClassRosterView';
 import SubRequestModal from '../components/teacher/SubRequestModal';
 import TimeSheetReviewModal from '../components/teacher/TimeSheetReviewModal';
 import SubRequestHistoryModal from '../components/teacher/SubRequestHistoryModal';
@@ -78,14 +79,12 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
 };
 
 // --- SUB-COMPONENT: Class Detail View ---
-const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) => {
-  const [hasStarted, setHasStarted] = useState(false);
-  const [attendance, setAttendance] = useState({});
-  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
-  const [isRosterOpen, setIsRosterOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
+      const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) => {
+        const [mode, setMode] = useState('dashboard'); // 'dashboard', 'roster', 'notes', 'active_class'
+        const [attendance, setAttendance] = useState({});
+        const [isSubmitting, setIsSubmitting] = useState(false);
+        const [submitSuccess, setSubmitSuccess] = useState(false);
+        const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
 
   // Initialize attendance
   useEffect(() => {
@@ -175,10 +174,45 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
       date: new Date().toISOString().split('T')[0]
     }));
     base44.entities.StudentNote.bulkCreate(records);
-    setIsVoiceOpen(false);
+    setMode('dashboard');
   };
 
-  if (!hasStarted) {
+  // Roster View
+  if (mode === 'roster') {
+     return <ClassRosterView classData={classData} students={students} onBack={() => setMode('dashboard')} />;
+  }
+
+  // Notes View
+  if (mode === 'notes') {
+     return (
+       <div className="flex flex-col h-full bg-[#F4F4F6]">
+         <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]">
+           <div className="flex items-center gap-6">
+             <Button variant="ghost" size="icon" onClick={() => setMode('dashboard')} className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80">
+               <ArrowLeft className="w-5 h-5" />
+             </Button>
+             <div>
+               <h2 className="font-serif text-3xl text-[#333333]">Class Notes</h2>
+               <p className="text-gray-400 font-serif text-lg">Dictate or type notes for {classData.title}</p>
+             </div>
+           </div>
+         </div>
+         <div className="flex-1 px-8 pb-8 flex flex-col max-w-4xl mx-auto w-full">
+           <div className="bg-white rounded-[32px] p-8 shadow-sm h-full">
+              <VoiceNoteIntake 
+                classData={classData} 
+                students={students}
+                teacherName={currentTeacherName}
+                onNotesProcessed={handleNotesProcessed}
+              />
+           </div>
+         </div>
+       </div>
+     );
+  }
+
+  // Dashboard View
+  if (mode === 'dashboard') {
     return (
       <div className="flex flex-col h-screen bg-[#F4F4F6]">
         {/* Dashboard Header */}
@@ -194,7 +228,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
         </div>
 
         <div className="flex-1 px-4 md:px-8 pb-8 flex flex-col max-w-4xl mx-auto w-full justify-center">
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Main Status Card */}
             <div className="bg-white p-8 rounded-[32px] shadow-sm col-span-1 md:col-span-2 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
@@ -219,7 +253,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
                </div>
 
                <Button 
-                  onClick={() => setHasStarted(true)}
+                  onClick={() => setMode('active_class')}
                   className="w-full md:w-auto rounded-full bg-[#333333] text-white hover:bg-black h-14 px-8 text-lg font-serif shadow-lg transition-all hover:scale-105 active:scale-95 self-center md:self-start"
                 >
                   <Play className="w-4 h-4 mr-2 fill-current" /> Start Class
@@ -241,7 +275,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
             <Button 
               variant="outline" 
               className="h-40 rounded-[32px] flex flex-col items-center justify-center gap-4 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all group"
-              onClick={() => setIsVoiceOpen(true)}
+              onClick={() => setMode('notes')}
             >
               <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
                  <Mic className="w-6 h-6 text-[#333333]" />
@@ -252,7 +286,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
             <Button 
               variant="outline" 
               className="h-40 rounded-[32px] flex flex-col items-center justify-center gap-4 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all group"
-              onClick={() => setIsRosterOpen(true)}
+              onClick={() => setMode('roster')}
             >
               <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
                  <Users className="w-6 h-6 text-[#333333]" />
@@ -279,61 +313,18 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
           teacherName={currentTeacherName}
           availableClasses={[]} 
         />
-
-        <Dialog open={isVoiceOpen} onOpenChange={setIsVoiceOpen}>
-          <DialogContent className="max-w-lg bg-white rounded-[32px]">
-            <DialogHeader>
-               <DialogTitle className="font-serif text-2xl">Class Notes</DialogTitle>
-            </DialogHeader>
-            <VoiceNoteIntake 
-              classData={classData} 
-              students={students}
-              teacherName={currentTeacherName}
-              onNotesProcessed={handleNotesProcessed}
-            />
-            </DialogContent>
-            </Dialog>
-
-            <Dialog open={isRosterOpen} onOpenChange={setIsRosterOpen}>
-            <DialogContent className="max-w-md bg-white rounded-[32px] border-none shadow-xl">
-            <DialogHeader className="mb-2">
-               <DialogTitle className="font-serif text-2xl text-[#333333]">Class Roster</DialogTitle>
-               <DialogDescription className="text-gray-400 font-serif">
-                  {classData.student_names?.length || 0} students enrolled
-               </DialogDescription>
-            </DialogHeader>
-            <ScrollArea className="h-[400px] pr-2">
-              <div className="space-y-3">
-                {classData.student_names?.map((name, i) => (
-                  <motion.div 
-                     key={name}
-                     initial={{ opacity: 0, y: 10 }}
-                     animate={{ opacity: 1, y: 0 }}
-                     transition={{ delay: i * 0.05 }}
-                     className="flex items-center gap-4 p-3 bg-[#F4F4F6] rounded-2xl"
-                  >
-                     <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-sm font-serif text-[#333333] shadow-sm">
-                        {name.charAt(0)}
-                     </div>
-                     <span className="font-medium text-[#333333] font-sans text-lg">{name}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </ScrollArea>
-            </DialogContent>
-            </Dialog>
-            </div>
-            );
-            }
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen bg-[#F4F4F6]">
       {/* Header */}
       <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]">
         <div className="flex items-center gap-6">
-          <Button variant="ghost" size="icon" onClick={() => setHasStarted(false)} className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80">
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setMode('dashboard')} className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80">
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
           <div>
             <h2 className="font-serif text-3xl text-[#333333]">{classData.title}</h2>
           </div>
@@ -402,41 +393,27 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
       </ScrollArea>
 
       {/* Floating Footer */}
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center px-4">
-        <Button 
-          size="lg" 
-          className={`shadow-xl rounded-full px-10 py-6 text-lg font-serif transition-all ${submitSuccess ? 'bg-[#F2DCDD] text-[#333333]' : 'bg-[#333333] text-white hover:bg-black'}`}
-          onClick={handleSubmitAttendance}
-          disabled={isSubmitting || submitSuccess}
-        >
-          {isSubmitting ? "Analyzing..." : submitSuccess ? "Saved" : "Complete Class"}
-        </Button>
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center px-4">
+          <Button 
+            size="lg" 
+            className={`shadow-xl rounded-full px-10 py-6 text-lg font-serif transition-all ${submitSuccess ? 'bg-[#F2DCDD] text-[#333333]' : 'bg-[#333333] text-white hover:bg-black'}`}
+            onClick={handleSubmitAttendance}
+            disabled={isSubmitting || submitSuccess}
+          >
+            {isSubmitting ? "Analyzing..." : submitSuccess ? "Saved" : "Complete Class"}
+          </Button>
+        </div>
+
+        <SubRequestModal 
+          isOpen={isSubRequestOpen}
+          onOpenChange={setIsSubRequestOpen}
+          classData={classData}
+          teacherName={currentTeacherName}
+          availableClasses={[]} 
+        />
       </div>
-
-      <Dialog open={isVoiceOpen} onOpenChange={setIsVoiceOpen}>
-        <DialogContent className="max-w-lg bg-white rounded-[32px]">
-          <DialogHeader>
-             <DialogTitle className="font-serif text-2xl">Class Notes</DialogTitle>
-          </DialogHeader>
-          <VoiceNoteIntake 
-            classData={classData} 
-            students={students}
-            teacherName={currentTeacherName}
-            onNotesProcessed={handleNotesProcessed}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <SubRequestModal 
-        isOpen={isSubRequestOpen}
-        onOpenChange={setIsSubRequestOpen}
-        classData={classData}
-        teacherName={currentTeacherName}
-        availableClasses={[]} 
-      />
-    </div>
-  );
-};
+      );
+      };
 
 // --- MAIN PAGE COMPONENT ---
 export default function TeacherStudio() {
