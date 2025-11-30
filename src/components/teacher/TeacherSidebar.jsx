@@ -18,7 +18,7 @@ export default function TeacherSidebar({
   ];
 
   return (
-    <div className={`bg-[#333333] text-white flex flex-col items-center py-8 ${className}`}>
+    <div className={`bg-[#333333] text-white flex flex-col items-center py-8 rounded-[20px] ${className}`}>
       {/* Logo */}
       <div className="mb-12 flex-shrink-0">
         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.2)]">
