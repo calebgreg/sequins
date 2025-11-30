@@ -9,8 +9,6 @@ import { base44 } from "@/api/base44Client";
 
 export default function NewJournalEntryModal({ isOpen, onOpenChange, student, teacherName, classes = [] }) {
   const [content, setContent] = useState('');
-  const [selectedClass, setSelectedClass] = useState('');
-  const [category, setCategory] = useState('general');
   const [sentiment, setSentiment] = useState('neutral');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,13 +56,23 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
     if (!content || !student) return;
     setIsSubmitting(true);
 
+    // Infer Category
+    let inferredCategory = 'general';
+    const lower = content.toLowerCase();
+    if (lower.includes('behavior') || lower.includes('focus') || lower.includes('attitude') || lower.includes('late')) inferredCategory = 'behavior';
+    else if (lower.includes('technique') || lower.includes('posture') || lower.includes('turnout') || lower.includes('feet')) inferredCategory = 'technique';
+    else if (lower.includes('improve') || lower.includes('better') || lower.includes('progress') || lower.includes('growth')) inferredCategory = 'progress';
+
+    // Infer Class (use the first tagged class or default)
+    const matchedClass = classes.find(c => detectedTags.includes(c.title))?.title;
+
     try {
       await base44.entities.StudentNote.create({
         student_name: student.name,
-        class_name: selectedClass || 'General Note',
+        class_name: matchedClass || 'General Note',
         teacher_name: teacherName,
         content: content,
-        category: category,
+        category: inferredCategory,
         sentiment: sentiment,
         tags: detectedTags,
         date: new Date().toISOString().split('T')[0]
@@ -72,8 +80,6 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
 
       // Reset and close
       setContent('');
-      setSelectedClass('');
-      setCategory('general');
       setSentiment('neutral');
       onOpenChange(false);
     } catch (error) {
