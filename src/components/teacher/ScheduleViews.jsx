@@ -33,7 +33,7 @@ export const WeekView = ({ classes, currentTeacherName }) => {
         <p className="text-gray-400">Your recurring weekly classes</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="flex flex-col gap-4">
         {weekDays.map((day, i) => {
           const dayClasses = classesByDay[day];
           const hasClasses = dayClasses.length > 0;
@@ -44,46 +44,50 @@ export const WeekView = ({ classes, currentTeacherName }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className={`bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 ${!hasClasses ? 'bg-gray-50/50' : ''}`}
+              className={`
+                group flex flex-col md:flex-row md:items-start gap-4 md:gap-8 p-6 rounded-[24px] border transition-all
+                ${hasClasses ? 'bg-white border-gray-100 shadow-sm hover:shadow-md' : 'bg-gray-50/50 border-transparent opacity-60 hover:opacity-100'}
+              `}
             >
-              <h3 className={`font-serif text-lg mb-4 flex items-center gap-2 ${!hasClasses ? 'text-gray-400' : 'text-[#333333]'}`}>
-                <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-sans font-medium ${!hasClasses ? 'bg-gray-100 text-gray-400' : 'bg-[#F4F4F6] text-[#333333]'}`}>
+              {/* Day Column */}
+              <div className="flex md:flex-col items-center md:items-start gap-3 md:w-32 flex-shrink-0">
+                <div className={`
+                  w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold font-serif
+                  ${hasClasses ? 'bg-[#333333] text-white' : 'bg-gray-200 text-gray-400'}
+                `}>
                   {day}
+                </div>
+                <span className={`font-serif text-lg ${hasClasses ? 'text-[#333333]' : 'text-gray-400'}`}>
+                  {dayNames[dayMap[day]]}
                 </span>
-                {dayNames[dayMap[day]]}
-              </h3>
+              </div>
               
-              <div className="space-y-3">
+              {/* Classes Column */}
+              <div className="flex-1">
                 {hasClasses ? (
-                  dayClasses.map(cls => (
-                    <div key={cls.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-[#F4F4F6] transition-colors">
-                      <div className="mt-1">
-                        <div className="w-2 h-2 rounded-full bg-[#333333]" />
-                      </div>
-                      <div>
-                        <div className="font-medium text-[#333333] leading-tight">{cls.title}</div>
-                        <div className="text-sm text-gray-400 mt-1 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {dayClasses.map(cls => (
+                      <div key={cls.id} className="flex items-center gap-3 p-3 rounded-xl bg-[#F4F4F6] hover:bg-[#F2DCDD] transition-colors group/card">
+                        <div className="w-1 h-8 rounded-full bg-[#333333]" />
+                        <div>
+                          <div className="font-medium text-[#333333] leading-tight group-hover/card:text-black">{cls.title}</div>
+                          <div className="text-sm text-gray-500 mt-0.5 font-medium flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" />
+                            {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 ) : (
-                  <div className="py-4 text-center">
-                    <p className="text-sm text-gray-300 italic">No classes</p>
+                  <div className="h-full flex items-center">
+                    <p className="text-sm text-gray-400 italic">No classes scheduled</p>
                   </div>
                 )}
               </div>
             </motion.div>
           );
         })}
-        
-        {myClasses.length === 0 && (
-           <div className="col-span-full text-center py-12 text-gray-400">
-             No classes scheduled for this week.
-           </div>
-        )}
       </div>
     </div>
   );
