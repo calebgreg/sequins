@@ -311,7 +311,7 @@ export default function TeacherStudio() {
       
       {/* Sidebar - Desktop */}
       <TeacherSidebar 
-        className="hidden md:flex w-64 flex-shrink-0 h-screen sticky top-0"
+        className="hidden md:flex w-24 flex-shrink-0 h-screen sticky top-0 z-20"
         activeView="schedule"
         onNavigate={handleNav}
         teacherName={currentTeacherName}
@@ -324,13 +324,13 @@ export default function TeacherStudio() {
         <div className="md:hidden absolute top-6 left-6 z-50">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="bg-white shadow-sm rounded-full text-[#333333]">
+              <Button variant="ghost" size="icon" className="bg-[#333333] shadow-lg rounded-full text-white hover:bg-black">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64 border-none">
+            <SheetContent side="left" className="p-0 w-24 border-none bg-transparent shadow-none">
               <TeacherSidebar 
-                className="h-full"
+                className="h-full rounded-r-[32px] shadow-2xl"
                 activeView="schedule"
                 onNavigate={handleNav}
                 teacherName={currentTeacherName}
