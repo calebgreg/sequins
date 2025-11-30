@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,65 +6,22 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Save, Hash, Quote, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import useNoteInference from './useNoteInference';
 
 export default function NewJournalEntryModal({ isOpen, onOpenChange, student, teacherName, classes = [] }) {
   const [content, setContent] = useState('');
   const [sentiment, setSentiment] = useState('neutral');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Auto-detect tags from content naturally
-  const detectedTags = useMemo(() => {
-    if (!content) return [];
-    const lowerContent = content.toLowerCase();
-    const tags = new Set();
-
-    // 1. Class names
-    classes.forEach(cls => {
-        if (lowerContent.includes(cls.title.toLowerCase())) {
-            tags.add(cls.title);
-        }
-    });
-
-    // 2. Student Interests
-    if (student?.interests) {
-        student.interests.forEach(interest => {
-            if (lowerContent.includes(interest.toLowerCase())) {
-                tags.add(interest);
-            }
-        });
-    }
-
-    // 3. Common Dance Dictionary
-    const commonTerms = [
-        'technique', 'flexibility', 'turnout', 'posture', 'alignment', 'extension',
-        'pirouette', 'fouetté', 'plié', 'tendu', 'jeté', 'arabesque', 'attitude', 'developpé',
-        'musicality', 'performance', 'focus', 'energy', 'timing', 'rhythm',
-        'exam', 'competition', 'recital', 'choreography', 'improv', 'barre', 'center'
-    ];
-    
-    commonTerms.forEach(term => {
-        if (lowerContent.includes(term.toLowerCase())) {
-            // Capitalize for nice display
-            tags.add(term.charAt(0).toUpperCase() + term.slice(1));
-        }
-    });
-        
-    return Array.from(tags);
-  }, [content, classes, student]);
+  const { detectedTags, inferredCategory, matchedClass } = useNoteInference({
+    content,
+    classes,
+    student
+  });
 
   const handleSubmit = async () => {
     if (!content || !student) return;
     setIsSubmitting(true);
-
-    // Infer Category
-    let inferredCategory = 'general';
-    const lower = content.toLowerCase();
-    if (lower.includes('behavior') || lower.includes('focus') || lower.includes('attitude') || lower.includes('late')) inferredCategory = 'behavior';
-    else if (lower.includes('technique') || lower.includes('posture') || lower.includes('turnout') || lower.includes('feet')) inferredCategory = 'technique';
-    else if (lower.includes('improve') || lower.includes('better') || lower.includes('progress') || lower.includes('growth')) inferredCategory = 'progress';
-
-    // Infer Class (use the first tagged class or default)
-    const matchedClass = classes.find(c => detectedTags.includes(c.title))?.title;
 
     try {
       await base44.entities.StudentNote.create({

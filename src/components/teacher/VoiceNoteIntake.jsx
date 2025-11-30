@@ -1,14 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { Mic, Square, Loader2, Sparkles, Check, RotateCcw } from 'lucide-react';
+import { Mic, Square, Loader2, Sparkles, Check, RotateCcw, Hash } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from "@/api/base44Client";
+import useNoteInference from './useNoteInference';
 
 export default function VoiceNoteIntake({ classData, students, teacherName, onNotesProcessed }) {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const recognitionRef = useRef(null);
+
+  const { detectedTags } = useNoteInference({
+    content: transcript,
+    classes: [classData],
+    students
+  });
 
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -151,12 +158,27 @@ export default function VoiceNoteIntake({ classData, students, teacherName, onNo
       </div>
 
       <div className="pt-8 space-y-4">
-        <textarea
-          value={transcript}
-          onChange={(e) => setTranscript(e.target.value)}
-          placeholder="Or type your notes here..."
-          className="w-full min-h-[100px] p-4 rounded-xl border border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-100 outline-none resize-none text-gray-700 bg-white"
-        />
+        <div className="relative">
+          <textarea
+            value={transcript}
+            onChange={(e) => setTranscript(e.target.value)}
+            placeholder="Or type your notes here..."
+            className="w-full min-h-[100px] p-4 rounded-xl border border-gray-200 focus:border-[#F2DCDD] focus:ring-0 outline-none resize-none text-gray-700 bg-white"
+          />
+          {detectedTags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3 px-1">
+               <div className="flex items-center text-xs text-[#333333] font-medium mr-1">
+                 <Sparkles className="w-3 h-3 mr-1 text-purple-500" /> Auto-tagged:
+               </div>
+               {detectedTags.map(tag => (
+                 <span key={tag} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                   <Hash className="w-3 h-3 mr-1 opacity-50" />
+                   {tag}
+                 </span>
+               ))}
+            </div>
+          )}
+        </div>
 
         <div className="flex justify-end gap-3">
           {transcript && (
