@@ -353,7 +353,7 @@ export default function TeacherStudio() {
             >
               {/* View Toggles */}
               <div className="flex justify-end mb-6">
-                 <div className="bg-white p-1 rounded-full shadow-sm inline-flex">
+                 <div className="bg-gray-200/50 p-1 rounded-full inline-flex relative">
                    {[
                      { id: 'day', label: 'Day', icon: List },
                      { id: 'week', label: 'Week', icon: LayoutGrid },
@@ -363,12 +363,21 @@ export default function TeacherStudio() {
                        key={view.id}
                        onClick={() => setViewMode(view.id)}
                        className={`
-                         px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all
-                         ${viewMode === view.id ? 'bg-[#333333] text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}
+                         relative px-6 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-colors duration-200 z-10
+                         ${viewMode === view.id ? 'text-[#333333]' : 'text-gray-500 hover:text-gray-700'}
                        `}
                      >
+                       {viewMode === view.id && (
+                         <motion.div
+                           layoutId="activeTab"
+                           className="absolute inset-0 bg-white rounded-full shadow-sm"
+                           initial={false}
+                           transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                           style={{ zIndex: -1 }}
+                         />
+                       )}
                        <view.icon className="w-4 h-4" />
-                       {view.label}
+                       <span>{view.label}</span>
                      </button>
                    ))}
                  </div>
