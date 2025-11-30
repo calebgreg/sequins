@@ -108,7 +108,7 @@ export const WeekView = ({ classes, currentTeacherName, filterType = 'class' }) 
                       title={`${cls.title} (${format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')})`}
                     >
                         {/* Label inside block */}
-                        <span className="text-[10px] font-bold truncate px-2 w-full text-center hidden sm:block">
+                        <span className="text-[11px] font-medium font-sans truncate px-2 w-full text-center hidden sm:block tracking-tight">
                           {cls.title}
                         </span>
 
