@@ -7,7 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarX, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { format } from 'date-fns';
 
-export default function SubRequestHistoryModal({ isOpen, onOpenChange, teacherName }) {
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+
+export default function SubRequestHistoryModal({ isOpen, onOpenChange, teacherName, onNewRequest }) {
   const { data: requests = [] } = useQuery({
     queryKey: ['sub_requests', teacherName],
     queryFn: async () => {
@@ -44,9 +47,15 @@ export default function SubRequestHistoryModal({ isOpen, onOpenChange, teacherNa
                <CalendarX className="w-5 h-5 text-white" />
              </div>
            </div>
-           <p className="text-white/60 text-sm font-light">
-             To request a new sub, navigate to a specific class and tap the calendar icon.
-           </p>
+           <Button 
+             onClick={() => {
+               onOpenChange(false);
+               onNewRequest();
+             }}
+             className="w-full bg-white text-[#333333] hover:bg-gray-50 font-medium rounded-xl h-10 gap-2"
+           >
+             <Plus className="w-4 h-4" /> New Request
+           </Button>
         </div>
         
         <ScrollArea className="h-[400px] p-6">

@@ -282,6 +282,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
         onOpenChange={setIsSubRequestOpen}
         classData={classData}
         teacherName={currentTeacherName}
+        availableClasses={[]} 
       />
     </div>
   );
@@ -488,6 +489,19 @@ export default function TeacherStudio() {
         isOpen={isSubHistoryOpen}
         onOpenChange={setIsSubHistoryOpen}
         teacherName={currentTeacherName}
+        onNewRequest={() => {
+          setSelectedClass(null); // Ensure no specific class is selected to trigger generic mode
+          setIsSubRequestOpen(true);
+        }}
+      />
+      
+      {/* Global Sub Request Modal (for when accessing via sidebar/history) */}
+      <SubRequestModal 
+        isOpen={isSubRequestOpen && !selectedClass} // Only show this one if not in detail view
+        onOpenChange={setIsSubRequestOpen}
+        classData={null} // No pre-selected class
+        teacherName={currentTeacherName}
+        availableClasses={classes.filter(c => c.teacher === currentTeacherName)}
       />
     </div>
   );

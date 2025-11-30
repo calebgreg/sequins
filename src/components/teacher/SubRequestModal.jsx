@@ -13,13 +13,33 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
-export default function SubRequestModal({ isOpen, onOpenChange, classData, teacherName }) {
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+export default function SubRequestModal({ isOpen, onOpenChange, classData, teacherName, availableClasses = [] }) {
+  const [selectedClassId, setSelectedClassId] = useState(classData?.id || '');
   const [reason, setReason] = useState('');
   const [date, setDate] = useState(new Date());
   const [urgency, setUrgency] = useState('medium');
   const [selectedSubs, setSelectedSubs] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Determine active class (either passed prop or selected from dropdown)
+  const activeClass = useMemo(() => {
+    if (classData) return classData;
+    return availableClasses.find(c => c.id === selectedClassId);
+  }, [classData, availableClasses, selectedClassId]);
+
+  // Reset state when opening fresh
+  React.useEffect(() => {
+    if (isOpen) {
+        if (classData) setSelectedClassId(classData.id);
+        setSuccess(false);
+        setReason('');
+        setSelectedSubs([]);
+        setUrgency('medium');
+    }
+  }, [isOpen, classData]);
 
   // Fetch context for smart suggestions
   const { data: teachers = [] } = useQuery({
@@ -36,7 +56,7 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
 
   // Smart Suggestion Logic
   const suggestions = useMemo(() => {
-    if (!classData || !date || teachers.length === 0) return [];
+    if (!activeClass || !date || teachers.length === 0) return [];
 
     const dayMap = { 0: 'U', 1: 'M', 2: 'T', 3: 'W', 4: 'R', 5: 'F', 6: 'S' };
     const currentDay = dayMap[getDay(date)];
@@ -46,7 +66,7 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
     
     const styleMatches = teachers.filter(t => 
       t.name !== teacherName && // Don't suggest self
-      t.styles?.some(s => s.toLowerCase().includes(classData.style?.toLowerCase() || ''))
+      t.styles?.some(s => s.toLowerCase().includes(activeClass.style?.toLowerCase() || ''))
     );
 
     const available = styleMatches.filter(t => {
@@ -57,25 +77,25 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
 
       const isBusy = teacherClassesOnDay.some(c => {
         const cEnd = c.start_time + c.duration;
-        const myEnd = classData.start_time + classData.duration;
+        const myEnd = activeClass.start_time + activeClass.duration;
         // Check overlap
-        return (classData.start_time < cEnd && myEnd > c.start_time);
+        return (activeClass.start_time < cEnd && myEnd > c.start_time);
       });
 
       return !isBusy;
     });
 
     return available;
-  }, [classData, date, teachers, allClasses, teacherName]);
+  }, [activeClass, date, teachers, allClasses, teacherName]);
 
   const handleSubmit = async () => {
-    if (!reason || !date) return;
+    if (!reason || !date || !activeClass) return;
     setIsSubmitting(true);
     try {
       await base44.entities.SubRequest.create({
         teacher_name: teacherName,
-        class_id: classData.id,
-        class_name: classData.title,
+        class_id: activeClass.id,
+        class_name: activeClass.title,
         date: date.toISOString().split('T')[0],
         reason: reason,
         urgency: urgency,
@@ -86,10 +106,10 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
       // Notify admins
       const subNames = selectedSubs.length > 0 ? ` (Suggested: ${selectedSubs.join(', ')})` : '';
       await base44.entities.Message.create({
-        content: `Sub Request (${urgency.toUpperCase()}): ${teacherName} needs cover for ${classData.title} on ${format(date, 'MMM d')}.${subNames} Reason: ${reason}`,
-        sender: 'ai',
-        timestamp: new Date().toISOString(),
-        is_alert: urgency === 'high'
+       content: `Sub Request (${urgency.toUpperCase()}): ${teacherName} needs cover for ${activeClass.title} on ${format(date, 'MMM d')}.${subNames} Reason: ${reason}`,
+       sender: 'ai',
+       timestamp: new Date().toISOString(),
+       is_alert: urgency === 'high'
       });
 
       setSuccess(true);
@@ -129,11 +149,33 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
               <div className="space-y-6">
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
                    <div className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Class</div>
-                   <div className="font-serif text-lg text-[#333333]">{classData?.title}</div>
-                   <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                     <Clock className="w-3 h-3" />
-                     {classData && format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mma')}
-                   </div>
+                   {classData ? (
+                     <>
+                       <div className="font-serif text-lg text-[#333333]">{classData.title}</div>
+                       <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                         <Clock className="w-3 h-3" />
+                         {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mma')}
+                       </div>
+                     </>
+                   ) : (
+                     <div className="mt-1">
+                       <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                         <SelectTrigger className="w-full border-0 p-0 h-auto font-serif text-lg text-[#333333] focus:ring-0">
+                           <SelectValue placeholder="Select a class..." />
+                         </SelectTrigger>
+                         <SelectContent>
+                           {availableClasses.map(cls => (
+                             <SelectItem key={cls.id} value={cls.id}>
+                               {cls.title} ({format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mma')})
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                       {!selectedClassId && (
+                         <p className="text-xs text-red-400 mt-1">Please select a class</p>
+                       )}
+                     </div>
+                   )}
                 </div>
 
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
@@ -256,7 +298,7 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
 
                 <Button 
                   onClick={handleSubmit}
-                  disabled={isSubmitting || !reason}
+                  disabled={isSubmitting || !reason || !activeClass}
                   className="w-full rounded-full bg-[#333333] text-white hover:bg-black h-14 text-lg font-serif mt-auto shadow-xl shadow-gray-200"
                 >
                   {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Request"}
