@@ -1,20 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Save, Tag, Quote } from "lucide-react";
+import { Loader2, Save, Hash, Quote, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import TagInput from "@/components/ui/TagInput";
 
 export default function NewJournalEntryModal({ isOpen, onOpenChange, student, teacherName, classes = [] }) {
   const [content, setContent] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [category, setCategory] = useState('general');
   const [sentiment, setSentiment] = useState('neutral');
-  const [tags, setTags] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Auto-detect tags from content
+  const detectedTags = useMemo(() => {
+    if (!content) return [];
+    // Extract hashtags (e.g. #technique)
+    const hashtags = (content.match(/#[a-z0-9_]+/gi) || []).map(t => t.slice(1));
+    
+    // Extract class names mentioned in text (case-insensitive)
+    const classTags = classes
+        .filter(cls => content.toLowerCase().includes(cls.title.toLowerCase()))
+        .map(cls => cls.title);
+        
+    return [...new Set([...hashtags, ...classTags])];
+  }, [content, classes]);
 
   const handleSubmit = async () => {
     if (!content || !student) return;
@@ -28,7 +40,7 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
         content: content,
         category: category,
         sentiment: sentiment,
-        tags: tags,
+        tags: detectedTags,
         date: new Date().toISOString().split('T')[0]
       });
 
@@ -43,17 +55,6 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
       console.error("Failed to create note", error);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  // Auto-tag based on class selection
-  const handleClassChange = (value) => {
-    setSelectedClass(value);
-    // If the class name isn't already a tag, suggest it or add it? 
-    // User asked for "reference 'advanced ballet' and it will associate it".
-    // Let's just ensure the class name is added as a tag if not present
-    if (value && !tags.includes(value)) {
-       setTags(prev => [...prev, value]);
     }
   };
 
@@ -105,27 +106,27 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
 
           <div className="space-y-2">
              <Label className="text-xs uppercase tracking-wider text-gray-400 font-bold">Observations</Label>
-             <Textarea 
-               placeholder="Write your observations here..."
-               value={content}
-               onChange={(e) => setContent(e.target.value)}
-               className="min-h-[120px] bg-gray-50 border-transparent rounded-xl resize-none focus:bg-white focus:border-[#F2DCDD] transition-all p-4 text-base"
-             />
-          </div>
-
-          <div className="space-y-2">
-             <div className="flex items-center justify-between">
-                <Label className="text-xs uppercase tracking-wider text-gray-400 font-bold flex items-center gap-1">
-                   <Tag className="w-3 h-3" /> Tags
-                </Label>
-                <span className="text-[10px] text-gray-300">Press enter to add</span>
+             <div className="relative">
+               <Textarea 
+                 placeholder="Write notes here... Use #hashtags or mention class names like 'Jazz' to tag them automatically."
+                 value={content}
+                 onChange={(e) => setContent(e.target.value)}
+                 className="min-h-[120px] bg-gray-50 border-transparent rounded-xl resize-none focus:bg-white focus:border-[#F2DCDD] transition-all p-4 text-base mb-2"
+               />
+               {detectedTags.length > 0 && (
+                 <div className="flex flex-wrap gap-2 mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center text-xs text-[#333333] font-medium mr-1">
+                      <Sparkles className="w-3 h-3 mr-1 text-purple-500" /> Auto-tagged:
+                    </div>
+                    {detectedTags.map(tag => (
+                      <span key={tag} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                        <Hash className="w-3 h-3 mr-1 opacity-50" />
+                        {tag}
+                      </span>
+                    ))}
+                 </div>
+               )}
              </div>
-             <TagInput 
-               value={tags}
-               onChange={setTags}
-               placeholder="e.g. Pirouettes, Attitude, Exam Prep"
-               className="bg-gray-50 border-transparent rounded-xl min-h-[44px]"
-             />
           </div>
 
           <div className="pt-2 flex items-center justify-between">
