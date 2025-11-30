@@ -147,53 +147,59 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
               <p className="text-sm text-gray-500 font-serif mb-8">We'll find a pro to step in.</p>
               
               <div className="space-y-6">
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                   <div className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Class</div>
+                <div className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100/50">
+                   <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-2">Class Context</div>
                    {classData ? (
-                     <>
-                       <div className="font-serif text-lg text-[#333333]">{classData.title}</div>
-                       <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                         <Clock className="w-3 h-3" />
-                         {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mma')}
+                     <div className="flex items-center gap-4">
+                       <div className="w-10 h-10 rounded-full bg-[#F2DCDD] flex items-center justify-center text-[#333333] font-serif text-lg">
+                          {classData.title.charAt(0)}
                        </div>
-                     </>
+                       <div>
+                         <div className="font-serif text-xl text-[#333333] leading-none">{classData.title}</div>
+                         <div className="flex items-center gap-2 text-sm text-gray-400 mt-1 font-medium">
+                           <Clock className="w-3 h-3" />
+                           {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mma')}
+                         </div>
+                       </div>
+                     </div>
                    ) : (
                      <div className="mt-1">
                        <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                         <SelectTrigger className="w-full border-0 p-0 h-auto font-serif text-lg text-[#333333] focus:ring-0">
+                         <SelectTrigger className="w-full bg-[#F4F4F6] border-transparent rounded-xl px-4 py-6 h-auto font-serif text-lg text-[#333333] focus:ring-0 hover:bg-[#ebebef] transition-colors">
                            <SelectValue placeholder="Select a class..." />
                          </SelectTrigger>
-                         <SelectContent>
+                         <SelectContent className="rounded-xl border-gray-100 shadow-xl p-1">
                            {availableClasses.map(cls => (
-                             <SelectItem key={cls.id} value={cls.id}>
-                               {cls.title} ({format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mma')})
+                             <SelectItem key={cls.id} value={cls.id} className="rounded-lg font-serif focus:bg-[#F2DCDD] focus:text-[#333333]">
+                               {cls.title} <span className="text-gray-400 font-sans text-xs ml-2">{format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mma')}</span>
                              </SelectItem>
                            ))}
                          </SelectContent>
                        </Select>
                        {!selectedClassId && (
-                         <p className="text-xs text-red-400 mt-1">Please select a class</p>
+                         <p className="text-xs text-red-400 mt-2 pl-1 font-medium">Please select a class</p>
                        )}
                      </div>
                    )}
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                   <div className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-2">Urgency</div>
+                <div className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100/50">
+                   <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-3">Priority Level</div>
                    <div className="flex flex-col gap-2">
                       {['low', 'medium', 'high'].map(level => (
                         <button
                           key={level}
                           onClick={() => setUrgency(level)}
                           className={`
-                            text-left px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2
+                            text-left px-4 py-3 rounded-xl text-sm transition-all flex items-center gap-3
                             ${urgency === level 
-                              ? (level === 'high' ? 'bg-red-50 text-red-600 ring-1 ring-red-200' : 'bg-[#333333] text-white') 
-                              : 'hover:bg-gray-50 text-gray-500'}
+                              ? 'bg-[#F2DCDD] text-[#333333] font-semibold shadow-sm ring-1 ring-[#E5C0C2]' 
+                              : 'hover:bg-[#F4F4F6] text-gray-500 font-medium'}
                           `}
                         >
-                          {level === 'high' && <AlertTriangle className="w-3 h-3" />}
-                          {level.charAt(0).toUpperCase() + level.slice(1)} Priority
+                          <div className={`w-2 h-2 rounded-full ${level === 'high' ? 'bg-red-400' : level === 'medium' ? 'bg-orange-300' : 'bg-green-300'}`} />
+                          <span className="font-serif text-base">{level.charAt(0).toUpperCase() + level.slice(1)} Priority</span>
+                          {urgency === level && <CheckCircle2 className="w-4 h-4 ml-auto opacity-50" />}
                         </button>
                       ))}
                    </div>
@@ -217,30 +223,31 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
                       <PopoverTrigger asChild>
                         <Button
                           variant={"outline"}
-                          className={`w-full justify-start text-left font-normal rounded-xl h-12 bg-gray-50 border-gray-200 ${!date && "text-muted-foreground"}`}
+                          className={`w-full justify-start text-left font-normal rounded-xl h-14 bg-white border-gray-200 hover:bg-gray-50 transition-colors ${!date && "text-muted-foreground"}`}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4 text-gray-400" />
-                          {date ? format(date, "MMM do, yyyy") : <span>Pick a date</span>}
+                          <span className="font-serif text-lg text-[#333333]">{date ? format(date, "MMM do, yyyy") : "Pick a date"}</span>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 bg-white" align="start">
+                      <PopoverContent className="w-auto p-0 bg-white rounded-xl border-gray-100 shadow-xl" align="start">
                         <Calendar
                           mode="single"
                           selected={date}
                           onSelect={setDate}
                           initialFocus
+                          className="font-serif"
                         />
                       </PopoverContent>
                     </Popover>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs uppercase text-gray-400 font-bold tracking-wider">Reason</Label>
+                    <Label className="text-[10px] uppercase text-gray-400 font-bold tracking-widest">Reason for Absence</Label>
                     <Textarea 
-                      placeholder="e.g. Sick, Traveling..."
+                      placeholder="e.g. Feeling under the weather..."
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
-                      className="rounded-xl bg-gray-50 border-gray-200 h-12 min-h-[48px] resize-none py-2.5"
+                      className="rounded-xl bg-white border-gray-200 h-24 resize-none p-4 font-serif text-[#333333] placeholder:text-gray-300 focus:border-[#E5C0C2] focus:ring-[#F2DCDD]"
                     />
                   </div>
                 </div>
@@ -299,9 +306,9 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
                 <Button 
                   onClick={handleSubmit}
                   disabled={isSubmitting || !reason || !activeClass}
-                  className="w-full rounded-full bg-[#333333] text-white hover:bg-black h-14 text-lg font-serif mt-auto shadow-xl shadow-gray-200"
+                  className="w-full rounded-full bg-[#333333] text-white hover:bg-black h-14 text-lg font-serif mt-auto shadow-xl shadow-gray-200 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
                 >
-                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Request"}
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send Request"}
                 </Button>
               </div>
             ) : (
