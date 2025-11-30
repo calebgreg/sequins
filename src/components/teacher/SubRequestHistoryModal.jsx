@@ -16,42 +16,70 @@ export default function SubRequestHistoryModal({ isOpen, onOpenChange, teacherNa
     }
   });
 
-  const getStatusColor = (status) => {
+  const getStatusStyle = (status) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-700';
-      case 'filled': return 'bg-blue-100 text-blue-700';
-      case 'pending': return 'bg-yellow-100 text-yellow-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'approved': return 'bg-green-50 text-green-700 border-green-100';
+      case 'filled': return 'bg-blue-50 text-blue-700 border-blue-100';
+      case 'pending': return 'bg-amber-50 text-amber-700 border-amber-100';
+      default: return 'bg-gray-50 text-gray-700 border-gray-100';
+    }
+  };
+
+  const getIcon = (status) => {
+    switch (status) {
+      case 'approved': return <CheckCircle2 className="w-4 h-4" />;
+      case 'filled': return <CheckCircle2 className="w-4 h-4" />;
+      case 'pending': return <Clock className="w-4 h-4" />;
+      default: return <AlertCircle className="w-4 h-4" />;
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white rounded-[32px] max-w-md">
-        <DialogHeader>
-          <DialogTitle className="font-serif text-2xl text-[#333333] flex items-center gap-2">
-            <CalendarX className="w-6 h-6" />
-            Sub Requests
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="bg-white rounded-[32px] max-w-md border-none shadow-2xl p-0 overflow-hidden">
+        <div className="bg-[#333333] p-6 text-white">
+           <div className="flex items-center justify-between mb-4">
+             <DialogTitle className="font-serif text-2xl font-light tracking-wide">Request History</DialogTitle>
+             <div className="p-2 bg-white/10 rounded-full">
+               <CalendarX className="w-5 h-5 text-white" />
+             </div>
+           </div>
+           <p className="text-white/60 text-sm font-light">
+             To request a new sub, navigate to a specific class and tap the calendar icon.
+           </p>
+        </div>
         
-        <ScrollArea className="h-[400px] pr-4">
-          <div className="space-y-4">
+        <ScrollArea className="h-[400px] p-6">
+          <div className="space-y-3">
             {requests.length === 0 ? (
-              <div className="text-center py-10 text-gray-400">
-                <p>No sub requests found.</p>
+              <div className="text-center py-12">
+                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-300">
+                  <CalendarX className="w-6 h-6" />
+                </div>
+                <p className="text-gray-400 font-serif">No past requests.</p>
               </div>
             ) : (
               requests.map(req => (
-                <div key={req.id} className="bg-[#F4F4F6] rounded-2xl p-4 flex justify-between items-start">
-                  <div>
-                    <h4 className="font-medium text-[#333333]">{req.class_name}</h4>
-                    <p className="text-sm text-gray-500">{format(new Date(req.date), 'MMM do, yyyy')}</p>
-                    <p className="text-xs text-gray-400 mt-1">"{req.reason}"</p>
+                <div key={req.id} className="group bg-white border border-gray-100 hover:border-gray-200 rounded-2xl p-4 transition-all hover:shadow-sm">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="font-serif text-lg text-[#333333] leading-none mb-1">{req.class_name}</h4>
+                      <div className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+                        {format(new Date(req.date), 'MMM do')}
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={`${getStatusStyle(req.status)} capitalize border px-2.5 py-0.5 h-6 gap-1.5`}>
+                      {getIcon(req.status)}
+                      {req.status}
+                    </Badge>
                   </div>
-                  <Badge variant="secondary" className={`${getStatusColor(req.status)} capitalize`}>
-                    {req.status}
-                  </Badge>
+                  
+                  {req.reason && (
+                    <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-600 font-light mt-3 relative">
+                       <span className="absolute top-[-4px] left-4 w-2 h-2 bg-gray-50 transform rotate-45 border-t border-l border-gray-50"></span>
+                       "{req.reason}"
+                    </div>
+                  )}
                 </div>
               ))
             )}

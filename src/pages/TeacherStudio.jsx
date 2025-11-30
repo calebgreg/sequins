@@ -191,6 +191,14 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
         <div className="flex gap-3">
           <Button 
             variant="ghost"
+            className="rounded-full bg-white text-[#333333] border border-gray-200 hover:bg-gray-50 w-12 h-12 p-0 shadow-sm"
+            onClick={() => setIsSubRequestOpen(true)}
+            title="Request Sub"
+          >
+            <CalendarX className="w-5 h-5" />
+          </Button>
+          <Button 
+            variant="ghost"
             className="rounded-full bg-[#333333] text-white hover:bg-black w-12 h-12 p-0 shadow-lg shadow-gray-200"
             onClick={() => setIsVoiceOpen(true)}
           >
