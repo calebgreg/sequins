@@ -98,21 +98,19 @@ export const WeekView = ({ classes, currentTeacherName, filterType = 'class' }) 
                     <div 
                       key={cls.id}
                       className={`
-                        absolute top-1/2 -translate-y-1/2 h-10 rounded-full transition-all cursor-pointer group shadow-sm border-2 border-white
+                        absolute top-1/2 -translate-y-1/2 h-10 rounded-full transition-all cursor-pointer group shadow-sm border-2 border-white flex items-center justify-center
                         ${isClass 
-                          ? 'bg-[#333333] hover:bg-gray-800' 
-                          : 'bg-white border-[#333333] border-2 text-[#333333] hover:bg-gray-50 flex items-center justify-center'
+                          ? 'bg-[#333333] hover:bg-gray-800 text-white' 
+                          : 'bg-white border-[#333333] border-2 text-[#333333] hover:bg-gray-50'
                         }
                       `}
                       style={{ left, width, minWidth: '24px' }}
                       title={`${cls.title} (${format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')})`}
                     >
-                        {/* Label inside block for Admin tasks if wide enough, or just style distinction */}
-                        {!isClass && (
-                          <span className="text-[10px] font-bold truncate px-2 w-full text-center hidden sm:block">
-                            {cls.title}
-                          </span>
-                        )}
+                        {/* Label inside block */}
+                        <span className="text-[10px] font-bold truncate px-2 w-full text-center hidden sm:block">
+                          {cls.title}
+                        </span>
 
                         {/* Hover Tooltip */}
                         <div className="opacity-0 group-hover:opacity-100 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black/90 text-white text-xs py-1.5 px-3 rounded-lg whitespace-nowrap pointer-events-none z-10 transition-opacity shadow-xl">
