@@ -49,7 +49,6 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
       setSelectedClass('');
       setCategory('general');
       setSentiment('neutral');
-      setTags([]);
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to create note", error);
@@ -75,7 +74,7 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wider text-gray-400 font-bold">Context / Class</Label>
-                <Select value={selectedClass} onValueChange={handleClassChange}>
+                <Select value={selectedClass} onValueChange={setSelectedClass}>
                   <SelectTrigger className="bg-gray-50 border-transparent rounded-xl h-11">
                     <SelectValue placeholder="General Note" />
                   </SelectTrigger>
