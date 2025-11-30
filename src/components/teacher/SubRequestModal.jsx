@@ -165,7 +165,7 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
                    ) : (
                      <div className="mt-1">
                        <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                         <SelectTrigger className="w-full bg-[#F4F4F6] border-transparent rounded-2xl px-6 py-8 h-auto font-serif text-xl text-[#333333] focus:ring-0 hover:bg-[#ebebef] transition-colors data-[placeholder]:text-gray-400">
+                         <SelectTrigger className="w-full bg-[#F4F4F6] border-transparent rounded-2xl px-6 py-4 h-auto font-serif text-xl text-[#333333] focus:ring-0 hover:bg-[#ebebef] transition-colors data-[placeholder]:text-gray-400">
                            <SelectValue placeholder="Select a class..." />
                          </SelectTrigger>
                          <SelectContent className="rounded-xl border-gray-100 shadow-xl p-1">
