@@ -137,11 +137,11 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white rounded-[32px] max-w-2xl p-0 overflow-hidden border-none shadow-2xl">
+      <DialogContent className="bg-white rounded-[32px] max-w-4xl p-0 overflow-hidden border-none shadow-2xl">
         <div className="flex h-full min-h-[600px]">
           
           {/* Left Panel: Context & Visuals */}
-          <div className="w-1/3 bg-[#F4F4F6] p-8 flex flex-col justify-between border-r border-gray-100">
+          <div className="w-5/12 bg-[#F4F4F6] p-8 flex flex-col justify-between border-r border-gray-100">
             <div>
               <h2 className="font-serif text-2xl text-[#333333] mb-1 leading-tight">Request Coverage</h2>
               <p className="text-sm text-gray-500 font-serif mb-8">We'll find a pro to step in.</p>
@@ -185,21 +185,23 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
 
                 <div className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100/50">
                    <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-3">Priority Level</div>
-                   <div className="flex flex-col gap-2">
+                   <div className="flex flex-col gap-1">
                       {['low', 'medium', 'high'].map(level => (
                         <button
                           key={level}
                           onClick={() => setUrgency(level)}
                           className={`
-                            text-left px-4 py-3 rounded-xl text-sm transition-all flex items-center gap-3
+                            w-full text-left px-4 py-3 rounded-xl text-sm transition-all flex items-center gap-3
                             ${urgency === level 
-                              ? 'bg-[#F2DCDD] text-[#333333] font-semibold shadow-sm ring-1 ring-[#E5C0C2]' 
-                              : 'hover:bg-[#F4F4F6] text-gray-500 font-medium'}
+                              ? 'bg-[#333333] text-white shadow-md transform scale-[1.02]' 
+                              : 'hover:bg-gray-50 text-gray-500'}
                           `}
                         >
-                          <div className={`w-2 h-2 rounded-full ${level === 'high' ? 'bg-red-400' : level === 'medium' ? 'bg-orange-300' : 'bg-green-300'}`} />
-                          <span className="font-serif text-base">{level.charAt(0).toUpperCase() + level.slice(1)} Priority</span>
-                          {urgency === level && <CheckCircle2 className="w-4 h-4 ml-auto opacity-50" />}
+                          {level === 'high' && urgency !== 'high' && <AlertTriangle className="w-4 h-4 text-red-400" />}
+                          <span className={`font-serif text-base ${urgency === level ? 'font-medium' : ''}`}>
+                            {level.charAt(0).toUpperCase() + level.slice(1)} Priority
+                          </span>
+                          {urgency === level && <CheckCircle2 className="w-4 h-4 ml-auto text-white/50" />}
                         </button>
                       ))}
                    </div>
