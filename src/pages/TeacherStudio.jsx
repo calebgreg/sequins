@@ -192,43 +192,81 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
           </div>
         </div>
 
-        <div className="flex-1 px-8 flex flex-col items-center justify-center">
-          <div className="w-full max-w-md space-y-8">
-            {/* Class Info Card */}
-            <div className="bg-white p-10 rounded-[32px] shadow-sm text-center">
-              <div className="w-24 h-24 bg-[#F4F4F6] rounded-full flex items-center justify-center mx-auto mb-6 text-[#333333]">
-                <span className="font-serif text-4xl">{classData.title.charAt(0)}</span>
-              </div>
-              <h3 className="font-serif text-3xl mb-2 text-[#333333]">{classData.title}</h3>
-              <p className="text-gray-400 mb-8 font-serif text-lg">
-                {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} • {classData.duration} hrs
-              </p>
-              <Button 
-                onClick={() => setHasStarted(true)}
-                className="w-full rounded-full bg-[#333333] text-white hover:bg-black h-16 text-xl font-serif shadow-xl transition-transform hover:scale-[1.02] active:scale-95"
-              >
-                Start Class
-              </Button>
+        <div className="flex-1 px-4 md:px-8 pb-8 flex flex-col max-w-4xl mx-auto w-full justify-center">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Main Status Card */}
+            <div className="bg-white p-8 rounded-[32px] shadow-sm col-span-1 md:col-span-2 flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+               <div className="flex items-start gap-6">
+                 <div className="w-20 h-20 bg-[#F4F4F6] rounded-full flex items-center justify-center text-[#333333] flex-shrink-0">
+                   <span className="font-serif text-3xl">{classData.title.charAt(0)}</span>
+                 </div>
+                 <div>
+                   <h3 className="font-serif text-3xl text-[#333333]">{classData.title}</h3>
+                   <p className="text-gray-400 font-serif text-lg mt-1">
+                     {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} • {classData.duration} hrs
+                   </p>
+                   <div className="flex gap-2 mt-4">
+                      <Badge variant="secondary" className="bg-[#F2DCDD] text-[#333333] hover:bg-[#F2DCDD]">
+                         {classData.student_names?.length || 0} Students
+                      </Badge>
+                      <Badge variant="outline" className="text-gray-400 border-gray-200">
+                         Studio {classData.room || 'A'}
+                      </Badge>
+                   </div>
+                 </div>
+               </div>
+
+               <Button 
+                  onClick={() => setHasStarted(true)}
+                  className="w-full md:w-auto rounded-full bg-[#333333] text-white hover:bg-black h-14 px-8 text-lg font-serif shadow-lg transition-all hover:scale-105 active:scale-95 self-center md:self-start"
+                >
+                  <Play className="w-4 h-4 mr-2 fill-current" /> Start Class
+               </Button>
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-4">
-              <Button 
-                variant="outline" 
-                className="h-24 rounded-[24px] flex flex-col gap-3 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all" 
-                onClick={() => setIsSubRequestOpen(true)}
-              >
-                <CalendarX className="w-6 h-6 text-[#333333]" />
-                <span className="font-serif text-[#333333]">Request Sub</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="h-24 rounded-[24px] flex flex-col gap-3 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all"
-              >
-                <Users className="w-6 h-6 text-[#333333]" />
-                <span className="font-serif text-[#333333]">Class Roster</span>
-              </Button>
-            </div>
+            {/* Management Actions Grid */}
+            <Button 
+              variant="outline" 
+              className="h-40 rounded-[32px] flex flex-col items-center justify-center gap-4 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all group" 
+              onClick={() => setIsSubRequestOpen(true)}
+            >
+              <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
+                 <CalendarX className="w-6 h-6 text-[#333333]" />
+              </div>
+              <span className="font-serif text-xl text-[#333333]">Request Coverage</span>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              className="h-40 rounded-[32px] flex flex-col items-center justify-center gap-4 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all group"
+              onClick={() => setIsVoiceOpen(true)}
+            >
+              <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
+                 <Mic className="w-6 h-6 text-[#333333]" />
+              </div>
+              <span className="font-serif text-xl text-[#333333]">Log Note</span>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              className="h-40 rounded-[32px] flex flex-col items-center justify-center gap-4 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all group"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
+                 <Users className="w-6 h-6 text-[#333333]" />
+              </div>
+              <span className="font-serif text-xl text-[#333333]">View Roster</span>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              className="h-40 rounded-[32px] flex flex-col items-center justify-center gap-4 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all group"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
+                 <MoreVertical className="w-6 h-6 text-[#333333]" />
+              </div>
+              <span className="font-serif text-xl text-[#333333]">More Options</span>
+            </Button>
           </div>
         </div>
 
