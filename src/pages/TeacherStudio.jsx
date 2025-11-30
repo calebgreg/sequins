@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format, differenceInMinutes } from 'date-fns';
 import VoiceNoteIntake from '../components/teacher/VoiceNoteIntake';
 import ClassRosterView from '../components/teacher/ClassRosterView';
+import StudentProfileView from '../components/teacher/StudentProfileView';
 import SubRequestModal from '../components/teacher/SubRequestModal';
 import TimeSheetReviewModal from '../components/teacher/TimeSheetReviewModal';
 import SubRequestHistoryModal from '../components/teacher/SubRequestHistoryModal';
@@ -79,12 +80,13 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
 };
 
 // --- SUB-COMPONENT: Class Detail View ---
-      const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) => {
-        const [mode, setMode] = useState('dashboard'); // 'dashboard', 'roster', 'notes', 'active_class'
-        const [attendance, setAttendance] = useState({});
-        const [isSubmitting, setIsSubmitting] = useState(false);
-        const [submitSuccess, setSubmitSuccess] = useState(false);
-        const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
+const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) => {
+  const [mode, setMode] = useState('dashboard'); // 'dashboard', 'roster', 'notes', 'active_class', 'student'
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [attendance, setAttendance] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
 
   // Initialize attendance
   useEffect(() => {
@@ -177,9 +179,24 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
     setMode('dashboard');
   };
 
+  // Student Profile View
+  if (mode === 'student' && selectedStudent) {
+      return <StudentProfileView student={selectedStudent} onBack={() => setMode('roster')} />;
+  }
+
   // Roster View
   if (mode === 'roster') {
-     return <ClassRosterView classData={classData} students={students} onBack={() => setMode('dashboard')} />;
+     return (
+       <ClassRosterView 
+         classData={classData} 
+         students={students} 
+         onBack={() => setMode('dashboard')} 
+         onSelectStudent={(student) => {
+           setSelectedStudent(student);
+           setMode('student');
+         }}
+       />
+     );
   }
 
   // Notes View

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import MessageParentModal from './MessageParentModal';
 import StudentActivityModal from './StudentActivityModal';
 
-export default function ClassRosterView({ classData, students, onBack }) {
+export default function ClassRosterView({ classData, students, onBack, onSelectStudent }) {
   const [selectedStudentForMessage, setSelectedStudentForMessage] = useState(null);
   const [selectedStudentForActivity, setSelectedStudentForActivity] = useState(null);
 
@@ -45,7 +45,8 @@ export default function ClassRosterView({ classData, students, onBack }) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-white p-6 rounded-[32px] shadow-sm hover:shadow-md transition-all border border-transparent hover:border-[#F2DCDD] group"
+                className="bg-white p-6 rounded-[32px] shadow-sm hover:shadow-md transition-all border border-transparent hover:border-[#F2DCDD] group cursor-pointer"
+                onClick={() => onSelectStudent && onSelectStudent(student)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
@@ -71,7 +72,7 @@ export default function ClassRosterView({ classData, students, onBack }) {
                         size="icon" 
                         variant="ghost" 
                         className="rounded-full hover:bg-[#F2DCDD] hover:text-[#333333]"
-                        onClick={() => setSelectedStudentForMessage(student)}
+                        onClick={(e) => { e.stopPropagation(); setSelectedStudentForMessage(student); }}
                         title="Message Parent"
                      >
                         <Mail className="w-4 h-4" />
@@ -80,7 +81,7 @@ export default function ClassRosterView({ classData, students, onBack }) {
                         size="icon" 
                         variant="ghost" 
                         className="rounded-full hover:bg-[#F2DCDD] hover:text-[#333333]"
-                        onClick={() => setSelectedStudentForActivity(student)}
+                        onClick={(e) => { e.stopPropagation(); setSelectedStudentForActivity(student); }}
                         title="View Activity"
                      >
                         <Activity className="w-4 h-4" />
