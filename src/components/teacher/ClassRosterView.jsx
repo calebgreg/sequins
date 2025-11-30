@@ -1,12 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Mail, Phone, AlertCircle, Star, Activity } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import MessageParentModal from './MessageParentModal';
+import StudentActivityModal from './StudentActivityModal';
 
 export default function ClassRosterView({ classData, students, onBack }) {
+  const [selectedStudentForMessage, setSelectedStudentForMessage] = useState(null);
+  const [selectedStudentForActivity, setSelectedStudentForActivity] = useState(null);
+
   // Filter students that are in this class
   const classStudents = students.filter(s => classData.student_names?.includes(s.name));
 
@@ -62,10 +67,22 @@ export default function ClassRosterView({ classData, students, onBack }) {
                   
                   {/* Quick Actions */}
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                     <Button size="icon" variant="ghost" className="rounded-full hover:bg-[#F2DCDD] hover:text-[#333333]">
+                     <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="rounded-full hover:bg-[#F2DCDD] hover:text-[#333333]"
+                        onClick={() => setSelectedStudentForMessage(student)}
+                        title="Message Parent"
+                     >
                         <Mail className="w-4 h-4" />
                      </Button>
-                     <Button size="icon" variant="ghost" className="rounded-full hover:bg-[#F2DCDD] hover:text-[#333333]">
+                     <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="rounded-full hover:bg-[#F2DCDD] hover:text-[#333333]"
+                        onClick={() => setSelectedStudentForActivity(student)}
+                        title="View Activity"
+                     >
                         <Activity className="w-4 h-4" />
                      </Button>
                   </div>
@@ -96,6 +113,18 @@ export default function ClassRosterView({ classData, students, onBack }) {
           </div>
         </ScrollArea>
       </div>
+
+      <MessageParentModal 
+        isOpen={!!selectedStudentForMessage}
+        onOpenChange={(open) => !open && setSelectedStudentForMessage(null)}
+        student={selectedStudentForMessage}
+      />
+
+      <StudentActivityModal
+        isOpen={!!selectedStudentForActivity}
+        onOpenChange={(open) => !open && setSelectedStudentForActivity(null)}
+        student={selectedStudentForActivity}
+      />
     </div>
   );
 }
