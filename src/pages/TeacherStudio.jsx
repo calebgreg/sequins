@@ -22,22 +22,49 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // --- SUB-COMPONENT: Class List View ---
-const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
-  const myClasses = classes.filter(c => c.teacher === currentTeacherName || !c.teacher);
-  const displayClasses = myClasses.length > 0 ? myClasses : classes;
+const ClassListView = ({ classes, onSelectClass, currentTeacherName, currentDate, onDateChange }) => {
+  // Filter classes for the specific day of week
+  const dayMap = ['U', 'M', 'T', 'W', 'R', 'F', 'S'];
+  const currentDaySymbol = dayMap[currentDate.getDay()];
+  
+  const myClasses = classes.filter(c => 
+    (c.teacher === currentTeacherName || !c.teacher) && 
+    c.day === currentDaySymbol
+  );
+  
+  // In a real app with specific dates for classes (not just recurring), 
+  // you would filter by specific date here. For now we map recurring day to the date.
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-serif text-3xl text-[#333333]">Today's Classes</h1>
-          <p className="text-[#333333]/60 mt-1 font-serif">{format(new Date(), 'MMMM do')}</p>
+          <h1 className="font-serif text-3xl text-[#333333]">
+            {format(currentDate, 'EEEE')}'s Classes
+          </h1>
+          <div className="flex items-center gap-2 mt-1">
+             <Button variant="ghost" size="icon" className="h-6 w-6 -ml-2" onClick={() => onDateChange(new Date(currentDate.setDate(currentDate.getDate() - 1)))}>
+                <ChevronLeft className="w-4 h-4" />
+             </Button>
+             <p className="text-[#333333]/60 font-serif">{format(currentDate, 'MMMM do')}</p>
+             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onDateChange(new Date(currentDate.setDate(currentDate.getDate() + 1)))}>
+                <ChevronLeft className="w-4 h-4 rotate-180" />
+             </Button>
+          </div>
         </div>
+        <Button variant="outline" size="sm" onClick={() => onDateChange(new Date())} className="hidden md:flex">
+            Jump to Today
+        </Button>
       </div>
       
       <div className="space-y-5">
-        {displayClasses.map((cls, idx) => (
-          <motion.div
+        {myClasses.length === 0 ? (
+            <div className="text-center py-20 border-2 border-dashed border-gray-100 rounded-[32px]">
+                <p className="text-gray-400">No classes scheduled for this day.</p>
+            </div>
+        ) : (
+            myClasses.map((cls, idx) => (
+              <motion.div
             key={cls.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -283,6 +310,7 @@ export default function TeacherStudio() {
   const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
   const [isSubHistoryOpen, setIsSubHistoryOpen] = useState(false);
   const [viewMode, setViewMode] = useState('day'); // 'day', 'week', 'month'
+  const [currentDate, setCurrentDate] = useState(new Date());
   const currentTeacherName = "Sarah Miller"; // Mock
 
   const { data: classes = [] } = useQuery({
@@ -389,6 +417,8 @@ export default function TeacherStudio() {
                     classes={classes} 
                     onSelectClass={setSelectedClass} 
                     currentTeacherName={currentTeacherName}
+                    currentDate={currentDate}
+                    onDateChange={setCurrentDate}
                   />
                 )}
                 {viewMode === 'week' && (
@@ -401,6 +431,10 @@ export default function TeacherStudio() {
                   <MonthView 
                     classes={classes} 
                     currentTeacherName={currentTeacherName} 
+                    onDateSelect={(date) => {
+                        setCurrentDate(date);
+                        setViewMode('day');
+                    }}
                   />
                 )}
               </div>
