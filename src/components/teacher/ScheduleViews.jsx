@@ -107,10 +107,7 @@ export const WeekView = ({ classes, currentTeacherName, filterType = 'class' }) 
                       style={{ left, width, minWidth: '24px' }}
                       title={`${cls.title} (${format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')})`}
                     >
-                        {/* Label inside block */}
-                        <span className="text-[11px] font-light font-serif truncate px-2 w-full text-center hidden sm:block tracking-wide lowercase">
-                          {cls.title}
-                        </span>
+
 
                         {/* Hover Tooltip */}
                         <div className="opacity-0 group-hover:opacity-100 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black/90 text-white text-xs py-1.5 px-3 rounded-lg whitespace-nowrap pointer-events-none z-10 transition-opacity shadow-xl">
