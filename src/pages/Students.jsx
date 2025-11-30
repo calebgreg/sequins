@@ -14,7 +14,14 @@ import StudentProfileView from '../components/teacher/StudentProfileView';
 export default function Students() {
   const [search, setSearch] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const teacherName = "Admin Staff";
+  
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    retry: false
+  });
+
+  const teacherName = currentUser?.full_name || currentUser?.email || "Staff";
 
   const { data: students = [] } = useQuery({
     queryKey: ['students'],

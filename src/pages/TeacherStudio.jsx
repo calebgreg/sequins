@@ -441,7 +441,14 @@ export default function TeacherStudio() {
   const [viewMode, setViewMode] = useState('list'); // 'list', 'week', 'month'
   const [activeTab, setActiveTab] = useState('classes'); // 'classes', 'admin'
   const [currentDate, setCurrentDate] = useState(new Date());
-  const currentTeacherName = "Sarah Miller"; // Mock
+  
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    retry: false
+  });
+  
+  const currentTeacherName = currentUser?.full_name || "Sarah Miller";
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes'],
