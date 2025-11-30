@@ -24,7 +24,13 @@ export default function Home() {
           to={createPageUrl('ClassManager')}
           className="group bg-white text-[#333333] border border-gray-200 px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-50 transition-all flex items-center gap-2"
         >
-          Studio Staff
+          Admin
+        </Link>
+        <Link 
+          to={createPageUrl('TeacherStudio')}
+          className="group bg-indigo-50 text-indigo-700 border border-indigo-100 px-8 py-4 rounded-full text-lg font-medium hover:bg-indigo-100 transition-all flex items-center gap-2"
+        >
+          Teacher View
         </Link>
       </div>
       
