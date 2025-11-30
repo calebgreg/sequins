@@ -277,9 +277,23 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
           teacherName={currentTeacherName}
           availableClasses={[]} 
         />
-      </div>
-    );
-  }
+
+        <Dialog open={isVoiceOpen} onOpenChange={setIsVoiceOpen}>
+          <DialogContent className="max-w-lg bg-white rounded-[32px]">
+            <DialogHeader>
+               <DialogTitle className="font-serif text-2xl">Class Notes</DialogTitle>
+            </DialogHeader>
+            <VoiceNoteIntake 
+              classData={classData} 
+              students={students}
+              teacherName={currentTeacherName}
+              onNotesProcessed={handleNotesProcessed}
+            />
+          </DialogContent>
+        </Dialog>
+        </div>
+        );
+        }
 
   return (
     <div className="flex flex-col h-screen bg-[#F4F4F6]">
