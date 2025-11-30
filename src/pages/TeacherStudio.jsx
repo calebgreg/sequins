@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText } from 'lucide-react';
+import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText, Menu } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -14,57 +14,10 @@ import { format, differenceInMinutes } from 'date-fns';
 import VoiceNoteIntake from '../components/teacher/VoiceNoteIntake';
 import SubRequestModal from '../components/teacher/SubRequestModal';
 import TimeSheetReviewModal from '../components/teacher/TimeSheetReviewModal';
+import SubRequestHistoryModal from '../components/teacher/SubRequestHistoryModal';
+import TeacherSidebar from '../components/teacher/TeacherSidebar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-
-// --- SUB-COMPONENT: Time Card Widget ---
-const TimeCardWidget = ({ currentTeacherName, classes = [] }) => {
-  const [isReviewOpen, setIsReviewOpen] = useState(false);
-  
-  // Fetch sub requests to calculate net hours
-  const { data: subRequests = [] } = useQuery({
-    queryKey: ['sub_requests', currentTeacherName],
-    queryFn: async () => {
-      const all = await base44.entities.SubRequest.list();
-      return all.filter(r => r.teacher_name === currentTeacherName);
-    }
-  });
-
-  return (
-    <>
-      <div className="bg-white rounded-[24px] p-6 mb-8 shadow-sm flex items-center justify-between relative overflow-hidden">
-         <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-green-500" />
-         
-         <div className="pl-2">
-           <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-2">
-             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-             Active Schedule
-           </h4>
-           <div className="text-lg font-serif text-[#333333] leading-tight">
-             Time tracking is automated.
-             <br/>
-             <span className="text-sm text-gray-400 font-sans">Please review at end of week.</span>
-           </div>
-         </div>
-
-         <Button 
-           size="lg"
-           onClick={() => setIsReviewOpen(true)}
-           className="rounded-full h-12 px-6 gap-2 bg-[#F4F4F6] text-[#333333] hover:bg-gray-200 border border-gray-100"
-         >
-           <FileText className="w-4 h-4" /> Review
-         </Button>
-      </div>
-      
-      <TimeSheetReviewModal 
-        isOpen={isReviewOpen} 
-        onOpenChange={setIsReviewOpen}
-        teacherName={currentTeacherName}
-        classes={classes.filter(c => c.teacher === currentTeacherName)} // Pass teacher's classes
-        subRequests={subRequests}
-      />
-    </>
-  );
-};
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 // --- SUB-COMPONENT: Class List View ---
 const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
@@ -72,19 +25,14 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
   const displayClasses = myClasses.length > 0 ? myClasses : classes;
 
   return (
-    <div className="space-y-8 p-6 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-2">
+    <div className="space-y-8 p-6 max-w-2xl mx-auto pt-20 md:pt-10">
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-serif text-3xl text-[#333333]">Today's Classes</h1>
           <p className="text-[#333333]/60 mt-1 font-serif">{format(new Date(), 'MMMM do')}</p>
         </div>
-        <div className="h-12 px-6 bg-white border border-gray-100 rounded-full flex items-center justify-center text-[#333333] font-serif text-lg shadow-sm">
-          {currentTeacherName.split(' ')[0]}
-        </div>
       </div>
       
-      <TimeCardWidget currentTeacherName={currentTeacherName} classes={classes} />
-
       <div className="space-y-5">
         {displayClasses.map((cls, idx) => (
           <motion.div
@@ -330,6 +278,8 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
 // --- MAIN PAGE COMPONENT ---
 export default function TeacherStudio() {
   const [selectedClass, setSelectedClass] = useState(null);
+  const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
+  const [isSubHistoryOpen, setIsSubHistoryOpen] = useState(false);
   const currentTeacherName = "Sarah Miller"; // Mock
 
   const { data: classes = [] } = useQuery({
@@ -342,45 +292,101 @@ export default function TeacherStudio() {
     queryFn: () => base44.entities.Student.list(),
   });
 
+  const { data: subRequests = [] } = useQuery({
+    queryKey: ['sub_requests', currentTeacherName],
+    queryFn: async () => {
+      const all = await base44.entities.SubRequest.list();
+      return all.filter(r => r.teacher_name === currentTeacherName);
+    }
+  });
+
+  const handleNav = (view) => {
+    if (view === 'timecard') setIsTimeSheetOpen(true);
+    if (view === 'subs') setIsSubHistoryOpen(true);
+    // 'schedule' is default
+  };
+
   return (
-    <div className="min-h-screen bg-[#F4F4F6]">
-      <AnimatePresence mode="wait">
-        {!selectedClass ? (
-          <motion.div 
-            key="list"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-             {/* Minimal Header */}
-            <div className="p-6 flex justify-between items-center">
-              <Link to={createPageUrl('Home')} className="bg-white p-2 rounded-full shadow-sm text-[#333333]">
-                  <ArrowLeft className="w-5 h-5" /> 
-              </Link>
-            </div>
-            <ClassListView 
-              classes={classes} 
-              onSelectClass={setSelectedClass} 
-              currentTeacherName={currentTeacherName}
-            />
-          </motion.div>
-        ) : (
-          <motion.div 
-            key="detail"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="h-screen overflow-hidden" 
-          >
-            <ClassDetailView 
-              classData={selectedClass} 
-              students={students}
-              onBack={() => setSelectedClass(null)}
-              currentTeacherName={currentTeacherName}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="min-h-screen bg-[#F4F4F6] flex">
+      
+      {/* Sidebar - Desktop */}
+      <TeacherSidebar 
+        className="hidden md:flex w-64 flex-shrink-0 h-screen sticky top-0"
+        activeView="schedule"
+        onNavigate={handleNav}
+        teacherName={currentTeacherName}
+      />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col relative max-w-[100vw] overflow-x-hidden">
+        
+        {/* Mobile Header / Toggle */}
+        <div className="md:hidden absolute top-6 left-6 z-50">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="bg-white shadow-sm rounded-full text-[#333333]">
+                <Menu className="w-5 h-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-64 border-none">
+              <TeacherSidebar 
+                className="h-full"
+                activeView="schedule"
+                onNavigate={handleNav}
+                teacherName={currentTeacherName}
+              />
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {!selectedClass ? (
+            <motion.div 
+              key="list"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex-1"
+            >
+              <ClassListView 
+                classes={classes} 
+                onSelectClass={setSelectedClass} 
+                currentTeacherName={currentTeacherName}
+              />
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="detail"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="h-screen overflow-hidden" 
+            >
+              <ClassDetailView 
+                classData={selectedClass} 
+                students={students}
+                onBack={() => setSelectedClass(null)}
+                currentTeacherName={currentTeacherName}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Modals managed by Sidebar Actions */}
+      <TimeSheetReviewModal 
+        isOpen={isTimeSheetOpen}
+        onOpenChange={setIsTimeSheetOpen}
+        teacherName={currentTeacherName}
+        classes={classes.filter(c => c.teacher === currentTeacherName)}
+        subRequests={subRequests}
+      />
+
+      <SubRequestHistoryModal
+        isOpen={isSubHistoryOpen}
+        onOpenChange={setIsSubHistoryOpen}
+        teacherName={currentTeacherName}
+      />
     </div>
   );
 }
