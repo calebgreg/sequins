@@ -3,16 +3,106 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles } from 'lucide-react';
+import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from 'framer-motion';
-import { format } from 'date-fns';
+import { format, differenceInMinutes } from 'date-fns';
 import VoiceNoteIntake from '../components/teacher/VoiceNoteIntake';
+import SubRequestModal from '../components/teacher/SubRequestModal';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+
+// --- SUB-COMPONENT: Time Card Widget ---
+const TimeCardWidget = ({ currentTeacherName }) => {
+  const queryClient = useQueryClient();
+  
+  // Fetch today's logs
+  const { data: logs = [] } = useQuery({
+    queryKey: ['time_logs', currentTeacherName],
+    queryFn: async () => {
+      const all = await base44.entities.TimeLog.list();
+      // Filter client-side for simplicity in this context
+      return all.filter(l => l.teacher_name === currentTeacherName && l.status === 'active');
+    }
+  });
+
+  const activeLog = logs[0];
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    let interval;
+    if (activeLog) {
+      const updateTime = () => {
+        const start = new Date(activeLog.clock_in);
+        const now = new Date();
+        setElapsed(differenceInMinutes(now, start));
+      };
+      updateTime();
+      interval = setInterval(updateTime, 60000);
+    } else {
+      setElapsed(0);
+    }
+    return () => clearInterval(interval);
+  }, [activeLog]);
+
+  const handleToggleClock = async () => {
+    if (activeLog) {
+      // Clock Out
+      await base44.entities.TimeLog.update(activeLog.id, {
+        clock_out: new Date().toISOString(),
+        status: 'completed'
+      });
+    } else {
+      // Clock In
+      await base44.entities.TimeLog.create({
+        teacher_name: currentTeacherName,
+        clock_in: new Date().toISOString(),
+        status: 'active'
+      });
+    }
+    queryClient.invalidateQueries(['time_logs']);
+  };
+
+  const hours = Math.floor(elapsed / 60);
+  const mins = elapsed % 60;
+
+  return (
+    <div className="bg-white rounded-[24px] p-6 mb-8 shadow-sm flex items-center justify-between relative overflow-hidden">
+       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#333333]" />
+       
+       <div className="pl-2">
+         <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-1">Time Card</h4>
+         <div className="text-3xl font-serif text-[#333333]">
+           {activeLog ? (
+             <span>{hours}h <span className="text-gray-300">{mins}m</span></span>
+           ) : (
+             <span className="text-gray-300">Not Clocked In</span>
+           )}
+         </div>
+       </div>
+
+       <Button 
+         size="lg"
+         onClick={handleToggleClock}
+         className={`
+           rounded-full h-14 px-6 gap-2 transition-all font-medium
+           ${activeLog 
+             ? 'bg-[#F2DCDD] text-[#333333] hover:bg-red-100' 
+             : 'bg-[#333333] text-white hover:bg-black'}
+         `}
+       >
+         {activeLog ? (
+           <><Square className="w-4 h-4 fill-current" /> Clock Out</>
+         ) : (
+           <><Play className="w-4 h-4 fill-current" /> Clock In</>
+         )}
+       </Button>
+    </div>
+  );
+};
 
 // --- SUB-COMPONENT: Class List View ---
 const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
@@ -21,15 +111,17 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
 
   return (
     <div className="space-y-8 p-6 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-2">
         <div>
           <h1 className="font-serif text-3xl text-[#333333]">Today's Classes</h1>
           <p className="text-[#333333]/60 mt-1 font-serif">{format(new Date(), 'MMMM do')}</p>
         </div>
-        <div className="h-12 px-6 bg-[#333333] rounded-full flex items-center justify-center text-white font-serif text-lg shadow-lg shadow-gray-200">
+        <div className="h-12 px-6 bg-white border border-gray-100 rounded-full flex items-center justify-center text-[#333333] font-serif text-lg shadow-sm">
           {currentTeacherName.split(' ')[0]}
         </div>
       </div>
+      
+      <TimeCardWidget currentTeacherName={currentTeacherName} />
 
       <div className="space-y-5">
         {displayClasses.map((cls, idx) => (
@@ -77,6 +169,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
 
   // Initialize attendance
   useEffect(() => {
@@ -261,6 +354,13 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
           />
         </DialogContent>
       </Dialog>
+
+      <SubRequestModal 
+        isOpen={isSubRequestOpen}
+        onOpenChange={setIsSubRequestOpen}
+        classData={classData}
+        teacherName={currentTeacherName}
+      />
     </div>
   );
 };
