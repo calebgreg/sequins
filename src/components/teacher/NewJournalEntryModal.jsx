@@ -103,37 +103,7 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
         </div>
 
         <div className="p-8 space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-             <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider text-gray-400 font-bold">Context / Class</Label>
-                <Select value={selectedClass} onValueChange={setSelectedClass}>
-                  <SelectTrigger className="bg-gray-50 border-transparent rounded-xl h-11">
-                    <SelectValue placeholder="General Note" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>General Note</SelectItem>
-                    {classes.map(cls => (
-                      <SelectItem key={cls.id} value={cls.title}>{cls.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-             </div>
 
-             <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider text-gray-400 font-bold">Category</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="bg-gray-50 border-transparent rounded-xl h-11 capitalize">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">General</SelectItem>
-                    <SelectItem value="technique">Technique</SelectItem>
-                    <SelectItem value="behavior">Behavior</SelectItem>
-                    <SelectItem value="progress">Progress</SelectItem>
-                  </SelectContent>
-                </Select>
-             </div>
-          </div>
 
           <div className="space-y-2">
              <Label className="text-xs uppercase tracking-wider text-gray-400 font-bold">Observations</Label>
