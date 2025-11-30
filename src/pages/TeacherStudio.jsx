@@ -234,7 +234,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
               <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
                  <CalendarX className="w-6 h-6 text-[#333333]" />
               </div>
-              <span className="font-serif text-xl text-[#333333]">Request Coverage</span>
+              <span className="font-sans text-xl text-[#333333] font-medium">Request Coverage</span>
             </Button>
 
             <Button 
@@ -245,7 +245,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
               <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
                  <Mic className="w-6 h-6 text-[#333333]" />
               </div>
-              <span className="font-serif text-xl text-[#333333]">Log Note</span>
+              <span className="font-sans text-xl text-[#333333] font-medium">Log Note</span>
             </Button>
 
             <Button 
@@ -255,7 +255,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
               <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
                  <Users className="w-6 h-6 text-[#333333]" />
               </div>
-              <span className="font-serif text-xl text-[#333333]">View Roster</span>
+              <span className="font-sans text-xl text-[#333333] font-medium">View Roster</span>
             </Button>
 
             <Button 
@@ -265,7 +265,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
               <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
                  <MoreVertical className="w-6 h-6 text-[#333333]" />
               </div>
-              <span className="font-serif text-xl text-[#333333]">More Options</span>
+              <span className="font-sans text-xl text-[#333333] font-medium">More Options</span>
             </Button>
           </div>
         </div>
