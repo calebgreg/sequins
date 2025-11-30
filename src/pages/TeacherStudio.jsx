@@ -71,8 +71,7 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
               <div className={`h-3 w-3 rounded-full ${idx % 2 === 0 ? 'bg-[#333333]' : 'bg-[#F2DCDD]'}`} />
             </div>
           </motion.div>
-        )))
-      }
+        ))}
       </div>
     </div>
   );
