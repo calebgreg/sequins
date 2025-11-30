@@ -8,8 +8,11 @@ import { Button } from "@/components/ui/button";
 const dayMap = { 'U': 0, 'M': 1, 'T': 2, 'W': 3, 'R': 4, 'F': 5, 'S': 6 };
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export const WeekView = ({ classes, currentTeacherName }) => {
-  const myClasses = classes.filter(c => c.teacher === currentTeacherName || !c.teacher);
+export const WeekView = ({ classes, currentTeacherName, filterType = 'class' }) => {
+  const myClasses = classes.filter(c => 
+    (c.teacher === currentTeacherName || !c.teacher) && 
+    (c.type === filterType || (!c.type && filterType === 'class')) // Handle legacy data defaulting to 'class'
+  );
   const weekDays = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
   
   // Helper to check for current day
@@ -88,13 +91,28 @@ export const WeekView = ({ classes, currentTeacherName }) => {
 
                 {dayClasses.map(cls => {
                   const { left, width } = getPosition(cls.start_time, cls.duration || 1);
+                  const isClass = cls.type === 'class' || !cls.type;
+                  
                   return (
                     <div 
                       key={cls.id}
-                      className="absolute top-1/2 -translate-y-1/2 h-10 rounded-full bg-[#333333] hover:bg-gray-800 transition-all cursor-pointer group shadow-sm border-2 border-white"
+                      className={`
+                        absolute top-1/2 -translate-y-1/2 h-10 rounded-full transition-all cursor-pointer group shadow-sm border-2 border-white
+                        ${isClass 
+                          ? 'bg-[#333333] hover:bg-gray-800' 
+                          : 'bg-white border-[#333333] border-2 text-[#333333] hover:bg-gray-50 flex items-center justify-center'
+                        }
+                      `}
                       style={{ left, width, minWidth: '24px' }}
                       title={`${cls.title} (${format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')})`}
                     >
+                        {/* Label inside block for Admin tasks if wide enough, or just style distinction */}
+                        {!isClass && (
+                          <span className="text-[10px] font-bold truncate px-2 w-full text-center hidden sm:block">
+                            {cls.title}
+                          </span>
+                        )}
+
                         {/* Hover Tooltip */}
                         <div className="opacity-0 group-hover:opacity-100 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black/90 text-white text-xs py-1.5 px-3 rounded-lg whitespace-nowrap pointer-events-none z-10 transition-opacity shadow-xl">
                             <div className="font-medium">{cls.title}</div>

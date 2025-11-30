@@ -420,42 +420,31 @@ export default function TeacherStudio() {
               </div>
 
               <div className="min-h-[600px]">
-                {activeTab === 'classes' ? (
-                  <>
-                    {viewMode === 'list' && (
-                      <ClassListView 
-                        classes={classes} 
-                        onSelectClass={setSelectedClass} 
-                        currentTeacherName={currentTeacherName}
-                      />
-                    )}
-                    {viewMode === 'week' && (
-                      <WeekView 
-                        classes={classes} 
-                        currentTeacherName={currentTeacherName} 
-                      />
-                    )}
-                    {viewMode === 'month' && (
-                      <MonthView 
-                        classes={classes} 
-                        currentTeacherName={currentTeacherName} 
-                        onDateSelect={(date) => {
-                            // Just switch to week view for now as List view is static
-                            // or we could implement a specific Day view later
-                        }}
-                      />
-                    )}
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-96 text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
-                      <Sparkles className="w-10 h-10 text-gray-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-serif text-[#333333]">Admin Dashboard</h3>
-                      <p className="text-gray-400 mt-2">Administrative tools and reports coming soon.</p>
-                    </div>
-                  </div>
+                {viewMode === 'list' && (
+                  <ClassListView 
+                    classes={classes} 
+                    onSelectClass={setSelectedClass} 
+                    currentTeacherName={currentTeacherName}
+                    filterType={activeTab === 'classes' ? 'class' : 'admin'}
+                  />
+                )}
+                {viewMode === 'week' && (
+                  <WeekView 
+                    classes={classes} 
+                    currentTeacherName={currentTeacherName}
+                    filterType={activeTab === 'classes' ? 'class' : 'admin'}
+                  />
+                )}
+                {viewMode === 'month' && (
+                  <MonthView 
+                    classes={classes} 
+                    currentTeacherName={currentTeacherName} 
+                    filterType={activeTab === 'classes' ? 'class' : 'admin'}
+                    onDateSelect={(date) => {
+                        // Just switch to week view for now as List view is static
+                        // or we could implement a specific Day view later
+                    }}
+                  />
                 )}
               </div>
             </motion.div>
