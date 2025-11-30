@@ -62,23 +62,47 @@ export default function Teachers() {
       const teacherClasses = classes.filter(c => c.teacher === teacher.name);
       const teacherAttendance = attendance.filter(a => teacherClasses.some(c => c.id === a.class_id));
       
-      // Calculate some basic stats to feed the AI
+      // Calculate robust stats
       const totalClasses = teacherClasses.length;
-      const totalAttendanceRecords = teacherAttendance.length;
-      const presentCount = teacherAttendance.filter(a => a.status === 'present').length;
-      const attendanceRate = totalAttendanceRecords > 0 ? Math.round((presentCount / totalAttendanceRecords) * 100) : 0;
+      const totalEnrollment = teacherClasses.reduce((sum, c) => sum + (c.student_names?.length || 0), 0);
+      const uniqueStudents = new Set(teacherClasses.flatMap(c => c.student_names || [])).size;
       
+      const totalRecords = teacherAttendance.length;
+      const presentCount = teacherAttendance.filter(a => a.status === 'present').length;
+      const lateCount = teacherAttendance.filter(a => a.status === 'late').length;
+      
+      const attendanceRate = totalRecords > 0 ? Math.round((presentCount / totalRecords) * 100) : 0;
+      const lateRate = totalRecords > 0 ? Math.round((lateCount / totalRecords) * 100) : 0;
+      
+      // Analyze specific class performance
+      const classStats = teacherClasses.map(c => {
+        const records = teacherAttendance.filter(a => a.class_id === c.id);
+        if (records.length === 0) return null;
+        const rate = Math.round((records.filter(r => r.status === 'present').length / records.length) * 100);
+        return { title: c.title, rate };
+      }).filter(Boolean).sort((a, b) => b.rate - a.rate);
+
+      const bestClass = classStats[0];
+      const worstClass = classStats[classStats.length - 1];
+
       const prompt = `
-        Write a professional performance review for dance teacher "${teacher.name}".
+        You are a strict, data-driven studio manager. Write a performance review for "${teacher.name}" based ONLY on the following HARD DATA.
         
-        Data Points:
-        - Teaches: ${teacher.styles.join(', ')}
-        - Active Classes: ${totalClasses}
-        - Student Attendance Rate in their classes: ${attendanceRate}%
-        - Availability: ${teacher.availability}
+        METRICS:
+        - Class Load: ${totalClasses} classes.
+        - Total Enrollment: ${totalEnrollment} students (${uniqueStudents} unique).
+        - Overall Attendance Rate: ${totalRecords > 0 ? attendanceRate + '%' : 'NO DATA'}.
+        - Punctuality Issue Rate (Late Students): ${totalRecords > 0 ? lateRate + '%' : 'N/A'}.
+        ${bestClass ? `- Best Performing Class: ${bestClass.title} (${bestClass.rate}% attendance)` : ''}
+        ${worstClass && worstClass !== bestClass ? `- Needs Improvement: ${worstClass.title} (${worstClass.rate}% attendance)` : ''}
+        - Expertise: ${teacher.styles.join(', ')}
         
-        Tone: Constructive, encouraging, but professional. Highlight reliability and class engagement.
-        Keep it under 150 words.
+        INSTRUCTIONS:
+        1. If "NO DATA" for attendance, write a "New Teacher Onboarding" note. Do NOT invent performance metrics.
+        2. If attendance is < 80%, express concern about student engagement.
+        3. If late rate is > 10%, mention need for better class discipline.
+        4. Be specific—cite the class names and numbers provided.
+        5. Keep it professional, concise (max 150 words), and actionable.
       `;
 
       const res = await base44.integrations.Core.InvokeLLM({
