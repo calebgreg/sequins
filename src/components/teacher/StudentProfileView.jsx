@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Mail, Calendar, Star, TrendingUp, Clock, CheckCircle2, AlertCircle, MapPin, Sparkles, Quote, MoreHorizontal, Zap } from 'lucide-react';
@@ -10,8 +10,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { base44 } from "@/api/base44Client";
 import { format, getDay } from 'date-fns';
+import NewJournalEntryModal from './NewJournalEntryModal';
 
-export default function StudentProfileView({ student, onBack }) {
+export default function StudentProfileView({ student, teacherName, onBack }) {
+  const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
+
   const { data: attendance = [] } = useQuery({
     queryKey: ['attendance', student?.name],
     enabled: !!student,
@@ -349,7 +352,10 @@ export default function StudentProfileView({ student, onBack }) {
                        <p className="text-sm opacity-80 mb-6">
                           Private notes about {student.name}'s progress, behavior, and milestones. visible only to staff.
                        </p>
-                       <Button className="w-full bg-[#333333] text-white hover:bg-black rounded-full font-serif h-12">
+                       <Button 
+                          onClick={() => setIsNewEntryOpen(true)}
+                          className="w-full bg-[#333333] text-white hover:bg-black rounded-full font-serif h-12"
+                       >
                           + New Entry
                        </Button>
                     </div>
@@ -388,9 +394,19 @@ export default function StudentProfileView({ student, onBack }) {
                              <span className="text-gray-400 text-xs font-medium uppercase tracking-wide">{format(new Date(note.date), 'MMMM do, yyyy')}</span>
                           </div>
                           
-                          <div className="font-serif text-xl text-[#333333] leading-relaxed italic mb-6 opacity-90">
+                          <div className="font-serif text-xl text-[#333333] leading-relaxed italic mb-4 opacity-90">
                              "{note.content}"
                           </div>
+
+                          {note.tags && note.tags.length > 0 && (
+                             <div className="flex flex-wrap gap-2 mb-6">
+                                {note.tags.map((tag, t) => (
+                                   <span key={t} className="text-[10px] bg-gray-50 text-gray-500 px-2 py-1 rounded-md border border-gray-100">
+                                      #{tag}
+                                   </span>
+                                ))}
+                             </div>
+                          )}
                           
                           <div className="flex items-center gap-3 border-t border-gray-50 pt-4">
                              <Avatar className="w-6 h-6">
@@ -408,6 +424,14 @@ export default function StudentProfileView({ student, onBack }) {
 
         </div>
       </ScrollArea>
+
+      <NewJournalEntryModal
+        isOpen={isNewEntryOpen}
+        onOpenChange={setIsNewEntryOpen}
+        student={student}
+        teacherName={teacherName}
+        classes={studentClasses}
+      />
     </div>
   );
 }

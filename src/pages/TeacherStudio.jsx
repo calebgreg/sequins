@@ -181,7 +181,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
 
   // Student Profile View
   if (mode === 'student' && selectedStudent) {
-      return <StudentProfileView student={selectedStudent} onBack={() => setMode('roster')} />;
+      return <StudentProfileView student={selectedStudent} teacherName={currentTeacherName} onBack={() => setMode('roster')} />;
   }
 
   // Roster View
