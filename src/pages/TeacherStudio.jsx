@@ -354,9 +354,47 @@ export default function TeacherStudio() {
               exit={{ opacity: 0 }}
               className="flex-1 p-6 pt-20 md:pt-10 max-w-5xl mx-auto w-full"
             >
-              {/* View Toggles */}
-              <div className="flex justify-end mb-6">
-                 <div className="bg-gray-200/50 p-1 rounded-full inline-flex relative">
+              {/* Header Controls */}
+              <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+                 {/* Classes / Admin Toggle */}
+                 <div className="bg-[#333333] p-1.5 rounded-full inline-flex relative shadow-lg">
+                   {[
+                     { id: 'classes', label: 'Classes' },
+                     { id: 'admin', label: 'Admin' }
+                   ].map((tab) => {
+                     const isActive = (tab.id === 'classes' && viewMode !== 'admin') || (tab.id === 'admin' && viewMode === 'admin');
+                     // Note: simplified logic for demo, we might want a dedicated state for this toggle
+                     return (
+                       <button
+                         key={tab.id}
+                         onClick={() => {
+                            // For now, just visual or simple logic. 
+                            // Assuming 'admin' might just be a placeholder or redirect?
+                            // Let's keep it simple: if admin, maybe we show nothing or just toggle state
+                            console.log("Switched to", tab.id);
+                         }}
+                         className={`
+                           relative px-8 py-2.5 rounded-full text-sm font-serif transition-all duration-300 z-10
+                           ${isActive ? 'text-[#333333]' : 'text-gray-400 hover:text-white'}
+                         `}
+                       >
+                         {isActive && (
+                           <motion.div
+                             layoutId="activeMainTab"
+                             className="absolute inset-0 bg-[#F2DCDD] rounded-full shadow-sm"
+                             initial={false}
+                             transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                             style={{ zIndex: -1 }}
+                           />
+                         )}
+                         <span>{tab.label}</span>
+                       </button>
+                     )
+                   })}
+                 </div>
+
+                 {/* View Modes (List/Week/Month) */}
+                 <div className="bg-white p-1 rounded-full inline-flex relative shadow-sm border border-gray-100">
                    {[
                      { id: 'list', label: 'List', icon: List },
                      { id: 'week', label: 'Week', icon: LayoutGrid },
@@ -367,13 +405,13 @@ export default function TeacherStudio() {
                        onClick={() => setViewMode(view.id)}
                        className={`
                          relative px-6 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-colors duration-200 z-10
-                         ${viewMode === view.id ? 'text-[#333333]' : 'text-gray-500 hover:text-gray-700'}
+                         ${viewMode === view.id ? 'text-[#333333]' : 'text-gray-400 hover:text-gray-700'}
                        `}
                      >
                        {viewMode === view.id && (
                          <motion.div
-                           layoutId="activeTab"
-                           className="absolute inset-0 bg-white rounded-full shadow-sm"
+                           layoutId="activeViewTab"
+                           className="absolute inset-0 bg-gray-100 rounded-full"
                            initial={false}
                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
                            style={{ zIndex: -1 }}

@@ -12,6 +12,10 @@ export const WeekView = ({ classes, currentTeacherName }) => {
   const myClasses = classes.filter(c => c.teacher === currentTeacherName || !c.teacher);
   const weekDays = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
   
+  // Helper to check for current day
+  const dayToLetter = { 0: 'U', 1: 'M', 2: 'T', 3: 'W', 4: 'R', 5: 'F', 6: 'S' };
+  const todayLetter = dayToLetter[getDay(new Date())];
+
   // Configuration for the timeline
   const startHour = 9; // 9am
   const endHour = 21; // 9pm
@@ -55,16 +59,21 @@ export const WeekView = ({ classes, currentTeacherName }) => {
         {weekDays.map((day, i) => {
           const dayClasses = myClasses.filter(c => c.day === day);
           
+          const isToday = day === todayLetter;
+
           return (
             <motion.div 
               key={day}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-white rounded-full h-16 flex items-center px-6 shadow-sm border border-gray-100 relative overflow-hidden"
+              className={`
+                rounded-full h-16 flex items-center px-6 shadow-sm border relative overflow-hidden transition-colors
+                ${isToday ? 'bg-[#F2DCDD] border-[#E5C0C2]' : 'bg-white border-gray-100'}
+              `}
             >
               {/* Day Label */}
-              <div className="w-10 flex-shrink-0 font-serif text-xl text-[#333333]">
+              <div className={`w-10 flex-shrink-0 font-serif text-xl ${isToday ? 'text-[#333333] font-medium' : 'text-[#333333]'}`}>
                 {day}
               </div>
               
