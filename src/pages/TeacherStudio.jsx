@@ -401,10 +401,10 @@ export default function TeacherStudio() {
                    
                    <Button 
                      onClick={() => setIsSubRequestOpen(true)}
-                     className="bg-white text-[#333333] border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-100 rounded-full gap-2 shadow-sm h-12 px-6 transition-all"
+                     className="bg-[#F2DCDD] text-[#333333] hover:bg-[#eec8ca] border border-[#E5C0C2] rounded-full gap-2 shadow-md h-12 px-6 transition-all font-serif font-medium hover:scale-105 active:scale-95"
                    >
                      <CalendarX className="w-4 h-4" />
-                     Request Sub
+                     Request Coverage
                    </Button>
                  </div>
 
