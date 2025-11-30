@@ -36,7 +36,7 @@ export const WeekView = ({ classes, currentTeacherName }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {weekDays.map((day, i) => {
           const dayClasses = classesByDay[day];
-          if (dayClasses.length === 0) return null;
+          const hasClasses = dayClasses.length > 0;
 
           return (
             <motion.div 
@@ -44,30 +44,36 @@ export const WeekView = ({ classes, currentTeacherName }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100"
+              className={`bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 ${!hasClasses ? 'bg-gray-50/50' : ''}`}
             >
-              <h3 className="font-serif text-lg text-[#333333] mb-4 flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-[#F4F4F6] flex items-center justify-center text-sm font-sans font-medium">
+              <h3 className={`font-serif text-lg mb-4 flex items-center gap-2 ${!hasClasses ? 'text-gray-400' : 'text-[#333333]'}`}>
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-sans font-medium ${!hasClasses ? 'bg-gray-100 text-gray-400' : 'bg-[#F4F4F6] text-[#333333]'}`}>
                   {day}
                 </span>
                 {dayNames[dayMap[day]]}
               </h3>
               
               <div className="space-y-3">
-                {dayClasses.map(cls => (
-                  <div key={cls.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-[#F4F4F6] transition-colors">
-                    <div className="mt-1">
-                      <div className="w-2 h-2 rounded-full bg-[#333333]" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-[#333333] leading-tight">{cls.title}</div>
-                      <div className="text-sm text-gray-400 mt-1 flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')}
+                {hasClasses ? (
+                  dayClasses.map(cls => (
+                    <div key={cls.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-[#F4F4F6] transition-colors">
+                      <div className="mt-1">
+                        <div className="w-2 h-2 rounded-full bg-[#333333]" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-[#333333] leading-tight">{cls.title}</div>
+                        <div className="text-sm text-gray-400 mt-1 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')}
+                        </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="py-4 text-center">
+                    <p className="text-sm text-gray-300 italic">No classes</p>
                   </div>
-                ))}
+                )}
               </div>
             </motion.div>
           );
