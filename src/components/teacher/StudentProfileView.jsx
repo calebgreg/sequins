@@ -54,6 +54,32 @@ export default function StudentProfileView({ student, onBack }) {
     return count;
   }, [attendance]);
 
+  // Engagement Score Calculation
+  const { score: engagementScore, label: engagementLabel } = useMemo(() => {
+    let score = attendanceRate * 0.7; // Base 70% from attendance
+    
+    // Streak bonus (max 15%)
+    score += Math.min(streak * 3, 15);
+    
+    // Sentiment adjustment (max 15%)
+    const recentNotes = notes.slice(0, 5);
+    const sentimentScore = recentNotes.reduce((acc, note) => {
+      if (note.sentiment === 'positive') return acc + 5;
+      if (note.sentiment === 'constructive') return acc + 2;
+      return acc;
+    }, 0);
+    score += Math.min(sentimentScore, 15);
+    
+    const finalScore = Math.min(Math.round(score), 100);
+    
+    let label = "Needs Support";
+    if (finalScore >= 90) label = "High Performing";
+    else if (finalScore >= 75) label = "Consistent";
+    else if (finalScore >= 50) label = "Growing";
+    
+    return { score: finalScore, label };
+  }, [attendanceRate, streak, notes]);
+
   return (
     <div className="flex flex-col h-full bg-[#F4F4F6]">
       {/* Header */}
@@ -118,12 +144,24 @@ export default function StudentProfileView({ student, onBack }) {
                 </div>
 
                 {/* Engagement Bar */}
-                <div className="space-y-2">
+                <div className="space-y-2 group relative cursor-help">
                    <div className="flex justify-between text-sm font-medium">
-                      <span className="text-gray-400">Engagement Score</span>
-                      <span className="text-[#333333]">High Performing</span>
+                      <span className="text-gray-400 flex items-center gap-1">
+                        Engagement Score <AlertCircle className="w-3 h-3" />
+                      </span>
+                      <span className="text-[#333333]">{engagementLabel} ({engagementScore}%)</span>
                    </div>
-                   <Progress value={85} className="h-2 bg-[#F4F4F6]" indicatorClassName="bg-gradient-to-r from-[#F2DCDD] to-[#E5C0C2]" />
+                   <Progress value={engagementScore} className="h-2 bg-[#F4F4F6]" indicatorClassName="bg-gradient-to-r from-[#F2DCDD] to-[#E5C0C2]" />
+                   
+                   {/* Tooltip explanation */}
+                   <div className="absolute top-full left-0 mt-2 bg-black/90 text-white text-xs p-3 rounded-xl w-64 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 shadow-xl">
+                      <div className="font-bold mb-1">Score Breakdown:</div>
+                      <ul className="space-y-1 text-gray-300">
+                        <li className="flex justify-between"><span>Attendance</span> <span>70%</span></li>
+                        <li className="flex justify-between"><span>Consistency Streak</span> <span>15%</span></li>
+                        <li className="flex justify-between"><span>Teacher Feedback</span> <span>15%</span></li>
+                      </ul>
+                   </div>
                 </div>
               </div>
             </div>
