@@ -76,7 +76,7 @@ export default function ScheduleTimeline({ classes }) {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       whileHover={{ scale: 1.02 }}
-                      className={`absolute top-1/2 -translate-y-1/2 h-8 rounded-full cursor-pointer flex items-center justify-center
+                      className={`absolute top-3 h-8 rounded-full cursor-pointer flex items-center justify-center
                         ${isPink ? 'bg-[#F2DCDD]' : 'bg-[#555555]'}
                       `}
                       style={{ left, width }}
