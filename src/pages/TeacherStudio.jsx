@@ -79,6 +79,7 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
 
 // --- SUB-COMPONENT: Class Detail View ---
 const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) => {
+  const [hasStarted, setHasStarted] = useState(false);
   const [attendance, setAttendance] = useState({});
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -176,12 +177,78 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
     setIsVoiceOpen(false);
   };
 
+  if (!hasStarted) {
+    return (
+      <div className="flex flex-col h-screen bg-[#F4F4F6]">
+        {/* Dashboard Header */}
+        <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]">
+          <div className="flex items-center gap-6">
+            <Button variant="ghost" size="icon" onClick={onBack} className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80">
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h2 className="font-serif text-3xl text-[#333333]">{classData.title}</h2>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 px-8 flex flex-col items-center justify-center">
+          <div className="w-full max-w-md space-y-8">
+            {/* Class Info Card */}
+            <div className="bg-white p-10 rounded-[32px] shadow-sm text-center">
+              <div className="w-24 h-24 bg-[#F4F4F6] rounded-full flex items-center justify-center mx-auto mb-6 text-[#333333]">
+                <span className="font-serif text-4xl">{classData.title.charAt(0)}</span>
+              </div>
+              <h3 className="font-serif text-3xl mb-2 text-[#333333]">{classData.title}</h3>
+              <p className="text-gray-400 mb-8 font-serif text-lg">
+                {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} • {classData.duration} hrs
+              </p>
+              <Button 
+                onClick={() => setHasStarted(true)}
+                className="w-full rounded-full bg-[#333333] text-white hover:bg-black h-16 text-xl font-serif shadow-xl transition-transform hover:scale-[1.02] active:scale-95"
+              >
+                Start Class
+              </Button>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-4">
+              <Button 
+                variant="outline" 
+                className="h-24 rounded-[24px] flex flex-col gap-3 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all" 
+                onClick={() => setIsSubRequestOpen(true)}
+              >
+                <CalendarX className="w-6 h-6 text-[#333333]" />
+                <span className="font-serif text-[#333333]">Request Sub</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-24 rounded-[24px] flex flex-col gap-3 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all"
+              >
+                <Users className="w-6 h-6 text-[#333333]" />
+                <span className="font-serif text-[#333333]">Class Roster</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <SubRequestModal 
+          isOpen={isSubRequestOpen}
+          onOpenChange={setIsSubRequestOpen}
+          classData={classData}
+          teacherName={currentTeacherName}
+          availableClasses={[]} 
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen bg-[#F4F4F6]">
       {/* Header */}
       <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]">
         <div className="flex items-center gap-6">
-          <Button variant="ghost" size="icon" onClick={onBack} className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80">
+          <Button variant="ghost" size="icon" onClick={() => setHasStarted(false)} className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80">
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div>
