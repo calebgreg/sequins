@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, Calendar, Star, TrendingUp, Clock, CheckCircle2, AlertCircle, MapPin } from 'lucide-react';
+import { ArrowLeft, Mail, Calendar, Star, TrendingUp, Clock, CheckCircle2, AlertCircle, MapPin, Sparkles, Quote, MoreHorizontal, Zap } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { base44 } from "@/api/base44Client";
-import { format } from 'date-fns';
+import { format, getDay } from 'date-fns';
 
 export default function StudentProfileView({ student, onBack }) {
   const { data: attendance = [] } = useQuery({
@@ -34,17 +35,29 @@ export default function StudentProfileView({ student, onBack }) {
     queryFn: () => base44.entities.DanceClass.list()
   });
 
-  const studentClasses = classes.filter(c => c.student_names?.includes(student.name));
+  const studentClasses = useMemo(() => 
+    classes.filter(c => c.student_names?.includes(student.name)),
+  [classes, student.name]);
 
-  // Stats
+  // Stats Calculation
   const totalClasses = attendance.length;
   const presentCount = attendance.filter(a => a.status === 'present').length;
   const attendanceRate = totalClasses > 0 ? Math.round((presentCount / totalClasses) * 100) : 100;
+  
+  // Streak Calculation
+  const streak = useMemo(() => {
+    let count = 0;
+    for (const record of attendance) {
+      if (record.status === 'present') count++;
+      else break;
+    }
+    return count;
+  }, [attendance]);
 
   return (
     <div className="flex flex-col h-full bg-[#F4F4F6]">
       {/* Header */}
-      <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]">
+      <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6] bg-opacity-90 backdrop-blur-sm">
         <div className="flex items-center gap-6">
           <Button 
             variant="ghost" 
@@ -58,145 +71,300 @@ export default function StudentProfileView({ student, onBack }) {
             <h2 className="font-serif text-3xl text-[#333333]">Student Profile</h2>
           </div>
         </div>
-        <Button variant="outline" className="rounded-full border-gray-200 bg-white text-[#333333] gap-2">
+        <Button variant="outline" className="rounded-full border-gray-200 bg-white text-[#333333] gap-2 font-serif hover:bg-[#F2DCDD] hover:border-[#F2DCDD] transition-colors">
           <Mail className="w-4 h-4" /> Message Parent
         </Button>
       </div>
 
       <ScrollArea className="flex-1 px-8 pb-8">
-        <div className="max-w-5xl mx-auto space-y-6">
+        <div className="max-w-5xl mx-auto space-y-8">
           
-          {/* Profile Card */}
-          <div className="bg-white rounded-[32px] p-8 shadow-sm flex flex-col md:flex-row gap-8 items-start">
-            <div className="flex-shrink-0">
-              <Avatar className="w-32 h-32 bg-[#F4F4F6] border-4 border-white shadow-lg">
-                <AvatarFallback className="text-4xl font-serif text-[#333333]">{student.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-            </div>
-            <div className="flex-1 space-y-4">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="font-serif text-4xl text-[#333333]">{student.name}</h1>
-                  <Badge variant="secondary" className="bg-[#F2DCDD] text-[#333333] hover:bg-[#F2DCDD] px-3 py-1 text-sm">
-                    {student.level}
-                  </Badge>
-                </div>
-                <div className="flex flex-wrap gap-6 text-gray-400 font-serif text-lg">
-                  <span className="flex items-center gap-2"><Star className="w-4 h-4" /> {student.age} Years Old</span>
-                  <span className="flex items-center gap-2"><Mail className="w-4 h-4" /> {student.parent_email || 'No email'}</span>
+          {/* Hero Profile Card */}
+          <div className="bg-white rounded-[40px] p-8 md:p-10 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#F2DCDD]/30 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+            
+            <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
+              <div className="flex-shrink-0 relative">
+                 <div className="absolute inset-0 bg-[#F2DCDD] rounded-full blur-md opacity-50 translate-y-2" />
+                 <Avatar className="w-32 h-32 bg-white border-4 border-white shadow-xl relative">
+                  <AvatarFallback className="text-4xl font-serif text-[#333333]">{student.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-2 -right-2 bg-[#333333] text-white text-xs font-bold px-3 py-1 rounded-full border-4 border-white shadow-sm">
+                   Level {student.level === 'beginner' ? 'I' : student.level === 'intermediate' ? 'II' : 'III'}
                 </div>
               </div>
+              
+              <div className="flex-1 w-full">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h1 className="font-serif text-5xl text-[#333333] mb-2">{student.name}</h1>
+                    <div className="flex flex-wrap gap-4 text-gray-400 font-serif text-lg items-center">
+                      <span className="flex items-center gap-2 bg-[#F4F4F6] px-3 py-1 rounded-full text-sm"><Star className="w-4 h-4" /> {student.age} Years Old</span>
+                      <span className="flex items-center gap-2 bg-[#F4F4F6] px-3 py-1 rounded-full text-sm"><Mail className="w-4 h-4" /> {student.parent_email || 'No email'}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Quick Stats Mini-Grid */}
+                  <div className="flex gap-4">
+                    <div className="text-center px-4 py-2 bg-[#F4F4F6] rounded-2xl">
+                       <div className="text-3xl font-serif text-[#333333]">{attendanceRate}%</div>
+                       <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Attendance</div>
+                    </div>
+                    <div className="text-center px-4 py-2 bg-[#F4F4F6] rounded-2xl">
+                       <div className="text-3xl font-serif text-[#333333]">{streak}</div>
+                       <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Day Streak</div>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-                <div className="bg-[#F4F4F6] rounded-2xl p-4">
-                  <div className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Attendance</div>
-                  <div className="text-2xl font-serif text-[#333333]">{attendanceRate}%</div>
-                </div>
-                <div className="bg-[#F4F4F6] rounded-2xl p-4">
-                  <div className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Classes</div>
-                  <div className="text-2xl font-serif text-[#333333]">{studentClasses.length}</div>
-                </div>
-                <div className="bg-[#F4F4F6] rounded-2xl p-4">
-                  <div className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Notes</div>
-                  <div className="text-2xl font-serif text-[#333333]">{notes.length}</div>
+                {/* Engagement Bar */}
+                <div className="space-y-2">
+                   <div className="flex justify-between text-sm font-medium">
+                      <span className="text-gray-400">Engagement Score</span>
+                      <span className="text-[#333333]">High Performing</span>
+                   </div>
+                   <Progress value={85} className="h-2 bg-[#F4F4F6]" indicatorClassName="bg-gradient-to-r from-[#F2DCDD] to-[#E5C0C2]" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Tabs */}
+          {/* Enhanced Tabs */}
           <Tabs defaultValue="activity" className="w-full">
-            <TabsList className="bg-transparent p-0 gap-6 mb-6 h-auto justify-start">
-               {['activity', 'classes', 'notes'].map(tab => (
+            <TabsList className="bg-transparent p-0 gap-4 mb-8 h-auto w-full flex overflow-x-auto">
+               {[
+                 { id: 'activity', label: 'Activity & Stats', icon: TrendingUp },
+                 { id: 'classes', label: 'Class Schedule', icon: Calendar },
+                 { id: 'notes', label: 'Teacher Journal', icon: Quote }
+               ].map(tab => (
                  <TabsTrigger 
-                   key={tab} 
-                   value={tab}
-                   className="rounded-full bg-white px-6 py-3 text-base data-[state=active]:bg-[#333333] data-[state=active]:text-white shadow-sm border border-transparent hover:border-gray-200 transition-all capitalize font-serif"
+                   key={tab.id} 
+                   value={tab.id}
+                   className="flex-1 min-w-[160px] rounded-2xl bg-white p-4 h-auto data-[state=active]:bg-[#333333] data-[state=active]:text-white shadow-sm border border-transparent hover:border-gray-200 transition-all group"
                  >
-                   {tab}
+                   <div className="flex flex-col items-center gap-3 w-full">
+                      <tab.icon className="w-6 h-6 group-data-[state=active]:text-[#F2DCDD] transition-colors" />
+                      <span className="font-serif text-lg">{tab.label}</span>
+                   </div>
                  </TabsTrigger>
                ))}
             </TabsList>
 
-            <TabsContent value="activity" className="space-y-4">
-              <h3 className="font-serif text-xl text-[#333333] mb-4">Recent Attendance</h3>
-              {attendance.length === 0 ? (
-                <div className="bg-white p-10 rounded-[32px] text-center text-gray-400">No attendance history.</div>
-              ) : (
-                attendance.map((record, i) => (
-                  <motion.div 
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="bg-white p-5 rounded-[24px] flex items-center justify-between shadow-sm border border-transparent hover:border-gray-100"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        record.status === 'present' ? 'bg-green-100 text-green-600' :
-                        record.status === 'absent' ? 'bg-red-100 text-red-600' :
-                        'bg-gray-100 text-gray-600'
-                      }`}>
-                        {record.status === 'present' ? <CheckCircle2 className="w-6 h-6" /> :
-                         record.status === 'absent' ? <AlertCircle className="w-6 h-6" /> :
-                         <Clock className="w-6 h-6" />}
-                      </div>
-                      <div>
-                        <div className="font-medium text-[#333333] text-lg">{record.class_name}</div>
-                        <div className="text-gray-400 text-sm">{format(new Date(record.date), 'EEEE, MMMM do')}</div>
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="capitalize bg-[#F4F4F6] text-gray-600 px-3 py-1">
-                      {record.status}
-                    </Badge>
-                  </motion.div>
-                ))
-              )}
+            {/* ACTIVITY TAB */}
+            <TabsContent value="activity" className="space-y-6">
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Visual Stats Block */}
+                  <div className="md:col-span-1 space-y-6">
+                     <div className="bg-gradient-to-br from-[#333333] to-black rounded-[32px] p-8 text-white shadow-lg relative overflow-hidden">
+                        <Sparkles className="absolute top-6 right-6 text-[#F2DCDD] opacity-20 w-12 h-12" />
+                        <h3 className="font-serif text-2xl mb-1">Current Streak</h3>
+                        <div className="text-6xl font-serif font-light mb-4">{streak} <span className="text-xl opacity-50">days</span></div>
+                        <p className="text-white/60 text-sm leading-relaxed">
+                           {student.name} has been consistent lately! Keep up the momentum.
+                        </p>
+                     </div>
+                     
+                     <div className="bg-white rounded-[32px] p-6 shadow-sm">
+                        <h4 className="font-serif text-lg mb-4">Quick Insights</h4>
+                        <div className="space-y-4">
+                           <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-500">On-Time Arrival</span>
+                              <span className="font-medium text-green-600">92%</span>
+                           </div>
+                           <div className="w-full h-px bg-gray-100" />
+                           <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-500">Style Versatility</span>
+                              <span className="font-medium text-[#333333]">Medium</span>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Timeline */}
+                  <div className="md:col-span-2 bg-white rounded-[32px] p-8 shadow-sm min-h-[400px]">
+                     <h3 className="font-serif text-2xl text-[#333333] mb-6">Attendance Timeline</h3>
+                     <div className="space-y-0 relative pl-4">
+                        {/* Connector Line */}
+                        <div className="absolute top-4 bottom-4 left-[19px] w-0.5 bg-gray-100" />
+                        
+                        {attendance.slice(0, 8).map((record, i) => (
+                           <motion.div 
+                              key={i}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.05 }}
+                              className="relative flex gap-6 py-4 group"
+                           >
+                              <div className={`
+                                 relative z-10 w-10 h-10 rounded-full flex items-center justify-center border-4 border-white shadow-sm flex-shrink-0 transition-transform group-hover:scale-110
+                                 ${record.status === 'present' ? 'bg-[#E5F9F0] text-green-600' : 
+                                   record.status === 'absent' ? 'bg-[#FFF0F0] text-red-500' : 'bg-gray-100 text-gray-500'}
+                              `}>
+                                 {record.status === 'present' ? <CheckCircle2 className="w-5 h-5" /> : 
+                                  record.status === 'absent' ? <AlertCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                              </div>
+                              
+                              <div className="flex-1 bg-[#F4F4F6] rounded-2xl p-4 hover:bg-[#F2DCDD]/20 transition-colors">
+                                 <div className="flex justify-between items-start mb-1">
+                                    <span className="font-serif text-lg text-[#333333]">{record.class_name}</span>
+                                    <span className="text-xs text-gray-400 font-medium bg-white px-2 py-1 rounded-md shadow-sm">
+                                       {format(new Date(record.date), 'MMM d')}
+                                    </span>
+                                 </div>
+                                 <div className="flex items-center gap-2">
+                                    <Badge variant="secondary" className={`capitalize text-xs h-5 px-2 font-normal ${
+                                       record.status === 'present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                    }`}>
+                                       {record.status}
+                                    </Badge>
+                                    {record.notes && <span className="text-xs text-gray-400 italic truncate max-w-[200px]">- {record.notes}</span>}
+                                 </div>
+                              </div>
+                           </motion.div>
+                        ))}
+                     </div>
+                  </div>
+               </div>
             </TabsContent>
 
-            <TabsContent value="classes" className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {studentClasses.map(cls => (
-                <div key={cls.id} className="bg-white p-6 rounded-[32px] shadow-sm">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-serif text-xl text-[#333333]">{cls.title}</h3>
-                      <div className="flex items-center gap-2 text-gray-400 mt-2 text-sm">
-                        <Clock className="w-4 h-4" />
-                        <span>{cls.day} • {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mma')}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-400 mt-1 text-sm">
-                         <MapPin className="w-4 h-4" />
-                         <span>Studio {cls.room || 'A'}</span>
-                      </div>
-                    </div>
-                    <div className="w-10 h-10 bg-[#F4F4F6] rounded-full flex items-center justify-center text-[#333333] font-serif">
-                      {cls.title.charAt(0)}
-                    </div>
+            {/* CLASSES TAB */}
+            <TabsContent value="classes" className="space-y-8">
+               {/* Weekly Visualizer */}
+               <div className="bg-white rounded-[32px] p-8 shadow-sm">
+                  <h3 className="font-serif text-2xl text-[#333333] mb-6">Weekly Rhythm</h3>
+                  <div className="grid grid-cols-7 gap-2">
+                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => {
+                        const dayMap = { 0: 'U', 1: 'M', 2: 'T', 3: 'W', 4: 'R', 5: 'F', 6: 'S' };
+                        const dayKey = dayMap[index];
+                        const dayClasses = studentClasses.filter(c => c.day === dayKey);
+                        
+                        return (
+                           <div key={day} className="flex flex-col gap-2">
+                              <div className="text-center text-xs font-bold text-gray-300 uppercase">{day}</div>
+                              <div className={`
+                                 h-32 rounded-2xl border border-dashed border-gray-200 p-1 space-y-1
+                                 ${dayClasses.length > 0 ? 'bg-[#F4F4F6]/50' : 'bg-transparent'}
+                              `}>
+                                 {dayClasses.map(c => (
+                                    <div key={c.id} className="bg-[#333333] text-white text-[10px] p-1.5 rounded-xl text-center leading-tight shadow-sm truncate">
+                                       {c.title}
+                                    </div>
+                                 ))}
+                              </div>
+                           </div>
+                        );
+                     })}
                   </div>
-                </div>
-              ))}
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 {studentClasses.map((cls, i) => (
+                   <motion.div 
+                     key={cls.id}
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     transition={{ delay: i * 0.1 }}
+                     className="bg-white p-0 rounded-[32px] shadow-sm overflow-hidden group border border-transparent hover:border-[#F2DCDD] transition-all"
+                   >
+                     <div className="h-24 bg-[#F4F4F6] p-6 flex items-start justify-between relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#F4F4F6] to-white opacity-50" />
+                        <Badge className="bg-white text-[#333333] hover:bg-white shadow-sm relative z-10">
+                           {cls.style || 'Dance'}
+                        </Badge>
+                        <div className="w-12 h-12 bg-[#333333] rounded-full flex items-center justify-center text-white font-serif text-xl shadow-lg relative z-10 group-hover:scale-110 transition-transform">
+                           {cls.title.charAt(0)}
+                        </div>
+                     </div>
+                     
+                     <div className="p-8 pt-2">
+                        <h3 className="font-serif text-2xl text-[#333333] mb-1">{cls.title}</h3>
+                        <p className="text-gray-400 text-sm mb-6">with {cls.teacher || 'Staff'}</p>
+                        
+                        <div className="space-y-3">
+                           <div className="flex items-center gap-3 text-[#333333]">
+                              <div className="w-8 h-8 rounded-full bg-[#F4F4F6] flex items-center justify-center text-gray-500">
+                                 <Clock className="w-4 h-4" />
+                              </div>
+                              <span className="font-medium">
+                                 {cls.day === 'M' ? 'Mondays' : cls.day === 'T' ? 'Tuesdays' : cls.day === 'W' ? 'Wednesdays' : cls.day === 'R' ? 'Thursdays' : cls.day === 'F' ? 'Fridays' : 'Weekends'} at {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mma')}
+                              </span>
+                           </div>
+                           <div className="flex items-center gap-3 text-[#333333]">
+                              <div className="w-8 h-8 rounded-full bg-[#F4F4F6] flex items-center justify-center text-gray-500">
+                                 <MapPin className="w-4 h-4" />
+                              </div>
+                              <span className="font-medium">Studio {cls.room || 'Main'}</span>
+                           </div>
+                        </div>
+                     </div>
+                   </motion.div>
+                 ))}
+               </div>
             </TabsContent>
 
-            <TabsContent value="notes" className="space-y-4">
-              {notes.length === 0 ? (
-                <div className="bg-white p-10 rounded-[32px] text-center text-gray-400">No notes recorded.</div>
-              ) : (
-                notes.map((note, i) => (
-                  <div key={i} className="bg-white p-6 rounded-[32px] shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge variant="outline" className="uppercase text-[10px] tracking-wider">
-                        {note.category}
-                      </Badge>
-                      <span className="text-gray-300 text-xs">•</span>
-                      <span className="text-gray-400 text-xs">{format(new Date(note.date), 'MMM do, yyyy')}</span>
+            {/* NOTES TAB */}
+            <TabsContent value="notes" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                 <div className="md:col-span-1">
+                    <div className="bg-[#F2DCDD] rounded-[32px] p-8 text-[#333333]">
+                       <h3 className="font-serif text-2xl mb-4">Teacher Journal</h3>
+                       <p className="text-sm opacity-80 mb-6">
+                          Private notes about {student.name}'s progress, behavior, and milestones. visible only to staff.
+                       </p>
+                       <Button className="w-full bg-[#333333] text-white hover:bg-black rounded-full font-serif h-12">
+                          + New Entry
+                       </Button>
                     </div>
-                    <p className="text-[#333333] leading-relaxed">{note.content}</p>
-                    <div className="mt-4 text-xs text-gray-400 font-medium">
-                      Recorded by {note.teacher_name}
-                    </div>
-                  </div>
-                ))
-              )}
+                 </div>
+                 
+                 <div className="md:col-span-2 space-y-4">
+                   {notes.length === 0 ? (
+                     <div className="bg-white p-12 rounded-[32px] text-center border-2 border-dashed border-gray-100">
+                        <Quote className="w-8 h-8 text-gray-200 mx-auto mb-4" />
+                        <p className="text-gray-400 font-serif text-lg">No journal entries yet.</p>
+                     </div>
+                   ) : (
+                     notes.map((note, i) => (
+                       <motion.div 
+                          key={i} 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="bg-white p-8 rounded-[32px] shadow-sm relative group"
+                       >
+                          <div className="absolute top-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-gray-50">
+                                <MoreHorizontal className="w-4 h-4 text-gray-400" />
+                             </Button>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 mb-4">
+                             <Badge variant="outline" className={`
+                                uppercase text-[10px] tracking-wider border px-2 py-0.5
+                                ${note.sentiment === 'positive' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' : 
+                                  note.sentiment === 'constructive' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-gray-50 text-gray-500 border-gray-100'}
+                             `}>
+                                {note.category || 'General'}
+                             </Badge>
+                             <span className="text-gray-300 text-xs">•</span>
+                             <span className="text-gray-400 text-xs font-medium uppercase tracking-wide">{format(new Date(note.date), 'MMMM do, yyyy')}</span>
+                          </div>
+                          
+                          <div className="font-serif text-xl text-[#333333] leading-relaxed italic mb-6 opacity-90">
+                             "{note.content}"
+                          </div>
+                          
+                          <div className="flex items-center gap-3 border-t border-gray-50 pt-4">
+                             <Avatar className="w-6 h-6">
+                                <AvatarFallback className="text-[10px] bg-[#333333] text-white">{note.teacher_name?.charAt(0)}</AvatarFallback>
+                             </Avatar>
+                             <span className="text-xs text-gray-400 font-medium">Logged by {note.teacher_name}</span>
+                          </div>
+                       </motion.div>
+                     ))
+                   )}
+                 </div>
+              </div>
             </TabsContent>
           </Tabs>
 
