@@ -147,11 +147,11 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
               <p className="text-sm text-gray-500 font-serif mb-8">We'll find a pro to step in.</p>
               
               <div className="space-y-6">
-                <div className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100/50">
-                   <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-2">Class Context</div>
+                <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100/50">
+                   <div className="text-[11px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-4 ml-1">Class Context</div>
                    {classData ? (
-                     <div className="flex items-center gap-4">
-                       <div className="w-10 h-10 rounded-full bg-[#F2DCDD] flex items-center justify-center text-[#333333] font-serif text-lg">
+                     <div className="flex items-center gap-4 bg-[#F4F4F6] p-4 rounded-2xl">
+                       <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#333333] font-serif text-lg shadow-sm">
                           {classData.title.charAt(0)}
                        </div>
                        <div>
@@ -165,45 +165,53 @@ export default function SubRequestModal({ isOpen, onOpenChange, classData, teach
                    ) : (
                      <div className="mt-1">
                        <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                         <SelectTrigger className="w-full bg-[#F4F4F6] border-transparent rounded-xl px-4 py-6 h-auto font-serif text-lg text-[#333333] focus:ring-0 hover:bg-[#ebebef] transition-colors">
+                         <SelectTrigger className="w-full bg-[#F4F4F6] border-transparent rounded-2xl px-6 py-8 h-auto font-serif text-xl text-[#333333] focus:ring-0 hover:bg-[#ebebef] transition-colors data-[placeholder]:text-gray-400">
                            <SelectValue placeholder="Select a class..." />
                          </SelectTrigger>
                          <SelectContent className="rounded-xl border-gray-100 shadow-xl p-1">
                            {availableClasses.map(cls => (
-                             <SelectItem key={cls.id} value={cls.id} className="rounded-lg font-serif focus:bg-[#F2DCDD] focus:text-[#333333]">
+                             <SelectItem key={cls.id} value={cls.id} className="rounded-lg font-serif focus:bg-[#F2DCDD] focus:text-[#333333] py-3">
                                {cls.title} <span className="text-gray-400 font-sans text-xs ml-2">{format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mma')}</span>
                              </SelectItem>
                            ))}
                          </SelectContent>
                        </Select>
                        {!selectedClassId && (
-                         <p className="text-xs text-red-400 mt-2 pl-1 font-medium">Please select a class</p>
+                         <p className="text-sm text-red-400 mt-3 pl-1 font-medium">Please select a class</p>
                        )}
                      </div>
                    )}
                 </div>
 
-                <div className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100/50">
-                   <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-3">Priority Level</div>
-                   <div className="flex flex-col gap-1">
-                      {['low', 'medium', 'high'].map(level => (
-                        <button
-                          key={level}
-                          onClick={() => setUrgency(level)}
-                          className={`
-                            w-full text-left px-4 py-3 rounded-xl text-sm transition-all flex items-center gap-3
-                            ${urgency === level 
-                              ? 'bg-[#333333] text-white shadow-md transform scale-[1.02]' 
-                              : 'hover:bg-gray-50 text-gray-500'}
-                          `}
-                        >
-                          {level === 'high' && urgency !== 'high' && <AlertTriangle className="w-4 h-4 text-red-400" />}
-                          <span className={`font-serif text-base ${urgency === level ? 'font-medium' : ''}`}>
-                            {level.charAt(0).toUpperCase() + level.slice(1)} Priority
-                          </span>
-                          {urgency === level && <CheckCircle2 className="w-4 h-4 ml-auto text-white/50" />}
-                        </button>
-                      ))}
+                <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100/50">
+                   <div className="text-[11px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-4 ml-1">Priority Level</div>
+                   <div className="flex flex-col gap-3">
+                      {['low', 'medium', 'high'].map(level => {
+                        const isSelected = urgency === level;
+                        return (
+                          <button
+                            key={level}
+                            onClick={() => setUrgency(level)}
+                            className={`
+                              w-full text-left px-6 py-4 rounded-2xl text-lg transition-all duration-200 flex items-center justify-between group
+                              ${isSelected 
+                                ? 'bg-[#333333] text-white shadow-lg scale-[1.02]' 
+                                : 'bg-transparent hover:bg-gray-50 text-gray-500'}
+                            `}
+                          >
+                            <div className="flex items-center gap-3">
+                              {level === 'high' && !isSelected && <AlertTriangle className="w-5 h-5 text-red-400" />}
+                              {level === 'high' && isSelected && <AlertTriangle className="w-5 h-5 text-red-200" />}
+                              
+                              <span className={`font-serif ${isSelected ? 'font-medium' : 'font-normal'}`}>
+                                {level.charAt(0).toUpperCase() + level.slice(1)} Priority
+                              </span>
+                            </div>
+                            
+                            {isSelected && <CheckCircle2 className="w-5 h-5 text-white/30" />}
+                          </button>
+                        );
+                      })}
                    </div>
                 </div>
               </div>
