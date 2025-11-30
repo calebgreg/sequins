@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX } from 'lucide-react';
+import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -13,94 +13,56 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format, differenceInMinutes } from 'date-fns';
 import VoiceNoteIntake from '../components/teacher/VoiceNoteIntake';
 import SubRequestModal from '../components/teacher/SubRequestModal';
+import TimeSheetReviewModal from '../components/teacher/TimeSheetReviewModal';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 // --- SUB-COMPONENT: Time Card Widget ---
-const TimeCardWidget = ({ currentTeacherName }) => {
-  const queryClient = useQueryClient();
+const TimeCardWidget = ({ currentTeacherName, classes }) => {
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
   
-  // Fetch today's logs
-  const { data: logs = [] } = useQuery({
-    queryKey: ['time_logs', currentTeacherName],
+  // Fetch sub requests to calculate net hours
+  const { data: subRequests = [] } = useQuery({
+    queryKey: ['sub_requests', currentTeacherName],
     queryFn: async () => {
-      const all = await base44.entities.TimeLog.list();
-      // Filter client-side for simplicity in this context
-      return all.filter(l => l.teacher_name === currentTeacherName && l.status === 'active');
+      const all = await base44.entities.SubRequest.list();
+      return all.filter(r => r.teacher_name === currentTeacherName);
     }
   });
 
-  const activeLog = logs[0];
-  const [elapsed, setElapsed] = useState(0);
-
-  useEffect(() => {
-    let interval;
-    if (activeLog) {
-      const updateTime = () => {
-        const start = new Date(activeLog.clock_in);
-        const now = new Date();
-        setElapsed(differenceInMinutes(now, start));
-      };
-      updateTime();
-      interval = setInterval(updateTime, 60000);
-    } else {
-      setElapsed(0);
-    }
-    return () => clearInterval(interval);
-  }, [activeLog]);
-
-  const handleToggleClock = async () => {
-    if (activeLog) {
-      // Clock Out
-      await base44.entities.TimeLog.update(activeLog.id, {
-        clock_out: new Date().toISOString(),
-        status: 'completed'
-      });
-    } else {
-      // Clock In
-      await base44.entities.TimeLog.create({
-        teacher_name: currentTeacherName,
-        clock_in: new Date().toISOString(),
-        status: 'active'
-      });
-    }
-    queryClient.invalidateQueries(['time_logs']);
-  };
-
-  const hours = Math.floor(elapsed / 60);
-  const mins = elapsed % 60;
-
   return (
-    <div className="bg-white rounded-[24px] p-6 mb-8 shadow-sm flex items-center justify-between relative overflow-hidden">
-       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#333333]" />
-       
-       <div className="pl-2">
-         <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-1">Time Card</h4>
-         <div className="text-3xl font-serif text-[#333333]">
-           {activeLog ? (
-             <span>{hours}h <span className="text-gray-300">{mins}m</span></span>
-           ) : (
-             <span className="text-gray-300">Not Clocked In</span>
-           )}
+    <>
+      <div className="bg-white rounded-[24px] p-6 mb-8 shadow-sm flex items-center justify-between relative overflow-hidden">
+         <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-green-500" />
+         
+         <div className="pl-2">
+           <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-2">
+             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+             Active Schedule
+           </h4>
+           <div className="text-lg font-serif text-[#333333] leading-tight">
+             Time tracking is automated.
+             <br/>
+             <span className="text-sm text-gray-400 font-sans">Please review at end of week.</span>
+           </div>
          </div>
-       </div>
 
-       <Button 
-         size="lg"
-         onClick={handleToggleClock}
-         className={`
-           rounded-full h-14 px-6 gap-2 transition-all font-medium
-           ${activeLog 
-             ? 'bg-[#F2DCDD] text-[#333333] hover:bg-red-100' 
-             : 'bg-[#333333] text-white hover:bg-black'}
-         `}
-       >
-         {activeLog ? (
-           <><Square className="w-4 h-4 fill-current" /> Clock Out</>
-         ) : (
-           <><Play className="w-4 h-4 fill-current" /> Clock In</>
-         )}
-       </Button>
-    </div>
+         <Button 
+           size="lg"
+           onClick={() => setIsReviewOpen(true)}
+           className="rounded-full h-12 px-6 gap-2 bg-[#F4F4F6] text-[#333333] hover:bg-gray-200 border border-gray-100"
+         >
+           <FileText className="w-4 h-4" /> Review
+         </Button>
+      </div>
+      
+      <TimeSheetReviewModal 
+        isOpen={isReviewOpen} 
+        onOpenChange={setIsReviewOpen}
+        teacherName={currentTeacherName}
+        classes={classes.filter(c => c.teacher === currentTeacherName)} // Pass teacher's classes
+        subRequests={subRequests}
+      />
+    </>
   );
 };
 
