@@ -71,8 +71,9 @@ export const WeekView = ({ classes, currentTeacherName, filterType = 'class' }) 
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
               className={`
-                rounded-full h-16 flex items-center px-6 shadow-sm border relative overflow-hidden transition-colors
-                ${isToday ? 'bg-[#F2DCDD] border-[#E5C0C2]' : 'bg-white border-gray-100'}
+                rounded-full h-16 flex items-center px-6 shadow-sm border relative transition-all
+                ${isToday ? 'bg-[#F2DCDD] border-[#E5C0C2] z-0' : 'bg-white border-gray-100 z-0'}
+                hover:z-20
               `}
             >
               {/* Day Label */}
