@@ -16,23 +16,22 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 
 // --- SUB-COMPONENT: Class List View ---
 const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
-  // Filter logic could be improved with real auth, keeping simple for now
   const myClasses = classes.filter(c => c.teacher === currentTeacherName || !c.teacher);
   const displayClasses = myClasses.length > 0 ? myClasses : classes;
 
   return (
-    <div className="space-y-6 p-4 max-w-md mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-8 p-6 max-w-2xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-serif text-2xl text-[#333333]">Today's Classes</h1>
-          <p className="text-gray-500 text-sm">{format(new Date(), 'EEEE, MMMM do')}</p>
+          <h1 className="font-serif text-3xl text-[#333333]">Today's Classes</h1>
+          <p className="text-[#333333]/60 mt-1 font-serif">{format(new Date(), 'MMMM do')}</p>
         </div>
-        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-serif font-bold text-lg">
-          {currentTeacherName.charAt(0)}
+        <div className="h-12 px-6 bg-[#333333] rounded-full flex items-center justify-center text-white font-serif text-lg shadow-lg shadow-gray-200">
+          {currentTeacherName.split(' ')[0]}
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         {displayClasses.map((cls, idx) => (
           <motion.div
             key={cls.id}
@@ -40,36 +39,30 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
             onClick={() => onSelectClass(cls)}
-            className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 active:scale-[0.98] transition-transform cursor-pointer relative overflow-hidden group"
+            className="bg-white rounded-full h-20 px-8 flex items-center justify-between shadow-sm hover:shadow-md transition-all cursor-pointer group border border-transparent hover:border-[#F2DCDD]"
           >
-            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${cls.color === 'charcoal' ? 'bg-gray-600' : 'bg-pink-300'}`} />
-            <div className="flex justify-between items-start mb-3 pl-2">
-              <div>
-                <h3 className="text-lg font-bold text-[#333333] group-hover:text-indigo-600 transition-colors">{cls.title}</h3>
-                <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
-                  <Clock className="w-4 h-4" />
-                  {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')}
-                </div>
+            <div className="flex items-center gap-6">
+              <div className="text-lg font-serif text-[#333333] w-16">
+                {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm')}
+                <span className="text-xs ml-0.5 text-gray-400 font-sans">am</span>
               </div>
-              <Badge variant="secondary" className="bg-gray-50 text-gray-600 font-normal">
-                {cls.room || 'Studio A'}
-              </Badge>
+              
+              <div className="h-8 w-px bg-gray-100" />
+              
+              <div>
+                <h3 className="text-lg font-medium text-[#333333] group-hover:text-gray-600 transition-colors">{cls.title}</h3>
+              </div>
             </div>
             
-            <div className="flex items-center gap-2 pl-2 mt-4">
-              <div className="flex -space-x-2">
+            <div className="flex items-center gap-4">
+               <div className="flex -space-x-2">
                 {cls.student_names?.slice(0, 3).map((name, i) => (
-                  <Avatar key={i} className="w-8 h-8 border-2 border-white bg-gray-100">
-                    <AvatarFallback className="text-[10px] text-gray-500">{name.charAt(0)}</AvatarFallback>
+                  <Avatar key={i} className="w-8 h-8 border-2 border-white bg-[#F4F4F6]">
+                    <AvatarFallback className="text-[10px] text-[#333333] font-serif">{name.charAt(0)}</AvatarFallback>
                   </Avatar>
                 ))}
-                {(cls.student_names?.length > 3) && (
-                  <div className="w-8 h-8 rounded-full bg-gray-50 border-2 border-white flex items-center justify-center text-[10px] text-gray-400 font-medium">
-                    +{cls.student_names.length - 3}
-                  </div>
-                )}
               </div>
-              <span className="text-xs text-gray-400 ml-1">{cls.student_names?.length || 0} Students</span>
+              <div className={`h-3 w-3 rounded-full ${idx % 2 === 0 ? 'bg-[#333333]' : 'bg-[#F2DCDD]'}`} />
             </div>
           </motion.div>
         ))}
@@ -107,7 +100,6 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
   const handleSubmitAttendance = async () => {
     setIsSubmitting(true);
     try {
-      // 1. Save Records
       const records = Object.entries(attendance).map(([name, status]) => ({
         class_id: classData.id,
         class_name: classData.title,
@@ -115,22 +107,12 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
         date: new Date().toISOString().split('T')[0],
         status: status
       }));
-      
       await base44.entities.Attendance.bulkCreate(records);
 
-      // 2. AI Analysis (The "Wired In" Part)
       const issues = Object.entries(attendance).filter(([_, s]) => s === 'absent' || s === 'late');
-      
       if (issues.length > 0) {
-        // Trigger AI analysis for alerts
         const analysis = await base44.integrations.Core.InvokeLLM({
-          prompt: `
-            Analyze attendance for ${classData.title}.
-            Issues: ${issues.map(([n, s]) => `${n}: ${s}`).join(', ')}.
-            
-            Task: Return JSON of students to flag.
-            { "updates": [{ "student_name": "Name", "flag": true, "summary": "Absent from Ballet" }] }
-          `,
+          prompt: `Analyze attendance for ${classData.title}. Issues: ${issues.map(([n, s]) => `${n}: ${s}`).join(', ')}. Return JSON to flag: { "updates": [{ "student_name": "Name", "flag": true, "summary": "Absent from Ballet" }] }`,
           response_json_schema: {
             type: "object",
             properties: {
@@ -153,12 +135,10 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
           await Promise.all(analysis.updates.map(async (update) => {
             const student = students.find(s => s.name === update.student_name);
             if (student && update.flag) {
-              // Update Student Record
               await base44.entities.Student.update(student.id, {
                 attendance_alert: true,
                 attendance_summary: update.summary
               });
-              // Notify Parent Portal
               await base44.entities.Message.create({
                 content: `Attendance Alert: ${update.summary}`,
                 sender: 'ai',
@@ -169,10 +149,8 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
           }));
         }
       }
-
       setSubmitSuccess(true);
       setTimeout(() => setSubmitSuccess(false), 3000);
-
     } catch (error) {
       console.error("Attendance save failed", error);
     } finally {
@@ -181,7 +159,6 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
   };
 
   const handleNotesProcessed = (notes) => {
-    // Save voice notes logic (reused from previous, simplified for this context)
     const records = notes.map(note => ({
       ...note,
       teacher_name: currentTeacherName,
@@ -190,116 +167,91 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
     }));
     base44.entities.StudentNote.bulkCreate(records);
     setIsVoiceOpen(false);
-    // Could show toast here
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-[#F4F4F6]">
       {/* Header */}
-      <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack} className="-ml-2">
-            <ChevronLeft className="w-6 h-6 text-[#333333]" />
+      <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]">
+        <div className="flex items-center gap-6">
+          <Button variant="ghost" size="icon" onClick={onBack} className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80">
+            <ChevronLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h2 className="font-bold text-lg leading-tight">{classData.title}</h2>
-            <p className="text-xs text-gray-500">{classData.student_names?.length || 0} Students • {classData.room || 'Studio A'}</p>
+            <h2 className="font-serif text-3xl text-[#333333]">{classData.title}</h2>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button 
-            variant="outline" 
-            size="icon" 
-            className="rounded-full border-indigo-100 text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
+            variant="ghost"
+            className="rounded-full bg-[#333333] text-white hover:bg-black w-12 h-12 p-0 shadow-lg shadow-gray-200"
             onClick={() => setIsVoiceOpen(true)}
           >
             <Mic className="w-5 h-5" />
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="w-5 h-5 text-gray-400" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>View Lesson Plan</DropdownMenuItem>
-              <DropdownMenuItem>Email Class</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
 
       {/* Student List */}
-      <ScrollArea className="flex-1 bg-gray-50">
-        <div className="p-4 space-y-3 pb-24">
+      <ScrollArea className="flex-1 px-4 md:px-8">
+        <div className="space-y-4 pb-28 max-w-2xl mx-auto">
           {classData.student_names?.map((name, i) => {
              const status = attendance[name] || 'present';
-             const student = students.find(s => s.name === name);
              
              return (
                <motion.div 
                  key={name}
-                 initial={{ opacity: 0, x: -10 }}
-                 animate={{ opacity: 1, x: 0 }}
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
                  transition={{ delay: i * 0.03 }}
-                 className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between"
+                 className="bg-white rounded-full h-16 px-6 flex items-center justify-between shadow-sm"
                >
-                 <div className="flex items-center gap-3">
-                   <Avatar className="h-10 w-10 border border-gray-100">
-                     <AvatarFallback className={`text-sm font-medium ${status === 'absent' ? 'bg-red-50 text-red-400' : 'bg-gray-100 text-gray-600'}`}>
-                       {name.charAt(0)}
-                     </AvatarFallback>
-                   </Avatar>
-                   <div>
-                     <div className={`font-medium ${status === 'absent' ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{name}</div>
-                     {student?.attendance_alert && status === 'present' && (
-                       <div className="text-[10px] text-red-500 flex items-center gap-1">
-                         <AlertCircle className="w-3 h-3" /> Watch Attendance
-                       </div>
-                     )}
-                   </div>
+                 <div className="flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-full bg-[#F4F4F6] flex items-center justify-center text-sm font-serif text-[#333333]">
+                        {name.charAt(0)}
+                    </div>
+                    <span className={`font-medium text-[#333333] ${status === 'absent' ? 'line-through text-gray-300' : ''}`}>{name}</span>
                  </div>
 
-                 <Button
-                   variant="ghost"
-                   className={`
-                     h-9 px-3 rounded-full text-xs font-medium transition-all
-                     ${status === 'present' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 
-                       status === 'absent' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 
-                       'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'}
-                   `}
-                   onClick={() => toggleStatus(name)}
-                 >
-                   {status === 'present' && <><CheckCircle2 className="w-3 h-3 mr-1.5" /> Present</>}
-                   {status === 'absent' && <><XCircle className="w-3 h-3 mr-1.5" /> Absent</>}
-                   {status === 'late' && <><Clock className="w-3 h-3 mr-1.5" /> Late</>}
-                 </Button>
+                 <div className="flex gap-2">
+                    {['present', 'absent', 'late'].map(s => (
+                        <button
+                            key={s}
+                            onClick={() => setAttendance(prev => ({...prev, [name]: s}))}
+                            className={`
+                                h-8 px-4 rounded-full text-xs font-medium transition-all
+                                ${status === s 
+                                    ? (s === 'present' ? 'bg-[#F2DCDD] text-[#333333]' : 'bg-[#333333] text-white')
+                                    : 'text-gray-400 hover:text-gray-600'
+                                }
+                            `}
+                        >
+                            {s.charAt(0).toUpperCase() + s.slice(1)}
+                        </button>
+                    ))}
+                 </div>
                </motion.div>
              );
           })}
         </div>
       </ScrollArea>
 
-      {/* Floating Action Button / Footer */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent pb-6">
+      {/* Floating Footer */}
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center px-4">
         <Button 
           size="lg" 
-          className={`w-full shadow-lg text-white transition-all ${submitSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-[#333333] hover:bg-black'}`}
+          className={`shadow-xl rounded-full px-10 py-6 text-lg font-serif transition-all ${submitSuccess ? 'bg-[#F2DCDD] text-[#333333]' : 'bg-[#333333] text-white hover:bg-black'}`}
           onClick={handleSubmitAttendance}
           disabled={isSubmitting || submitSuccess}
         >
-          {isSubmitting ? <Sparkles className="w-4 h-4 animate-spin mr-2" /> : 
-           submitSuccess ? <CheckCircle2 className="w-4 h-4 mr-2" /> : null}
-          {isSubmitting ? "Analyzing..." : submitSuccess ? "Attendance Saved" : "Submit Attendance"}
+          {isSubmitting ? "Analyzing..." : submitSuccess ? "Saved" : "Complete Class"}
         </Button>
       </div>
 
-      {/* Voice Modal */}
       <Dialog open={isVoiceOpen} onOpenChange={setIsVoiceOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg bg-white rounded-[32px]">
           <DialogHeader>
-             <DialogTitle>Class Notes</DialogTitle>
-             <DialogDescription>Dictate notes for {classData.title}</DialogDescription>
+             <DialogTitle className="font-serif text-2xl">Class Notes</DialogTitle>
           </DialogHeader>
           <VoiceNoteIntake 
             classData={classData} 
@@ -329,21 +281,19 @@ export default function TeacherStudio() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F4F6]">
       <AnimatePresence mode="wait">
         {!selectedClass ? (
           <motion.div 
             key="list"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            {/* Header Navigation for List View */}
-            <div className="p-4 flex justify-between items-center">
-              <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="sm" className="text-gray-400">
-                  <ArrowLeft className="w-4 h-4 mr-1" /> Home
-                </Button>
+             {/* Minimal Header */}
+            <div className="p-6 flex justify-between items-center">
+              <Link to={createPageUrl('Home')} className="bg-white p-2 rounded-full shadow-sm text-[#333333]">
+                  <ArrowLeft className="w-5 h-5" /> 
               </Link>
             </div>
             <ClassListView 
@@ -355,10 +305,10 @@ export default function TeacherStudio() {
         ) : (
           <motion.div 
             key="detail"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="h-screen overflow-hidden" // Lock scroll for detail view
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="h-screen overflow-hidden" 
           >
             <ClassDetailView 
               classData={selectedClass} 
