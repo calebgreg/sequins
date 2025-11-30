@@ -83,7 +83,7 @@ export const WeekView = ({ classes, currentTeacherName }) => {
   );
 };
 
-export const MonthView = ({ classes, currentTeacherName }) => {
+export const MonthView = ({ classes, currentTeacherName, onDateSelect }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const myClasses = classes.filter(c => c.teacher === currentTeacherName || !c.teacher);
 
@@ -118,46 +118,53 @@ export const MonthView = ({ classes, currentTeacherName }) => {
 
       <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100">
         <div className="grid grid-cols-7 mb-4 text-center">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
-            <div key={d} className="text-xs font-medium text-gray-400 py-2">{d}</div>
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+            <div key={d} className="text-xs font-bold text-gray-300 uppercase tracking-wider py-2">{d}</div>
           ))}
         </div>
         
-        <div className="grid grid-cols-7 gap-y-4">
+        <div className="grid grid-cols-7 border-t border-l border-gray-100">
           {days.map((day, i) => {
             const isCurrentMonth = isSameMonth(day, currentDate);
             const isToday = isSameDay(day, new Date());
             const dayClasses = getClassesForDate(day);
             
             return (
-              <div key={i} className={`min-h-[80px] flex flex-col items-center gap-1 ${!isCurrentMonth ? 'opacity-30' : ''}`}>
+              <div 
+                key={i} 
+                onClick={() => onDateSelect && onDateSelect(day)}
+                className={`
+                  min-h-[100px] border-b border-r border-gray-100 p-2 cursor-pointer transition-colors hover:bg-gray-50
+                  ${!isCurrentMonth ? 'bg-gray-50/30' : ''}
+                `}
+              >
                 <div className={`
-                  w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium mb-1
-                  ${isToday ? 'bg-[#333333] text-white' : 'text-gray-700'}
+                  w-6 h-6 flex items-center justify-center rounded-full text-xs font-medium mb-2
+                  ${isToday ? 'bg-[#333333] text-white' : 'text-gray-500'}
+                  ${!isCurrentMonth ? 'text-gray-300' : ''}
                 `}>
                   {format(day, 'd')}
                 </div>
                 
-                <div className="flex flex-col gap-1 w-full px-1">
-                  {dayClasses.slice(0, 2).map((cls, idx) => (
-                    <div key={idx} className="h-1.5 rounded-full w-full bg-[#F2DCDD]" title={cls.title} />
+                <div className="flex flex-col gap-1">
+                  {dayClasses.slice(0, 3).map((cls, idx) => (
+                    <div 
+                      key={idx} 
+                      className="text-[10px] font-medium truncate bg-[#F2DCDD]/30 text-[#333333] px-1.5 py-0.5 rounded-sm border border-[#F2DCDD]" 
+                      title={cls.title}
+                    >
+                      {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mma')} {cls.title}
+                    </div>
                   ))}
-                  {dayClasses.length > 2 && (
-                    <div className="h-1.5 rounded-full w-1.5 bg-gray-300 self-center" />
+                  {dayClasses.length > 3 && (
+                    <div className="text-[9px] text-gray-400 pl-1">
+                      +{dayClasses.length - 3} more
+                    </div>
                   )}
                 </div>
               </div>
             );
           })}
-        </div>
-      </div>
-      
-      <div className="flex items-center gap-4 justify-center text-xs text-gray-400">
-        <div className="flex items-center gap-2">
-           <div className="w-3 h-3 rounded-full bg-[#F2DCDD]" /> Class
-        </div>
-        <div className="flex items-center gap-2">
-           <div className="w-3 h-3 rounded-full bg-[#333333]" /> Today
         </div>
       </div>
     </div>
