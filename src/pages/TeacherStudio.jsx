@@ -82,6 +82,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
   const [hasStarted, setHasStarted] = useState(false);
   const [attendance, setAttendance] = useState({});
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+  const [isRosterOpen, setIsRosterOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
@@ -251,6 +252,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
             <Button 
               variant="outline" 
               className="h-40 rounded-[32px] flex flex-col items-center justify-center gap-4 border-transparent bg-white shadow-sm hover:bg-gray-50 hover:border-gray-200 transition-all group"
+              onClick={() => setIsRosterOpen(true)}
             >
               <div className="w-12 h-12 rounded-full bg-[#F4F4F6] flex items-center justify-center group-hover:bg-[#F2DCDD] transition-colors">
                  <Users className="w-6 h-6 text-[#333333]" />
@@ -289,11 +291,40 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
               teacherName={currentTeacherName}
               onNotesProcessed={handleNotesProcessed}
             />
-          </DialogContent>
-        </Dialog>
-        </div>
-        );
-        }
+            </DialogContent>
+            </Dialog>
+
+            <Dialog open={isRosterOpen} onOpenChange={setIsRosterOpen}>
+            <DialogContent className="max-w-md bg-white rounded-[32px] border-none shadow-xl">
+            <DialogHeader className="mb-2">
+               <DialogTitle className="font-serif text-2xl text-[#333333]">Class Roster</DialogTitle>
+               <DialogDescription className="text-gray-400 font-serif">
+                  {classData.student_names?.length || 0} students enrolled
+               </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="h-[400px] pr-2">
+              <div className="space-y-3">
+                {classData.student_names?.map((name, i) => (
+                  <motion.div 
+                     key={name}
+                     initial={{ opacity: 0, y: 10 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     transition={{ delay: i * 0.05 }}
+                     className="flex items-center gap-4 p-3 bg-[#F4F4F6] rounded-2xl"
+                  >
+                     <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-sm font-serif text-[#333333] shadow-sm">
+                        {name.charAt(0)}
+                     </div>
+                     <span className="font-medium text-[#333333] font-sans text-lg">{name}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </ScrollArea>
+            </DialogContent>
+            </Dialog>
+            </div>
+            );
+            }
 
   return (
     <div className="flex flex-col h-screen bg-[#F4F4F6]">
