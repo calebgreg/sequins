@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText, Menu } from 'lucide-react';
+import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText, Menu, LayoutGrid, List, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +16,10 @@ import SubRequestModal from '../components/teacher/SubRequestModal';
 import TimeSheetReviewModal from '../components/teacher/TimeSheetReviewModal';
 import SubRequestHistoryModal from '../components/teacher/SubRequestHistoryModal';
 import TeacherSidebar from '../components/teacher/TeacherSidebar';
+import { WeekView, MonthView } from '../components/teacher/ScheduleViews';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // --- SUB-COMPONENT: Class List View ---
 const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
@@ -25,7 +27,7 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
   const displayClasses = myClasses.length > 0 ? myClasses : classes;
 
   return (
-    <div className="space-y-8 p-6 max-w-2xl mx-auto pt-20 md:pt-10">
+    <div className="space-y-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-serif text-3xl text-[#333333]">Today's Classes</h1>
@@ -280,6 +282,7 @@ export default function TeacherStudio() {
   const [selectedClass, setSelectedClass] = useState(null);
   const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
   const [isSubHistoryOpen, setIsSubHistoryOpen] = useState(false);
+  const [viewMode, setViewMode] = useState('day'); // 'day', 'week', 'month'
   const currentTeacherName = "Sarah Miller"; // Mock
 
   const { data: classes = [] } = useQuery({
@@ -346,13 +349,52 @@ export default function TeacherStudio() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex-1"
+              className="flex-1 p-6 pt-20 md:pt-10 max-w-5xl mx-auto w-full"
             >
-              <ClassListView 
-                classes={classes} 
-                onSelectClass={setSelectedClass} 
-                currentTeacherName={currentTeacherName}
-              />
+              {/* View Toggles */}
+              <div className="flex justify-end mb-6">
+                 <div className="bg-white p-1 rounded-full shadow-sm inline-flex">
+                   {[
+                     { id: 'day', label: 'Day', icon: List },
+                     { id: 'week', label: 'Week', icon: LayoutGrid },
+                     { id: 'month', label: 'Month', icon: CalendarIcon }
+                   ].map(view => (
+                     <button
+                       key={view.id}
+                       onClick={() => setViewMode(view.id)}
+                       className={`
+                         px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all
+                         ${viewMode === view.id ? 'bg-[#333333] text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}
+                       `}
+                     >
+                       <view.icon className="w-4 h-4" />
+                       {view.label}
+                     </button>
+                   ))}
+                 </div>
+              </div>
+
+              <div className="min-h-[600px]">
+                {viewMode === 'day' && (
+                  <ClassListView 
+                    classes={classes} 
+                    onSelectClass={setSelectedClass} 
+                    currentTeacherName={currentTeacherName}
+                  />
+                )}
+                {viewMode === 'week' && (
+                  <WeekView 
+                    classes={classes} 
+                    currentTeacherName={currentTeacherName} 
+                  />
+                )}
+                {viewMode === 'month' && (
+                  <MonthView 
+                    classes={classes} 
+                    currentTeacherName={currentTeacherName} 
+                  />
+                )}
+              </div>
             </motion.div>
           ) : (
             <motion.div 
