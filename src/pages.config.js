@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import ClassManager from './pages/ClassManager';
 import Teachers from './pages/Teachers';
 import TeacherStudio from './pages/TeacherStudio';
+import Students from './pages/Students';
 import __Layout from './Layout.jsx';
 
 
@@ -12,6 +13,7 @@ export const PAGES = {
     "ClassManager": ClassManager,
     "Teachers": Teachers,
     "TeacherStudio": TeacherStudio,
+    "Students": Students,
 }
 
 export const pagesConfig = {

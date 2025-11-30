@@ -69,6 +69,7 @@ export default function ClassManager() {
               <div className="flex gap-4 text-sm mt-1">
                  <span className="font-medium text-gray-900 border-b-2 border-black pb-1">Schedule</span>
                  <Link to={createPageUrl('Teachers')} className="text-gray-500 hover:text-gray-900 transition-colors">Teachers</Link>
+                 <Link to={createPageUrl('Students')} className="text-gray-500 hover:text-gray-900 transition-colors">Students</Link>
               </div>
             </div>
             </div>

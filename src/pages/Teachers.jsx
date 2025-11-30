@@ -137,7 +137,11 @@ export default function Teachers() {
             </Link>
             <div>
               <h1 className="text-3xl font-serif text-[#333333]">Teachers</h1>
-              <p className="text-gray-500">Manage staff and performance</p>
+              <div className="flex gap-4 text-sm mt-1">
+                 <Link to={createPageUrl('ClassManager')} className="text-gray-500 hover:text-gray-900 transition-colors">Schedule</Link>
+                 <span className="font-medium text-gray-900 border-b-2 border-black pb-1">Teachers</span>
+                 <Link to={createPageUrl('Students')} className="text-gray-500 hover:text-gray-900 transition-colors">Students</Link>
+              </div>
             </div>
           </div>
           
