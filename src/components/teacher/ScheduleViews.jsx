@@ -10,80 +10,94 @@ const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frida
 
 export const WeekView = ({ classes, currentTeacherName }) => {
   const myClasses = classes.filter(c => c.teacher === currentTeacherName || !c.teacher);
-  
-  // Group classes by day
-  const classesByDay = { 'M': [], 'T': [], 'W': [], 'R': [], 'F': [], 'S': [], 'U': [] };
-  myClasses.forEach(cls => {
-    if (classesByDay[cls.day]) {
-      classesByDay[cls.day].push(cls);
-    }
-  });
-
-  // Sort classes by time
-  Object.keys(classesByDay).forEach(day => {
-    classesByDay[day].sort((a, b) => a.start_time - b.start_time);
-  });
-
   const weekDays = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
+  
+  // Configuration for the timeline
+  const startHour = 9; // 9am
+  const endHour = 21; // 9pm
+  const totalHours = endHour - startHour;
+
+  const getPosition = (start, duration) => {
+    // Clamp start time
+    const effectiveStart = Math.max(start, startHour);
+    // Calculate relative start from the beginning of the timeline
+    const relativeStart = effectiveStart - startHour;
+    
+    const left = (relativeStart / totalHours) * 100;
+    // Max width should not exceed the timeline
+    const width = (duration / totalHours) * 100;
+    
+    return { left: `${left}%`, width: `${width}%` };
+  };
 
   return (
-    <div className="space-y-8 pb-10">
-      <div className="flex flex-col gap-2 mb-6">
+    <div className="space-y-4 pb-10 w-full max-w-[1200px] mx-auto">
+      <div className="flex flex-col gap-2 mb-8">
         <h2 className="text-2xl font-serif text-[#333333]">Weekly Schedule</h2>
-        <p className="text-gray-400">Your recurring weekly classes</p>
       </div>
 
-      <div className="flex flex-col gap-4">
-        {weekDays.map((day, i) => {
-          const dayClasses = classesByDay[day];
-          const hasClasses = dayClasses.length > 0;
+      {/* Time Scale Header */}
+      <div className="flex items-center px-6 mb-2 text-xs text-gray-400 font-serif select-none">
+        <div className="w-10 flex-shrink-0" /> {/* Spacer for day letter */}
+        <div className="flex-1 flex justify-between relative mx-4">
+          {Array.from({ length: totalHours + 1 }, (_, i) => startHour + i).map((h, i) => (
+            <div key={h} className="flex items-center justify-center relative" style={{ width: 0 }}>
+               {/* Render label mostly for every hour or every 2 hours if cramped */}
+               <span className="whitespace-nowrap transform -translate-x-1/2">
+                 {h > 12 ? h - 12 : h}{h >= 12 && h < 24 ? 'pm' : 'am'}
+               </span>
+            </div>
+          ))}
+        </div>
+      </div>
 
+      <div className="space-y-3">
+        {weekDays.map((day, i) => {
+          const dayClasses = myClasses.filter(c => c.day === day);
+          
           return (
             <motion.div 
               key={day}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className={`
-                group flex flex-col md:flex-row md:items-start gap-4 md:gap-8 p-6 rounded-[24px] border transition-all
-                ${hasClasses ? 'bg-white border-gray-100 shadow-sm hover:shadow-md' : 'bg-gray-50/50 border-transparent opacity-60 hover:opacity-100'}
-              `}
+              className="bg-white rounded-full h-16 flex items-center px-6 shadow-sm border border-gray-100 relative overflow-hidden"
             >
-              {/* Day Column */}
-              <div className="flex md:flex-col items-center md:items-start gap-3 md:w-32 flex-shrink-0">
-                <div className={`
-                  w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold font-serif
-                  ${hasClasses ? 'bg-[#333333] text-white' : 'bg-gray-200 text-gray-400'}
-                `}>
-                  {day}
-                </div>
-                <span className={`font-serif text-lg ${hasClasses ? 'text-[#333333]' : 'text-gray-400'}`}>
-                  {dayNames[dayMap[day]]}
-                </span>
+              {/* Day Label */}
+              <div className="w-10 flex-shrink-0 font-serif text-xl text-[#333333]">
+                {day}
               </div>
               
-              {/* Classes Column */}
-              <div className="flex-1">
-                {hasClasses ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {dayClasses.map(cls => (
-                      <div key={cls.id} className="flex items-center gap-3 p-3 rounded-xl bg-[#F4F4F6] hover:bg-[#F2DCDD] transition-colors group/card">
-                        <div className="w-1 h-8 rounded-full bg-[#333333]" />
-                        <div>
-                          <div className="font-medium text-[#333333] leading-tight group-hover/card:text-black">{cls.title}</div>
-                          <div className="text-sm text-gray-500 mt-0.5 font-medium flex items-center gap-1.5">
-                            <Clock className="w-3 h-3" />
-                            {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')}
-                          </div>
+              {/* Timeline Area */}
+              <div className="flex-1 h-full relative mx-4">
+                {/* Grid lines (optional, subtle) */}
+                <div className="absolute inset-0 flex justify-between opacity-10 pointer-events-none">
+                   {Array.from({ length: totalHours + 1 }).map((_, idx) => (
+                       <div key={idx} className="h-full w-px bg-gray-400" />
+                   ))}
+                </div>
+
+                {dayClasses.map(cls => {
+                  const { left, width } = getPosition(cls.start_time, cls.duration || 1);
+                  return (
+                    <div 
+                      key={cls.id}
+                      className="absolute top-1/2 -translate-y-1/2 h-10 rounded-full bg-[#333333] hover:bg-gray-800 transition-all cursor-pointer group shadow-sm border-2 border-white"
+                      style={{ left, width, minWidth: '24px' }}
+                      title={`${cls.title} (${format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')})`}
+                    >
+                        {/* Hover Tooltip */}
+                        <div className="opacity-0 group-hover:opacity-100 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black/90 text-white text-xs py-1.5 px-3 rounded-lg whitespace-nowrap pointer-events-none z-10 transition-opacity shadow-xl">
+                            <div className="font-medium">{cls.title}</div>
+                            <div className="text-gray-300 text-[10px]">
+                                {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')}
+                            </div>
+                            {/* Triangle arrow */}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/90" />
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="h-full flex items-center">
-                    <p className="text-sm text-gray-400 italic">No classes scheduled</p>
-                  </div>
-                )}
+                    </div>
+                  );
+                })}
               </div>
             </motion.div>
           );
