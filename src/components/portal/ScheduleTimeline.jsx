@@ -28,31 +28,34 @@ export default function ScheduleTimeline({ classes }) {
   return (
     <div className="w-full">
       {/* Time Header */}
-      <div className="relative h-6 mb-4 text-[10px] text-gray-400 uppercase tracking-widest font-medium w-full">
-        {HOURS.map((h, i) => {
-          const left = (i / 12) * 100;
-          // Don't render past 100% if 9pm is the end line
-          if (left > 100) return null; 
-          
-          return (
-            <React.Fragment key={h}>
-               <div 
-                className="absolute top-0 -translate-x-1/2 text-center w-8 font-serif"
-                style={{ left: `${left}%` }}
-              >
-                {h > 12 ? h - 12 : h}{h >= 12 && h < 24 ? 'pm' : 'am'}
-              </div>
-              {i < HOURS.length - 1 && (
-                <div 
-                   className="absolute top-1.5 -translate-x-1/2 text-center text-gray-300 text-[8px]"
-                   style={{ left: `${left + (100/12/2)}%` }}
+      <div className="flex items-center w-full mb-4">
+        <div className="w-12 flex-shrink-0" /> {/* Spacer to match day label width */}
+        <div className="flex-1 relative h-6 text-[10px] text-gray-400 uppercase tracking-widest font-medium">
+          {HOURS.map((h, i) => {
+            const left = (i / 12) * 100;
+            // Don't render past 100% if 9pm is the end line
+            if (left > 100) return null; 
+            
+            return (
+              <React.Fragment key={h}>
+                 <div 
+                  className="absolute top-0 -translate-x-1/2 text-center w-8 font-serif"
+                  style={{ left: `${left}%` }}
                 >
-                  •
+                  {h > 12 ? h - 12 : h}{h >= 12 && h < 24 ? 'pm' : 'am'}
                 </div>
-              )}
-            </React.Fragment>
-          );
-        })}
+                {i < HOURS.length - 1 && (
+                  <div 
+                     className="absolute top-1.5 -translate-x-1/2 text-center text-gray-300 text-[8px]"
+                     style={{ left: `${left + (100/12/2)}%` }}
+                  >
+                    •
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
 
       <div className="space-y-4">
