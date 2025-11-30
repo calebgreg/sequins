@@ -293,6 +293,7 @@ export default function TeacherStudio() {
   const [selectedClass, setSelectedClass] = useState(null);
   const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
   const [isSubHistoryOpen, setIsSubHistoryOpen] = useState(false);
+  const [isSubRequestOpen, setIsSubRequestOpen] = useState(false); // Global sub request state
   const [viewMode, setViewMode] = useState('list'); // 'list', 'week', 'month'
   const [activeTab, setActiveTab] = useState('classes'); // 'classes', 'admin'
   const [currentDate, setCurrentDate] = useState(new Date());
