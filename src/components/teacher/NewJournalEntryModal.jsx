@@ -14,19 +14,45 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
   const [sentiment, setSentiment] = useState('neutral');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Auto-detect tags from content
+  // Auto-detect tags from content naturally
   const detectedTags = useMemo(() => {
     if (!content) return [];
-    // Extract hashtags (e.g. #technique)
-    const hashtags = (content.match(/#[a-z0-9_]+/gi) || []).map(t => t.slice(1));
+    const lowerContent = content.toLowerCase();
+    const tags = new Set();
+
+    // 1. Class names
+    classes.forEach(cls => {
+        if (lowerContent.includes(cls.title.toLowerCase())) {
+            tags.add(cls.title);
+        }
+    });
+
+    // 2. Student Interests
+    if (student?.interests) {
+        student.interests.forEach(interest => {
+            if (lowerContent.includes(interest.toLowerCase())) {
+                tags.add(interest);
+            }
+        });
+    }
+
+    // 3. Common Dance Dictionary
+    const commonTerms = [
+        'technique', 'flexibility', 'turnout', 'posture', 'alignment', 'extension',
+        'pirouette', 'fouetté', 'plié', 'tendu', 'jeté', 'arabesque', 'attitude', 'developpé',
+        'musicality', 'performance', 'focus', 'energy', 'timing', 'rhythm',
+        'exam', 'competition', 'recital', 'choreography', 'improv', 'barre', 'center'
+    ];
     
-    // Extract class names mentioned in text (case-insensitive)
-    const classTags = classes
-        .filter(cls => content.toLowerCase().includes(cls.title.toLowerCase()))
-        .map(cls => cls.title);
+    commonTerms.forEach(term => {
+        if (lowerContent.includes(term.toLowerCase())) {
+            // Capitalize for nice display
+            tags.add(term.charAt(0).toUpperCase() + term.slice(1));
+        }
+    });
         
-    return [...new Set([...hashtags, ...classTags])];
-  }, [content, classes]);
+    return Array.from(tags);
+  }, [content, classes, student]);
 
   const handleSubmit = async () => {
     if (!content || !student) return;
@@ -107,7 +133,7 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
              <Label className="text-xs uppercase tracking-wider text-gray-400 font-bold">Observations</Label>
              <div className="relative">
                <Textarea 
-                 placeholder="Write notes here... Use #hashtags or mention class names like 'Jazz' to tag them automatically."
+                 placeholder="Just write naturally... e.g. 'Great turnout today in Ballet'. We'll handle the tagging."
                  value={content}
                  onChange={(e) => setContent(e.target.value)}
                  className="min-h-[120px] bg-gray-50 border-transparent rounded-xl resize-none focus:bg-white focus:border-[#F2DCDD] transition-all p-4 text-base mb-2"
