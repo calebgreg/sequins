@@ -61,7 +61,9 @@ export default function Students() {
 
   const filteredStudents = students.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || 
-                         s.parent_email?.toLowerCase().includes(search.toLowerCase());
+                         s.parent_email?.toLowerCase().includes(search.toLowerCase()) ||
+                         s.parent_name?.toLowerCase().includes(search.toLowerCase()) ||
+                         s.tags?.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
     const matchesBilling = billingFilter === 'all' || s.billing_method === billingFilter;
     return matchesSearch && matchesStatus && matchesBilling;
@@ -168,9 +170,9 @@ export default function Students() {
           <div className="flex items-center gap-2 w-full md:w-auto justify-end">
              <DropdownMenu>
                <DropdownMenuTrigger asChild>
-                 <Button variant="outline" className="rounded-xl border-gray-200 text-gray-600 gap-2">
+                 <Button variant="outline" className={`rounded-xl border-gray-200 gap-2 ${billingFilter !== 'all' ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'text-gray-600'}`}>
                    <CreditCard className="w-4 h-4" />
-                   {billingFilter === 'all' ? 'Billing' : billingFilter === 'auto_pay' ? 'Auto-Pay' : 'Manual'}
+                   {billingFilter === 'all' ? 'Billing Method' : billingFilter === 'auto_pay' ? 'Method: Auto-Pay' : 'Method: Manual'}
                  </Button>
                </DropdownMenuTrigger>
                <DropdownMenuContent>
