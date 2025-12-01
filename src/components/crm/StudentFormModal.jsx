@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, CreditCard, FileText } from 'lucide-react';
+import { Loader2, CreditCard, FileText, Tag } from 'lucide-react';
+import TagInput from '@/components/ui/TagInput';
 
 const COLORS = ['#F2DCDD', '#E5C0C2', '#D4A5A5', '#C8E7F5', '#E0F2F1', '#FFF9C4', '#F3E5F5'];
 
@@ -25,6 +26,7 @@ export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit =
     address: '',
     emergency_contact: '',
     interests: '',
+    tags: [],
     color: COLORS[0]
   });
 
@@ -33,7 +35,8 @@ export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit =
       setFormData({
         ...studentToEdit,
         interests: studentToEdit.interests ? studentToEdit.interests.join(', ') : '',
-        age: studentToEdit.age?.toString() || ''
+        age: studentToEdit.age?.toString() || '',
+        tags: studentToEdit.tags || []
       });
     } else {
       setFormData({
@@ -48,6 +51,7 @@ export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit =
         address: '',
         emergency_contact: '',
         interests: '',
+        tags: [],
         color: COLORS[Math.floor(Math.random() * COLORS.length)]
       });
     }
@@ -59,6 +63,7 @@ export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit =
         ...data,
         age: parseInt(data.age) || 0,
         interests: data.interests.split(',').map(s => s.trim()).filter(Boolean),
+        tags: data.tags || [],
         joined_date: studentToEdit?.joined_date || new Date().toISOString().split('T')[0]
       };
       
@@ -188,17 +193,36 @@ export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit =
                 />
               </div>
               <div className="space-y-2">
-                <Label>Phone Number</Label>
-                <Input 
-                  value={formData.phone} 
-                  onChange={e => setFormData({...formData, phone: e.target.value})} 
-                  className="rounded-xl bg-gray-50 border-transparent"
-                />
+                 <Label>Phone Number</Label>
+                 <Input 
+                   value={formData.phone} 
+                   onChange={e => setFormData({...formData, phone: e.target.value})} 
+                   className="rounded-xl bg-gray-50 border-transparent"
+                 />
+               </div>
               </div>
-            </div>
-          </div>
+              </div>
 
-          <div className="space-y-4">
+              <div className="space-y-4">
+              <div className="space-y-2">
+               <div className="flex justify-between items-center">
+                   <Label>Smart Tags</Label>
+                   <span className="text-[10px] text-gray-400 uppercase tracking-wider">AI Powered</span>
+               </div>
+               <TagInput 
+                  tags={formData.tags} 
+                  onChange={(newTags) => setFormData({...formData, tags: newTags})}
+                  enableAI={true}
+                  contextData={{
+                      name: formData.name,
+                      age: formData.age,
+                      level: formData.level,
+                      interests: formData.interests
+                  }}
+                  suggestions={['sibling', 'visual_learner', 'needs_transport', 'allergy', 'gifted', 'scholarship']}
+                  placeholder="Type tag and hit enter..."
+               />
+              </div>
             <div className="space-y-2">
                <Label>Interests (comma separated)</Label>
                <Input 
