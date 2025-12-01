@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
-import { Search, Filter, Plus, Download, Mail, MoreHorizontal, User, Phone, MapPin, Users, Edit, ArrowRight, Activity } from 'lucide-react';
+import { Search, Filter, Plus, Download, Mail, MoreHorizontal, User, Phone, MapPin, Users, Edit, ArrowRight, Activity, CreditCard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ export default function Students() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'prospect'
+  const [billingFilter, setBillingFilter] = useState('all'); // 'all', 'auto_pay', 'manual'
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -62,7 +63,8 @@ export default function Students() {
     const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || 
                          s.parent_email?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesBilling = billingFilter === 'all' || s.billing_method === billingFilter;
+    return matchesSearch && matchesStatus && matchesBilling;
   });
 
   const filteredFamilies = families.filter(f => 
@@ -167,8 +169,22 @@ export default function Students() {
              <DropdownMenu>
                <DropdownMenuTrigger asChild>
                  <Button variant="outline" className="rounded-xl border-gray-200 text-gray-600 gap-2">
+                   <CreditCard className="w-4 h-4" />
+                   {billingFilter === 'all' ? 'Billing' : billingFilter === 'auto_pay' ? 'Auto-Pay' : 'Manual'}
+                 </Button>
+               </DropdownMenuTrigger>
+               <DropdownMenuContent>
+                 <DropdownMenuItem onClick={() => setBillingFilter('all')}>All Methods</DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => setBillingFilter('auto_pay')}>Auto-Pay</DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => setBillingFilter('manual')}>Manual Invoice</DropdownMenuItem>
+               </DropdownMenuContent>
+             </DropdownMenu>
+
+             <DropdownMenu>
+               <DropdownMenuTrigger asChild>
+                 <Button variant="outline" className="rounded-xl border-gray-200 text-gray-600 gap-2">
                    <Filter className="w-4 h-4" />
-                   {statusFilter === 'all' ? 'All Status' : statusFilter}
+                   {statusFilter === 'all' ? 'Status' : statusFilter}
                  </Button>
                </DropdownMenuTrigger>
                <DropdownMenuContent>
@@ -235,9 +251,14 @@ export default function Students() {
                             <td className="p-6">
                               <div className="text-sm text-[#333333] capitalize">{student.level}</div>
                               <div className="text-xs text-gray-400">{student.age} years old</div>
-                            </td>
-                            <td className="p-6 hidden md:table-cell">
+                              </td>
+                              <td className="p-6 hidden md:table-cell">
                               <div className="flex flex-col gap-1">
+                                {student.billing_method && (
+                                  <Badge variant="outline" className={`w-fit text-[10px] mb-1 ${student.billing_method === 'auto_pay' ? 'border-indigo-200 text-indigo-600 bg-indigo-50' : 'border-gray-200 text-gray-500'}`}>
+                                     {student.billing_method === 'auto_pay' ? 'Auto-Pay' : 'Manual Bill'}
+                                  </Badge>
+                                )}
                                 {student.parent_email ? (
                                   <div className="flex items-center gap-2 text-sm text-gray-600">
                                     <Mail className="w-3 h-3" /> {student.parent_email}
