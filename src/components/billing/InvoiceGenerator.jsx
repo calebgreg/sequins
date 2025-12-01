@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, Trash2, Sparkles } from 'lucide-react';
+import { Loader2, Plus, Trash2, Sparkles, Zap } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 
 export default function InvoiceGenerator({ isOpen, onOpenChange }) {
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1); // 1: Select Family, 2: Build Invoice
   const [selectedFamily, setSelectedFamily] = useState(null);
+  const [isCalculating, setIsCalculating] = useState(false);
   
   const [invoiceData, setInvoiceData] = useState({
     title: 'Tuition Invoice',
@@ -25,6 +26,16 @@ export default function InvoiceGenerator({ isOpen, onOpenChange }) {
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
+  });
+
+  const { data: discounts = [] } = useQuery({
+    queryKey: ['discount_rules'],
+    queryFn: () => base44.entities.DiscountRule.list(),
+  });
+
+  const { data: fees = [] } = useQuery({
+    queryKey: ['fee_types'],
+    queryFn: () => base44.entities.FeeType.list(),
   });
 
   // Group by parent email for selection
@@ -100,14 +111,65 @@ export default function InvoiceGenerator({ isOpen, onOpenChange }) {
   });
 
   const handleAutoPopulate = async () => {
-    // Simulate "AI" or logic to suggest tuition based on student level/classes
-    // For now, just simple logic
-    const newItems = selectedFamily.students.map(s => ({
+    setIsCalculating(true);
+    
+    // 1. Basic Tuition
+    let items = selectedFamily.students.map(s => ({
         student_name: s.name,
         description: `${s.level === 'company' ? 'Company' : 'Standard'} Tuition - ${format(new Date(), 'MMMM')}`,
-        amount: s.level === 'company' ? 250 : 120
+        amount: s.level === 'company' ? 250 : 120, // This would come from TuitionPlan in a real scenario
+        type: 'tuition'
     }));
-    setInvoiceData(prev => ({ ...prev, items: newItems }));
+
+    // 2. Apply Sibling Discount (Logic: If more than 1 student, apply to all except the first/highest)
+    // Simplified: Apply discount to 2nd+ student
+    const siblingDiscount = discounts.find(d => d.category === 'sibling' && d.active);
+    if (siblingDiscount && selectedFamily.students.length > 1) {
+        // Sort by amount descending, skip first
+        items.sort((a, b) => b.amount - a.amount);
+        
+        for (let i = 1; i < items.length; i++) {
+           const originalAmount = items[i].amount;
+           const discountAmount = siblingDiscount.type === 'percent' 
+              ? (originalAmount * (siblingDiscount.value / 100)) 
+              : siblingDiscount.value;
+              
+           items.push({
+              student_name: items[i].student_name,
+              description: `${siblingDiscount.name} (${siblingDiscount.type === 'percent' ? siblingDiscount.value + '%' : '$' + siblingDiscount.value} off)`,
+              amount: -discountAmount, // Negative for discount
+              type: 'discount'
+           });
+        }
+    }
+
+    // 3. Apply Mandatory Fees
+    const mandatoryFees = fees.filter(f => f.is_mandatory);
+    mandatoryFees.forEach(fee => {
+       // Apply once per family or per student based on logic (assuming per student here for simplicity)
+       selectedFamily.students.forEach(s => {
+          items.push({
+             student_name: s.name,
+             description: fee.name,
+             amount: fee.amount,
+             type: 'fee'
+          });
+       });
+    });
+
+    // 4. Apply Auto-Apply Promos
+    const promos = discounts.filter(d => d.apply_automatically && d.category === 'promo' && d.active);
+    promos.forEach(promo => {
+       items.push({
+          student_name: 'Family',
+          description: promo.name,
+          amount: promo.type === 'fixed' ? -promo.value : -(items.reduce((sum, i) => sum + (i.amount > 0 ? i.amount : 0), 0) * (promo.value / 100)),
+          type: 'discount'
+       });
+    });
+
+    setInvoiceData(prev => ({ ...prev, items: items }));
+    setIsCalculating(false);
   };
 
   return (
@@ -166,8 +228,15 @@ export default function InvoiceGenerator({ isOpen, onOpenChange }) {
                 <div className="space-y-4">
                    <div className="flex justify-between items-center">
                       <Label>Line Items</Label>
-                      <Button variant="ghost" size="sm" onClick={handleAutoPopulate} className="text-indigo-600 hover:bg-indigo-50 gap-1 h-8">
-                         <Sparkles className="w-3 h-3" /> Auto-Fill Tuition
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleAutoPopulate} 
+                        disabled={isCalculating}
+                        className="text-indigo-600 hover:bg-indigo-50 gap-1 h-8 bg-indigo-50/50"
+                      >
+                         {isCalculating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
+                         {isCalculating ? 'Calculating...' : 'Smart Generate'}
                       </Button>
                    </div>
                    

@@ -28,6 +28,7 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import InvoiceGenerator from '../components/billing/InvoiceGenerator';
 import TransactionHistory from '../components/billing/TransactionHistory';
+import TuitionConfiguration from '../components/billing/TuitionConfiguration';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -75,7 +76,11 @@ export default function BillingManager() {
             <h1 className="text-4xl font-serif text-[#333333]">Financial Overview</h1>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" className="rounded-full border-gray-200 hover:bg-white gap-2">
+            <Button 
+              variant={activeTab === 'settings' ? 'default' : 'outline'}
+              className="rounded-full border-gray-200 hover:bg-white gap-2"
+              onClick={() => setActiveTab('settings')}
+            >
               <Settings className="w-4 h-4" /> Settings
             </Button>
             <Button 
@@ -94,6 +99,7 @@ export default function BillingManager() {
               { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
               { id: 'invoices', label: 'Invoices', icon: Receipt },
               { id: 'transactions', label: 'Transactions', icon: CreditCard },
+              { id: 'settings', label: 'Configuration', icon: Settings },
             ].map(tab => (
               <TabsTrigger 
                 key={tab.id} 
@@ -283,6 +289,10 @@ export default function BillingManager() {
 
           <TabsContent value="transactions">
              <TransactionHistory transactions={transactions} />
+          </TabsContent>
+
+          <TabsContent value="settings">
+             <TuitionConfiguration />
           </TabsContent>
         </Tabs>
       </div>
