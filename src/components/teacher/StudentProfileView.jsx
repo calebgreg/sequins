@@ -86,18 +86,18 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
   return (
     <div className="flex flex-col h-full bg-[#F4F4F6]">
       {/* Header */}
-      <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6] bg-opacity-90 backdrop-blur-sm">
-        <div className="flex items-center gap-6">
+      <div className="px-6 py-4 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+        <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={onBack} 
-            className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80 transition-all hover:scale-105 active:scale-95"
+            className="bg-white rounded-full w-10 h-10 shadow-sm text-[#333333] hover:bg-white/80 transition-all"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h2 className="font-serif text-3xl text-[#333333]">Student Profile</h2>
+            <h2 className="font-serif text-xl text-[#333333]">Student Profile</h2>
           </div>
         </div>
         <Button variant="outline" className="rounded-full border-gray-200 bg-white text-[#333333] gap-2 font-serif hover:bg-[#F2DCDD] hover:border-[#F2DCDD] transition-colors">
