@@ -183,6 +183,7 @@ export default function TuitionSetupWizard({ onComplete, onCancel }) {
                           </div>
                       ))}
                    </div>
+                   </div>
                 </motion.div>
             )}
 
