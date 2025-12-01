@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import StudentSelector from '../components/portal/StudentSelector';
 import BillingWidget from '../components/portal/BillingWidget';
+import BillingPortal from '../components/portal/BillingPortal';
 import ScheduleTimeline from '../components/portal/ScheduleTimeline';
 import AIChatWidget from '../components/portal/AIChatWidget';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -10,6 +11,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FamilyPortal() {
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [isBillingOpen, setIsBillingOpen] = useState(false);
+
+  // Fetch Invoices for Balance
+  const { data: invoices = [] } = useQuery({
+    queryKey: ['invoices'],
+    queryFn: () => base44.entities.Invoice.list(),
+  });
+
+  const balance = invoices
+    .filter(i => i.status === 'sent' || i.status === 'overdue')
+    .reduce((acc, curr) => acc + (curr.balance_due || 0), 0);
 
   // Fetch Students
   const { data: students = [] } = useQuery({
@@ -47,8 +59,16 @@ export default function FamilyPortal() {
           onSelect={setSelectedStudent} 
         />
         
-        <BillingWidget balance={243.79} />
+        <BillingWidget 
+          balance={balance} 
+          onClick={() => setIsBillingOpen(true)}
+        />
       </div>
+
+      <BillingPortal 
+        isOpen={isBillingOpen} 
+        onOpenChange={setIsBillingOpen} 
+      />
 
       {/* Main Content Grid */}
       <div className="flex flex-col lg:flex-row gap-12 flex-1">
