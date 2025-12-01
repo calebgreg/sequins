@@ -254,11 +254,16 @@ export default function Students() {
                               </td>
                               <td className="p-6 hidden md:table-cell">
                               <div className="flex flex-col gap-1">
-                                {student.billing_method && (
-                                  <Badge variant="outline" className={`w-fit text-[10px] mb-1 ${student.billing_method === 'auto_pay' ? 'border-indigo-200 text-indigo-600 bg-indigo-50' : 'border-gray-200 text-gray-500'}`}>
-                                     {student.billing_method === 'auto_pay' ? 'Auto-Pay' : 'Manual Bill'}
-                                  </Badge>
-                                )}
+                                <div className="flex flex-wrap gap-1 mb-1">
+                                   {student.billing_method === 'auto_pay' && (
+                                      <Badge variant="outline" className="text-[10px] border-indigo-200 text-indigo-600 bg-indigo-50">Auto-Pay</Badge>
+                                   )}
+                                   {student.tags?.slice(0, 3).map((tag, i) => (
+                                    <Badge key={i} variant="secondary" className="text-[10px] bg-[#333333] text-white font-normal border-none">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
                                 {student.parent_email ? (
                                   <div className="flex items-center gap-2 text-sm text-gray-600">
                                     <Mail className="w-3 h-3" /> {student.parent_email}
