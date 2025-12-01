@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, X, Sparkles, Camera, User, Mail, Phone, MapPin, Heart, CreditCard, FileText } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import TagInput from '@/components/ui/TagInput';
 import { motion } from 'framer-motion';
@@ -16,10 +17,21 @@ const COLORS = ['#F2DCDD', '#E5C0C2', '#D4A5A5', '#C8E7F5', '#E0F2F1', '#FFF9C4'
 
 export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit = null }) {
   const queryClient = useQueryClient();
+
+  const { data: settings } = useQuery({
+    queryKey: ['studioSettings'],
+    queryFn: async () => {
+      const res = await base44.entities.StudioSettings.list();
+      return res[0] || { levels: ['Beginner', 'Intermediate', 'Advanced'] };
+    }
+  });
+
+  const levels = settings?.levels || ['Beginner', 'Intermediate', 'Advanced'];
+
   const [formData, setFormData] = useState({
     name: '',
     age: '',
-    level: 'beginner',
+    level: levels[0],
     status: 'active',
     billing_method: 'manual',
     parent_name: '',
@@ -44,7 +56,7 @@ export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit =
       setFormData({
         name: '',
         age: '',
-        level: 'beginner',
+        level: levels[0],
         status: 'active',
         billing_method: 'manual',
         parent_name: '',
@@ -179,10 +191,9 @@ export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit =
                                       <SelectValue />
                                    </SelectTrigger>
                                    <SelectContent>
-                                      <SelectItem value="beginner">Beginner (I)</SelectItem>
-                                      <SelectItem value="intermediate">Intermediate (II)</SelectItem>
-                                      <SelectItem value="advanced">Advanced (III)</SelectItem>
-                                      <SelectItem value="company">Company</SelectItem>
+                                      {levels.map(lvl => (
+                                         <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
+                                      ))}
                                    </SelectContent>
                                 </Select>
                              </div>

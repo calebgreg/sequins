@@ -119,7 +119,7 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
                   <AvatarFallback className="text-4xl font-serif text-[#333333]">{student.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="absolute -bottom-2 -right-2 bg-[#333333] text-white text-xs font-bold px-3 py-1 rounded-full border-4 border-white shadow-sm">
-                   Level {student.level === 'beginner' ? 'I' : student.level === 'intermediate' ? 'II' : 'III'}
+                   {student.level}
                 </div>
               </div>
               

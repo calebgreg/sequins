@@ -38,7 +38,14 @@ export default function Home() {
         >
           Teacher View
         </Link>
-      </div>
+
+        <Link 
+          to={createPageUrl('Settings')}
+          className="group bg-white text-[#333333] border border-gray-200 px-6 py-4 rounded-full text-lg font-medium hover:bg-gray-50 transition-all flex items-center gap-2"
+        >
+          Settings
+        </Link>
+        </div>
       
       <p className="text-sm text-gray-400 mt-12">
         Experience the magic of perfect recall and seamless management.
