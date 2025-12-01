@@ -5,6 +5,7 @@ import Teachers from './pages/Teachers';
 import TeacherStudio from './pages/TeacherStudio';
 import Students from './pages/Students';
 import Billing from './pages/Billing';
+import Settings from './pages/Settings';
 import __Layout from './Layout.jsx';
 
 
@@ -16,6 +17,7 @@ export const PAGES = {
     "TeacherStudio": TeacherStudio,
     "Students": Students,
     "Billing": Billing,
+    "Settings": Settings,
 }
 
 export const pagesConfig = {
