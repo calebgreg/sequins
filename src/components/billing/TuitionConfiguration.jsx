@@ -10,7 +10,10 @@ import {
   Save, 
   Shield, 
   Users, 
-  Layers 
+  Layers,
+  Sparkles,
+  PenTool,
+  RotateCcw
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,11 +23,19 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import TuitionAIImport from './TuitionAIImport';
+import TuitionSetupWizard from './TuitionSetupWizard';
 
 export default function TuitionConfiguration() {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('discounts');
+  const [activeTab, setActiveTab] = useState('overview'); // overview, discounts, fees, advanced
+  const [setupMode, setSetupMode] = useState(null); // 'ai', 'wizard', null
+
+  const { data: settings = [] } = useQuery({
+    queryKey: ['studio_settings'],
+    queryFn: () => base44.entities.StudioSettings.list(),
+  });
 
   const { data: discounts = [] } = useQuery({
     queryKey: ['discount_rules'],
@@ -35,6 +46,8 @@ export default function TuitionConfiguration() {
     queryKey: ['fee_types'],
     queryFn: () => base44.entities.FeeType.list(),
   });
+
+  const studioSettings = settings[0];
 
   // --- Mutations ---
   const createDiscountMutation = useMutation({
@@ -83,28 +96,122 @@ export default function TuitionConfiguration() {
     setNewFee({ name: '', amount: '', billing_frequency: 'one_time', is_mandatory: false });
   };
 
+  // Render Setup Modes
+  if (setupMode === 'ai') {
+     return (
+        <div className="py-8">
+           <Button variant="ghost" onClick={() => setSetupMode(null)} className="mb-4">Back to Settings</Button>
+           <TuitionAIImport onComplete={() => setSetupMode(null)} onCancel={() => setSetupMode(null)} />
+        </div>
+     );
+  }
+
+  if (setupMode === 'wizard') {
+     return (
+        <div className="py-8">
+           <TuitionSetupWizard onComplete={() => setSetupMode(null)} onCancel={() => setSetupMode(null)} />
+        </div>
+     );
+  }
+
+  // If no settings exist and we are not in setup mode, show landing choice
+  if (settings.length === 0 && !setupMode) {
+      return (
+        <div className="py-12 max-w-4xl mx-auto space-y-12">
+           <div className="text-center space-y-4">
+              <h2 className="font-serif text-4xl text-[#333333]">Configure Your Tuition</h2>
+              <p className="text-xl text-gray-500 max-w-lg mx-auto">
+                 Sequins needs to understand your studio's pricing model. How would you like to start?
+              </p>
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <motion.div 
+                 whileHover={{ y: -5 }}
+                 className="bg-white rounded-[32px] p-8 shadow-lg border border-gray-100 cursor-pointer group relative overflow-hidden"
+                 onClick={() => setSetupMode('ai')}
+              >
+                 <div className="absolute top-0 right-0 bg-gradient-to-bl from-indigo-500 to-purple-600 w-32 h-32 rounded-bl-full opacity-10 group-hover:opacity-20 transition-opacity" />
+                 <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600">
+                    <Sparkles className="w-8 h-8" />
+                 </div>
+                 <h3 className="font-serif text-2xl text-[#333333] mb-2">AI Import</h3>
+                 <p className="text-gray-500 mb-6">Upload your existing tuition PDF or image. Our AI will parse your rates, discounts, and fees automatically.</p>
+                 <div className="flex items-center text-indigo-600 font-medium">
+                    Start Import <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                 </div>
+              </motion.div>
+
+              <motion.div 
+                 whileHover={{ y: -5 }}
+                 className="bg-white rounded-[32px] p-8 shadow-lg border border-gray-100 cursor-pointer group"
+                 onClick={() => setSetupMode('wizard')}
+              >
+                 <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-6 text-gray-700">
+                    <PenTool className="w-8 h-8" />
+                 </div>
+                 <h3 className="font-serif text-2xl text-[#333333] mb-2">Manual Builder</h3>
+                 <p className="text-gray-500 mb-6">Walk through our step-by-step wizard to define your pricing model, discounts, and studio fees.</p>
+                 <div className="flex items-center text-gray-900 font-medium">
+                    Start Builder <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                 </div>
+              </motion.div>
+           </div>
+        </div>
+      );
+  }
+
+  // Main Configuration Dashboard
   return (
     <div className="space-y-8">
-      <div className="bg-[#333333] text-white p-8 rounded-[32px] relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-        <div className="relative z-10 flex justify-between items-center">
-          <div>
-            <h2 className="font-serif text-3xl mb-2">Tuition Architecture</h2>
-            <p className="text-white/60">Configure the rules engine for automated billing.</p>
-          </div>
-          <Settings className="w-12 h-12 text-white/20" />
+      <div className="bg-[#333333] text-white p-8 rounded-[32px] relative overflow-hidden flex justify-between items-center">
+        <div className="relative z-10">
+           <div className="flex items-center gap-3 mb-2">
+              <h2 className="font-serif text-3xl">{studioSettings?.name || 'Studio'} Architecture</h2>
+              <Badge variant="outline" className="text-white border-white/30 capitalize">
+                 {studioSettings?.pricing_model?.replace('_', ' ') || 'Standard'}
+              </Badge>
+           </div>
+           <p className="text-white/60">Managing {discounts.length} discounts and {fees.length} fees.</p>
+        </div>
+        <div className="flex gap-3 relative z-10">
+           <Button variant="outline" className="bg-white/10 border-white/10 text-white hover:bg-white/20 hover:text-white gap-2" onClick={() => setSetupMode('ai')}>
+              <Sparkles className="w-4 h-4" /> AI Re-Import
+           </Button>
+           <Button variant="outline" className="bg-white/10 border-white/10 text-white hover:bg-white/20 hover:text-white gap-2" onClick={() => setSetupMode('wizard')}>
+              <RotateCcw className="w-4 h-4" /> Reset Flow
+           </Button>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-white p-1 rounded-full border border-gray-100 inline-flex h-auto shadow-sm mb-6">
+          <TabsTrigger value="overview" className="rounded-full px-6 py-2.5 gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
+            <Settings className="w-4 h-4" /> General
+          </TabsTrigger>
           <TabsTrigger value="discounts" className="rounded-full px-6 py-2.5 gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
-            <Percent className="w-4 h-4" /> Discount Rules
+            <Percent className="w-4 h-4" /> Discounts
           </TabsTrigger>
           <TabsTrigger value="fees" className="rounded-full px-6 py-2.5 gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
-            <DollarSign className="w-4 h-4" /> Fee Structure
+            <DollarSign className="w-4 h-4" /> Fees
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+           <Card className="rounded-[32px] border-none shadow-sm bg-white p-6">
+              <h3 className="font-serif text-xl mb-4">Studio Settings</h3>
+              <div className="grid grid-cols-2 gap-6">
+                 <div className="bg-gray-50 p-4 rounded-2xl">
+                    <Label className="text-gray-500 text-xs uppercase tracking-wider font-bold">Pricing Model</Label>
+                    <div className="text-lg font-medium capitalize mt-1">{studioSettings?.pricing_model?.replace('_', ' ') || 'Not set'}</div>
+                 </div>
+                 <div className="bg-gray-50 p-4 rounded-2xl">
+                    <Label className="text-gray-500 text-xs uppercase tracking-wider font-bold">Program Type</Label>
+                    <div className="text-lg font-medium capitalize mt-1">{studioSettings?.type || 'Not set'}</div>
+                 </div>
+              </div>
+           </Card>
+        </TabsContent>
 
         <TabsContent value="discounts" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
