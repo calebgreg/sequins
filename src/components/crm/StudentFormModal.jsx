@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Loader2, CreditCard, FileText } from 'lucide-react';
 
 const COLORS = ['#F2DCDD', '#E5C0C2', '#D4A5A5', '#C8E7F5', '#E0F2F1', '#FFF9C4', '#F3E5F5'];
 
@@ -40,6 +41,7 @@ export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit =
         age: '',
         level: 'beginner',
         status: 'active',
+        billing_method: 'manual',
         parent_name: '',
         parent_email: '',
         phone: '',
@@ -141,6 +143,28 @@ export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit =
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="col-span-1 md:col-span-2 bg-gray-50 p-4 rounded-xl space-y-3">
+               <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Billing Preference</Label>
+               <RadioGroup 
+                  value={formData.billing_method || 'manual'} 
+                  onValueChange={(v) => setFormData({...formData, billing_method: v})}
+                  className="flex gap-4"
+               >
+                  <div className={`flex items-center space-x-2 bg-white px-4 py-3 rounded-lg border flex-1 cursor-pointer transition-colors ${formData.billing_method === 'auto_pay' ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-gray-200 hover:border-gray-300'}`}>
+                     <RadioGroupItem value="auto_pay" id="auto" />
+                     <Label htmlFor="auto" className="cursor-pointer flex items-center gap-2 w-full font-medium">
+                        <CreditCard className="w-4 h-4 text-indigo-500" /> Auto-Pay
+                     </Label>
+                  </div>
+                  <div className={`flex items-center space-x-2 bg-white px-4 py-3 rounded-lg border flex-1 cursor-pointer transition-colors ${formData.billing_method === 'manual' ? 'border-gray-500 ring-1 ring-gray-500' : 'border-gray-200 hover:border-gray-300'}`}>
+                     <RadioGroupItem value="manual" id="manual" />
+                     <Label htmlFor="manual" className="cursor-pointer flex items-center gap-2 w-full font-medium">
+                        <FileText className="w-4 h-4 text-gray-500" /> Manual Invoice
+                     </Label>
+                  </div>
+               </RadioGroup>
             </div>
 
             {/* Family Info */}
