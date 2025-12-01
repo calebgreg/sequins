@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, Trash2, Sparkles, Zap } from 'lucide-react';
+import { Loader2, Plus, Trash2, Sparkles, Zap, Calculator } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 
 export default function InvoiceGenerator({ isOpen, onOpenChange }) {
@@ -37,6 +37,18 @@ export default function InvoiceGenerator({ isOpen, onOpenChange }) {
     queryKey: ['fee_types'],
     queryFn: () => base44.entities.FeeType.list(),
   });
+
+  const { data: settingsList = [] } = useQuery({
+    queryKey: ['studio_settings'],
+    queryFn: () => base44.entities.StudioSettings.list(),
+  });
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => base44.entities.DanceClass.list(),
+  });
+
+  const settings = settingsList[0] || { pricing_model: 'per_class', hourly_rate_tiers: [] };
 
   // Group by parent email for selection
   const families = React.useMemo(() => {
@@ -113,13 +125,38 @@ export default function InvoiceGenerator({ isOpen, onOpenChange }) {
   const handleAutoPopulate = async () => {
     setIsCalculating(true);
     
-    // 1. Basic Tuition
-    let items = selectedFamily.students.map(s => ({
-        student_name: s.name,
-        description: `${s.level === 'company' ? 'Company' : 'Standard'} Tuition - ${format(new Date(), 'MMMM')}`,
-        amount: s.level === 'company' ? 250 : 120, // This would come from TuitionPlan in a real scenario
-        type: 'tuition'
-    }));
+    // 1. Basic Tuition (Calculated based on Settings)
+    let items = [];
+    
+    selectedFamily.students.forEach(s => {
+        // Check assignments logic or settings
+        const studentClasses = classes.filter(c => c.student_names?.includes(s.name));
+        let amount = 0;
+        let desc = 'Tuition';
+
+        if (settings.pricing_model === 'hourly') {
+            const hours = studentClasses.reduce((sum, c) => sum + (c.duration || 1), 0);
+            // Find tier
+            const tiers = [...(settings.hourly_rate_tiers || [])].sort((a, b) => b.hours - a.hours);
+            const tier = tiers.find(t => hours >= t.hours) || tiers[tiers.length - 1];
+            amount = tier ? tier.rate : (hours * 15);
+            desc = `Hourly Tuition (${hours} hrs)`;
+        } else {
+            // Per Class
+            amount = studentClasses.reduce((sum, c) => sum + (c.tuition_cost || 0), 0);
+            desc = `Class Tuition (${studentClasses.length} classes)`;
+        }
+        
+        // Minimal fallback
+        if (amount === 0) amount = 120; 
+
+        items.push({
+            student_name: s.name,
+            description: desc,
+            amount: amount,
+            type: 'tuition'
+        });
+    });
 
     // 2. Apply Sibling Discount (Logic: If more than 1 student, apply to all except the first/highest)
     // Simplified: Apply discount to 2nd+ student
