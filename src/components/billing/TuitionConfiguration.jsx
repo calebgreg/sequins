@@ -116,14 +116,14 @@ export default function TuitionConfiguration() {
 
   // If no settings exist and we are not in setup mode, show landing choice
   if (settings.length === 0 && !setupMode) {
-      return (
-        <div className="py-12 max-w-4xl mx-auto space-y-12">
-           <div className="text-center space-y-4">
-              <h2 className="font-serif text-4xl text-[#333333]">Configure Your Tuition</h2>
-              <p className="text-xl text-gray-500 max-w-lg mx-auto">
-                 Sequins needs to understand your studio's pricing model. How would you like to start?
-              </p>
-           </div>
+     return (
+       <div className="py-12 max-w-4xl mx-auto space-y-12">
+          <div className="text-center space-y-4">
+             <h2 className="font-serif text-4xl text-[#333333]">Configure Your Studio</h2>
+             <p className="text-xl text-gray-500 max-w-lg mx-auto">
+                Sequins needs to understand your studio's identity and pricing. How would you like to start?
+             </p>
+          </div>
 
            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <motion.div 
@@ -153,65 +153,65 @@ export default function TuitionConfiguration() {
                  <h3 className="font-serif text-2xl text-[#333333] mb-2">Manual Builder</h3>
                  <p className="text-gray-500 mb-6">Walk through our step-by-step wizard to define your pricing model, discounts, and studio fees.</p>
                  <div className="flex items-center text-gray-900 font-medium">
-                    Start Builder <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                   Start Builder <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
                  </div>
-              </motion.div>
-           </div>
-        </div>
-      );
-  }
+                 </motion.div>
+                 </div>
+                 </div>
+                 );
+                 }
 
-  // Main Configuration Dashboard
-  return (
-    <div className="space-y-8">
-      <div className="bg-[#333333] text-white p-8 rounded-[32px] relative overflow-hidden flex justify-between items-center">
-        <div className="relative z-10">
-           <div className="flex items-center gap-3 mb-2">
-              <h2 className="font-serif text-3xl">{studioSettings?.name || 'Studio'} Architecture</h2>
-              <Badge variant="outline" className="text-white border-white/30 capitalize">
-                 {studioSettings?.pricing_model?.replace('_', ' ') || 'Standard'}
-              </Badge>
-           </div>
-           <p className="text-white/60">Managing {discounts.length} discounts and {fees.length} fees.</p>
-        </div>
-        <div className="flex gap-3 relative z-10">
-           <Button variant="outline" className="bg-white/10 border-white/10 text-white hover:bg-white/20 hover:text-white gap-2" onClick={() => setSetupMode('ai')}>
-              <Sparkles className="w-4 h-4" /> AI Re-Import
-           </Button>
-           <Button variant="outline" className="bg-white/10 border-white/10 text-white hover:bg-white/20 hover:text-white gap-2" onClick={() => setSetupMode('wizard')}>
-              <RotateCcw className="w-4 h-4" /> Reset Flow
-           </Button>
-        </div>
-      </div>
+                 // Main Configuration Dashboard
+                 return (
+                 <div className="space-y-8">
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-white p-1 rounded-full border border-gray-100 inline-flex h-auto shadow-sm mb-6">
-          <TabsTrigger value="overview" className="rounded-full px-6 py-2.5 gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
-            <Settings className="w-4 h-4" /> General
-          </TabsTrigger>
-          <TabsTrigger value="discounts" className="rounded-full px-6 py-2.5 gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
-            <Percent className="w-4 h-4" /> Discounts
-          </TabsTrigger>
-          <TabsTrigger value="fees" className="rounded-full px-6 py-2.5 gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
-            <DollarSign className="w-4 h-4" /> Fees
-          </TabsTrigger>
-        </TabsList>
+                 {/* Setup Actions */}
+                 <div className="flex justify-end gap-3 mb-4">
+                 <Button variant="ghost" size="sm" className="text-gray-400 hover:text-[#333333] gap-2" onClick={() => setSetupMode('ai')}>
+                 <Sparkles className="w-4 h-4" /> AI Re-Import
+                 </Button>
+                 <Button variant="ghost" size="sm" className="text-gray-400 hover:text-[#333333] gap-2" onClick={() => setSetupMode('wizard')}>
+                 <RotateCcw className="w-4 h-4" /> Run Setup Wizard
+                 </Button>
+                 </div>
 
-        <TabsContent value="overview" className="space-y-6">
-           <Card className="rounded-[32px] border-none shadow-sm bg-white p-6">
-              <h3 className="font-serif text-xl mb-4">Studio Settings</h3>
-              <div className="grid grid-cols-2 gap-6">
+                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                 <TabsList className="bg-white p-1 rounded-full border border-gray-100 inline-flex h-auto shadow-sm mb-6">
+                 <TabsTrigger value="overview" className="rounded-full px-6 py-2.5 gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
+                 <Settings className="w-4 h-4" /> Config
+                 </TabsTrigger>
+                 <TabsTrigger value="discounts" className="rounded-full px-6 py-2.5 gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
+                 <Percent className="w-4 h-4" /> Discounts
+                 </TabsTrigger>
+                 <TabsTrigger value="fees" className="rounded-full px-6 py-2.5 gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
+                 <DollarSign className="w-4 h-4" /> Fees
+                 </TabsTrigger>
+                 </TabsList>
+
+                 <TabsContent value="overview" className="space-y-6">
+                 <Card className="rounded-[32px] border-none shadow-sm bg-white p-6">
+                 <h3 className="font-serif text-xl mb-4">Pricing Architecture</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div className="bg-gray-50 p-4 rounded-2xl">
-                    <Label className="text-gray-500 text-xs uppercase tracking-wider font-bold">Pricing Model</Label>
-                    <div className="text-lg font-medium capitalize mt-1">{studioSettings?.pricing_model?.replace('_', ' ') || 'Not set'}</div>
+                   <Label className="text-gray-500 text-xs uppercase tracking-wider font-bold">Pricing Model</Label>
+                   <div className="text-lg font-medium capitalize mt-1">{studioSettings?.pricing_model?.replace('_', ' ') || 'Not set'}</div>
                  </div>
-                 <div className="bg-gray-50 p-4 rounded-2xl">
-                    <Label className="text-gray-500 text-xs uppercase tracking-wider font-bold">Program Type</Label>
-                    <div className="text-lg font-medium capitalize mt-1">{studioSettings?.type || 'Not set'}</div>
+                 {studioSettings?.pricing_model === 'hourly' && (
+                   <div className="bg-gray-50 p-4 rounded-2xl">
+                       <Label className="text-gray-500 text-xs uppercase tracking-wider font-bold">Rate Tiers</Label>
+                       <div className="text-sm mt-2 space-y-1">
+                           {studioSettings?.hourly_rate_tiers?.map((tier, i) => (
+                               <div key={i} className="flex justify-between">
+                                   <span>{tier.hours} hrs</span>
+                                   <span className="font-bold">${tier.rate}</span>
+                               </div>
+                           ))}
+                       </div>
+                   </div>
+                 )}
                  </div>
-              </div>
-           </Card>
-        </TabsContent>
+                 </Card>
+                 </TabsContent>
 
         <TabsContent value="discounts" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

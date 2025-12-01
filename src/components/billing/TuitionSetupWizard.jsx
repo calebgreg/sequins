@@ -28,6 +28,7 @@ export default function TuitionSetupWizard({ onComplete, onCancel }) {
   
   // Form State
   const [config, setConfig] = useState({
+    studioName: '',
     studioType: 'mixed', // competitive, recreational, mixed
     pricingModel: 'per_class', // hourly, per_class
     hourlyRates: [{ hours: 1, rate: 60 }, { hours: 2, rate: 110 }], // Default example
@@ -48,11 +49,19 @@ export default function TuitionSetupWizard({ onComplete, onCancel }) {
     mutationFn: async () => {
         // 1. Save Settings
         const existingSettings = await base44.entities.StudioSettings.list();
+        
+        // Intelligent Level Defaults based on Type
+        let defaultLevels = ["Beginner", "Intermediate", "Advanced"];
+        if (config.studioType === 'competitive') defaultLevels = ["Mini", "Junior", "Teen", "Senior", "Elite"];
+        if (config.studioType === 'recreational') defaultLevels = ["Preschool", "Beginner", "Intermediate", "Advanced", "Adult"];
+        if (config.studioType === 'mixed') defaultLevels = ["Beginner", "Intermediate", "Advanced", "Company", "Pre-Pro"];
+
         const settingsData = {
-            name: "My Studio", // Should ideally come from user or context
+            name: config.studioName || "My Studio",
             type: config.studioType,
             pricing_model: config.pricingModel,
-            hourly_rate_tiers: config.pricingModel === 'hourly' ? config.hourlyRates : []
+            hourly_rate_tiers: config.pricingModel === 'hourly' ? config.hourlyRates : [],
+            levels: defaultLevels
         };
 
         if (existingSettings.length > 0) {
@@ -120,21 +129,34 @@ export default function TuitionSetupWizard({ onComplete, onCancel }) {
       <div className="flex-1">
         <AnimatePresence mode="wait">
             
-            {/* STEP 1: Studio Type */}
+            {/* STEP 1: Studio Profile */}
             {step === 1 && (
-                <motion.div 
-                   key="step1"
-                   initial={{ opacity: 0, x: 20 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   exit={{ opacity: 0, x: -20 }}
-                   className="space-y-6"
-                >
-                   <div className="text-center mb-8">
-                      <h2 className="font-serif text-3xl text-[#333333] mb-2">Studio Profile</h2>
-                      <p className="text-gray-500">What kind of dance programs do you run?</p>
-                   </div>
+               <motion.div 
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-6"
+               >
+                  <div className="text-center mb-8">
+                     <h2 className="font-serif text-3xl text-[#333333] mb-2">Studio Identity</h2>
+                     <p className="text-gray-500">Let's start with the basics.</p>
+                  </div>
 
-                   <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                     <Label>Studio Name</Label>
+                     <Input 
+                       placeholder="e.g. Center Stage Dance" 
+                       value={config.studioName}
+                       onChange={e => setConfig({...config, studioName: e.target.value})}
+                       className="h-12 text-lg"
+                       autoFocus
+                     />
+                  </div>
+
+                  <div className="space-y-2 pt-4">
+                      <Label>Program Type</Label>
+                      <div className="grid grid-cols-1 gap-4">
                       {[
                           { id: 'recreational', title: 'Recreational', desc: 'Focus on fun, learning, and annual recitals.', icon: Music2 },
                           { id: 'competitive', title: 'Competitive', desc: 'Teams, competitions, and intensive training.', icon: Trophy },
