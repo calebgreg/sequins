@@ -29,12 +29,15 @@ import { motion } from 'framer-motion';
 import InvoiceGenerator from '../components/billing/InvoiceGenerator';
 import TransactionHistory from '../components/billing/TransactionHistory';
 import TuitionConfiguration from '../components/billing/TuitionConfiguration';
+import TuitionAssignment from '../components/billing/TuitionAssignment';
+import BillingCycleRun from '../components/billing/BillingCycleRun';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
 export default function BillingManager() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+  const [isBillingRunOpen, setIsBillingRunOpen] = useState(false);
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
@@ -81,13 +84,13 @@ export default function BillingManager() {
               className="rounded-full border-gray-200 hover:bg-white gap-2"
               onClick={() => setActiveTab('settings')}
             >
-              <Settings className="w-4 h-4" /> Settings
+              <Settings className="w-4 h-4" /> Config
             </Button>
             <Button 
-              onClick={() => setIsGeneratorOpen(true)}
+              onClick={() => setIsBillingRunOpen(true)}
               className="rounded-full bg-[#333333] text-white hover:bg-black gap-2 shadow-lg hover:scale-105 transition-transform"
             >
-              <Plus className="w-4 h-4" /> Create Invoice
+              <Wallet className="w-4 h-4" /> Run Billing Cycle
             </Button>
           </div>
         </div>
@@ -97,8 +100,8 @@ export default function BillingManager() {
           <TabsList className="bg-white p-1 rounded-full border border-gray-100 inline-flex h-auto shadow-sm mb-8">
             {[
               { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
-              { id: 'invoices', label: 'Invoices', icon: Receipt },
-              { id: 'transactions', label: 'Transactions', icon: CreditCard },
+              { id: 'assignments', label: 'Assignments', icon: Users },
+              { id: 'invoices', label: 'History', icon: Receipt },
               { id: 'settings', label: 'Configuration', icon: Settings },
             ].map(tab => (
               <TabsTrigger 
@@ -110,6 +113,10 @@ export default function BillingManager() {
               </TabsTrigger>
             ))}
           </TabsList>
+
+          <TabsContent value="assignments">
+             <TuitionAssignment />
+          </TabsContent>
 
           <TabsContent value="dashboard" className="space-y-8 focus:outline-none">
             {/* Metrics Grid */}
@@ -199,7 +206,10 @@ export default function BillingManager() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
                     <h3 className="font-serif text-2xl mb-2">Auto-Billing</h3>
                     <p className="text-white/60 text-sm mb-6">Run monthly tuition for all active students.</p>
-                    <Button className="w-full bg-white text-[#333333] hover:bg-gray-100 rounded-full">
+                    <Button 
+                      onClick={() => setIsBillingRunOpen(true)}
+                      className="w-full bg-white text-[#333333] hover:bg-gray-100 rounded-full"
+                    >
                        Run Batch Process
                     </Button>
                  </div>
@@ -300,6 +310,11 @@ export default function BillingManager() {
       <InvoiceGenerator 
          isOpen={isGeneratorOpen} 
          onOpenChange={setIsGeneratorOpen} 
+      />
+
+      <BillingCycleRun 
+         isOpen={isBillingRunOpen} 
+         onOpenChange={setIsBillingRunOpen} 
       />
     </div>
   );
