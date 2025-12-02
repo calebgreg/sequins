@@ -6,6 +6,7 @@ import TeacherStudio from './pages/TeacherStudio';
 import Students from './pages/Students';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
+import Features from './pages/Features';
 import __Layout from './Layout.jsx';
 
 
@@ -18,6 +19,7 @@ export const PAGES = {
     "Students": Students,
     "Billing": Billing,
     "Settings": Settings,
+    "Features": Features,
 }
 
 export const pagesConfig = {
