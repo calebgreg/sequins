@@ -107,6 +107,11 @@ export default function Home() {
         </div>
         
         <div className="flex items-center gap-4">
+           <Link to={createPageUrl('Features')}>
+              <Button className="rounded-full bg-[#333333] text-white hover:bg-black px-6">
+                 View Features
+              </Button>
+           </Link>
            <Button variant="outline" size="icon" className="rounded-full w-12 h-12 border-gray-200 hover:bg-white hover:shadow-md transition-all relative">
               <Bell className="w-5 h-5 text-gray-600" />
               <span className="absolute top-3 right-3 w-2 h-2 bg-[#F2DCDD] rounded-full border border-white"></span>
