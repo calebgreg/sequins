@@ -15,65 +15,84 @@ export default function AIAnalysisModal({ isOpen, onOpenChange }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-white rounded-[32px] p-0 overflow-hidden border-none shadow-2xl">
-        <div className="bg-gradient-to-r from-[#E0F2F1] to-[#E8EAF6] p-8 relative overflow-hidden">
-           <Sparkles className="absolute top-0 right-0 w-64 h-64 text-white opacity-20 -translate-y-1/2 translate-x-1/4" />
+      <DialogContent className="max-w-xl bg-white rounded-[32px] p-0 overflow-hidden border-none shadow-2xl max-h-[85vh] flex flex-col">
+        
+        {/* Header - Fixed */}
+        <div className="bg-[#333333] p-6 md:p-8 relative overflow-hidden shrink-0">
+           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-4">
-                 <div className="bg-white/30 p-2 rounded-xl backdrop-blur-sm">
-                    <Sparkles className="w-5 h-5 text-teal-700" />
+              <div className="flex items-center justify-between mb-4">
+                 <div className="flex items-center gap-2">
+                    <div className="bg-white/10 p-1.5 rounded-lg backdrop-blur-sm text-white">
+                       <Sparkles className="w-4 h-4" />
+                    </div>
+                    <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">Sequins AI</span>
                  </div>
-                 <span className="text-xs font-bold text-teal-800 uppercase tracking-wider">Insight Analysis</span>
+                 <span className="text-xs font-serif text-white/40 italic">Generated just now</span>
               </div>
-              <h2 className="font-serif text-3xl text-[#333333] mb-2">Jazz Attendance Surge</h2>
-              <p className="text-[#333333]/70 text-lg">Detailed breakdown of the 12% increase in class participation.</p>
+              <h2 className="font-serif text-2xl md:text-3xl text-white mb-2 leading-tight">Jazz Attendance Surge</h2>
+              <p className="text-white/60 text-sm md:text-base font-light">Analyzing the 12% participation increase.</p>
            </div>
         </div>
 
-        <div className="p-8 space-y-8">
-           {/* Key Metrics Grid */}
-           <div className="grid grid-cols-3 gap-4">
-              <div className="bg-[#F4F4F6] p-4 rounded-2xl text-center">
-                 <div className="text-gray-500 text-xs uppercase font-bold mb-1">Current Cap</div>
-                 <div className="text-2xl font-serif text-[#333333]">94%</div>
+        {/* Scrollable Content */}
+        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
+           
+           {/* Elegant Metrics Row */}
+           <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-8">
+              <div className="text-center px-2">
+                 <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Capacity</div>
+                 <div className="text-3xl font-serif text-[#333333]">94<span className="text-sm text-gray-400 ml-0.5">%</span></div>
               </div>
-              <div className="bg-[#F4F4F6] p-4 rounded-2xl text-center">
-                 <div className="text-gray-500 text-xs uppercase font-bold mb-1">Waitlisted</div>
-                 <div className="text-2xl font-serif text-[#333333]">8</div>
+              <div className="w-px h-8 bg-gray-100" />
+              <div className="text-center px-2">
+                 <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Waitlist</div>
+                 <div className="text-3xl font-serif text-[#333333]">8</div>
               </div>
-              <div className="bg-[#F4F4F6] p-4 rounded-2xl text-center">
-                 <div className="text-gray-500 text-xs uppercase font-bold mb-1">Revenue Opp</div>
-                 <div className="text-2xl font-serif text-green-600">+$420/mo</div>
+              <div className="w-px h-8 bg-gray-100" />
+              <div className="text-center px-2">
+                 <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Opportunity</div>
+                 <div className="text-3xl font-serif text-green-600">+$420</div>
               </div>
            </div>
 
-           {/* Chart */}
-           <div className="h-64 w-full">
+           {/* Simplified Chart */}
+           <div className="h-48 w-full mb-8">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#999'}} dy={10} />
-                  <Tooltip 
-                    cursor={{fill: '#F4F4F6'}}
-                    contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f7f7f7" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fontSize: 10, fill: '#999', fontFamily: 'var(--font-sans)'}} 
+                    dy={10} 
                   />
-                  <Bar dataKey="attendance" fill="#333333" radius={[4, 4, 0, 0]} barSize={40} />
+                  <Tooltip 
+                    cursor={{fill: '#F4F4F6', radius: 4}}
+                    contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', padding: '8px 12px'}}
+                    itemStyle={{fontSize: '12px', color: '#333'}}
+                  />
+                  <Bar dataKey="attendance" fill="#333333" radius={[4, 4, 4, 4]} barSize={32} />
                 </BarChart>
               </ResponsiveContainer>
            </div>
 
-           {/* Recommendation */}
-           <div className="bg-indigo-50 p-6 rounded-2xl flex gap-4 items-start">
-              <TrendingUp className="w-6 h-6 text-indigo-600 shrink-0 mt-1" />
-              <div>
-                 <h4 className="font-bold text-indigo-900 mb-1">Recommended Action</h4>
-                 <p className="text-indigo-700/80 text-sm leading-relaxed mb-4">
-                    Based on waitlist trends and current capacity, opening a "Jazz Level 2" slot on Tuesdays at 5:30 PM has a <strong>High Probability</strong> of filling immediately.
+           {/* Action Card */}
+           <div className="bg-gradient-to-br from-[#F4F4F6] to-white border border-gray-100 p-6 rounded-2xl relative overflow-hidden">
+              <div className="relative z-10">
+                 <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className="w-4 h-4 text-[#333333]" />
+                    <h4 className="font-serif text-lg text-[#333333]">Recommendation</h4>
+                 </div>
+                 <p className="text-gray-500 text-sm leading-relaxed mb-6">
+                    Open a <strong>Jazz Level 2</strong> slot on Tuesdays at 5:30 PM. Our model predicts high fill rate based on current waitlist overlap.
                  </p>
-                 <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 text-sm">
+                 <Button className="w-full bg-[#333333] hover:bg-black text-white rounded-xl h-12 font-medium shadow-lg shadow-gray-200">
                     Create Class Slot <ArrowRight className="w-4 h-4 ml-2" />
                  </Button>
               </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-[#F2DCDD] opacity-30 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
            </div>
         </div>
       </DialogContent>
