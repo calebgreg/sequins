@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import AIAnalysisModal from '@/components/dashboard/AIAnalysisModal';
 import { base44 } from "@/api/base44Client";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -23,6 +24,8 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 
 export default function Home() {
+  const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
+
   const { data: settings, isLoading: settingsLoading } = useQuery({
     queryKey: ['studioSettings'],
     queryFn: async () => {
@@ -197,7 +200,10 @@ export default function Home() {
                        "Attendance is up 12% in your Jazz classes this month. Consider adding a Level 2 slot next semester."
                     </p>
                  </div>
-                 <Button className="bg-white text-[#333333] hover:bg-white/90 rounded-full px-6 font-medium shadow-sm">
+                 <Button 
+                    onClick={() => setIsAnalysisOpen(true)}
+                    className="bg-white text-[#333333] hover:bg-white/90 rounded-full px-6 font-medium shadow-sm"
+                 >
                     View Analysis
                  </Button>
               </div>
@@ -205,6 +211,8 @@ export default function Home() {
            </div>
 
         </div>
+
+        <AIAnalysisModal isOpen={isAnalysisOpen} onOpenChange={setIsAnalysisOpen} />
 
         {/* Right Column: Schedule & Feed (4 cols) */}
         <div className="md:col-span-4 space-y-6">
