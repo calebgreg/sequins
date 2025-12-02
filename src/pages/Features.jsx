@@ -1,17 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Users, 
-  Calendar, 
-  CreditCard, 
-  Sparkles, 
-  Shield, 
-  Zap, 
-  BarChart3, 
+import {
+  Users,
+  Calendar,
+  CreditCard,
+  Sparkles,
+  Shield,
+  Zap,
+  BarChart3,
   Smartphone,
   CheckCircle2,
-  ArrowRight
-} from 'lucide-react';
+  ArrowRight } from
+'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -24,14 +24,14 @@ export default function Features() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-6"
-        >
+          className="space-y-6">
+
           <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 mb-4">
              <Sparkles className="w-4 h-4 text-teal-600" />
              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">The Sequins Platform</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-serif text-[#333333] leading-[0.9]">
-            Studio management, <br/>
+            Studio management, <br />
             <span className="italic text-gray-400">reimagined.</span>
           </h1>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
@@ -42,42 +42,42 @@ export default function Features() {
 
       {/* Feature Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
-        <FeatureCard 
+        <FeatureCard
           icon={Users}
           title="Family CRM"
           description="Holistic profiles for students and parents. Track attendance trends, skill progression, and family billing history in one view."
-          color="bg-indigo-50 text-indigo-600"
-        />
-        <FeatureCard 
+          color="bg-indigo-50 text-indigo-600" />
+
+        <FeatureCard
           icon={Calendar}
           title="Smart Scheduling"
           description="Drag-and-drop class management with conflict detection. Manage room allocation and teacher availability effortlessly."
-          color="bg-amber-50 text-amber-600"
-        />
-        <FeatureCard 
+          color="bg-amber-50 text-amber-600" />
+
+        <FeatureCard
           icon={CreditCard}
           title="Automated Billing"
           description="Set it and forget it. Tuition calculation, invoice generation, and auto-pay processing handling complex family discounts."
-          color="bg-emerald-50 text-emerald-600"
-        />
-        <FeatureCard 
+          color="bg-emerald-50 text-emerald-600" />
+
+        <FeatureCard
           icon={Smartphone}
           title="Teacher Studio"
           description="A dedicated mobile-first interface for instructors to take attendance, record voice notes, and manage lesson plans."
-          color="bg-pink-50 text-pink-600"
-        />
-        <FeatureCard 
+          color="bg-pink-50 text-pink-600" />
+
+        <FeatureCard
           icon={Sparkles}
           title="AI Insights"
           description="Predictive analytics that alert you to retention risks and revenue opportunities before they happen."
-          color="bg-purple-50 text-purple-600"
-        />
-        <FeatureCard 
+          color="bg-purple-50 text-purple-600" />
+
+        <FeatureCard
           icon={Shield}
           title="Secure Portal"
           description="A beautiful, branded experience for parents to view schedules, pay bills, and communicate with staff."
-          color="bg-blue-50 text-blue-600"
-        />
+          color="bg-blue-50 text-blue-600" />
+
       </div>
 
       {/* Detailed Breakdown Section */}
@@ -118,7 +118,7 @@ export default function Features() {
               <div className="w-12 h-12 bg-[#333333] rounded-2xl flex items-center justify-center text-white mb-4">
                  <Smartphone className="w-6 h-6" />
               </div>
-              <h2 className="text-4xl font-serif text-[#333333]">Empower your instructors.</h2>
+              <h2 className="text-4xl font-serif text-[#333333]">Empower your teachers.</h2>
               <p className="text-lg text-gray-500 leading-relaxed">
                  Give your teachers the tools they need without the administrative burden. Our Teacher Studio works perfectly on mobile devices right inside the studio.
               </p>
@@ -192,16 +192,16 @@ export default function Features() {
             </div>
          </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 function FeatureCard({ icon: Icon, title, description, color }) {
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ y: -5 }}
-      className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-lg transition-all group"
-    >
+      className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-lg transition-all group">
+
       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${color} group-hover:scale-110 transition-transform`}>
         <Icon className="w-7 h-7" />
       </div>
@@ -209,6 +209,6 @@ function FeatureCard({ icon: Icon, title, description, color }) {
       <p className="text-gray-500 leading-relaxed">
         {description}
       </p>
-    </motion.div>
-  );
+    </motion.div>);
+
 }
