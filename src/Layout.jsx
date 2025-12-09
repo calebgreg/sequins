@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import AppSidebar from './components/layout/AppSidebar';
+import CommandMenu from './components/layout/CommandMenu';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from 'lucide-react';
@@ -8,6 +9,7 @@ import { Menu } from 'lucide-react';
 export default function Layout({ children }) {
   const location = useLocation();
   const isTeacherStudio = location.pathname.includes('TeacherStudio');
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
 
   // If on TeacherStudio, let it handle its own layout (it has its own sidebar)
   if (isTeacherStudio) {
@@ -16,8 +18,13 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#F4F4F6] flex font-sans text-[#333333]">
+      <CommandMenu open={isCommandOpen} onOpenChange={setIsCommandOpen} />
+
       {/* Desktop Sidebar */}
-      <AppSidebar className="hidden md:flex w-24 flex-shrink-0" />
+      <AppSidebar 
+        className="hidden md:flex w-24 flex-shrink-0" 
+        onSearchClick={() => setIsCommandOpen(true)}
+      />
 
       {/* Mobile Sidebar */}
       <div className="md:hidden fixed top-4 left-4 z-50">
@@ -28,7 +35,10 @@ export default function Layout({ children }) {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-28 border-none bg-transparent shadow-none">
-            <AppSidebar className="h-full rounded-r-[32px] shadow-2xl m-0 rounded-l-none h-screen top-0" />
+            <AppSidebar 
+              className="h-full rounded-r-[32px] shadow-2xl m-0 rounded-l-none h-screen top-0" 
+              onSearchClick={() => setIsCommandOpen(true)}
+            />
           </SheetContent>
         </Sheet>
       </div>

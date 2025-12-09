@@ -8,14 +8,15 @@ import {
   Settings, 
   Sparkles,
   LogOut,
-  Briefcase
+  Briefcase,
+  Search
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-export default function AppSidebar({ className = "" }) {
+export default function AppSidebar({ className = "", onSearchClick }) {
   const location = useLocation();
   
   // Helper to check active state
@@ -43,6 +44,27 @@ export default function AppSidebar({ className = "" }) {
       {/* Nav Items */}
       <nav className="flex-1 flex flex-col gap-6 w-full px-4 items-center">
         <TooltipProvider delayDuration={0}>
+          
+          {/* Global Search Trigger */}
+          <Tooltip>
+             <TooltipTrigger asChild>
+                <button
+                   onClick={onSearchClick}
+                   className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 group relative text-gray-400 hover:bg-white/10 hover:text-white"
+                >
+                   <div className="flex flex-col items-center">
+                      <Search className="w-5 h-5" />
+                      <span className="text-[9px] mt-0.5 font-mono opacity-50">⌘K</span>
+                   </div>
+                </button>
+             </TooltipTrigger>
+             <TooltipContent side="right" className="bg-[#333333] text-white border-gray-700 ml-2 font-sans">
+                <p>Search & Commands</p>
+             </TooltipContent>
+          </Tooltip>
+
+          <div className="w-8 h-px bg-white/10" />
+
           {navItems.map((item) => (
             <Tooltip key={item.path}>
               <TooltipTrigger asChild>
