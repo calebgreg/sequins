@@ -11,10 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import SmartTeacherIntake from '../components/manager/SmartTeacherIntake';
+import TeacherEditModal from '../components/manager/TeacherEditModal';
+import TeacherDetailSheet from '../components/manager/TeacherDetailSheet';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import ReactMarkdown from 'react-markdown';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Pencil, Calendar, MessageSquare } from 'lucide-react';
 
 const calculateTeacherMetrics = (teacher, allClasses, allAttendance) => {
   const teacherClasses = allClasses.filter(c => c.teacher === teacher.name);
@@ -39,8 +42,12 @@ const calculateTeacherMetrics = (teacher, allClasses, allAttendance) => {
 
 export default function Teachers() {
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [editingTeacher, setEditingTeacher] = useState(null);
+  const [viewingTeacher, setViewingTeacher] = useState(null);
   const [newTeacher, setNewTeacher] = useState({ name: '', styles: '', availability: '', bio: '' });
-  const [selectedTeacher, setSelectedTeacher] = useState(null); // For details/review
+  const [selectedTeacher, setSelectedTeacher] = useState(null); // For AI review context
   const [isGeneratingReview, setIsGeneratingReview] = useState(false);
   
   const queryClient = useQueryClient();
@@ -72,8 +79,19 @@ export default function Teachers() {
     mutationFn: ({id, data}) => base44.entities.Teacher.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teachers'] });
+      setIsEditOpen(false);
     }
   });
+
+  const handleEdit = (teacher) => {
+    setEditingTeacher(teacher);
+    setIsEditOpen(true);
+  };
+
+  const handleViewDetails = (teacher) => {
+    setViewingTeacher(teacher);
+    setIsDetailOpen(true);
+  };
 
   const handleGenerateReview = async (teacher) => {
     setSelectedTeacher(teacher);
@@ -189,8 +207,13 @@ export default function Teachers() {
                                 </div>
                             </div>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-300 hover:text-[#333333] hover:bg-gray-50 rounded-full">
-                            <MoreHorizontal className="w-5 h-5" />
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-gray-300 hover:text-[#333333] hover:bg-gray-50 rounded-full"
+                            onClick={() => handleEdit(teacher)}
+                        >
+                            <Pencil className="w-4 h-4" />
                         </Button>
                     </div>
                     
@@ -222,54 +245,62 @@ export default function Teachers() {
                         </div>
                     </div>
 
+                    {/* AI Coach Section (Compact) */}
                     {teacher.performance_summary ? (
-                    <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-[24px] border border-indigo-100 relative group/insight">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-indigo-500" />
-                                <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wide">AI Insight</h4>
-                            </div>
-                            <span className="text-[10px] text-indigo-300 font-medium bg-white/50 px-2 py-1 rounded-full">
-                                {new Date(teacher.last_review_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}
-                            </span>
+                    <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100/50">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Sparkles className="w-3 h-3 text-indigo-500" />
+                            <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-wide">Coach's Insight</h4>
                         </div>
-                        
-                        <div className="text-sm text-indigo-900/80 leading-relaxed prose prose-indigo prose-sm max-w-none">
+                        <div className="text-xs text-indigo-900/80 leading-relaxed line-clamp-3">
                             <ReactMarkdown
                                 components={{
-                                    p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                                    p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />,
                                     strong: ({node, ...props}) => <span className="font-bold text-indigo-900" {...props} />,
-                                    ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
-                                    li: ({node, ...props}) => <li className="mb-1" {...props} />
+                                    ul: ({node, ...props}) => <ul className="list-disc pl-3 mb-1" {...props} />,
+                                    li: ({node, ...props}) => <li className="mb-0.5" {...props} />
                                 }}
                             >
                                 {teacher.performance_summary}
                             </ReactMarkdown>
                         </div>
+                        <button 
+                            onClick={() => handleGenerateReview(teacher)}
+                            className="text-[10px] font-medium text-indigo-500 mt-2 hover:text-indigo-700 flex items-center gap-1"
+                        >
+                            Refresh Analysis
+                        </button>
                     </div>
                     ) : (
-                    <div className="text-center py-8 bg-[#F4F4F6]/50 rounded-[24px] border-2 border-dashed border-gray-200 group-hover:border-gray-300 transition-colors">
-                        <p className="text-sm text-gray-400 font-medium">No performance data yet</p>
-                    </div>
+                        <div className="flex items-center justify-center p-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50/50">
+                             <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-xs text-gray-400 hover:text-[#333333]"
+                                onClick={() => handleGenerateReview(teacher)}
+                                disabled={isGeneratingReview}
+                             >
+                                <Sparkles className="w-3 h-3 mr-2" />
+                                {isGeneratingReview && selectedTeacher?.id === teacher.id ? "Analyzing..." : "Generate Coaching Insight"}
+                             </Button>
+                        </div>
                     )}
 
-                    <div className="mt-auto">
+                    <div className="mt-auto grid grid-cols-2 gap-3">
                         <Button 
-                        variant="outline" 
-                        className={`w-full h-12 rounded-xl border-2 font-medium transition-all duration-300 ${
-                            teacher.performance_summary 
-                                ? 'border-gray-100 text-gray-500 hover:border-indigo-200 hover:text-indigo-600 hover:bg-indigo-50' 
-                                : 'border-indigo-100 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-200'
-                        }`}
-                        onClick={() => handleGenerateReview(teacher)}
-                        disabled={isGeneratingReview}
+                            variant="outline" 
+                            className="w-full rounded-xl border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#333333]"
+                            onClick={() => handleViewDetails(teacher)}
                         >
-                        {isGeneratingReview && selectedTeacher?.id === teacher.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : (
-                            <Star className={`w-4 h-4 mr-2 ${teacher.performance_summary ? '' : 'fill-current'}`} />
-                        )}
-                        {teacher.performance_summary ? "Regenerate Insight" : "Generate AI Coach"}
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Schedule
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            className="w-full rounded-xl border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#333333]"
+                        >
+                            <MessageSquare className="w-4 h-4 mr-2" />
+                            Message
                         </Button>
                     </div>
                 </CardContent>
@@ -293,6 +324,22 @@ export default function Teachers() {
         </div>
 
       </div>
+
+      <TeacherEditModal 
+        isOpen={isEditOpen} 
+        onOpenChange={setIsEditOpen}
+        teacher={editingTeacher}
+        onSave={(data) => updateTeacherMutation.mutate(data)}
+        isSaving={updateTeacherMutation.isPending}
+      />
+
+      <TeacherDetailSheet
+        isOpen={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        teacher={viewingTeacher}
+        classes={classes}
+        attendance={attendance}
+      />
     </div>
   );
 }

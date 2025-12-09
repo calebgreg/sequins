@@ -51,7 +51,7 @@ export default function TeacherEditModal({ isOpen, onOpenChange, teacher, onSave
                         <Label>Dance Styles</Label>
                         <TagInput 
                             tags={currentStyles || []} 
-                            setTags={(tags) => setValue("styles", tags)}
+                            onChange={(tags) => setValue("styles", tags)}
                             placeholder="Add style (e.g. Ballet)..."
                             suggestions={['Ballet', 'Jazz', 'Tap', 'Hip Hop', 'Contemporary', 'Lyrical', 'Acro']}
                         />
