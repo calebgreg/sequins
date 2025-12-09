@@ -15,6 +15,7 @@ import StudentCommunicationTab from '../crm/StudentCommunicationTab';
 
 export default function StudentProfileView({ student, teacherName, onBack }) {
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('activity');
 
   const { data: attendance = [] } = useQuery({
     queryKey: ['attendance', student?.name],
@@ -100,11 +101,11 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
           <div>
             <h2 className="font-serif text-xl text-[#333333]">Student Profile</h2>
           </div>
-        </div>
-        <Button variant="outline" className="rounded-full border-gray-200 bg-white text-[#333333] gap-2 font-serif hover:bg-[#F2DCDD] hover:border-[#F2DCDD] transition-colors">
+          </div>
+          <Button onClick={() => setActiveTab('communication')} variant="outline" className="rounded-full border-gray-200 bg-white text-[#333333] gap-2 font-serif hover:bg-[#F2DCDD] hover:border-[#F2DCDD] transition-colors">
           <Mail className="w-4 h-4" /> Message Parent
-        </Button>
-      </div>
+          </Button>
+          </div>
 
       <ScrollArea className="flex-1 px-8 pb-8">
         <div className="max-w-5xl mx-auto space-y-8">
@@ -172,7 +173,7 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
           </div>
 
           {/* Enhanced Tabs */}
-          <Tabs defaultValue="activity" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="bg-transparent p-0 gap-4 mb-8 h-auto w-full flex overflow-x-auto">
                {[
                  { id: 'activity', label: 'Activity & Stats', icon: TrendingUp },
