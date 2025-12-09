@@ -16,6 +16,27 @@ import { motion } from "framer-motion";
 import ReactMarkdown from 'react-markdown';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+const calculateTeacherMetrics = (teacher, allClasses, allAttendance) => {
+  const teacherClasses = allClasses.filter(c => c.teacher === teacher.name);
+  const classIds = new Set(teacherClasses.map(c => c.id));
+  const teacherAttendance = allAttendance.filter(a => classIds.has(a.class_id));
+
+  const totalClasses = teacherClasses.length;
+  const totalEnrollment = teacherClasses.reduce((sum, c) => sum + (c.student_names?.length || 0), 0);
+  
+  // Calculate attendance rate
+  const totalRecords = teacherAttendance.length;
+  const presentCount = teacherAttendance.filter(a => a.status === 'present').length;
+  const attendanceRate = totalRecords > 0 ? Math.round((presentCount / totalRecords) * 100) : null;
+
+  return {
+    totalClasses,
+    totalEnrollment,
+    attendanceRate,
+    dataPoints: totalRecords
+  };
+};
+
 export default function Teachers() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [newTeacher, setNewTeacher] = useState({ name: '', styles: '', availability: '', bio: '' });
@@ -58,49 +79,24 @@ export default function Teachers() {
     setSelectedTeacher(teacher);
     setIsGeneratingReview(true);
     try {
-      const teacherClasses = classes.filter(c => c.teacher === teacher.name);
-      const teacherAttendance = attendance.filter(a => teacherClasses.some(c => c.id === a.class_id));
-      
-      const totalClasses = teacherClasses.length;
-      const totalEnrollment = teacherClasses.reduce((sum, c) => sum + (c.student_names?.length || 0), 0);
-      const uniqueStudents = new Set(teacherClasses.flatMap(c => c.student_names || [])).size;
-      
-      const totalRecords = teacherAttendance.length;
-      const presentCount = teacherAttendance.filter(a => a.status === 'present').length;
-      const lateCount = teacherAttendance.filter(a => a.status === 'late').length;
-      
-      const attendanceRate = totalRecords > 0 ? Math.round((presentCount / totalRecords) * 100) : 0;
-      const lateRate = totalRecords > 0 ? Math.round((lateCount / totalRecords) * 100) : 0;
-      
-      const classStats = teacherClasses.map(c => {
-        const records = teacherAttendance.filter(a => a.class_id === c.id);
-        if (records.length === 0) return null;
-        const rate = Math.round((records.filter(r => r.status === 'present').length / records.length) * 100);
-        return { title: c.title, rate };
-      }).filter(Boolean).sort((a, b) => b.rate - a.rate);
-
-      const bestClass = classStats[0];
-      const worstClass = classStats[classStats.length - 1];
+      const metrics = calculateTeacherMetrics(teacher, classes, attendance);
+      const hasData = metrics.dataPoints > 0;
 
       const prompt = `
-        You are a strict, data-driven studio manager. Write a performance review for "${teacher.name}" based ONLY on the following HARD DATA.
+        You are a supportive but data-focused Dance Studio Director. Write a brief professional coaching insight for "${teacher.name}".
         
-        METRICS:
-        - Class Load: ${totalClasses} classes.
-        - Total Enrollment: ${totalEnrollment} students (${uniqueStudents} unique).
-        - Overall Attendance Rate: ${totalRecords > 0 ? attendanceRate + '%' : 'NO DATA'}.
-        - Punctuality Issue Rate (Late Students): ${totalRecords > 0 ? lateRate + '%' : 'N/A'}.
-        ${bestClass ? `- Best Performing Class: ${bestClass.title} (${bestClass.rate}% attendance)` : ''}
-        ${worstClass && worstClass !== bestClass ? `- Needs Improvement: ${worstClass.title} (${worstClass.rate}% attendance)` : ''}
-        - Expertise: ${teacher.styles.join(', ')}
+        HARD METRICS:
+        - Teaching Load: ${metrics.totalClasses} classes/week
+        - Total Students: ${metrics.totalEnrollment}
+        - Attendance Health: ${hasData ? metrics.attendanceRate + '%' : 'No attendance data yet'}
+        - Expertise: ${teacher.styles?.join(', ') || 'General'}
         
         INSTRUCTIONS:
-        1. If "NO DATA" for attendance, write a "New Teacher Onboarding" note. Do NOT invent performance metrics.
-        2. If attendance is < 80%, express concern about student engagement.
-        3. If late rate is > 10%, mention need for better class discipline.
-        4. Be specific—cite the class names and numbers provided.
-        5. Keep it professional, concise (max 150 words), and actionable.
-        6. Use markdown for formatting (bolding key metrics, lists).
+        1. If NO attendance data exists (${!hasData}), write a warm "Welcome Aboard" message focusing on their potential with ${metrics.totalEnrollment} students.
+        2. If attendance is high (>90%), praise their engagement skills.
+        3. If attendance is low (<80%), suggest specific engagement techniques (gamification, themes).
+        4. Tone: Inspiring, Professional, Actionable.
+        5. Format: Use Markdown. Bold key strengths. Bullet points for actions. Max 100 words.
       `;
 
       const res = await base44.integrations.Core.InvokeLLM({
@@ -165,14 +161,17 @@ export default function Teachers() {
 
         {/* Teacher Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {teachers.map((teacher, i) => (
+          {teachers.map((teacher, i) => {
+            const metrics = calculateTeacherMetrics(teacher, classes, attendance);
+            
+            return (
             <motion.div
                 key={teacher.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
             >
-                <Card className="border-none shadow-sm rounded-[32px] overflow-hidden group hover:shadow-md transition-all duration-300">
+                <Card className="border-none shadow-sm rounded-[32px] overflow-hidden group hover:shadow-md transition-all duration-300 flex flex-col h-full">
                 <CardHeader className="bg-white p-6 pb-2">
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex gap-4 items-center">
@@ -185,7 +184,7 @@ export default function Teachers() {
                                 <CardTitle className="text-xl font-serif text-[#333333]">{teacher.name}</CardTitle>
                                 <div className="flex items-center gap-2 mt-1">
                                     <Badge variant="outline" className="text-xs font-normal text-gray-400 border-gray-200">
-                                        {teacher.styles?.length || 0} Styles
+                                        {metrics.totalClasses} Classes
                                     </Badge>
                                 </div>
                             </div>
@@ -201,26 +200,25 @@ export default function Teachers() {
                         {style}
                         </Badge>
                     ))}
-                    {teacher.styles?.length > 3 && (
-                        <Badge className="bg-[#F4F4F6] text-gray-400 font-normal border-none px-2 rounded-full text-xs">+{teacher.styles.length - 3}</Badge>
-                    )}
                     </div>
                 </CardHeader>
 
-                <CardContent className="p-6 pt-2 space-y-6">
-                    {/* Quick Stats Row (Placeholder until real data linked) */}
-                    <div className="grid grid-cols-2 gap-2 mt-4">
-                        <div className="bg-[#F9FAFB] p-3 rounded-xl">
-                            <div className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Classes</div>
-                            <div className="text-lg font-serif text-[#333333]">
-                                {classes.filter(c => c.teacher === teacher.name).length}
+                <CardContent className="p-6 pt-2 space-y-6 flex-1 flex flex-col">
+                    {/* Live Metrics Row */}
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                        <div className="bg-[#F9FAFB] p-3 rounded-2xl text-center">
+                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Students</div>
+                            <div className="text-lg font-serif text-[#333333]">{metrics.totalEnrollment}</div>
+                        </div>
+                        <div className={`p-3 rounded-2xl text-center ${metrics.attendanceRate >= 90 ? 'bg-green-50' : metrics.attendanceRate < 80 && metrics.attendanceRate !== null ? 'bg-amber-50' : 'bg-[#F9FAFB]'}`}>
+                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Attend %</div>
+                            <div className={`text-lg font-serif ${metrics.attendanceRate >= 90 ? 'text-green-700' : 'text-[#333333]'}`}>
+                                {metrics.attendanceRate !== null ? `${metrics.attendanceRate}%` : '-'}
                             </div>
                         </div>
-                        <div className="bg-[#F9FAFB] p-3 rounded-xl">
-                            <div className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Availability</div>
-                            <div className="text-sm font-medium text-[#333333] truncate">
-                                {teacher.availability || "Not Set"}
-                            </div>
+                        <div className="bg-[#F9FAFB] p-3 rounded-2xl text-center">
+                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Load</div>
+                            <div className="text-lg font-serif text-[#333333]">{metrics.totalClasses}</div>
                         </div>
                     </div>
 
@@ -255,27 +253,30 @@ export default function Teachers() {
                     </div>
                     )}
 
-                    <Button 
-                    variant="outline" 
-                    className={`w-full h-12 rounded-xl border-2 font-medium transition-all duration-300 ${
-                        teacher.performance_summary 
-                            ? 'border-gray-100 text-gray-500 hover:border-indigo-200 hover:text-indigo-600 hover:bg-indigo-50' 
-                            : 'border-indigo-100 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-200'
-                    }`}
-                    onClick={() => handleGenerateReview(teacher)}
-                    disabled={isGeneratingReview}
-                    >
-                    {isGeneratingReview && selectedTeacher?.id === teacher.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    ) : (
-                        <Star className={`w-4 h-4 mr-2 ${teacher.performance_summary ? '' : 'fill-current'}`} />
-                    )}
-                    {teacher.performance_summary ? "Regenerate Insight" : "Generate Review"}
-                    </Button>
+                    <div className="mt-auto">
+                        <Button 
+                        variant="outline" 
+                        className={`w-full h-12 rounded-xl border-2 font-medium transition-all duration-300 ${
+                            teacher.performance_summary 
+                                ? 'border-gray-100 text-gray-500 hover:border-indigo-200 hover:text-indigo-600 hover:bg-indigo-50' 
+                                : 'border-indigo-100 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-200'
+                        }`}
+                        onClick={() => handleGenerateReview(teacher)}
+                        disabled={isGeneratingReview}
+                        >
+                        {isGeneratingReview && selectedTeacher?.id === teacher.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                            <Star className={`w-4 h-4 mr-2 ${teacher.performance_summary ? '' : 'fill-current'}`} />
+                        )}
+                        {teacher.performance_summary ? "Regenerate Insight" : "Generate AI Coach"}
+                        </Button>
+                    </div>
                 </CardContent>
                 </Card>
             </motion.div>
-          ))}
+            );
+          })}
           
           {teachers.length === 0 && (
             <div className="col-span-full text-center py-24">
