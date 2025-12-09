@@ -50,7 +50,7 @@ function LayoutContent({ children }) {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 overflow-y-auto h-screen">
+      <main className="flex-1 min-w-0 overflow-y-auto h-[100dvh]">
          <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 pt-20 md:pt-8">
             {children}
          </div>

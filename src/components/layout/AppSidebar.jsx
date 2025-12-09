@@ -33,7 +33,7 @@ export default function AppSidebar({ className = "", onSearchClick }) {
   ];
 
   return (
-    <div className={`bg-[#333333] text-white flex flex-col items-center py-8 rounded-[20px] m-4 h-[calc(100vh-32px)] sticky top-4 ${className}`}>
+    <div className={`bg-[#333333] text-white flex flex-col items-center py-8 rounded-[20px] m-4 h-[calc(100dvh-32px)] sticky top-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${className}`}>
       {/* Logo */}
       <div className="mb-12 flex-shrink-0">
         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.2)]">
