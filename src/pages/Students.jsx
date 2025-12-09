@@ -293,11 +293,11 @@ export default function Students() {
                                 {student.status}
                               </Badge>
                             </td>
-                            <td className="p-4 md:p-6">
+                            <td className="p-4 md:p-6 hidden sm:table-cell">
                               <div className="text-sm text-[#333333] capitalize">{student.level}</div>
                               <div className="text-xs text-gray-400">{student.age} years old</div>
                               </td>
-                              <td className="p-6 hidden md:table-cell">
+                              <td className="p-4 md:p-6 hidden lg:table-cell">
                               <div className="flex flex-col gap-1">
                                 <div className="flex flex-wrap gap-1 mb-1">
                                    {student.billing_method === 'auto_pay' && (
@@ -321,7 +321,7 @@ export default function Students() {
                                 )}
                               </div>
                             </td>
-                            <td className="p-6 text-right">
+                            <td className="p-4 md:p-6 text-right">
                               <div className="flex items-center justify-end gap-2">
                                 <Button 
                                   variant="ghost" 
