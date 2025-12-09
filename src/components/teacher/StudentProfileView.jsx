@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, Calendar, Star, TrendingUp, Clock, CheckCircle2, AlertCircle, MapPin, Sparkles, Quote, MoreHorizontal, Zap } from 'lucide-react';
+import { ArrowLeft, Mail, Calendar, Star, TrendingUp, Clock, CheckCircle2, AlertCircle, MapPin, Sparkles, Quote, MoreHorizontal, Zap, MessageCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { base44 } from "@/api/base44Client";
 import { format, getDay } from 'date-fns';
 import NewJournalEntryModal from './NewJournalEntryModal';
+import StudentCommunicationTab from '../crm/StudentCommunicationTab';
 
 export default function StudentProfileView({ student, teacherName, onBack }) {
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
@@ -176,7 +177,8 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
                {[
                  { id: 'activity', label: 'Activity & Stats', icon: TrendingUp },
                  { id: 'classes', label: 'Class Schedule', icon: Calendar },
-                 { id: 'notes', label: 'Teacher Journal', icon: Quote }
+                 { id: 'notes', label: 'Teacher Journal', icon: Quote },
+                 { id: 'communication', label: 'Messaging', icon: MessageCircle }
                ].map(tab => (
                  <TabsTrigger 
                    key={tab.id} 
@@ -419,6 +421,11 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
                    )}
                  </div>
               </div>
+            </TabsContent>
+
+            {/* COMMUNICATION TAB */}
+            <TabsContent value="communication" className="space-y-6">
+               <StudentCommunicationTab student={student} />
             </TabsContent>
           </Tabs>
 
