@@ -5,7 +5,7 @@ import CommandMenu from './components/layout/CommandMenu';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from 'lucide-react';
-import { CommandMenuProvider, useCommandMenu } from './context/CommandMenuContext';
+import { CommandMenuProvider, useCommandMenu } from './components/layout/CommandMenuContext';
 
 function LayoutContent({ children }) {
   const location = useLocation();
