@@ -5,7 +5,6 @@ import { ArrowLeft, Mail, Calendar, Star, TrendingUp, Clock, CheckCircle2, Alert
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { base44 } from "@/api/base44Client";
@@ -86,7 +85,7 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
   }, [attendanceRate, streak, notes]);
 
   return (
-    <div className="flex flex-col h-full bg-[#F4F4F6]">
+    <div className="flex flex-col min-h-full bg-[#F4F4F6]">
       {/* Header */}
       <div className="px-6 py-4 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
         <div className="flex items-center gap-4">
@@ -107,7 +106,7 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
           </Button>
           </div>
 
-      <ScrollArea className="flex-1 px-8 pb-8">
+      <div className="flex-1 px-6 md:px-8 pb-8">
         <div className="max-w-5xl mx-auto space-y-8">
           
           {/* Hero Profile Card */}
@@ -431,7 +430,7 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
           </Tabs>
 
         </div>
-      </ScrollArea>
+      </div>
 
       <NewJournalEntryModal
         isOpen={isNewEntryOpen}
