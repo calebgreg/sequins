@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Sparkles, Star, MoreHorizontal, Mail, Calendar, User, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Sparkles, Star, MoreHorizontal, Mail, Calendar, User, Loader2, Pencil, MessageSquare } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -17,7 +18,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import ReactMarkdown from 'react-markdown';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Pencil, Calendar, MessageSquare } from 'lucide-react';
+
 
 const calculateTeacherMetrics = (teacher, allClasses, allAttendance) => {
   const teacherClasses = allClasses.filter(c => c.teacher === teacher.name);
