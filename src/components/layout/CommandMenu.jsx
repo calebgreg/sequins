@@ -26,20 +26,10 @@ export default function CommandMenu({ open, onOpenChange }) {
   const { data: students = [] } = useQuery({
     queryKey: ['students-search'],
     queryFn: () => base44.entities.Student.list(),
-    enabled: open // Only fetch when open
+    enabled: !!open // Only fetch when open
   });
-
-  // Toggle with Cmd+K
-  useEffect(() => {
-    const down = (e) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        onOpenChange((open) => !open);
-      }
-    }
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
-  }, [onOpenChange]);
+  
+  // Note: Keyboard shortcut handled in Context Provider now
 
   const runCommand = (command) => {
     command();

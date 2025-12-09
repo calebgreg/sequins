@@ -1,29 +1,35 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation } from 'react-router-dom';
 import AppSidebar from './components/layout/AppSidebar';
 import CommandMenu from './components/layout/CommandMenu';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from 'lucide-react';
+import { CommandMenuProvider, useCommandMenu } from './context/CommandMenuContext';
 
-export default function Layout({ children }) {
+function LayoutContent({ children }) {
   const location = useLocation();
   const isTeacherStudio = location.pathname.includes('TeacherStudio');
-  const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const { isOpen, setIsOpen } = useCommandMenu();
 
-  // If on TeacherStudio, let it handle its own layout (it has its own sidebar)
+  // TeacherStudio has its own internal layout structure, but we wrap it to provide CommandMenu access
   if (isTeacherStudio) {
-    return <>{children}</>;
+    return (
+      <>
+        <CommandMenu open={isOpen} onOpenChange={setIsOpen} />
+        {children}
+      </>
+    );
   }
 
   return (
     <div className="min-h-screen bg-[#F4F4F6] flex font-sans text-[#333333]">
-      <CommandMenu open={isCommandOpen} onOpenChange={setIsCommandOpen} />
+      <CommandMenu open={isOpen} onOpenChange={setIsOpen} />
 
       {/* Desktop Sidebar */}
       <AppSidebar 
         className="hidden md:flex w-24 flex-shrink-0" 
-        onSearchClick={() => setIsCommandOpen(true)}
+        onSearchClick={() => setIsOpen(true)}
       />
 
       {/* Mobile Sidebar */}
@@ -37,7 +43,7 @@ export default function Layout({ children }) {
           <SheetContent side="left" className="p-0 w-28 border-none bg-transparent shadow-none">
             <AppSidebar 
               className="h-full rounded-r-[32px] shadow-2xl m-0 rounded-l-none h-screen top-0" 
-              onSearchClick={() => setIsCommandOpen(true)}
+              onSearchClick={() => setIsOpen(true)}
             />
           </SheetContent>
         </Sheet>
@@ -50,5 +56,13 @@ export default function Layout({ children }) {
          </div>
       </main>
     </div>
+  );
+}
+
+export default function Layout({ children }) {
+  return (
+    <CommandMenuProvider>
+      <LayoutContent>{children}</LayoutContent>
+    </CommandMenuProvider>
   );
 }
