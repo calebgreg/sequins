@@ -100,7 +100,7 @@ export default function Students() {
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Top Header & Stats */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div>
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
                <Link to={createPageUrl('Home')} className="hover:text-[#333333]">Dashboard</Link>
@@ -110,7 +110,7 @@ export default function Students() {
             <h1 className="text-4xl font-serif text-[#333333]">Student Directory</h1>
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4 w-full lg:w-auto">
              <Card className="bg-white border-none shadow-sm rounded-2xl w-32">
                <CardContent className="p-4 text-center">
                  <div className="text-2xl font-serif text-[#333333]">{activeStudents}</div>
@@ -136,18 +136,18 @@ export default function Students() {
         </div>
 
         {/* Toolbar */}
-        <div className="bg-white p-4 rounded-[24px] shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="relative flex-1 md:w-80">
+        <div className="bg-white p-4 rounded-[24px] shadow-sm flex flex-col lg:flex-row gap-4 justify-between items-center">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+            <div className="relative flex-1 w-full sm:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input 
                 placeholder="Search by name, email, or parent..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-[#F4F4F6] border-none rounded-xl"
+                className="pl-10 bg-[#F4F4F6] border-none rounded-xl w-full"
               />
             </div>
-            <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-xl">
+            <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-xl w-full sm:w-auto">
                <Button 
                  variant="ghost" 
                  size="sm"
@@ -167,7 +167,7 @@ export default function Students() {
             </div>
           </div>
           
-          <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end">
              <DropdownMenu>
                <DropdownMenuTrigger asChild>
                  <Button variant="outline" className={`rounded-xl border-gray-200 gap-2 ${billingFilter !== 'all' ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'text-gray-600'}`}>
@@ -210,15 +210,58 @@ export default function Students() {
                 <div className="text-center py-20 text-gray-400">No students found matching your search.</div>
               ) : (
                 <div className="bg-white rounded-[32px] shadow-sm overflow-hidden">
-                  <div className="overflow-x-auto">
+                  {/* Mobile Card View (hidden on lg and up) */}
+                  <div className="block lg:hidden space-y-4 p-4 bg-[#F4F4F6]">
+                    {filteredStudents.map((student) => (
+                       <Card key={student.id} className="border-none shadow-sm rounded-2xl cursor-pointer" onClick={() => setSelectedStudent(student)}>
+                          <CardContent className="p-4">
+                             <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3">
+                                   <Avatar className="w-10 h-10 border-2 border-white shadow-sm">
+                                      <AvatarFallback className="bg-[#333333] text-white font-serif">{student.name.charAt(0)}</AvatarFallback>
+                                   </Avatar>
+                                   <div>
+                                      <div className="font-medium text-[#333333]">{student.name}</div>
+                                      <div className="text-xs text-gray-400">{student.age} yrs • {student.level}</div>
+                                   </div>
+                                </div>
+                                <Badge variant="secondary" className={`capitalize font-normal text-xs ${student.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-gray-100'}`}>
+                                   {student.status}
+                                </Badge>
+                             </div>
+                             
+                             <div className="flex flex-wrap gap-2 mb-4">
+                                {student.billing_method === 'auto_pay' && (
+                                   <Badge variant="outline" className="text-[10px] border-indigo-200 text-indigo-600 bg-indigo-50">Auto-Pay</Badge>
+                                )}
+                                {student.tags?.slice(0, 3).map((tag, i) => (
+                                   <Badge key={i} variant="secondary" className="text-[10px] bg-[#333333] text-white font-normal border-none">{tag}</Badge>
+                                ))}
+                             </div>
+
+                             <div className="flex items-center justify-between text-sm text-gray-500 pt-3 border-t border-gray-100">
+                                {student.parent_email ? (
+                                   <div className="flex items-center gap-1.5 truncate max-w-[200px]">
+                                      <Mail className="w-3 h-3" /> <span className="truncate">{student.parent_email}</span>
+                                   </div>
+                                ) : <span>No contact</span>}
+                                <ArrowRight className="w-4 h-4 text-gray-300" />
+                             </div>
+                          </CardContent>
+                       </Card>
+                    ))}
+                  </div>
+
+                  {/* Desktop Table View (hidden on mobile/tablet) */}
+                  <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="border-b border-gray-100 text-xs uppercase text-gray-400 tracking-wider font-bold">
-                          <th className="p-6 font-medium">Student Name</th>
-                          <th className="p-6 font-medium">Status</th>
-                          <th className="p-6 font-medium">Level / Age</th>
-                          <th className="p-6 font-medium hidden md:table-cell">Parent Contact</th>
-                          <th className="p-6 font-medium text-right">Actions</th>
+                          <th className="p-4 md:p-6 font-medium">Student Name</th>
+                          <th className="p-4 md:p-6 font-medium">Status</th>
+                          <th className="p-4 md:p-6 font-medium hidden sm:table-cell">Level / Age</th>
+                          <th className="p-4 md:p-6 font-medium hidden lg:table-cell">Parent Contact</th>
+                          <th className="p-4 md:p-6 font-medium text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -230,7 +273,7 @@ export default function Students() {
                             className="group hover:bg-[#F4F4F6] transition-colors cursor-pointer border-b border-gray-50 last:border-0"
                             onClick={() => setSelectedStudent(student)}
                           >
-                            <td className="p-6">
+                            <td className="p-4 md:p-6">
                               <div className="flex items-center gap-4">
                                 <Avatar className="w-10 h-10 border-2 border-white shadow-sm">
                                   <AvatarFallback className="bg-[#333333] text-white font-serif">{student.name.charAt(0)}</AvatarFallback>
@@ -241,7 +284,7 @@ export default function Students() {
                                 </div>
                               </div>
                             </td>
-                            <td className="p-6">
+                            <td className="p-4 md:p-6">
                               <Badge variant="secondary" className={`
                                 capitalize font-normal
                                 ${student.status === 'active' ? 'bg-green-50 text-green-700' : 
@@ -250,7 +293,7 @@ export default function Students() {
                                 {student.status}
                               </Badge>
                             </td>
-                            <td className="p-6">
+                            <td className="p-4 md:p-6">
                               <div className="text-sm text-[#333333] capitalize">{student.level}</div>
                               <div className="text-xs text-gray-400">{student.age} years old</div>
                               </td>
