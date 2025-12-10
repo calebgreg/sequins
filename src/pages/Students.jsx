@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
-import { Search, Filter, Plus, Download, Mail, MoreHorizontal, User, Phone, MapPin, Users, Edit, ArrowRight, Activity, CreditCard } from 'lucide-react';
+import { Search, Filter, Plus, Download, Mail, MoreHorizontal, User, Phone, MapPin, Users, Edit, ArrowRight, Activity, CreditCard, ChevronDown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -222,22 +222,22 @@ export default function Students() {
               {/* Legacy Search Fallback / Supplement */}
               {!aiFilter && (
                 <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input 
                     placeholder="Filter list by text..." 
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10 h-9 bg-[#F4F4F6] border-none rounded-xl w-full text-sm"
+                    className="pl-10 h-10 bg-[#F4F4F6] border-none rounded-full w-full text-sm focus-visible:ring-1 focus-visible:ring-gray-300"
                   />
                 </div>
               )}
               
-              <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-xl w-full sm:w-auto self-start">
+              <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-full w-full sm:w-auto self-start">
                <Button 
                  variant="ghost" 
                  size="sm"
                  onClick={() => setView('list')}
-                 className={`rounded-lg text-xs font-medium ${view === 'list' ? 'bg-white shadow-sm text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
+                 className={`rounded-full px-4 text-xs font-medium h-8 transition-all ${view === 'list' ? 'bg-white shadow-sm text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
                >
                  Students
                </Button>
@@ -245,7 +245,7 @@ export default function Students() {
                  variant="ghost" 
                  size="sm"
                  onClick={() => setView('families')}
-                 className={`rounded-lg text-xs font-medium ${view === 'families' ? 'bg-white shadow-sm text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
+                 className={`rounded-full px-4 text-xs font-medium h-8 transition-all ${view === 'families' ? 'bg-white shadow-sm text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
                >
                  Families
                </Button>
@@ -256,33 +256,35 @@ export default function Students() {
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end">
              <DropdownMenu>
                <DropdownMenuTrigger asChild>
-                 <Button variant="outline" className={`rounded-xl border-gray-200 gap-2 ${billingFilter !== 'all' ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'text-gray-600'}`}>
+                 <Button variant="ghost" className={`rounded-full h-10 border border-transparent hover:border-gray-200 hover:bg-white gap-2 transition-all ${billingFilter !== 'all' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 bg-[#F4F4F6]/50'}`}>
                    <CreditCard className="w-4 h-4" />
-                   {billingFilter === 'all' ? 'Billing Method' : billingFilter === 'auto_pay' ? 'Method: Auto-Pay' : 'Method: Manual'}
+                   {billingFilter === 'all' ? 'Billing' : billingFilter === 'auto_pay' ? 'Auto-Pay' : 'Manual'}
+                   <ChevronDown className="w-3 h-3 opacity-50" />
                  </Button>
                </DropdownMenuTrigger>
-               <DropdownMenuContent>
-                 <DropdownMenuItem onClick={() => setBillingFilter('all')}>All Methods</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setBillingFilter('auto_pay')}>Auto-Pay</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setBillingFilter('manual')}>Manual Invoice</DropdownMenuItem>
+               <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-xl p-2">
+                 <DropdownMenuItem onClick={() => setBillingFilter('all')} className="rounded-xl">All Methods</DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => setBillingFilter('auto_pay')} className="rounded-xl">Auto-Pay</DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => setBillingFilter('manual')} className="rounded-xl">Manual Invoice</DropdownMenuItem>
                </DropdownMenuContent>
              </DropdownMenu>
 
              <DropdownMenu>
                <DropdownMenuTrigger asChild>
-                 <Button variant="outline" className="rounded-xl border-gray-200 text-gray-600 gap-2">
+                 <Button variant="ghost" className={`rounded-full h-10 border border-transparent hover:border-gray-200 hover:bg-white gap-2 transition-all ${statusFilter !== 'all' ? 'bg-[#333333] text-white hover:bg-black hover:text-white' : 'text-gray-500 bg-[#F4F4F6]/50'}`}>
                    <Filter className="w-4 h-4" />
-                   {statusFilter === 'all' ? 'Status' : statusFilter}
+                   <span className="capitalize">{statusFilter === 'all' ? 'Status' : statusFilter}</span>
+                   <ChevronDown className="w-3 h-3 opacity-50" />
                  </Button>
                </DropdownMenuTrigger>
-               <DropdownMenuContent>
-                 <DropdownMenuItem onClick={() => setStatusFilter('all')}>All Status</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setStatusFilter('active')}>Active</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setStatusFilter('prospect')}>Prospect</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setStatusFilter('inactive')}>Inactive</DropdownMenuItem>
+               <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-xl p-2">
+                 <DropdownMenuItem onClick={() => setStatusFilter('all')} className="rounded-xl">All Status</DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => setStatusFilter('active')} className="rounded-xl">Active</DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => setStatusFilter('prospect')} className="rounded-xl">Prospect</DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => setStatusFilter('inactive')} className="rounded-xl">Inactive</DropdownMenuItem>
                </DropdownMenuContent>
              </DropdownMenu>
-             <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#333333]">
+             <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#333333] hover:bg-white rounded-full w-10 h-10">
                <Download className="w-5 h-5" />
              </Button>
           </div>

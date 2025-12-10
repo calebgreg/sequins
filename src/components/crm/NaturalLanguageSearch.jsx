@@ -191,8 +191,8 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             disabled={isProcessing}
-                            className={`pl-10 pr-20 bg-white border-gray-200 transition-all shadow-sm ${
-                                activeFilter ? 'border-indigo-200 ring-2 ring-indigo-500/10' : 'hover:border-gray-300'
+                            className={`pl-10 pr-20 h-12 bg-white border-transparent hover:border-gray-200 focus:border-indigo-200 transition-all shadow-sm hover:shadow-md rounded-full text-base font-serif placeholder:font-sans ${
+                                activeFilter ? 'ring-2 ring-indigo-500/10' : ''
                             }`}
                         />
                         {activeFilter && (
@@ -210,9 +210,9 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
                 {/* Saved Filters Dropdown */}
                 <Popover open={isSavedFiltersOpen} onOpenChange={setIsSavedFiltersOpen}>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className="border-gray-200 text-gray-600 gap-2 shrink-0 bg-white shadow-sm">
+                        <Button variant="ghost" className="h-12 rounded-full border border-transparent hover:border-gray-100 text-gray-500 hover:text-[#333333] gap-2 shrink-0 bg-transparent hover:bg-white transition-all px-4">
                             <Save className="w-4 h-4" />
-                            <span className="hidden sm:inline">Saved</span>
+                            <span className="hidden sm:inline font-medium">Saved</span>
                             <ChevronDown className="w-3 h-3 opacity-50" />
                         </Button>
                     </PopoverTrigger>
@@ -251,7 +251,7 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
                     <Button 
                         size="sm"
                         onClick={() => setIsSaveModalOpen(true)}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md animate-in fade-in slide-in-from-left-2 shrink-0"
+                        className="h-9 rounded-full bg-[#333333] hover:bg-black text-white shadow-lg hover:shadow-xl animate-in fade-in slide-in-from-left-2 shrink-0 px-5 font-medium"
                     >
                         Save This
                     </Button>
@@ -275,16 +275,16 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
                          }
 
                          return (
-                            <Badge key={key} variant="secondary" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-normal">
-                                {key}: {displayVal}
+                            <Badge key={key} variant="secondary" className="px-3 py-1 rounded-full bg-white border border-gray-100 text-[#333333] shadow-sm font-normal">
+                                <span className="opacity-50 mr-1">{key}:</span> {displayVal}
                             </Badge>
                          );
                     })}
                     {Object.entries(activeFilter.parsed_criteria_json.class_filters || {}).map(([key, val]) => {
                          if (!val) return null;
                          return (
-                            <Badge key={key} variant="secondary" className="bg-purple-50 text-purple-700 border-purple-100 font-normal">
-                                Class {key}: {val}
+                            <Badge key={key} variant="secondary" className="px-3 py-1 rounded-full bg-white border border-gray-100 text-[#333333] shadow-sm font-normal">
+                                <span className="opacity-50 mr-1">Class {key}:</span> {val}
                             </Badge>
                          );
                     })}
