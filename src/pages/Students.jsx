@@ -549,8 +549,8 @@ export default function Students() {
                         </div>
 
                         {/* Footer / Contact Info */}
-                        <div className="pt-4 border-t border-gray-50 mt-auto">
-                            <div className="grid gap-2">
+                        <div className="pt-4 border-t border-gray-50 mt-auto flex items-end justify-between">
+                            <div className="grid gap-2 flex-1 min-w-0">
                                 <a 
                                     href={`mailto:${family.email}`}
                                     onClick={(e) => e.stopPropagation()}
@@ -570,6 +570,9 @@ export default function Students() {
                                     </div>
                                 )}
                             </div>
+                            <Button variant="ghost" size="sm" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 font-medium text-xs rounded-full px-3 h-8">
+                               View Portal
+                            </Button>
                         </div>
                     </motion.div>
                   );
