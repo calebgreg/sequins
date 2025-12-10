@@ -108,6 +108,8 @@ export default function FamilyProfileView({ family, onBack }) {
         parent_name: family.parent_name 
     };
 
+    const isAutoPay = family.students.some(s => s.billing_method === 'auto_pay');
+
     const navItems = [
         { id: 'overview', label: 'Overview', icon: Users },
         { id: 'billing', label: 'Financials', icon: Wallet },
@@ -304,42 +306,85 @@ export default function FamilyProfileView({ family, onBack }) {
                                     </section>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        {/* Tuition Snapshot Widget */}
-                                        <section className="bg-gradient-to-br from-[#333333] to-black rounded-[32px] p-8 text-white relative overflow-hidden group cursor-pointer transition-transform hover:scale-[1.01]" onClick={() => setActiveSection('billing')}>
-                                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-white/10 transition-colors" />
-                                            
-                                            <div className="relative z-10 flex flex-col h-full justify-between min-h-[250px]">
-                                                <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <div className="text-xs font-bold uppercase tracking-widest text-white/50 mb-2">Financial Snapshot</div>
-                                                        <h3 className="font-serif text-3xl text-white mb-1">
-                                                            {balanceDue > 0 ? 'Payment Due' : 'All Clear'}
-                                                        </h3>
-                                                        <p className="text-white/60 text-sm">
-                                                            {balanceDue > 0 ? 'Action required on account' : 'Account is in good standing'}
-                                                        </p>
+                                        {/* Financial Health Card */}
+                                        <section 
+                                            className="bg-[#333333] rounded-[32px] p-6 text-white relative overflow-hidden group cursor-pointer transition-all hover:shadow-xl" 
+                                            onClick={() => setActiveSection('billing')}
+                                        >
+                                            {/* Header */}
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-2 bg-white/10 rounded-lg">
+                                                        <Wallet className="w-4 h-4 text-white" />
                                                     </div>
-                                                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white backdrop-blur-sm group-hover:bg-white group-hover:text-[#333333] transition-all">
-                                                        <Wallet className="w-6 h-6" />
+                                                    <span className="text-sm font-bold uppercase tracking-widest text-white/70">Financial Health</span>
+                                                </div>
+                                                {isAutoPay ? (
+                                                    <Badge className="bg-green-500/20 text-green-400 border-none hover:bg-green-500/30 gap-1.5 pl-1.5 pr-2.5">
+                                                        <CheckCircle2 className="w-3.5 h-3.5" /> Auto-Pay Active
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge variant="secondary" className="bg-white/10 text-gray-300 border-none hover:bg-white/20 gap-1.5 pl-1.5 pr-2.5">
+                                                        <AlertCircle className="w-3.5 h-3.5" /> Manual Billing
+                                                    </Badge>
+                                                )}
+                                            </div>
+
+                                            {/* Main Grid */}
+                                            <div className="grid grid-cols-2 gap-x-8 gap-y-6 mb-6">
+                                                {/* Balance Block */}
+                                                <div className="col-span-2 sm:col-span-1">
+                                                    <div className="text-xs text-white/50 mb-1">Current Balance</div>
+                                                    <div className={`text-4xl font-serif mb-1 ${balanceDue > 0 ? 'text-red-400' : 'text-white'}`}>
+                                                        ${balanceDue.toLocaleString()}
+                                                    </div>
+                                                    <div className="text-xs text-white/40">
+                                                        {balanceDue > 0 ? 'Payment required' : 'No outstanding dues'}
                                                     </div>
                                                 </div>
 
-                                                <div className="space-y-6">
-                                                    <div className="flex items-end gap-2">
-                                                        <div className="text-6xl font-serif font-light">${balanceDue.toLocaleString()}</div>
-                                                        <div className="text-white/50 mb-2 font-medium">USD</div>
+                                                {/* Stats Column */}
+                                                <div className="col-span-2 sm:col-span-1 space-y-4">
+                                                    <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                                                        <span className="text-xs text-white/50">Lifetime Value</span>
+                                                        <span className="font-serif text-lg">${lifetimeValue.toLocaleString()}</span>
                                                     </div>
-                                                    
-                                                    <Button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setActiveSection('billing');
-                                                        }}
-                                                        className="w-full bg-white text-[#333333] hover:bg-gray-100 rounded-xl shadow-lg font-bold h-12 gap-2"
-                                                    >
-                                                        <Sparkles className="w-4 h-4 text-indigo-500" /> Manage Tuition
-                                                    </Button>
+                                                    <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                                                        <span className="text-xs text-white/50">Last Payment</span>
+                                                        <div className="text-right">
+                                                            <div className="font-serif text-sm">
+                                                                {lastPayment ? `$${lastPayment.amount}` : '-'}
+                                                            </div>
+                                                            {lastPayment && (
+                                                                <div className="text-[10px] text-white/40">
+                                                                    {format(new Date(lastPayment.date), 'MMM d')}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
+                                            </div>
+
+                                            {/* Action Footer */}
+                                            <div className="flex gap-3">
+                                                <Button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActiveSection('billing');
+                                                    }}
+                                                    className="flex-1 bg-white text-[#333333] hover:bg-gray-100 rounded-xl font-bold h-10 text-xs"
+                                                >
+                                                    View Ledger
+                                                </Button>
+                                                <Button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIsInvoiceModalOpen(true);
+                                                    }}
+                                                    className="flex-1 bg-white/10 text-white hover:bg-white/20 rounded-xl font-bold h-10 text-xs border border-white/5"
+                                                >
+                                                    <Plus className="w-3.5 h-3.5 mr-1.5" /> New Charge
+                                                </Button>
                                             </div>
                                         </section>
 
