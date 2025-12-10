@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { createPageUrl } from '../utils';
 import { Link } from 'react-router-dom';
 import StudentProfileView from '../components/teacher/StudentProfileView';
+import FamilyProfileView from '../components/crm/FamilyProfileView';
 import StudentFormModal from '../components/crm/StudentFormModal';
 import MessageStudentModal from '../components/crm/MessageStudentModal';
 import NaturalLanguageSearch from '../components/crm/NaturalLanguageSearch';
@@ -23,6 +24,7 @@ export default function Students() {
   const [search, setSearch] = useState(''); // Legacy simple search
   const [aiFilter, setAiFilter] = useState(null); // New AI smart filter
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedFamily, setSelectedFamily] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [messageModalOpen, setMessageModalOpen] = useState(false);
