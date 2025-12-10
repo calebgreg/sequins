@@ -14,7 +14,8 @@ export default function GeneralSettings() {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: '',
-    type: 'mixed'
+    type: 'mixed',
+    ai_assistant_name: 'Gene'
   });
   const [isDirty, setIsDirty] = useState(false);
 
@@ -30,7 +31,8 @@ export default function GeneralSettings() {
     if (settings) {
       setFormData({
         name: settings.name || '',
-        type: settings.type || 'mixed'
+        type: settings.type || 'mixed',
+        ai_assistant_name: settings.ai_assistant_name || 'Gene'
       });
     }
   }, [settings]);
@@ -75,6 +77,20 @@ export default function GeneralSettings() {
                 }}
                 className="h-11 rounded-xl"
               />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>AI Assistant Name</Label>
+              <Input 
+                value={formData.ai_assistant_name}
+                onChange={(e) => {
+                  setFormData({...formData, ai_assistant_name: e.target.value});
+                  setIsDirty(true);
+                }}
+                placeholder="e.g. Gene, Jarvis, Assistant"
+                className="h-11 rounded-xl bg-indigo-50/30 border-indigo-100 focus:border-indigo-300"
+              />
+              <p className="text-[10px] text-gray-400">Staff can @mention this name to trigger actions.</p>
             </div>
             <div className="space-y-2">
               <Label>Program Focus</Label>
