@@ -144,13 +144,19 @@ export default function GlobalAiChat() {
                 base44.entities.DanceClass.list()
             ]);
             
-            const activeStudents = students.filter(s => s.status === 'active').length;
+            const activeStudents = students.filter(s => s.status === 'active');
+            
+            // Create a concise roster for the LLM so it knows names and ages
+            const studentRoster = activeStudents.map(s => `${s.name} (${s.age} yrs)`).join(', ');
             
             const context = `
                 REAL TIME STUDIO DATA:
                 - Total Enrolled Students: ${students.length}
-                - Active Students: ${activeStudents}
+                - Active Students Count: ${activeStudents.length}
                 - Total Classes: ${classes.length}
+                
+                STUDENT ROSTER (Name & Age):
+                ${studentRoster}
             `;
 
             const response = await base44.integrations.Core.InvokeLLM({
