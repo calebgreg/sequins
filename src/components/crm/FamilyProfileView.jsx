@@ -134,37 +134,37 @@ export default function FamilyProfileView({ family, onBack }) {
     return (
         <div className="flex flex-col h-full bg-[#F4F4F6] min-h-screen font-sans text-[#333333]">
             {/* Minimalist Top Bar */}
-            <div className="px-8 py-6 flex items-center justify-between sticky top-0 z-20 bg-[#F4F4F6]/80 backdrop-blur-xl border-b border-white/50">
-                <div className="flex items-center gap-6">
+            <div className="px-4 md:px-8 py-4 md:py-6 flex flex-col md:flex-row items-start md:items-center justify-between sticky top-0 z-20 bg-[#F4F4F6]/90 backdrop-blur-xl border-b border-white/50 gap-4">
+                <div className="flex items-center gap-4 md:gap-6 w-full md:w-auto">
                     <button 
                         onClick={onBack} 
-                        className="group flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm hover:scale-110 transition-all duration-300"
+                        className="group flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm hover:scale-110 transition-all duration-300 flex-shrink-0"
                     >
                         <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#333333]" />
                     </button>
-                    <div>
-                        <h1 className="text-3xl font-serif text-[#333333] tracking-tight">
+                    <div className="min-w-0">
+                        <h1 className="text-2xl md:text-3xl font-serif text-[#333333] tracking-tight truncate">
                             The {family.parent_name.split(' ').pop()} Family
                         </h1>
-                        <div className="flex items-center gap-4 text-xs font-medium text-gray-400 mt-1 uppercase tracking-wider">
-                            <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Account ID: #{family.students[0]?.id?.slice(0,6) || 'N/A'}</span>
-                            <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                            <span>Since {family.students[0]?.joined_date ? format(new Date(family.students[0].joined_date), 'yyyy') : format(new Date(), 'yyyy')}</span>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] md:text-xs font-medium text-gray-400 mt-1 uppercase tracking-wider">
+                            <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> <span className="hidden sm:inline">Account ID:</span> #{family.students[0]?.id?.slice(0,6) || 'N/A'}</span>
+                            <span className="w-1 h-1 bg-gray-300 rounded-full hidden sm:block" />
+                            <span className="hidden sm:inline">Since {family.students[0]?.joined_date ? format(new Date(family.students[0].joined_date), 'yyyy') : format(new Date(), 'yyyy')}</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="hidden md:flex flex-col items-end mr-4">
-                        <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Balance Due</span>
-                        <span className={`text-xl font-serif ${balanceDue > 0 ? 'text-red-500' : 'text-green-600'}`}>
+                <div className="flex items-center justify-between w-full md:w-auto gap-3">
+                    <div className="flex flex-col items-start md:items-end mr-2 md:mr-4">
+                        <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wider">Balance</span>
+                        <span className={`text-lg md:text-xl font-serif ${balanceDue > 0 ? 'text-red-500' : 'text-green-600'}`}>
                             ${balanceDue.toLocaleString()}
                         </span>
                     </div>
-                    
+
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button className="rounded-full bg-[#333333] text-white hover:bg-black px-6 shadow-lg shadow-gray-200 gap-2">
+                            <Button className="rounded-full bg-[#333333] text-white hover:bg-black px-4 md:px-6 shadow-lg shadow-gray-200 gap-2 text-xs md:text-sm h-10">
                                 Actions <MoreHorizontal className="w-4 h-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -184,29 +184,29 @@ export default function FamilyProfileView({ family, onBack }) {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col p-8 pt-2 gap-6 max-w-[1600px] mx-auto w-full">
+            <div className="flex-1 overflow-hidden flex flex-col p-4 md:p-8 pt-2 gap-4 md:gap-6 max-w-[1600px] mx-auto w-full">
                 
                 {/* Header Info & Nav Row */}
-                <div className="flex flex-col xl:flex-row items-center justify-between gap-6 pb-2">
+                <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 md:gap-6 pb-2">
                     {/* Compact Parent Info */}
-                    <div className="flex items-center gap-4 bg-white p-2 pr-6 rounded-full shadow-sm border border-gray-100/50">
-                        <div className="w-12 h-12 rounded-full bg-[#333333] flex items-center justify-center text-white text-lg font-serif shadow-md">
+                    <div className="flex items-center gap-4 bg-white p-2 pr-6 rounded-2xl md:rounded-full shadow-sm border border-gray-100/50 w-full xl:w-auto">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#333333] flex items-center justify-center text-white text-base md:text-lg font-serif shadow-md flex-shrink-0">
                             {family.parent_name.charAt(0)}
                         </div>
-                        <div>
-                             <div className="flex items-center gap-2">
-                                <h2 className="font-serif text-[#333333]">{family.parent_name}</h2>
-                                <Badge variant="secondary" className="text-[10px] h-5 bg-gray-100 text-gray-500">Parent</Badge>
+                        <div className="min-w-0 flex-1">
+                             <div className="flex items-center gap-2 flex-wrap">
+                                <h2 className="font-serif text-[#333333] truncate">{family.parent_name}</h2>
+                                <Badge variant="secondary" className="text-[10px] h-5 bg-gray-100 text-gray-500 flex-shrink-0">Parent</Badge>
                              </div>
-                             <div className="flex items-center gap-3 text-xs text-gray-400">
-                                 <a href={`mailto:${family.email}`} className="hover:text-indigo-600 flex items-center gap-1 transition-colors">
-                                     <Mail className="w-3 h-3" /> {family.email}
+                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400">
+                                 <a href={`mailto:${family.email}`} className="hover:text-indigo-600 flex items-center gap-1 transition-colors truncate max-w-full">
+                                     <Mail className="w-3 h-3 flex-shrink-0" /> {family.email}
                                  </a>
                                  {family.phone && (
                                     <>
-                                        <span className="w-0.5 h-0.5 rounded-full bg-gray-300" />
+                                        <span className="w-0.5 h-0.5 rounded-full bg-gray-300 hidden sm:block" />
                                         <a href={`tel:${family.phone}`} className="hover:text-indigo-600 flex items-center gap-1 transition-colors">
-                                            <Phone className="w-3 h-3" /> {family.phone}
+                                            <Phone className="w-3 h-3 flex-shrink-0" /> {family.phone}
                                         </a>
                                     </>
                                  )}
@@ -215,13 +215,13 @@ export default function FamilyProfileView({ family, onBack }) {
                     </div>
 
                     {/* Horizontal Nav Tabs */}
-                    <nav className="flex items-center bg-white p-1.5 rounded-full shadow-sm border border-gray-100/50 overflow-x-auto max-w-full">
+                    <nav className="flex items-center bg-white p-1.5 rounded-2xl md:rounded-full shadow-sm border border-gray-100/50 overflow-x-auto max-w-full no-scrollbar">
                         {navItems.map(item => (
                             <button
                                 key={item.id}
                                 onClick={() => setActiveSection(item.id)}
                                 className={`
-                                    flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 text-sm font-medium whitespace-nowrap
+                                    flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-xl md:rounded-full transition-all duration-300 text-sm font-medium whitespace-nowrap
                                     ${activeSection === item.id 
                                         ? 'bg-[#333333] text-white shadow-md' 
                                         : 'text-gray-500 hover:bg-gray-50 hover:text-[#333333]'}
@@ -235,11 +235,11 @@ export default function FamilyProfileView({ family, onBack }) {
                 </div>
 
                 {/* Main Content Area */}
-                <div className="flex-1 bg-white rounded-[40px] shadow-sm border border-gray-100/50 overflow-hidden flex flex-col relative w-full">
+                <div className="flex-1 bg-white rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100/50 overflow-hidden flex flex-col relative w-full">
                     {/* Decorative background blobs */}
-                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#F2DCDD]/20 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                    <div className="absolute top-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-gradient-to-br from-[#F2DCDD]/20 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                     
-                    <div className="flex-1 overflow-y-auto p-8 relative z-10">
+                    <div className="flex-1 overflow-y-auto p-4 md:p-8 relative z-10">
                         <AnimatePresence mode="wait">
                             
                             {/* OVERVIEW SECTION */}
@@ -301,7 +301,7 @@ export default function FamilyProfileView({ family, onBack }) {
                                         </div>
                                     </section>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 items-start">
                                         {/* Financial Health Card - Takes 1 slot in 2-col grid */}
                                         <section 
                                             className="bg-[#333333] rounded-[32px] p-6 text-white relative overflow-hidden group cursor-pointer transition-all hover:shadow-xl h-[500px] flex flex-col" 
