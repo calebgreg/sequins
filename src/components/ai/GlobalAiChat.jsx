@@ -205,7 +205,7 @@ export default function GlobalAiChat() {
                         <span className="text-xl font-serif text-gray-400 group-hover:text-[#333333] transition-colors duration-300 tracking-wide">
                             {aiName}
                         </span>
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+
                     </motion.button>
                 )}
 
@@ -219,7 +219,7 @@ export default function GlobalAiChat() {
                         {/* Minimal Header */}
                         <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0">
                             <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+
                                 <span className="text-sm font-serif text-gray-500">{aiName}</span>
                             </div>
                             <button 
