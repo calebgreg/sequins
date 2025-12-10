@@ -479,12 +479,13 @@ export default function Students() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="bg-white rounded-[24px] p-6 shadow-sm hover:shadow-lg transition-all group border border-transparent hover:border-gray-100 flex flex-col h-full relative"
+                      onClick={() => setSelectedFamily(family)}
+                      className="bg-white rounded-[24px] p-6 shadow-sm hover:shadow-lg transition-all group border border-transparent hover:border-gray-100 flex flex-col h-full relative cursor-pointer"
                     >
                         {/* Action Header */}
                         <div className="flex justify-between items-start mb-6">
                             <div>
-                                <h3 className="font-serif text-2xl text-[#333333] mb-1">{familyName}</h3>
+                                <h3 className="font-serif text-2xl text-[#333333] mb-1 group-hover:text-indigo-900 transition-colors">{familyName}</h3>
                                 <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
                                     <User className="w-3.5 h-3.5 opacity-70" />
                                     <span>{family.parent_name}</span>
@@ -496,6 +497,7 @@ export default function Students() {
                                     size="icon" 
                                     className="h-8 w-8 text-gray-400 hover:text-indigo-600 rounded-full bg-gray-50 hover:bg-indigo-50"
                                     onClick={(e) => {
+                                        e.stopPropagation();
                                         if (family.students[0]) handleMessage(e, family.students[0]);
                                     }}
                                     title="Message Family"
@@ -507,6 +509,7 @@ export default function Students() {
                                     size="icon" 
                                     className="h-8 w-8 text-gray-400 hover:text-[#333333] rounded-full bg-gray-50 hover:bg-gray-100"
                                     onClick={(e) => {
+                                        e.stopPropagation();
                                         if (family.students[0]) handleEdit(e, family.students[0]);
                                     }}
                                     title="Edit Family Details"
