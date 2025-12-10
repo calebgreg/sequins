@@ -80,40 +80,68 @@ export default function StudentCommunicationTab({ student }) {
         setIsGenerating(true);
         let promptContext = "";
         
-        const basePrompt = `You are a world-class copywriter and empathetic dance studio director. Your goal is to write a warm, authentic, and highly personalized email.
+        const basePrompt = `You are a busy, caring dance studio director writing a quick, personal email to a parent. 
         Student Name: ${student.name}
-        Student Level: ${student.level}
         
-        Strict Guidelines:
-        - Tone: Professional yet warm, authentic, and personal.
-        - ABSOLUTELY FORBIDDEN: Do NOT use phrases like "I hope this finds you well", "I hope you are doing well", "I wanted to reach out", "delve", "tapestry", or generic fillers. Start the email directly with the point.
-        - Style: Use short paragraphs and natural, conversational language. Write like a human speaking to another human.
-        - Quality: The email must sound like it was written by a caring human teacher, not an AI.
+        CRITICAL RULES:
+        1. Write exactly like a human: short, direct, casual but polite.
+        2. NO FLUFF. No "showcasing strong foundations", no "deepening artistry", no "unwavering commitment".
+        3. ABSOLUTELY FORBIDDEN: "I hope this finds you well", "I wanted to reach out", "delve", "tapestry", "testament to".
+        4. Max 3-4 sentences total. Keep it under 50 words if possible.
+        5. Use contractions (e.g., "I'd" instead of "I would", "can't" instead of "cannot").
         `;
 
         if (type === 'retention') {
             promptContext = `${basePrompt}
-            Task: Write a retention check-in email.
-            Key Elements:
-            1. Acknowledge their recent attendance and effort.
-            2. Mention a specific (realistic) positive observation about their progress in ${student.level} class.
-            3. Gently ask for feedback on their experience so far.
-            4. Subject line should be casual and inviting (e.g., "Thinking of ${student.name}", "Quick check-in").`;
+            Task: Check in on the student.
+            
+            Example of GOOD output:
+            Subject: Checking in on ${student.name}
+            Body:
+            Hi [Parent],
+            
+            Just wanted to check in and see how ${student.name} is liking class so far? I've noticed they're getting much more confident with the choreography.
+            
+            Let me know if you have any questions or feedback for us!
+            
+            Best,
+            [Teacher]
+            
+            Your turn. Write a check-in for a ${student.level} student.`;
         } else if (type === 'upsell') {
             promptContext = `${basePrompt}
-            Task: Write a gentle recommendation for an additional class.
-            Key Elements:
-            1. compliment their strong foundation in their current class.
-            2. Suggest a specific complementary style (e.g. "Because they love Ballet, they might really enjoy Lyrical...").
-            3. Frame it as an opportunity for growth, not a sales pitch.
-            4. Offer a complimentary trial class as a low-pressure next step.`;
+            Task: Suggest a new class style.
+            
+            Example of GOOD output:
+            Subject: Idea for ${student.name}
+            Body:
+            Hi [Parent],
+            
+            Watching ${student.name} in class lately, I think they'd really do well in a Lyrical class. It uses a lot of the same technique they're already learning but lets them be a bit more expressive.
+            
+            We have a spot open on Tuesdays if you want to try a free trial class? Let me know!
+            
+            Best,
+            [Teacher]
+            
+            Your turn. Suggest a complementary style for a ${student.level} student.`;
         } else if (type === 'praise') {
             promptContext = `${basePrompt}
-            Task: Write a "Student Shoutout" email.
-            Key Elements:
-            1. Focus purely on a specific moment of success or great attitude from this week.
-            2. No ask, no sales, just pure positive reinforcement.
-            3. Make the parent feel proud.`;
+            Task: Send a quick win/shoutout.
+            
+            Example of GOOD output:
+            Subject: ${student.name} was great today!
+            Body:
+            Hi [Parent],
+            
+            I just had to send a quick note - ${student.name} worked so hard in class today. They finally nailed that turn we've been practicing and the whole room cheered.
+            
+            Love seeing that kind of focus. Have a great weekend!
+            
+            Best,
+            [Teacher]
+            
+            Your turn. Write a quick praise note.`;
         }
 
         try {
