@@ -184,12 +184,12 @@ export default function GlobalAiChat() {
                 layout
                 initial={{ width: 'auto', height: 'auto', borderRadius: '32px' }}
                 animate={{ 
-                    width: isOpen ? '360px' : 'auto',
-                    height: isOpen ? '500px' : 'auto',
-                    borderRadius: isOpen ? '24px' : '32px',
-                    backgroundColor: isOpen ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0)',
-                    boxShadow: isOpen ? '0 10px 40px rgba(0,0,0,0.1)' : 'none',
-                    backdropFilter: isOpen ? 'blur(20px)' : 'none',
+                    width: isOpen ? '320px' : 'auto',
+                    height: isOpen ? 'auto' : 'auto',
+                    borderRadius: isOpen ? '20px' : '32px',
+                    backgroundColor: isOpen ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0)',
+                    boxShadow: isOpen ? '0 10px 40px rgba(0,0,0,0.08)' : 'none',
+                    backdropFilter: isOpen ? 'blur(12px)' : 'none',
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="pointer-events-auto overflow-hidden relative flex flex-col origin-bottom-right"
@@ -256,9 +256,9 @@ export default function GlobalAiChat() {
                             )}
                         </div>
 
-                        {/* Input Area */}
-                        <div className="p-4 pt-2 bg-gradient-to-t from-white/50 to-transparent">
-                            <div className="relative flex items-center bg-white/50 border border-gray-100 rounded-2xl shadow-sm focus-within:ring-1 focus-within:ring-gray-200 focus-within:bg-white transition-all overflow-hidden">
+                        {/* Compact Input Area */}
+                        <div className="p-2">
+                            <div className="relative flex items-center bg-gray-50/50 rounded-xl transition-all overflow-hidden">
                                 <input
                                     ref={inputRef}
                                     value={inputValue}
@@ -267,16 +267,24 @@ export default function GlobalAiChat() {
                                         if (e.key === 'Enter') handleSend();
                                         if (e.key === 'Escape') setIsOpen(false);
                                     }}
-                                    placeholder="Type a command..."
-                                    className="flex-1 bg-transparent border-none px-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-0 focus:outline-none"
+                                    placeholder={`Ask ${aiName}...`}
+                                    className="flex-1 bg-transparent border-none px-3 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-0 focus:outline-none"
                                 />
-                                <button 
-                                    onClick={handleSend}
-                                    disabled={!inputValue.trim()}
-                                    className="p-2 mr-1 text-gray-400 hover:text-[#333333] disabled:opacity-50 transition-colors"
-                                >
-                                    <ArrowUp className="w-4 h-4" />
-                                </button>
+                                {inputValue.trim() ? (
+                                    <button 
+                                        onClick={handleSend}
+                                        className="p-1.5 mr-1.5 bg-[#333333] text-white rounded-lg hover:bg-black transition-colors"
+                                    >
+                                        <ArrowUp className="w-3.5 h-3.5" />
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={() => setIsOpen(false)}
+                                        className="p-1.5 mr-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </motion.div>
