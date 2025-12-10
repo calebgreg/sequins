@@ -15,7 +15,7 @@ import { motion } from 'framer-motion';
 
 const COLORS = ['#F2DCDD', '#E5C0C2', '#D4A5A5', '#C8E7F5', '#E0F2F1', '#FFF9C4', '#F3E5F5'];
 
-export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit = null }) {
+export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit = null, initialData = null }) {
   const queryClient = useQueryClient();
 
   const { data: settings } = useQuery({
@@ -54,18 +54,18 @@ export default function StudentFormModal({ isOpen, onOpenChange, studentToEdit =
       });
     } else {
       setFormData({
-        name: '',
-        age: '',
-        level: levels[0],
-        status: 'active',
-        billing_method: 'manual',
-        parent_name: '',
-        parent_email: '',
-        phone: '',
-        address: '',
-        interests: '',
-        tags: [],
-        color: COLORS[Math.floor(Math.random() * COLORS.length)]
+        name: initialData?.name || '',
+        age: initialData?.age || '',
+        level: initialData?.level || levels[0],
+        status: initialData?.status || 'active',
+        billing_method: initialData?.billing_method || 'manual',
+        parent_name: initialData?.parent_name || '',
+        parent_email: initialData?.parent_email || '',
+        phone: initialData?.phone || '',
+        address: initialData?.address || '',
+        interests: initialData?.interests || '',
+        tags: initialData?.tags || [],
+        color: initialData?.color || COLORS[Math.floor(Math.random() * COLORS.length)]
       });
     }
   }, [studentToEdit, isOpen]);

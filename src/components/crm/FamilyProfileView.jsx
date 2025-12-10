@@ -5,19 +5,32 @@ import {
     ArrowLeft, Mail, Phone, Plus, CreditCard, DollarSign, Users, 
     Clock, Calendar, MessageSquare, Star, TrendingUp, AlertCircle, 
     CheckCircle2, MoreHorizontal, FileText, Send, Paperclip, ChevronRight,
-    Wallet, Shield, ArrowRight
+    Wallet, Shield, ArrowRight, PenSquare, StickyNote
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import StudentCommunicationTab from './StudentCommunicationTab';
+import StudentFormModal from './StudentFormModal';
+import InvoiceGenerator from '../billing/InvoiceGenerator';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FamilyProfileView({ family, onBack }) {
     // family: { email, parent_name, phone, students: [] }
     const [activeSection, setActiveSection] = useState('overview'); // overview, billing, students, communication
+    const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
+    const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+    const [studentToEdit, setStudentToEdit] = useState(null);
 
     // Fetch Invoices
     const { data: invoices = [] } = useQuery({
@@ -37,10 +50,26 @@ export default function FamilyProfileView({ family, onBack }) {
         }
     });
 
+    // Fetch Staff Notes (StudentNotes)
+    const { data: notes = [] } = useQuery({
+        queryKey: ['family_notes', family.email],
+        queryFn: async () => {
+            const all = await base44.entities.StudentNote.list('-date', 50);
+            const studentNames = family.students.map(s => s.name);
+            return all.filter(n => studentNames.includes(n.student_name));
+        }
+    });
+
     // Computed Metrics
     const balanceDue = useMemo(() => invoices.reduce((acc, inv) => acc + (inv.balance_due || 0), 0), [invoices]);
     const lifetimeValue = useMemo(() => transactions.filter(t => t.type === 'payment' && t.status === 'succeeded').reduce((acc, t) => acc + t.amount, 0), [transactions]);
     const activeStudentsCount = family.students.filter(s => s.status === 'active').length;
+    
+    // Find last payment
+    const lastPayment = useMemo(() => {
+        const payments = transactions.filter(t => t.type === 'payment' && t.status === 'succeeded');
+        return payments.length > 0 ? payments[0] : null;
+    }, [transactions]);
 
     // Derived "representative" student for the communication tab
     const communicationProxyStudent = family.students[0] || { 
@@ -55,6 +84,16 @@ export default function FamilyProfileView({ family, onBack }) {
         { id: 'billing', label: 'Financials', icon: Wallet },
         { id: 'communication', label: 'Messaging', icon: MessageSquare },
     ];
+
+    const handleAddStudent = () => {
+        setStudentToEdit(null); // Ensure we are adding, not editing
+        setIsStudentModalOpen(true);
+    };
+
+    const handleEditStudent = (student) => {
+        setStudentToEdit(student);
+        setIsStudentModalOpen(true);
+    }
 
     return (
         <div className="flex flex-col h-full bg-[#F4F4F6] min-h-screen font-sans text-[#333333]">
@@ -74,7 +113,7 @@ export default function FamilyProfileView({ family, onBack }) {
                         <div className="flex items-center gap-4 text-xs font-medium text-gray-400 mt-1 uppercase tracking-wider">
                             <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Account ID: #{family.students[0]?.id?.slice(0,6) || 'N/A'}</span>
                             <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                            <span>Since {format(new Date(), 'yyyy')}</span>
+                            <span>Since {family.students[0]?.joined_date ? format(new Date(family.students[0].joined_date), 'yyyy') : format(new Date(), 'yyyy')}</span>
                         </div>
                     </div>
                 </div>
@@ -86,9 +125,26 @@ export default function FamilyProfileView({ family, onBack }) {
                             ${balanceDue.toLocaleString()}
                         </span>
                     </div>
-                    <Button className="rounded-full bg-[#333333] text-white hover:bg-black px-6 shadow-lg shadow-gray-200">
-                        Actions
-                    </Button>
+                    
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button className="rounded-full bg-[#333333] text-white hover:bg-black px-6 shadow-lg shadow-gray-200 gap-2">
+                                Actions <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2">
+                            <DropdownMenuLabel className="text-xs text-gray-400 uppercase tracking-wider">Family Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={handleAddStudent} className="rounded-xl cursor-pointer">
+                                <Plus className="w-4 h-4 mr-2" /> Add Sibling
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setIsInvoiceModalOpen(true)} className="rounded-xl cursor-pointer">
+                                <CreditCard className="w-4 h-4 mr-2" /> Create Invoice
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setActiveSection('communication')} className="rounded-xl cursor-pointer">
+                                <MessageSquare className="w-4 h-4 mr-2" /> Message Family
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
@@ -181,12 +237,15 @@ export default function FamilyProfileView({ family, onBack }) {
                                     <section>
                                         <div className="flex items-center justify-between mb-6">
                                             <h3 className="text-xl font-serif text-[#333333]">Students</h3>
-                                            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-[#333333]">Manage</Button>
+                                            <Button variant="ghost" size="sm" onClick={handleAddStudent} className="text-gray-400 hover:text-[#333333]">
+                                                <Plus className="w-4 h-4 mr-1" /> Add
+                                            </Button>
                                         </div>
                                         <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
                                             {family.students.map((student, i) => (
                                                 <div 
                                                     key={student.id} 
+                                                    onClick={() => handleEditStudent(student)}
                                                     className="min-w-[280px] bg-white border border-gray-100 rounded-[28px] p-5 shadow-sm hover:shadow-lg transition-all cursor-pointer group hover:-translate-y-1"
                                                 >
                                                     <div className="flex items-start justify-between mb-4">
@@ -214,7 +273,10 @@ export default function FamilyProfileView({ family, onBack }) {
                                             ))}
                                             
                                             {/* Add Student Card */}
-                                            <button className="min-w-[100px] rounded-[28px] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:text-[#333333] hover:border-[#333333] transition-all bg-[#F4F4F6]/50">
+                                            <button 
+                                                onClick={handleAddStudent}
+                                                className="min-w-[100px] rounded-[28px] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:text-[#333333] hover:border-[#333333] transition-all bg-[#F4F4F6]/50"
+                                            >
                                                 <Plus className="w-6 h-6 mb-2" />
                                                 <span className="text-xs font-bold uppercase tracking-wider">Add</span>
                                             </button>
@@ -242,24 +304,47 @@ export default function FamilyProfileView({ family, onBack }) {
                                                     </div>
                                                 ))}
                                                 {invoices.length === 0 && <div className="text-center text-sm text-gray-400 py-4">No recent activity</div>}
+                                                
+                                                <Button onClick={() => setIsInvoiceModalOpen(true)} className="w-full mt-4 bg-white hover:bg-gray-50 text-[#333333] border border-gray-200 rounded-xl">
+                                                    <Plus className="w-4 h-4 mr-2" /> Create Invoice
+                                                </Button>
                                             </div>
                                         </section>
 
                                         {/* Staff Notes Preview */}
-                                        <section className="bg-[#333333] text-white rounded-[32px] p-6 relative overflow-hidden">
+                                        <section className="bg-[#333333] text-white rounded-[32px] p-6 relative overflow-hidden min-h-[300px]">
                                             <div className="relative z-10">
                                                 <div className="flex items-center justify-between mb-6">
                                                     <h3 className="text-lg font-serif text-white">Staff Notes</h3>
-                                                    <Plus className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white" />
-                                                </div>
-                                                <div className="space-y-4">
-                                                    <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/5">
-                                                        <p className="text-sm leading-relaxed opacity-90">"Reminder: Family is traveling until Jan 5th. Pause billing reminders until return."</p>
-                                                        <div className="mt-3 flex items-center justify-between text-xs opacity-50">
-                                                            <span>Front Desk</span>
-                                                            <span>Yesterday</span>
-                                                        </div>
+                                                    <div className="flex gap-2">
+                                                        {/* Could add a 'New Note' button here in the future */}
+                                                        <StickyNote className="w-5 h-5 text-gray-400" />
                                                     </div>
+                                                </div>
+                                                <div className="space-y-4 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar-dark">
+                                                    {notes.length === 0 ? (
+                                                        <div className="text-center py-8 opacity-50 text-sm">
+                                                            No notes recorded for this family yet.
+                                                        </div>
+                                                    ) : (
+                                                        notes.slice(0, 4).map((note, idx) => (
+                                                            <div key={idx} className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/5 hover:bg-white/15 transition-colors cursor-default">
+                                                                <div className="flex items-start justify-between mb-2">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Avatar className="w-5 h-5">
+                                                                            <AvatarFallback className="text-[8px] bg-white text-[#333333]">{note.student_name.charAt(0)}</AvatarFallback>
+                                                                        </Avatar>
+                                                                        <span className="text-xs font-bold text-white/80">{note.student_name}</span>
+                                                                    </div>
+                                                                    <span className="text-[10px] text-white/40">{format(new Date(note.date), 'MMM d')}</span>
+                                                                </div>
+                                                                <p className="text-sm leading-relaxed opacity-90 italic">"{note.content}"</p>
+                                                                <div className="mt-2 text-[10px] text-white/40 flex items-center gap-1">
+                                                                    <PenSquare className="w-3 h-3" /> {note.teacher_name}
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    )}
                                                 </div>
                                             </div>
                                             {/* Decor */}
@@ -280,7 +365,7 @@ export default function FamilyProfileView({ family, onBack }) {
                                 >
                                     <div className="flex items-center justify-between mb-8">
                                         <h3 className="text-2xl font-serif text-[#333333]">Financial History</h3>
-                                        <Button className="rounded-full bg-[#333333] text-white">
+                                        <Button onClick={() => setIsInvoiceModalOpen(true)} className="rounded-full bg-[#333333] text-white">
                                             <Plus className="w-4 h-4 mr-2" /> New Invoice
                                         </Button>
                                     </div>
@@ -296,39 +381,46 @@ export default function FamilyProfileView({ family, onBack }) {
                                          </div>
                                          <div className="p-6 rounded-[24px] bg-gray-50 border border-gray-100">
                                              <div className="text-sm text-gray-500 mb-1">Last Payment</div>
-                                             <div className="text-3xl font-serif text-[#333333]">-</div>
+                                             <div className="text-3xl font-serif text-[#333333]">
+                                                 {lastPayment ? `$${lastPayment.amount}` : '-'}
+                                             </div>
+                                             {lastPayment && <div className="text-xs text-gray-400 mt-1">{format(new Date(lastPayment.date), 'MMM d, yyyy')}</div>}
                                          </div>
                                     </div>
 
                                     <div className="flex-1 overflow-hidden bg-white">
                                          <div className="space-y-2">
-                                            {invoices.map(inv => (
-                                                <div key={inv.id} className="group flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:shadow-sm transition-all">
-                                                            <FileText className="w-5 h-5" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-bold text-[#333333]">{inv.title}</div>
-                                                            <div className="text-xs text-gray-400">
-                                                                {format(new Date(inv.issue_date), 'MMM d, yyyy')} • Due {format(new Date(inv.due_date), 'MMM d')}
+                                            {invoices.length === 0 ? (
+                                                <div className="text-center py-10 text-gray-400">No invoices found.</div>
+                                            ) : (
+                                                invoices.map(inv => (
+                                                    <div key={inv.id} className="group flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:shadow-sm transition-all">
+                                                                <FileText className="w-5 h-5" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-bold text-[#333333]">{inv.title}</div>
+                                                                <div className="text-xs text-gray-400">
+                                                                    {format(new Date(inv.issue_date), 'MMM d, yyyy')} • Due {format(new Date(inv.due_date), 'MMM d')}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-6">
-                                                        <div className="text-right">
-                                                            <div className="font-serif font-medium">${inv.total_amount}</div>
-                                                            <div className={`text-[10px] font-bold uppercase tracking-wider ${
-                                                                inv.status === 'paid' ? 'text-green-600' : 
-                                                                inv.status === 'overdue' ? 'text-red-600' : 'text-yellow-600'
-                                                            }`}>
-                                                                {inv.status}
+                                                        <div className="flex items-center gap-6">
+                                                            <div className="text-right">
+                                                                <div className="font-serif font-medium">${inv.total_amount}</div>
+                                                                <div className={`text-[10px] font-bold uppercase tracking-wider ${
+                                                                    inv.status === 'paid' ? 'text-green-600' : 
+                                                                    inv.status === 'overdue' ? 'text-red-600' : 'text-yellow-600'
+                                                                }`}>
+                                                                    {inv.status}
+                                                                </div>
                                                             </div>
+                                                            <ChevronRight className="w-5 h-5 text-gray-300" />
                                                         </div>
-                                                        <ChevronRight className="w-5 h-5 text-gray-300" />
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))
+                                            )}
                                          </div>
                                     </div>
                                 </motion.div>
@@ -351,6 +443,28 @@ export default function FamilyProfileView({ family, onBack }) {
                     </div>
                 </div>
             </div>
+
+            {/* Modals */}
+            <StudentFormModal 
+                isOpen={isStudentModalOpen}
+                onOpenChange={setIsStudentModalOpen}
+                studentToEdit={studentToEdit}
+                initialData={!studentToEdit ? {
+                    parent_name: family.parent_name,
+                    parent_email: family.email,
+                    phone: family.phone
+                } : null}
+            />
+
+            <InvoiceGenerator 
+                isOpen={isInvoiceModalOpen}
+                onOpenChange={setIsInvoiceModalOpen}
+                family={{
+                    email: family.email,
+                    name: family.parent_name,
+                    students: family.students
+                }}
+            />
         </div>
     );
 }

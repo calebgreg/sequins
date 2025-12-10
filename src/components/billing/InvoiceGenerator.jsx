@@ -10,10 +10,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, Trash2, Sparkles, Zap, Calculator } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 
-export default function InvoiceGenerator({ isOpen, onOpenChange }) {
+export default function InvoiceGenerator({ isOpen, onOpenChange, family = null }) {
   const queryClient = useQueryClient();
-  const [step, setStep] = useState(1); // 1: Select Family, 2: Build Invoice
-  const [selectedFamily, setSelectedFamily] = useState(null);
+  const [step, setStep] = useState(family ? 2 : 1); // 1: Select Family, 2: Build Invoice
+  const [selectedFamily, setSelectedFamily] = useState(family);
+
+  React.useEffect(() => {
+    if (family) {
+      setSelectedFamily(family);
+      setStep(2);
+    }
+  }, [family]);
   const [isCalculating, setIsCalculating] = useState(false);
   
   const [invoiceData, setInvoiceData] = useState({
