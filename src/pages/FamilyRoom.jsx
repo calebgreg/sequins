@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
-export default function FamilyRoom({ previewConfig = null }) {
+export default function FamilyRoom({ previewConfig = null, isMobilePreview = false }) {
     const [searchParams] = useSearchParams();
     const configId = searchParams.get('id');
     const urlPreview = searchParams.get('preview') === 'true';
@@ -156,10 +156,10 @@ export default function FamilyRoom({ previewConfig = null }) {
                                      initial={{ opacity: 0, y: 30 }}
                                      animate={{ opacity: 1, y: 0 }}
                                      transition={{ duration: 0.8, delay: 0.2 }}
-                                     className="font-serif text-6xl md:text-8xl text-white mb-6 leading-tight tracking-tight drop-shadow-lg"
-                                 >
+                                     className={`font-serif text-6xl ${!isMobilePreview ? 'md:text-8xl' : ''} text-white mb-6 leading-tight tracking-tight drop-shadow-lg`}
+                                     >
                                      {module.content.title}
-                                 </motion.h1>
+                                     </motion.h1>
                                  <motion.div 
                                      initial={{ opacity: 0, y: 20 }}
                                      animate={{ opacity: 1, y: 0 }}
@@ -170,10 +170,10 @@ export default function FamilyRoom({ previewConfig = null }) {
                                      initial={{ opacity: 0, y: 20 }}
                                      animate={{ opacity: 1, y: 0 }}
                                      transition={{ duration: 0.8, delay: 0.5 }}
-                                     className="text-white/90 text-xl md:text-3xl font-light tracking-wide max-w-3xl mx-auto drop-shadow-md"
-                                 >
+                                     className={`text-white/90 text-xl ${!isMobilePreview ? 'md:text-3xl' : ''} font-light tracking-wide max-w-3xl mx-auto drop-shadow-md`}
+                                     >
                                      {module.content.subtitle}
-                                 </motion.p>
+                                     </motion.p>
                              </div>
                         </div>
                     );
@@ -263,7 +263,7 @@ export default function FamilyRoom({ previewConfig = null }) {
                                     initial={{ opacity: 0, y: 30 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
-                                    className="bg-white rounded-[40px] p-8 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-12 relative overflow-hidden"
+                                    className={`bg-white rounded-[40px] p-8 ${!isMobilePreview ? 'md:p-16' : ''} shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col ${!isMobilePreview ? 'md:flex-row' : ''} items-center justify-between gap-12 relative overflow-hidden`}
                                 >
                                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50" />
                                     
@@ -310,7 +310,7 @@ export default function FamilyRoom({ previewConfig = null }) {
                                 <p className="text-gray-400 max-w-2xl mx-auto">Classes selected specifically for your dancer's level and interests.</p>
                              </div>
                              
-                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                             <div className={`grid grid-cols-1 ${!isMobilePreview ? 'md:grid-cols-3' : ''} gap-6`}>
                                 {recommendedClasses.length > 0 ? recommendedClasses.map(cls => (
                                     <motion.div 
                                         key={cls.id}
@@ -406,7 +406,7 @@ export default function FamilyRoom({ previewConfig = null }) {
 
             {/* Footer */}
             <div className="bg-[#1a1a1a] text-white py-24 mt-24">
-                <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
+                <div className={`max-w-5xl mx-auto px-6 grid grid-cols-1 ${!isMobilePreview ? 'md:grid-cols-3' : ''} gap-12 text-center ${!isMobilePreview ? 'md:text-left' : ''}`}>
                     <div>
                         <h3 className="font-serif text-3xl mb-6">The Studio</h3>
                         <p className="text-white/40 leading-relaxed text-sm">

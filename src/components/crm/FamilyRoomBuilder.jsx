@@ -211,7 +211,10 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                         `}>
                             {/* Render FamilyRoom directly with props */}
                             <div className="w-full h-full overflow-y-auto no-scrollbar bg-white">
-                                <FamilyRoom previewConfig={activeConfig} />
+                                <FamilyRoom 
+                                    previewConfig={activeConfig} 
+                                    isMobilePreview={viewMode === 'mobile'} 
+                                />
                             </div>
                         </div>
                     </div>
