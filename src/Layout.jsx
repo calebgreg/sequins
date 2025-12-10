@@ -9,7 +9,7 @@ import { CommandMenuProvider, useCommandMenu } from './components/layout/Command
 
 function LayoutContent({ children }) {
   const location = useLocation();
-  const isTeacherStudio = location.pathname.includes('TeacherStudio');
+  const isTeacherStudio = location.pathname.toLowerCase().includes('teacherstudio');
   const { isOpen, setIsOpen } = useCommandMenu();
 
   // TeacherStudio has its own internal layout structure, but we wrap it to provide CommandMenu access
