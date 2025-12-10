@@ -259,21 +259,20 @@ export default function Students() {
                Manual Invoice
              </Button>
 
-             <DropdownMenu>
-               <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" className={`rounded-full h-10 border border-transparent hover:border-gray-200 hover:bg-white gap-2 transition-all ${statusFilter !== 'all' ? 'bg-[#333333] text-white hover:bg-black hover:text-white' : 'text-gray-500 bg-[#F4F4F6]/50'}`}>
-                   <Filter className="w-4 h-4" />
-                   <span className="capitalize">{statusFilter === 'all' ? 'Status' : statusFilter}</span>
-                   <ChevronDown className="w-3 h-3 opacity-50" />
-                 </Button>
-               </DropdownMenuTrigger>
-               <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-xl p-2">
-                 <DropdownMenuItem onClick={() => setStatusFilter('all')} className="rounded-xl">All Status</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setStatusFilter('active')} className="rounded-xl">Active</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setStatusFilter('prospect')} className="rounded-xl">Prospect</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setStatusFilter('inactive')} className="rounded-xl">Inactive</DropdownMenuItem>
-               </DropdownMenuContent>
-             </DropdownMenu>
+             <Button 
+               variant="ghost" 
+               onClick={() => setStatusFilter(current => current === 'active' ? 'all' : 'active')}
+               className={`rounded-full h-10 border transition-all ${statusFilter === 'active' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'text-gray-500 bg-transparent border-transparent hover:bg-white hover:border-gray-200'}`}
+             >
+               Active
+             </Button>
+             <Button 
+               variant="ghost" 
+               onClick={() => setStatusFilter(current => current === 'prospect' ? 'all' : 'prospect')}
+               className={`rounded-full h-10 border transition-all ${statusFilter === 'prospect' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'text-gray-500 bg-transparent border-transparent hover:bg-white hover:border-gray-200'}`}
+             >
+               Prospects
+             </Button>
              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#333333] hover:bg-white rounded-full w-10 h-10">
                <Download className="w-5 h-5" />
              </Button>
