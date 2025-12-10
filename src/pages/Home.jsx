@@ -185,6 +185,7 @@ export default function Home() {
                  />
                  <ActionCard 
                     to="TeacherStudio" 
+                    href="/TeacherStudio"
                     icon={Sparkles} 
                     label="Teacher" 
                     sub="Attendance & Notes" 
@@ -299,9 +300,9 @@ function MetricCard({ title, value, trend, icon: Icon, color }) {
    );
 }
 
-function ActionCard({ to, icon: Icon, label, sub, highlight }) {
+function ActionCard({ to, href, icon: Icon, label, sub, highlight }) {
    return (
-      <Link to={createPageUrl(to)}>
+      <Link to={href || createPageUrl(to)}>
          <motion.div 
             whileHover={{ y: -4 }}
             className={`
