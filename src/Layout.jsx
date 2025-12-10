@@ -10,8 +10,15 @@ import { Toaster } from 'sonner';
 
 function LayoutContent({ children }) {
   const location = useLocation();
-  const isTeacherStudio = location.pathname.toLowerCase().includes('teacherstudio') || location.pathname.toLowerCase().includes('teacher-studio');
+  const path = location.pathname.toLowerCase();
+  const isTeacherStudio = path.includes('teacherstudio') || path.includes('teacher-studio');
+  const isPublicPage = path.includes('familyroom') || path.includes('familyportal');
   const { isOpen, setIsOpen } = useCommandMenu();
+
+  // Public pages (Client Facing) - No Sidebar, No Admin Tools
+  if (isPublicPage) {
+    return <>{children}</>;
+  }
 
   // TeacherStudio has its own internal layout structure, but we wrap it to provide CommandMenu access
   if (isTeacherStudio) {
