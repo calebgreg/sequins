@@ -334,8 +334,8 @@ export default function FamilyProfileView({ family, onBack }) {
                                                 ))}
                                                 {invoices.length === 0 && <div className="text-center text-sm text-gray-400 py-4">No recent activity</div>}
                                                 
-                                                <Button onClick={() => setIsInvoiceModalOpen(true)} className="w-full mt-4 bg-white hover:bg-gray-50 text-[#333333] border border-gray-200 rounded-xl">
-                                                    <Plus className="w-4 h-4 mr-2" /> Create Invoice
+                                                <Button onClick={() => setIsInvoiceModalOpen(true)} className="w-full mt-4 bg-[#333333] text-white hover:bg-black rounded-xl shadow-lg">
+                                                    <Sparkles className="w-4 h-4 mr-2" /> Run Tuition
                                                 </Button>
                                             </div>
                                         </section>
