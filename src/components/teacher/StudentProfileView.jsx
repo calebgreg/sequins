@@ -85,9 +85,9 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
   }, [attendanceRate, streak, notes]);
 
   return (
-    <div className="flex flex-col min-h-full bg-[#F4F4F6]">
+    <div className="flex flex-col h-full bg-[#F4F4F6] overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 flex items-center justify-between sticky top-0 z-50 bg-[#F4F4F6]/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+      <div className="flex-shrink-0 px-6 py-4 flex items-center justify-between bg-[#F4F4F6] border-b border-gray-200/50 shadow-sm">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -106,7 +106,7 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
           </Button>
           </div>
 
-      <div className="flex-1 px-6 md:px-8 pb-8">
+      <div className="flex-1 overflow-y-auto px-6 md:px-8 pb-8">
         <div className="max-w-5xl mx-auto space-y-8">
           
           {/* Hero Profile Card */}
