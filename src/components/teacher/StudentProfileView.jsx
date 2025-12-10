@@ -5,6 +5,7 @@ import { ArrowLeft, Mail, Calendar, Star, TrendingUp, Clock, CheckCircle2, Alert
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { base44 } from "@/api/base44Client";
@@ -153,24 +154,28 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
                 </div>
 
                 {/* Engagement Bar */}
-                <div className="space-y-2 group relative cursor-help">
+                <div className="space-y-2">
                    <div className="flex justify-between text-sm font-medium">
-                      <span className="text-gray-400 flex items-center gap-1">
-                        Engagement Score <AlertCircle className="w-3 h-3" />
-                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-gray-400 flex items-center gap-1 cursor-help">
+                              Engagement Score <AlertCircle className="w-3 h-3" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-black/90 text-white border-none shadow-xl">
+                             <div className="font-bold mb-1">Score Breakdown:</div>
+                             <ul className="space-y-1 text-gray-300 w-48 text-xs">
+                               <li className="flex justify-between"><span>Attendance</span> <span>70%</span></li>
+                               <li className="flex justify-between"><span>Consistency Streak</span> <span>15%</span></li>
+                               <li className="flex justify-between"><span>Teacher Feedback</span> <span>15%</span></li>
+                             </ul>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <span className="text-[#333333]">{engagementLabel} ({engagementScore}%)</span>
                    </div>
                    <Progress value={engagementScore} className="h-2 bg-[#F4F4F6]" indicatorClassName="bg-gradient-to-r from-[#F2DCDD] to-[#E5C0C2]" />
-                   
-                   {/* Tooltip explanation */}
-                   <div className="absolute top-full left-0 mt-2 bg-black/90 text-white text-xs p-3 rounded-xl w-64 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 shadow-xl">
-                      <div className="font-bold mb-1">Score Breakdown:</div>
-                      <ul className="space-y-1 text-gray-300">
-                        <li className="flex justify-between"><span>Attendance</span> <span>70%</span></li>
-                        <li className="flex justify-between"><span>Consistency Streak</span> <span>15%</span></li>
-                        <li className="flex justify-between"><span>Teacher Feedback</span> <span>15%</span></li>
-                      </ul>
-                   </div>
                 </div>
               </div>
             </div>
