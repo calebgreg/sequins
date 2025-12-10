@@ -244,20 +244,20 @@ export default function Students() {
         </div>
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end">
-             <DropdownMenu>
-               <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" className={`rounded-full h-10 border border-transparent hover:border-gray-200 hover:bg-white gap-2 transition-all ${billingFilter !== 'all' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-500 bg-[#F4F4F6]/50'}`}>
-                   <CreditCard className="w-4 h-4" />
-                   {billingFilter === 'all' ? 'Billing' : billingFilter === 'auto_pay' ? 'Auto-Pay' : 'Manual'}
-                   <ChevronDown className="w-3 h-3 opacity-50" />
-                 </Button>
-               </DropdownMenuTrigger>
-               <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-xl p-2">
-                 <DropdownMenuItem onClick={() => setBillingFilter('all')} className="rounded-xl">All Methods</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setBillingFilter('auto_pay')} className="rounded-xl">Auto-Pay</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setBillingFilter('manual')} className="rounded-xl">Manual Invoice</DropdownMenuItem>
-               </DropdownMenuContent>
-             </DropdownMenu>
+             <Button 
+               variant="ghost" 
+               onClick={() => setBillingFilter(current => current === 'auto_pay' ? 'all' : 'auto_pay')}
+               className={`rounded-full h-10 border transition-all ${billingFilter === 'auto_pay' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'text-gray-500 bg-transparent border-transparent hover:bg-white hover:border-gray-200'}`}
+             >
+               Auto-Pay
+             </Button>
+             <Button 
+               variant="ghost" 
+               onClick={() => setBillingFilter(current => current === 'manual' ? 'all' : 'manual')}
+               className={`rounded-full h-10 border transition-all ${billingFilter === 'manual' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'text-gray-500 bg-transparent border-transparent hover:bg-white hover:border-gray-200'}`}
+             >
+               Manual Invoice
+             </Button>
 
              <DropdownMenu>
                <DropdownMenuTrigger asChild>
