@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Menu } from 'lucide-react';
 import { CommandMenuProvider, useCommandMenu } from './components/layout/CommandMenuContext';
 import { Toaster } from 'sonner';
+import GlobalAiChat from './components/ai/GlobalAiChat';
 
 function LayoutContent({ children }) {
   const location = useLocation();
@@ -63,6 +64,8 @@ function LayoutContent({ children }) {
             {children}
          </div>
       </main>
+
+      <GlobalAiChat />
     </div>
   );
 }
