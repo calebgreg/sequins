@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
     ChevronRight, Download, Star, Calendar, CreditCard, 
-    ArrowRight, MapPin, Mail, Phone, ExternalLink, Play 
+    ArrowRight, MapPin, Mail, Phone, ExternalLink, PlayCircle 
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,12 +92,15 @@ export default function FamilyRoom() {
     if (!config && !isPreview) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">Unable to load room configuration.</div>;
     if (isPreview && !config) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">Preview data not found. Try clicking preview again.</div>;
 
-    const visibleModules = config?.modules?.filter(m => m.isVisible) || [];
+    // Safe access to modules
+    const modules = Array.isArray(config?.modules) ? config.modules : [];
+    const visibleModules = modules.filter(m => m.isVisible);
+    
     const themeBg = config?.theme === 'elegant' ? 'bg-[#FDFBF7]' : config?.theme === 'energetic' ? 'bg-white' : 'bg-gray-50';
     const themeText = config?.theme === 'energetic' ? 'text-indigo-950' : 'text-[#333333]';
 
     return (
-        <div className={`min-h-screen font-sans ${themeBg} ${themeText}`}>
+        <div className={`min-h-screen font-sans ${themeBg} ${themeText} overflow-x-hidden`}>
             {/* Optional Header based on Theme */}
             <div className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto">
                  <div className="text-sm font-bold tracking-widest uppercase opacity-70">The Studio</div>
@@ -202,7 +205,7 @@ export default function FamilyRoom() {
                                         <iframe src={embedUrl} className="w-full h-full" allowFullScreen />
                                      ) : (
                                         <div className="flex items-center justify-center h-full text-white/30 flex-col gap-4">
-                                            <Play className="w-16 h-16" />
+                                            <PlayCircle className="w-16 h-16" />
                                             <span className="font-serif text-xl">Video Placeholder</span>
                                         </div>
                                      )}

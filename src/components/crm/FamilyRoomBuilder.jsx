@@ -46,8 +46,9 @@ export default function FamilyRoomBuilder({ family, onClose }) {
         }
     });
 
+    // Initialize config only once when data is available
     useEffect(() => {
-        if (!isLoading) {
+        if (!isLoading && !activeConfig) {
             if (existingConfig) {
                 setActiveConfig(existingConfig);
             } else {
@@ -81,7 +82,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                 });
             }
         }
-    }, [existingConfig, isLoading, family]);
+    }, [existingConfig, isLoading, family, activeConfig]);
 
     const saveMutation = useMutation({
         mutationFn: async (data) => {
