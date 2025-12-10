@@ -467,116 +467,108 @@ export default function Students() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                {filteredFamilies.map((family, i) => {
-                  const lastName = family.parent_name.split(' ').pop();
-                  const familyName = `The ${lastName} Family`;
-                  
-                  return (
-                    <motion.div
-                      key={family.email || i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      onClick={() => setSelectedFamily(family)}
-                      className="bg-white rounded-[24px] p-6 shadow-sm hover:shadow-lg transition-all group border border-transparent hover:border-gray-100 flex flex-col h-full relative cursor-pointer"
-                    >
-                        {/* Action Header */}
-                        <div className="flex justify-between items-start mb-6">
-                            <div>
-                                <h3 className="font-serif text-2xl text-[#333333] mb-1 group-hover:text-indigo-900 transition-colors">{familyName}</h3>
-                                <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
-                                    <User className="w-3.5 h-3.5 opacity-70" />
-                                    <span>{family.parent_name}</span>
-                                </div>
-                            </div>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-6 right-6 lg:static lg:opacity-100">
-                                 <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 text-gray-400 hover:text-indigo-600 rounded-full bg-gray-50 hover:bg-indigo-50"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (family.students[0]) handleMessage(e, family.students[0]);
-                                    }}
-                                    title="Message Family"
-                                 >
-                                    <Mail className="w-4 h-4" />
-                                 </Button>
-                                 <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 text-gray-400 hover:text-[#333333] rounded-full bg-gray-50 hover:bg-gray-100"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (family.students[0]) handleEdit(e, family.students[0]);
-                                    }}
-                                    title="Edit Family Details"
-                                 >
-                                    <Edit className="w-4 h-4" />
-                                 </Button>
-                            </div>
-                        </div>
-
-                        {/* Students List */}
-                        <div className="flex-1 space-y-2 mb-6">
-                            {family.students.map(s => (
-                                <div 
-                                    key={s.id} 
-                                    onClick={() => setSelectedStudent(s)}
-                                    className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50/50 hover:bg-[#F4F4F6] transition-colors cursor-pointer group/student border border-transparent hover:border-gray-100"
-                                >
-                                    <Avatar className="w-9 h-9 border-2 border-white shadow-sm">
-                                        <AvatarFallback className="bg-[#333333] text-white text-[10px] font-serif">{s.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between">
-                                             <span className="font-medium text-[#333333] text-sm truncate">{s.name}</span>
-                                             {s.status !== 'active' && (
-                                                 <span className={`w-2 h-2 rounded-full ${s.status === 'prospect' ? 'bg-yellow-400' : 'bg-gray-300'}`} />
-                                             )}
+                <div className="bg-white rounded-[32px] shadow-sm overflow-hidden">
+                   <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                         <thead>
+                           <tr className="border-b border-gray-100 text-xs uppercase text-gray-400 tracking-wider font-bold">
+                             <th className="p-4 md:p-6 font-medium">Family Name</th>
+                             <th className="p-4 md:p-6 font-medium">Students</th>
+                             <th className="p-4 md:p-6 font-medium hidden lg:table-cell">Contact Info</th>
+                             <th className="p-4 md:p-6 font-medium text-right">Actions</th>
+                           </tr>
+                         </thead>
+                         <tbody>
+                           {filteredFamilies.map((family, i) => {
+                             const lastName = family.parent_name.split(' ').pop();
+                             const familyName = `The ${lastName} Family`;
+                             
+                             return (
+                               <motion.tr 
+                                  key={family.email || i}
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  transition={{ delay: i * 0.05 }}
+                                  onClick={() => setSelectedFamily(family)}
+                                  className="group hover:bg-[#F4F4F6] transition-colors cursor-pointer border-b border-gray-50 last:border-0"
+                               >
+                                  <td className="p-4 md:p-6 align-top">
+                                     <div className="font-serif text-lg text-[#333333] mb-1">{familyName}</div>
+                                     <div className="flex items-center gap-2 text-sm text-gray-500">
+                                        <User className="w-3.5 h-3.5 opacity-70" />
+                                        <span>{family.parent_name}</span>
+                                     </div>
+                                  </td>
+                                  <td className="p-4 md:p-6 align-top">
+                                     <div className="flex flex-col gap-2">
+                                        {family.students.map(s => (
+                                           <div key={s.id} className="flex items-center gap-2">
+                                              <Avatar className="w-6 h-6 border border-white shadow-sm">
+                                                 <AvatarFallback className="bg-[#333333] text-white text-[10px] font-serif">{s.name.charAt(0)}</AvatarFallback>
+                                              </Avatar>
+                                              <span className="text-sm text-[#333333]">{s.name}</span>
+                                              <span className="text-xs text-gray-400">({s.age} yrs • {s.level})</span>
+                                           </div>
+                                        ))}
+                                     </div>
+                                  </td>
+                                  <td className="p-4 md:p-6 hidden lg:table-cell align-top">
+                                     <div className="flex flex-col gap-1.5">
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                           <Mail className="w-3.5 h-3.5 text-gray-400" />
+                                           <span>{family.email}</span>
                                         </div>
-                                        <div className="text-xs text-gray-400 truncate flex items-center gap-1">
-                                            <span>{s.age} yrs</span>
-                                            <span className="w-0.5 h-0.5 bg-gray-300 rounded-full" />
-                                            <span>{s.level}</span>
-                                        </div>
-                                    </div>
-                                    <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover/student:text-[#333333] -translate-x-1 group-hover/student:translate-x-0 transition-all" />
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Footer / Contact Info */}
-                        <div className="pt-4 border-t border-gray-50 mt-auto flex items-end justify-between">
-                            <div className="grid gap-2 flex-1 min-w-0">
-                                <a 
-                                    href={`mailto:${family.email}`}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors p-1.5 rounded-lg hover:bg-indigo-50/50 -ml-1.5"
-                                >
-                                    <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-500">
-                                        <Mail className="w-3 h-3" />
-                                    </div>
-                                    <span className="truncate font-medium">{family.email}</span>
-                                </a>
-                                {family.phone && (
-                                    <div className="flex items-center gap-2.5 text-xs text-gray-500 p-1.5 -ml-1.5">
-                                        <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-500">
-                                            <Phone className="w-3 h-3" />
-                                        </div>
-                                        <span className="font-medium">{family.phone}</span>
-                                    </div>
-                                )}
-                            </div>
-                            <Button variant="ghost" size="sm" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 font-medium text-xs rounded-full px-3 h-8">
-                               View Portal
-                            </Button>
-                        </div>
-                    </motion.div>
-                  );
-                })}
+                                        {family.phone && (
+                                           <div className="flex items-center gap-2 text-sm text-gray-600">
+                                              <Phone className="w-3.5 h-3.5 text-gray-400" />
+                                              <span>{family.phone}</span>
+                                           </div>
+                                        )}
+                                     </div>
+                                  </td>
+                                  <td className="p-4 md:p-6 text-right align-top">
+                                     <div className="flex items-center justify-end gap-2">
+                                        <Button 
+                                           variant="ghost" 
+                                           size="icon" 
+                                           className="h-8 w-8 text-indigo-500 bg-indigo-50/50 hover:bg-indigo-100 hover:text-indigo-700 shadow-sm border border-indigo-100"
+                                           onClick={(e) => {
+                                              e.stopPropagation();
+                                              if (family.students[0]) handleMessage(e, family.students[0]);
+                                           }}
+                                           title="Message Family"
+                                        >
+                                           <Mail className="w-4 h-4" />
+                                        </Button>
+                                        <Button 
+                                           variant="ghost" 
+                                           size="icon" 
+                                           className="h-8 w-8 text-gray-400 hover:text-[#333333] hover:bg-white shadow-sm"
+                                           onClick={(e) => {
+                                              e.stopPropagation();
+                                              if (family.students[0]) handleEdit(e, family.students[0]);
+                                           }}
+                                           title="Edit Family Details"
+                                        >
+                                           <Edit className="w-4 h-4" />
+                                        </Button>
+                                        <Button 
+                                           variant="ghost" 
+                                           size="icon" 
+                                           className="h-8 w-8 text-gray-400 hover:text-[#333333] hover:bg-white shadow-sm"
+                                        >
+                                           <ArrowRight className="w-4 h-4" />
+                                        </Button>
+                                     </div>
+                                  </td>
+                               </motion.tr>
+                             );
+                           })}
+                         </tbody>
+                      </table>
+                   </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
