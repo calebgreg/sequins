@@ -17,38 +17,33 @@ export default function FamilyRoom() {
     const [previewData, setPreviewData] = useState(null);
     const [previewError, setPreviewError] = useState(false);
 
-    // Load local storage data for preview immediately with timeout fallback
+    // Load preview data from URL hash (robust against domain/storage issues)
     useEffect(() => {
-        let timeoutId;
         if (isPreview) {
             try {
-                const loadPreview = () => {
-                    const stored = localStorage.getItem('familyRoomPreview');
-                    if (stored) {
-                        setPreviewData(JSON.parse(stored));
-                        setPreviewError(false);
-                    } else {
-                        // If not found immediately, retry once after short delay (helps with tab race conditions)
-                        timeoutId = setTimeout(() => {
-                             const retry = localStorage.getItem('familyRoomPreview');
-                             if (retry) {
-                                 setPreviewData(JSON.parse(retry));
-                                 setPreviewError(false);
-                             } else {
-                                 setPreviewError(true);
-                             }
-                        }, 500);
-                    }
-                };
-                loadPreview();
+                // Try reading from hash first (Primary method)
+                const hash = window.location.hash;
+                if (hash && hash.includes('data=')) {
+                    const encodedData = hash.split('data=')[1];
+                    const decodedData = decodeURIComponent(atob(encodedData));
+                    setPreviewData(JSON.parse(decodedData));
+                    setPreviewError(false);
+                    return;
+                }
+
+                // Fallback to localStorage (Secondary method)
+                const stored = localStorage.getItem('familyRoomPreview');
+                if (stored) {
+                    setPreviewData(JSON.parse(stored));
+                    setPreviewError(false);
+                } else {
+                     setPreviewError(true);
+                }
             } catch (e) {
                 console.error("Failed to load preview data", e);
                 setPreviewError(true);
             }
         }
-        return () => {
-            if (timeoutId) clearTimeout(timeoutId);
-        };
     }, [isPreview]);
 
     // Fetch Config logic for non-preview or fallback

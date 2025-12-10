@@ -114,14 +114,13 @@ export default function FamilyRoomBuilder({ family, onClose }) {
 
     const handlePreview = () => {
         try {
-            // Strategy: Try to save to DB first if possible, otherwise use local storage
-            // Using local storage for immediate preview feedback
-            localStorage.setItem('familyRoomPreview', JSON.stringify(activeConfig));
+            // Encode config to Base64 to pass via URL fragment (persistent across redirects/reloads)
+            const configString = JSON.stringify(activeConfig);
+            const encodedConfig = btoa(encodeURIComponent(configString));
             
-            // Construct URL
-            // If we have an ID, we could pass it, but preview=true forces reading from localStorage/draft
-            // which is better for "Previewing before publishing"
-            const url = createPageUrl('FamilyRoom?preview=true');
+            // Construct URL with data in hash
+            const pageUrl = createPageUrl('FamilyRoom');
+            const url = `${pageUrl}${pageUrl.includes('?') ? '&' : '?'}preview=true#data=${encodedConfig}`;
             
             const win = window.open(url, '_blank');
             if (!win) {
@@ -129,7 +128,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
             }
         } catch (error) {
             console.error("Preview error:", error);
-            toast.error("Could not launch preview.");
+            toast.error("Could not launch preview. Configuration might be too large.");
         }
     };
 
