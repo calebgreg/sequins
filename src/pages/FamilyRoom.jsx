@@ -10,16 +10,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export default function FamilyRoom() {
+export default function FamilyRoom({ previewConfig = null }) {
     const [searchParams] = useSearchParams();
     const configId = searchParams.get('id');
-    const isPreview = searchParams.get('preview') === 'true';
+    const urlPreview = searchParams.get('preview') === 'true';
+    const isPreview = urlPreview || !!previewConfig;
     const [previewData, setPreviewData] = useState(null);
     const [previewError, setPreviewError] = useState(false);
 
     // Load preview data from URL hash (robust against domain/storage issues)
     useEffect(() => {
-        if (isPreview) {
+        if (urlPreview && !previewConfig) {
             try {
                 // Try reading from hash first (Primary method)
                 const hash = window.location.hash;
@@ -58,10 +59,10 @@ export default function FamilyRoom() {
         retry: false
     });
 
-    const config = isPreview ? previewData : dbConfig;
-    const isLoading = isPreview ? (!previewData && !previewError) : isDbLoading;
+    const config = previewConfig || (urlPreview ? previewData : dbConfig);
+    const isLoading = previewConfig ? false : (urlPreview ? (!previewData && !previewError) : isDbLoading);
 
-    if (isPreview && previewError) {
+    if (urlPreview && previewError && !previewConfig) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] p-8 text-center">
                 <div className="bg-white p-8 rounded-3xl shadow-sm border border-red-100 max-w-md">
@@ -116,7 +117,7 @@ export default function FamilyRoom() {
             {/* Optional Header based on Theme */}
             <div className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto">
                  <div className="text-sm font-bold tracking-widest uppercase opacity-70">The Studio</div>
-                 {isPreview && <Badge variant="destructive" className="animate-pulse shadow-xl">Live Preview Mode</Badge>}
+                 {isPreview && !previewConfig && <Badge variant="destructive" className="animate-pulse shadow-xl">Live Preview Mode</Badge>}
             </div>
 
             {visibleModules.map((module, idx) => {

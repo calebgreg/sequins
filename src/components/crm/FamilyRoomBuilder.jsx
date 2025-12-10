@@ -113,23 +113,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
     };
 
     const handlePreview = () => {
-        try {
-            // Encode config to Base64 to pass via URL fragment (persistent across redirects/reloads)
-            const configString = JSON.stringify(activeConfig);
-            const encodedConfig = btoa(encodeURIComponent(configString));
-            
-            // Construct URL with data in hash
-            const pageUrl = createPageUrl('FamilyRoom');
-            const url = `${pageUrl}${pageUrl.includes('?') ? '&' : '?'}preview=true#data=${encodedConfig}`;
-            
-            const win = window.open(url, '_blank');
-            if (!win) {
-                toast.error("Pop-up blocked. Please allow pop-ups to view the preview.");
-            }
-        } catch (error) {
-            console.error("Preview error:", error);
-            toast.error("Could not launch preview. Configuration might be too large.");
-        }
+        setShowFullPreview(true);
     };
 
     const handleDragEnd = (result) => {
