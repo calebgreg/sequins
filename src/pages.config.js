@@ -8,6 +8,7 @@ import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import Features from './pages/Features';
 import FamilyRoom from './pages/FamilyRoom';
+import Tasks from './pages/Tasks';
 import __Layout from './Layout.jsx';
 
 
@@ -22,6 +23,7 @@ export const PAGES = {
     "Settings": Settings,
     "Features": Features,
     "FamilyRoom": FamilyRoom,
+    "Tasks": Tasks,
 }
 
 export const pagesConfig = {
