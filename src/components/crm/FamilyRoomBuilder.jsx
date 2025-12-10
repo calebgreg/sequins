@@ -147,7 +147,12 @@ export default function FamilyRoomBuilder({ family, onClose }) {
 
     if (!activeConfig) return <div className="p-8 text-center">Loading Room Configuration...</div>;
 
-    const roomLink = createPageUrl(`FamilyRoom?id=${activeConfig.id || 'preview'}`);
+    const handlePreview = () => {
+        // Save current state to local storage for instant preview without saving to DB
+        localStorage.setItem('familyRoomPreview', JSON.stringify(activeConfig));
+        const url = createPageUrl('FamilyRoom?preview=true');
+        window.open(url, '_blank');
+    };
 
     return (
         <div className="h-full flex flex-col bg-[#F4F4F6] overflow-hidden">
@@ -167,8 +172,8 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="sm" onClick={() => window.open(roomLink, '_blank')} className="gap-2 text-gray-500">
-                        <ExternalLink className="w-4 h-4" /> Preview
+                    <Button variant="ghost" size="sm" onClick={handlePreview} className="gap-2 text-gray-500 hover:text-indigo-600">
+                        <ExternalLink className="w-4 h-4" /> Live Preview
                     </Button>
                     <div className="h-6 w-px bg-gray-200" />
                     <Button 
