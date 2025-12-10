@@ -80,22 +80,44 @@ export default function StudentCommunicationTab({ student }) {
         setIsGenerating(true);
         let promptContext = "";
         
+        const basePrompt = `You are a world-class copywriter and empathetic dance studio director. Your goal is to write a warm, authentic, and highly personalized email.
+        Student Name: ${student.name}
+        Student Level: ${student.level}
+        
+        Strict Guidelines:
+        - Tone: Professional yet warm, authentic, and personal. Avoid corporate jargon or robotic marketing speak.
+        - Style: Use short paragraphs and natural language.
+        - Quality: The email must sound like it was written by a caring human teacher, not an AI.
+        `;
+
         if (type === 'retention') {
-            promptContext = `Write a warm, personal retention email to the parent of ${student.name}. 
-            Context: They are taking ${student.level || 'dance'} classes. 
-            Goal: Check in on their happiness, highlight a recent win (make one up generically but realistic), and ask for feedback.`;
+            promptContext = `${basePrompt}
+            Task: Write a retention check-in email.
+            Key Elements:
+            1. Acknowledge their recent attendance and effort.
+            2. Mention a specific (realistic) positive observation about their progress in ${student.level} class.
+            3. Gently ask for feedback on their experience so far.
+            4. Subject line should be casual and inviting (e.g., "Thinking of ${student.name}", "Quick check-in").`;
         } else if (type === 'upsell') {
-            promptContext = `Write an exciting email to the parent of ${student.name} suggesting they add another class.
-            Context: They are currently in ${student.level}. 
-            Goal: Recommend a complementary style (e.g. if Ballet, suggest Contemporary) and offer a trial class.`;
+            promptContext = `${basePrompt}
+            Task: Write a gentle recommendation for an additional class.
+            Key Elements:
+            1. compliment their strong foundation in their current class.
+            2. Suggest a specific complementary style (e.g. "Because they love Ballet, they might really enjoy Lyrical...").
+            3. Frame it as an opportunity for growth, not a sales pitch.
+            4. Offer a complimentary trial class as a low-pressure next step.`;
         } else if (type === 'praise') {
-            promptContext = `Write a short "Student Shoutout" email for ${student.name}.
-            Goal: Praise their hard work and positive attitude in class this week. Keep it encouraging and shareable.`;
+            promptContext = `${basePrompt}
+            Task: Write a "Student Shoutout" email.
+            Key Elements:
+            1. Focus purely on a specific moment of success or great attitude from this week.
+            2. No ask, no sales, just pure positive reinforcement.
+            3. Make the parent feel proud.`;
         }
 
         try {
             const res = await base44.integrations.Core.InvokeLLM({
-                prompt: promptContext + " Return JSON with 'subject' and 'body' keys.",
+                prompt: promptContext + "\n\nOutput strictly valid JSON with 'subject' and 'body' keys.",
                 response_json_schema: {
                     type: "object",
                     properties: {
