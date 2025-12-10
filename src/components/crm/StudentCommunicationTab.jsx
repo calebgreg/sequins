@@ -25,7 +25,7 @@ import {
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function StudentCommunicationTab({ student }) {
+export default function StudentCommunicationTab({ student, className = "" }) {
     const [composeMode, setComposeMode] = useState(true);
     const [subject, setSubject] = useState('');
     const [messageBody, setMessageBody] = useState('');
@@ -221,7 +221,7 @@ export default function StudentCommunicationTab({ student }) {
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[600px]">
+        <div className={`grid grid-cols-1 lg:grid-cols-12 gap-6 ${className || 'h-[600px]'}`}>
             {/* Left: History & Context (4 cols) */}
             <div className="lg:col-span-4 flex flex-col gap-4">
                 <div className="bg-white rounded-[24px] p-6 shadow-sm flex-1 flex flex-col overflow-hidden">

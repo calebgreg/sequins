@@ -27,7 +27,7 @@ export default function MessageStudentModal({ isOpen, onOpenChange, student }) {
                    We might want to make it h-full if we can, but let's see. 
                 */}
                 <div className="h-full">
-                    <StudentCommunicationTab student={student} />
+                    <StudentCommunicationTab student={student} className="h-full" />
                 </div>
             </div>
         </div>
