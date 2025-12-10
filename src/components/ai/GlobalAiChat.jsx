@@ -3,12 +3,13 @@ import { base44 } from "@/api/base44Client";
 import { 
     Sparkles, ArrowUp, X, Globe, Calendar, ArrowRight, 
     ExternalLink, MapPin, Image as ImageIcon, Loader2,
-    CheckCircle2, ChevronDown, Send
+    CheckCircle2, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import useAiAssistant from './useAiAssistant';
 
 // --- Rich Content Renderers ---
+
 const LinkPreview = ({ data }) => (
     <div className="flex items-center gap-3 p-3 bg-white/50 hover:bg-white/80 border border-white/60 rounded-xl transition-colors cursor-pointer group">
         <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0">
@@ -59,10 +60,10 @@ const MessageItem = ({ message }) => {
             {/* Text Bubble */}
             {message.content && (
                 <div className={`
-                    px-4 py-2.5 rounded-2xl text-[15px] leading-relaxed max-w-[90%]
+                    px-4 py-2.5 rounded-[20px] text-[15px] leading-relaxed max-w-[90%]
                     ${isAi 
-                        ? 'bg-gray-100/80 text-gray-800 backdrop-blur-md' 
-                        : 'bg-[#333333] text-white'}
+                        ? 'bg-white/60 text-gray-800 backdrop-blur-md shadow-sm border border-white/50' 
+                        : 'bg-[#111] text-white shadow-md'}
                 `}>
                     {message.content}
                 </div>
@@ -94,6 +95,7 @@ export default function GlobalAiChat() {
     const [inputValue, setInputValue] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     
+    // Initial State: Just a suggestion
     const [messages, setMessages] = useState([]);
 
     const inputRef = useRef(null);
@@ -112,6 +114,7 @@ export default function GlobalAiChat() {
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (containerRef.current && !containerRef.current.contains(event.target) && isOpen) {
+                // Only collapse if empty input, otherwise keep focus
                 if (!inputValue.trim()) setIsOpen(false);
             }
         };
@@ -119,21 +122,16 @@ export default function GlobalAiChat() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen, inputValue]);
 
-    // Focus input on open
-    useEffect(() => {
-        if (isOpen && inputRef.current) {
-            setTimeout(() => inputRef.current.focus(), 300);
-        }
-    }, [isOpen]);
-
     const handleSend = async () => {
         if (!inputValue.trim()) return;
 
+        // Open if not already
         if (!isOpen) setIsOpen(true);
 
         const userText = inputValue;
         setInputValue('');
         
+        // Add User Message
         setMessages(prev => [...prev, { id: Date.now(), role: 'user', content: userText }]);
         setIsThinking(true);
 
@@ -149,7 +147,7 @@ export default function GlobalAiChat() {
 
             const text = typeof response === 'string' ? response : (response.content || "Done.");
 
-            // Simulate Rich Content
+            // Simulate Rich Content for demo purposes based on keywords
             const attachments = [];
             const lowerText = userText.toLowerCase();
             
@@ -178,109 +176,116 @@ export default function GlobalAiChat() {
     };
 
     return (
-        <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end pointer-events-none">
+        <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center pointer-events-none">
             <motion.div
                 ref={containerRef}
                 layout
-                initial={{ width: 'auto', height: 'auto', borderRadius: '32px' }}
+                initial={{ width: '180px', height: '50px', borderRadius: '25px' }}
                 animate={{ 
-                    width: isOpen ? '360px' : 'auto',
-                    height: isOpen ? '500px' : 'auto',
-                    borderRadius: isOpen ? '24px' : '32px',
-                    backgroundColor: isOpen ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0)',
-                    boxShadow: isOpen ? '0 10px 40px rgba(0,0,0,0.1)' : 'none',
-                    backdropFilter: isOpen ? 'blur(20px)' : 'none',
+                    width: isOpen ? '400px' : '180px',
+                    height: isOpen ? 'auto' : '50px',
+                    borderRadius: isOpen ? '24px' : '25px',
+                    y: isOpen ? 0 : 0
                 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="pointer-events-auto overflow-hidden relative flex flex-col origin-bottom-right"
+                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                className={`
+                    pointer-events-auto
+                    relative bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)]
+                    flex flex-col overflow-hidden
+                `}
+                style={{ maxHeight: '600px' }}
             >
-                {/* --- CLOSED STATE: Just the Name --- */}
-                {!isOpen && (
-                    <motion.button
-                        initial={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setIsOpen(true)}
-                        className="group flex items-center gap-2 px-2 py-2 cursor-pointer"
-                    >
-                        <span className="text-xl font-serif text-gray-400 group-hover:text-[#333333] transition-colors duration-300 tracking-wide">
-                            {aiName}
-                        </span>
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                    </motion.button>
-                )}
-
-                {/* --- OPEN STATE: Chat Interface --- */}
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex-1 flex flex-col h-full relative"
-                    >
-                        {/* Minimal Header */}
-                        <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0">
-                            <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                                <span className="text-sm font-serif text-gray-500">{aiName}</span>
-                            </div>
-                            <button 
-                                onClick={() => setIsOpen(false)}
-                                className="text-gray-400 hover:text-gray-800 transition-colors"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        {/* Messages Area */}
-                        <div 
-                            className="flex-1 overflow-y-auto px-6 py-4 no-scrollbar space-y-4"
+                {/* --- Content Area (Collapsible) --- */}
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex-1 overflow-y-auto px-4 pt-4 pb-2 min-h-[100px] max-h-[400px] scroll-smooth no-scrollbar flex flex-col"
                             ref={scrollRef}
                         >
                             {messages.length === 0 && (
-                                <div className="h-full flex flex-col items-center justify-center opacity-30">
-                                    <Sparkles className="w-8 h-8 mb-4 text-[#333333]" />
-                                    <p className="font-serif text-lg text-center text-[#333333]">
-                                        "How can I help you today?"
-                                    </p>
+                                <div className="flex flex-col items-center justify-center flex-1 py-8 text-center opacity-40">
+                                    <Sparkles className="w-6 h-6 mb-2" />
+                                    <p className="text-sm font-medium">How can I help?</p>
                                 </div>
                             )}
-
+                            
                             {messages.map(msg => (
                                 <MessageItem key={msg.id} message={msg} />
                             ))}
 
                             {isThinking && (
-                                <div className="flex items-center gap-2 text-xs text-gray-400 pl-1">
-                                    <Loader2 className="w-3 h-3 animate-spin" />
-                                    <span>Thinking...</span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Input Area */}
-                        <div className="p-4 pt-2 bg-gradient-to-t from-white/50 to-transparent">
-                            <div className="relative flex items-center bg-white/50 border border-gray-100 rounded-2xl shadow-sm focus-within:ring-1 focus-within:ring-gray-200 focus-within:bg-white transition-all overflow-hidden">
-                                <input
-                                    ref={inputRef}
-                                    value={inputValue}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') handleSend();
-                                        if (e.key === 'Escape') setIsOpen(false);
-                                    }}
-                                    placeholder="Type a command..."
-                                    className="flex-1 bg-transparent border-none px-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-0 focus:outline-none"
-                                />
-                                <button 
-                                    onClick={handleSend}
-                                    disabled={!inputValue.trim()}
-                                    className="p-2 mr-1 text-gray-400 hover:text-[#333333] disabled:opacity-50 transition-colors"
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex items-center gap-2 text-xs text-gray-400 pl-2 mb-2"
                                 >
-                                    <ArrowUp className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    <span>Processing...</span>
+                                </motion.div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* --- Input Bar --- */}
+                <div 
+                    className="flex items-center h-[50px] px-1.5 shrink-0 cursor-text"
+                    onClick={() => {
+                        setIsOpen(true);
+                        inputRef.current?.focus();
+                    }}
+                >
+                    {/* Icon / Trigger */}
+                    <div className="w-10 h-10 flex items-center justify-center text-indigo-500 shrink-0">
+                        <Sparkles className="w-5 h-5 fill-indigo-500/10" />
+                    </div>
+
+                    {/* Input Field */}
+                    <input
+                        ref={inputRef}
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSend();
+                            if (e.key === 'Escape') {
+                                setIsOpen(false);
+                                inputRef.current?.blur();
+                            }
+                        }}
+                        placeholder={isOpen ? "Ask anything..." : `Ask ${aiName}...`}
+                        className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-gray-800 placeholder:text-gray-500 font-medium px-2"
+                    />
+
+                    {/* Action Button */}
+                    <AnimatePresence mode="wait">
+                        {inputValue.trim() ? (
+                            <motion.button
+                                key="send"
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.5, opacity: 0 }}
+                                onClick={(e) => { e.stopPropagation(); handleSend(); }}
+                                className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-indigo-600 transition-colors shadow-sm"
+                            >
+                                <ArrowUp className="w-4 h-4" />
+                            </motion.button>
+                        ) : isOpen ? (
+                            <motion.button
+                                key="close"
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.5, opacity: 0 }}
+                                onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
+                                className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                            >
+                                <ChevronDown className="w-4 h-4" />
+                            </motion.button>
+                        ) : null}
+                    </AnimatePresence>
+                </div>
             </motion.div>
         </div>
     );
