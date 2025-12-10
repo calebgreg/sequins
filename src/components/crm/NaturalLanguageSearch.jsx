@@ -113,12 +113,33 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
             });
 
             if (res) {
+                // Sanitize the response to remove empty values
+                const cleanObject = (obj) => {
+                    const cleaned = {};
+                    Object.keys(obj).forEach(key => {
+                        const value = obj[key];
+                        if (value === null || value === undefined || value === '') return;
+                        if (Array.isArray(value) && value.length === 0) return;
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                            const nested = cleanObject(value);
+                            if (Object.keys(nested).length > 0) {
+                                cleaned[key] = nested;
+                            }
+                            return;
+                        }
+                        cleaned[key] = value;
+                    });
+                    return cleaned;
+                };
+
+                const cleanedRes = cleanObject(res);
+
                 const filterData = {
-                    parsed_criteria_json: res,
+                    parsed_criteria_json: cleanedRes,
                     natural_language_query: query
                 };
                 setActiveFilter(filterData);
-                onFilterChange(res);
+                onFilterChange(cleanedRes);
             }
         } catch (error) {
             console.error("AI Search failed", error);
