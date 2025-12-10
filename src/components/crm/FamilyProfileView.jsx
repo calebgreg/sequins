@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { 
     ArrowLeft, Mail, Phone, Plus, CreditCard, DollarSign, Users, 
@@ -32,6 +32,16 @@ export default function FamilyProfileView({ family, onBack }) {
     const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
     const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
     const [studentToEdit, setStudentToEdit] = useState(null);
+    const [newNote, setNewNote] = useState('');
+    
+    const queryClient = useQueryClient();
+    
+    // Get current user for author name
+    const { data: currentUser } = useQuery({
+        queryKey: ['me'],
+        queryFn: () => base44.auth.me(),
+        retry: false
+    });
 
     // Fetch Invoices
     const { data: invoices = [] } = useQuery({
@@ -51,15 +61,32 @@ export default function FamilyProfileView({ family, onBack }) {
         }
     });
 
-    // Fetch Staff Notes (StudentNotes)
+    // Fetch Staff Notes (FamilyNotes)
     const { data: notes = [] } = useQuery({
         queryKey: ['family_notes', family.email],
         queryFn: async () => {
-            const all = await base44.entities.StudentNote.list('-date', 50);
-            const studentNames = family.students.map(s => s.name);
-            return all.filter(n => studentNames.includes(n.student_name));
+            const all = await base44.entities.FamilyNote.list('-created_date', 50);
+            return all.filter(n => n.parent_email === family.email);
         }
     });
+
+    const createNoteMutation = useMutation({
+        mutationFn: (content) => base44.entities.FamilyNote.create({
+            parent_email: family.email,
+            content,
+            author_name: currentUser?.full_name || 'Staff'
+        }),
+        onSuccess: () => {
+            setNewNote('');
+            queryClient.invalidateQueries(['family_notes', family.email]);
+        }
+    });
+
+    const handleAddNote = (e) => {
+        e.preventDefault();
+        if (!newNote.trim()) return;
+        createNoteMutation.mutate(newNote);
+    };
 
     // Computed Metrics
     const balanceDue = useMemo(() => invoices.reduce((acc, inv) => acc + (inv.balance_due || 0), 0), [invoices]);
@@ -313,44 +340,73 @@ export default function FamilyProfileView({ family, onBack }) {
                                             </div>
                                         </section>
 
-                                        {/* Staff Notes Preview */}
-                                        <section className="bg-[#333333] text-white rounded-[32px] p-6 relative overflow-hidden min-h-[300px]">
-                                            <div className="relative z-10">
-                                                <div className="flex items-center justify-between mb-6">
-                                                    <h3 className="text-lg font-serif text-white">Staff Notes</h3>
-                                                    <div className="flex gap-2">
-                                                        {/* Could add a 'New Note' button here in the future */}
-                                                        <StickyNote className="w-5 h-5 text-gray-400" />
+                                        {/* Staff Notes Feed */}
+                                        <section className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm flex flex-col h-[500px]">
+                                            <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                                                <h3 className="text-lg font-serif text-[#333333]">Staff Notes</h3>
+                                                <Badge variant="secondary" className="bg-gray-100 text-gray-500">{notes.length}</Badge>
+                                            </div>
+                                            
+                                            {/* Input Area */}
+                                            <div className="mb-6 flex-shrink-0">
+                                                <form onSubmit={handleAddNote} className="relative">
+                                                    <textarea 
+                                                        value={newNote}
+                                                        onChange={(e) => setNewNote(e.target.value)}
+                                                        placeholder="Add a note about this family..."
+                                                        className="w-full bg-[#F4F4F6] rounded-2xl p-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#333333]/10 resize-none min-h-[80px]"
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                                e.preventDefault();
+                                                                handleAddNote(e);
+                                                            }
+                                                        }}
+                                                    />
+                                                    <button 
+                                                        type="submit"
+                                                        disabled={!newNote.trim() || createNoteMutation.isPending}
+                                                        className="absolute bottom-3 right-3 p-2 bg-[#333333] text-white rounded-xl hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                                    >
+                                                        {createNoteMutation.isPending ? (
+                                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                        ) : (
+                                                            <Send className="w-4 h-4" />
+                                                        )}
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            {/* Notes Feed */}
+                                            <div className="flex-1 overflow-y-auto space-y-4 pr-2 -mr-2">
+                                                {notes.length === 0 ? (
+                                                    <div className="h-full flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-2xl">
+                                                        <StickyNote className="w-8 h-8 mb-2 opacity-50" />
+                                                        <p className="text-sm">No notes yet</p>
                                                     </div>
-                                                </div>
-                                                <div className="space-y-4 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar-dark">
-                                                    {notes.length === 0 ? (
-                                                        <div className="text-center py-8 opacity-50 text-sm">
-                                                            No notes recorded for this family yet.
-                                                        </div>
-                                                    ) : (
-                                                        notes.slice(0, 4).map((note, idx) => (
-                                                            <div key={idx} className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/5 hover:bg-white/15 transition-colors cursor-default">
-                                                                <div className="flex items-start justify-between mb-2">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Avatar className="w-5 h-5">
-                                                                            <AvatarFallback className="text-[8px] bg-white text-[#333333]">{note.student_name.charAt(0)}</AvatarFallback>
-                                                                        </Avatar>
-                                                                        <span className="text-xs font-bold text-white/80">{note.student_name}</span>
-                                                                    </div>
-                                                                    <span className="text-[10px] text-white/40">{format(new Date(note.date), 'MMM d')}</span>
+                                                ) : (
+                                                    notes.map((note) => (
+                                                        <div key={note.id} className="group flex gap-4">
+                                                            <div className="flex flex-col items-center gap-1">
+                                                                <Avatar className="w-8 h-8 border border-gray-100">
+                                                                    <AvatarFallback className="bg-gray-100 text-gray-500 text-xs">
+                                                                        {note.author_name?.charAt(0) || 'S'}
+                                                                    </AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="w-px h-full bg-gray-100 group-last:hidden" />
+                                                            </div>
+                                                            <div className="flex-1 pb-6">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <span className="font-bold text-sm text-[#333333]">{note.author_name}</span>
+                                                                    <span className="text-xs text-gray-400">• {format(new Date(note.created_date), 'MMM d, h:mm a')}</span>
                                                                 </div>
-                                                                <p className="text-sm leading-relaxed opacity-90 italic">"{note.content}"</p>
-                                                                <div className="mt-2 text-[10px] text-white/40 flex items-center gap-1">
-                                                                    <PenSquare className="w-3 h-3" /> {note.teacher_name}
+                                                                <div className="bg-gray-50 p-3 rounded-r-2xl rounded-bl-2xl text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                                                    {note.content}
                                                                 </div>
                                                             </div>
-                                                        ))
-                                                    )}
-                                                </div>
+                                                        </div>
+                                                    ))
+                                                )}
                                             </div>
-                                            {/* Decor */}
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
                                         </section>
                                     </div>
                                 </motion.div>
