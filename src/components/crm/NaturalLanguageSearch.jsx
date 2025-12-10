@@ -228,13 +228,13 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                 {/* Save Current Filter Button */}
                 {activeFilter && !activeFilter.id && (
                     <Button 
-                        size="sm"
+                        size="icon"
                         variant="ghost"
                         onClick={() => setIsSaveModalOpen(true)}
-                        className="h-9 rounded-full hover:bg-[#F2DCDD]/20 text-[#333333] animate-in fade-in slide-in-from-left-2 shrink-0 px-4 font-serif italic gap-2 hover:text-black"
+                        className="h-10 w-10 rounded-full bg-white/40 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-md hover:bg-white/60 text-[#333333] transition-all duration-300 animate-in fade-in zoom-in shrink-0"
+                        title="Save View"
                     >
-                        <Save className="w-4 h-4" />
-                        Save View
+                        <Save className="w-4 h-4 opacity-80" />
                     </Button>
                 )}
                 </div>
