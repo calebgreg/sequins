@@ -458,60 +458,108 @@ export default function Students() {
                 transition={{ duration: 0.2 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                {filteredFamilies.map((family, i) => (
-                  <motion.div
-                    key={family.email || i}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="bg-white rounded-[32px] p-8 shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
-                  >
-                     <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="rounded-full hover:bg-[#F4F4F6]">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                     </div>
-
-                     <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-[#F2DCDD] flex items-center justify-center text-[#333333]">
-                          <Users className="w-6 h-6" />
+                {filteredFamilies.map((family, i) => {
+                  const lastName = family.parent_name.split(' ').pop();
+                  const familyName = `The ${lastName} Family`;
+                  
+                  return (
+                    <motion.div
+                      key={family.email || i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="bg-white rounded-[24px] p-6 shadow-sm hover:shadow-lg transition-all group border border-transparent hover:border-gray-100 flex flex-col h-full relative"
+                    >
+                        {/* Action Header */}
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 className="font-serif text-2xl text-[#333333] mb-1">{familyName}</h3>
+                                <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+                                    <User className="w-3.5 h-3.5 opacity-70" />
+                                    <span>{family.parent_name}</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-6 right-6 lg:static lg:opacity-100">
+                                 <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 text-gray-400 hover:text-indigo-600 rounded-full bg-gray-50 hover:bg-indigo-50"
+                                    onClick={(e) => {
+                                        if (family.students[0]) handleMessage(e, family.students[0]);
+                                    }}
+                                    title="Message Family"
+                                 >
+                                    <Mail className="w-4 h-4" />
+                                 </Button>
+                                 <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 text-gray-400 hover:text-[#333333] rounded-full bg-gray-50 hover:bg-gray-100"
+                                    onClick={(e) => {
+                                        if (family.students[0]) handleEdit(e, family.students[0]);
+                                    }}
+                                    title="Edit Family Details"
+                                 >
+                                    <Edit className="w-4 h-4" />
+                                 </Button>
+                            </div>
                         </div>
-                        <div>
-                          <h3 className="font-serif text-xl text-[#333333]">{family.parent_name}</h3>
-                          <p className="text-sm text-gray-400">{family.students.length} Student{family.students.length !== 1 && 's'}</p>
-                        </div>
-                     </div>
 
-                     <div className="space-y-3 mb-6">
-                        <div className="flex items-center gap-3 text-sm text-gray-600 bg-[#F4F4F6] p-3 rounded-xl">
-                          <Mail className="w-4 h-4 text-gray-400" />
-                          <span className="truncate">{family.email}</span>
+                        {/* Students List */}
+                        <div className="flex-1 space-y-2 mb-6">
+                            {family.students.map(s => (
+                                <div 
+                                    key={s.id} 
+                                    onClick={() => setSelectedStudent(s)}
+                                    className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50/50 hover:bg-[#F4F4F6] transition-colors cursor-pointer group/student border border-transparent hover:border-gray-100"
+                                >
+                                    <Avatar className="w-9 h-9 border-2 border-white shadow-sm">
+                                        <AvatarFallback className="bg-[#333333] text-white text-[10px] font-serif">{s.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between">
+                                             <span className="font-medium text-[#333333] text-sm truncate">{s.name}</span>
+                                             {s.status !== 'active' && (
+                                                 <span className={`w-2 h-2 rounded-full ${s.status === 'prospect' ? 'bg-yellow-400' : 'bg-gray-300'}`} />
+                                             )}
+                                        </div>
+                                        <div className="text-xs text-gray-400 truncate flex items-center gap-1">
+                                            <span>{s.age} yrs</span>
+                                            <span className="w-0.5 h-0.5 bg-gray-300 rounded-full" />
+                                            <span>{s.level}</span>
+                                        </div>
+                                    </div>
+                                    <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover/student:text-[#333333] -translate-x-1 group-hover/student:translate-x-0 transition-all" />
+                                </div>
+                            ))}
                         </div>
-                        {family.phone && (
-                          <div className="flex items-center gap-3 text-sm text-gray-600 bg-[#F4F4F6] p-3 rounded-xl">
-                            <Phone className="w-4 h-4 text-gray-400" />
-                            <span>{family.phone}</span>
-                          </div>
-                        )}
-                     </div>
 
-                     <div>
-                       <div className="text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Children</div>
-                       <div className="flex flex-wrap gap-2">
-                         {family.students.map(s => (
-                           <Badge 
-                             key={s.id} 
-                             variant="outline" 
-                             className="cursor-pointer hover:bg-gray-50 border-gray-200 text-gray-600 font-normal py-1 px-3"
-                             onClick={() => setSelectedStudent(s)}
-                           >
-                             {s.name}
-                           </Badge>
-                         ))}
-                       </div>
-                     </div>
-                  </motion.div>
-                ))}
+                        {/* Footer / Contact Info */}
+                        <div className="pt-4 border-t border-gray-50 mt-auto">
+                            <div className="grid gap-2">
+                                <a 
+                                    href={`mailto:${family.email}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors p-1.5 rounded-lg hover:bg-indigo-50/50 -ml-1.5"
+                                >
+                                    <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-500">
+                                        <Mail className="w-3 h-3" />
+                                    </div>
+                                    <span className="truncate font-medium">{family.email}</span>
+                                </a>
+                                {family.phone && (
+                                    <div className="flex items-center gap-2.5 text-xs text-gray-500 p-1.5 -ml-1.5">
+                                        <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-500">
+                                            <Phone className="w-3 h-3" />
+                                        </div>
+                                        <span className="font-medium">{family.phone}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+                  );
+                })}
               </motion.div>
             )}
           </AnimatePresence>
