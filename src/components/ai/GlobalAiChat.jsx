@@ -216,45 +216,24 @@ export default function GlobalAiChat() {
                         animate={{ opacity: 1 }}
                         className="flex-1 flex flex-col h-full relative"
                     >
-                        {/* Minimal Header */}
-                        <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0">
-                            <div className="flex items-center gap-2">
-
-                                <span className="text-sm font-serif text-gray-500">{aiName}</span>
-                            </div>
-                            <button 
-                                onClick={() => setIsOpen(false)}
-                                className="text-gray-400 hover:text-gray-800 transition-colors"
+                        {/* Messages Area (Only shows if there are messages) */}
+                        {messages.length > 0 && (
+                            <div 
+                                className="flex-1 overflow-y-auto px-4 pt-4 max-h-[300px] no-scrollbar space-y-3"
+                                ref={scrollRef}
                             >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
+                                {messages.map(msg => (
+                                    <MessageItem key={msg.id} message={msg} />
+                                ))}
 
-                        {/* Messages Area */}
-                        <div 
-                            className="flex-1 overflow-y-auto px-6 py-4 no-scrollbar space-y-4"
-                            ref={scrollRef}
-                        >
-                            {messages.length === 0 && (
-                                <div className="h-full flex flex-col items-center justify-center opacity-30">
-                                    <Sparkles className="w-8 h-8 mb-4 text-[#333333]" />
-                                    <p className="font-serif text-lg text-center text-[#333333]">
-                                        "How can I help you today?"
-                                    </p>
-                                </div>
-                            )}
-
-                            {messages.map(msg => (
-                                <MessageItem key={msg.id} message={msg} />
-                            ))}
-
-                            {isThinking && (
-                                <div className="flex items-center gap-2 text-xs text-gray-400 pl-1">
-                                    <Loader2 className="w-3 h-3 animate-spin" />
-                                    <span>Thinking...</span>
-                                </div>
-                            )}
-                        </div>
+                                {isThinking && (
+                                    <div className="flex items-center gap-2 text-xs text-gray-400 pl-1">
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                        <span>Thinking...</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Compact Input Area */}
                         <div className="p-2">
