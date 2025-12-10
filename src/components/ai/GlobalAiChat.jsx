@@ -159,15 +159,15 @@ export default function GlobalAiChat() {
     };
 
     return (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 w-full max-w-[640px] px-4 font-sans text-gray-900 pointer-events-none">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 font-sans text-gray-900 pointer-events-none">
             <div ref={containerRef} className="pointer-events-auto flex flex-col items-center">
                 
                 {/* Chat History Panel (Appears Above) */}
                 {isOpen && (messages.length > 0 || isThinking) && (
-                    <div className="w-full mb-3 bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-2xl overflow-hidden ring-1 ring-black/5 animate-in slide-in-from-bottom-2 fade-in duration-200">
+                    <div className="w-full mb-2 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl overflow-hidden ring-1 ring-black/5 animate-in slide-in-from-bottom-2 fade-in duration-200">
                         <div 
                             ref={scrollRef}
-                            className="max-h-[50vh] overflow-y-auto p-6 scroll-smooth"
+                            className="max-h-[40vh] overflow-y-auto p-4 scroll-smooth"
                         >
                             {messages.map(msg => (
                                 <MessageItem key={msg.id} message={msg} />
@@ -186,17 +186,17 @@ export default function GlobalAiChat() {
                 {/* Input Bar */}
                 <div 
                     className={`
-                        w-full bg-white/80 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] 
+                        w-full bg-white/90 backdrop-blur-xl shadow-lg
                         border border-white/60 ring-1 ring-black/5 rounded-full 
-                        flex items-center gap-3 px-4 py-3 transition-all duration-300
-                        ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-80 hover:scale-100 hover:opacity-100'}
+                        flex items-center gap-2.5 px-3 py-2 transition-all duration-300
+                        ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-90 hover:scale-100 hover:opacity-100'}
                     `}
                 >
-                    <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center shrink-0">
                         {isThinking ? (
-                            <div className="w-4 h-4 border-2 border-gray-400 border-t-black rounded-full animate-spin" />
+                            <div className="w-3 h-3 border-2 border-gray-400 border-t-black rounded-full animate-spin" />
                         ) : (
-                            <Sparkles className="w-4 h-4 text-gray-600" />
+                            <Sparkles className="w-3 h-3 text-gray-600" />
                         )}
                     </div>
 
@@ -206,21 +206,21 @@ export default function GlobalAiChat() {
                         onChange={(e) => setInputValue(e.target.value)}
                         onFocus={handleFocus}
                         onKeyDown={handleKeyDown}
-                        placeholder={`Ask ${aiName} anything...`}
-                        className="flex-1 bg-transparent border-none text-[15px] text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none h-full"
+                        placeholder={`Ask ${aiName}...`}
+                        className="flex-1 bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none h-full font-medium"
                     />
 
                     <div className="flex items-center gap-2">
                         {inputValue.trim() ? (
                             <button 
                                 onClick={handleSend}
-                                className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+                                className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
                             >
-                                <ArrowUp className="w-4 h-4" />
+                                <ArrowUp className="w-3 h-3" />
                             </button>
                         ) : (
-                            <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-md bg-black/5 text-[10px] font-medium text-gray-400">
-                                <span className="text-xs">⌘</span> K
+                            <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-black/5 text-[9px] font-bold text-gray-400">
+                                K
                             </div>
                         )}
                     </div>
