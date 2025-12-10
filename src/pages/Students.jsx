@@ -92,11 +92,12 @@ export default function Students() {
             if (f.billing_method && s.billing_method !== f.billing_method) matchesAi = false;
             if (f.level && s.level.toLowerCase() !== f.level.toLowerCase()) matchesAi = false;
             if (f.age) {
-                if (f.age.$eq && s.age !== f.age.$eq) matchesAi = false;
-                if (f.age.$gt && s.age <= f.age.$gt) matchesAi = false;
-                if (f.age.$gte && s.age < f.age.$gte) matchesAi = false;
-                if (f.age.$lt && s.age >= f.age.$lt) matchesAi = false;
-                if (f.age.$lte && s.age > f.age.$lte) matchesAi = false;
+                // Ensure number comparison to handle potential string data
+                if (f.age.$eq !== undefined && Number(s.age) !== Number(f.age.$eq)) matchesAi = false;
+                if (f.age.$gt !== undefined && Number(s.age) <= Number(f.age.$gt)) matchesAi = false;
+                if (f.age.$gte !== undefined && Number(s.age) < Number(f.age.$gte)) matchesAi = false;
+                if (f.age.$lt !== undefined && Number(s.age) >= Number(f.age.$lt)) matchesAi = false;
+                if (f.age.$lte !== undefined && Number(s.age) > Number(f.age.$lte)) matchesAi = false;
             }
             if (f.tags && f.tags.length > 0) {
                  // Check if student has ANY of the requested tags (OR logic? or AND?) - usually AND for filters
