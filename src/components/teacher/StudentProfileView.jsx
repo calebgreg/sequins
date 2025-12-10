@@ -97,10 +97,7 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div className="flex flex-col">
-            <h2 className="font-serif text-lg text-[#333333] leading-none">{student.name}</h2>
-            <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">{student.level} Student</span>
-          </div>
+          {/* Name removed to avoid redundancy with hero card */}
         </div>
         
         <div className="flex items-center gap-2">
