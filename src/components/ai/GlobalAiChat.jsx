@@ -138,12 +138,31 @@ export default function GlobalAiChat() {
         setIsThinking(true);
 
         try {
+            // Fetch real data context
+            const [students, classes] = await Promise.all([
+                base44.entities.Student.list(),
+                base44.entities.DanceClass.list()
+            ]);
+            
+            const activeStudents = students.filter(s => s.status === 'active').length;
+            
+            const context = `
+                REAL TIME STUDIO DATA:
+                - Total Enrolled Students: ${students.length}
+                - Active Students: ${activeStudents}
+                - Total Classes: ${classes.length}
+            `;
+
             const response = await base44.integrations.Core.InvokeLLM({
                 prompt: `
-                    You are ${aiName}, a sophisticated studio assistant.
-                    User: "${userText}"
+                    You are ${aiName}, a sophisticated studio assistant connected to the live database.
                     
-                    Respond concisely.
+                    ${context}
+
+                    User Question: "${userText}"
+                    
+                    Answer the user's question accurately based ONLY on the data provided above. 
+                    Be concise and natural. Do not mention "context data" or "database", just give the answer.
                 `
             });
 
