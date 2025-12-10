@@ -309,10 +309,10 @@ export default function FamilyProfileView({ family, onBack }) {
                                         </div>
                                     </section>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        {/* Financial Health Card */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                                        {/* Financial Health Card - Takes 1 slot in 2-col grid */}
                                         <section 
-                                            className="bg-[#333333] rounded-[32px] p-6 text-white relative overflow-hidden group cursor-pointer transition-all hover:shadow-xl" 
+                                            className="bg-[#333333] rounded-[32px] p-6 text-white relative overflow-hidden group cursor-pointer transition-all hover:shadow-xl h-[500px] flex flex-col" 
                                             onClick={() => setActiveSection('billing')}
                                         >
                                             {/* Header */}
@@ -335,32 +335,32 @@ export default function FamilyProfileView({ family, onBack }) {
                                             </div>
 
                                             {/* Main Grid */}
-                                            <div className="grid grid-cols-2 gap-x-8 gap-y-6 mb-6">
+                                            <div className="grid grid-cols-2 gap-x-8 gap-y-6 mb-6 flex-1 content-start">
                                                 {/* Balance Block */}
                                                 <div className="col-span-2 sm:col-span-1">
                                                     <div className="text-xs text-white/50 mb-1">Current Balance</div>
-                                                    <div className={`text-4xl font-serif mb-1 ${balanceDue > 0 ? 'text-red-400' : 'text-white'}`}>
+                                                    <div className={`text-5xl font-serif mb-2 ${balanceDue > 0 ? 'text-red-400' : 'text-white'}`}>
                                                         ${balanceDue.toLocaleString()}
                                                     </div>
-                                                    <div className="text-xs text-white/40">
+                                                    <div className="text-sm text-white/40">
                                                         {balanceDue > 0 ? 'Payment required' : 'No outstanding dues'}
                                                     </div>
                                                 </div>
 
                                                 {/* Stats Column */}
-                                                <div className="col-span-2 sm:col-span-1 space-y-4">
-                                                    <div className="flex justify-between items-center pb-2 border-b border-white/10">
-                                                        <span className="text-xs text-white/50">Lifetime Value</span>
-                                                        <span className="font-serif text-lg">${lifetimeValue.toLocaleString()}</span>
+                                                <div className="col-span-2 sm:col-span-1 space-y-6 pt-2">
+                                                    <div className="flex justify-between items-center pb-3 border-b border-white/10">
+                                                        <span className="text-sm text-white/50">Lifetime Value</span>
+                                                        <span className="font-serif text-xl">${lifetimeValue.toLocaleString()}</span>
                                                     </div>
-                                                    <div className="flex justify-between items-center pb-2 border-b border-white/10">
-                                                        <span className="text-xs text-white/50">Last Payment</span>
+                                                    <div className="flex justify-between items-center pb-3 border-b border-white/10">
+                                                        <span className="text-sm text-white/50">Last Payment</span>
                                                         <div className="text-right">
-                                                            <div className="font-serif text-sm">
+                                                            <div className="font-serif text-base">
                                                                 {lastPayment ? `$${lastPayment.amount}` : '-'}
                                                             </div>
                                                             {lastPayment && (
-                                                                <div className="text-[10px] text-white/40">
+                                                                <div className="text-xs text-white/40">
                                                                     {format(new Date(lastPayment.date), 'MMM d')}
                                                                 </div>
                                                             )}
@@ -370,13 +370,13 @@ export default function FamilyProfileView({ family, onBack }) {
                                             </div>
 
                                             {/* Action Footer */}
-                                            <div className="flex gap-3">
+                                            <div className="flex gap-4 mt-auto">
                                                 <Button 
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setActiveSection('billing');
                                                     }}
-                                                    className="flex-1 bg-white text-[#333333] hover:bg-gray-100 rounded-xl font-bold h-10 text-xs"
+                                                    className="flex-1 bg-white text-[#333333] hover:bg-gray-100 rounded-2xl font-bold h-12 text-sm"
                                                 >
                                                     View Ledger
                                                 </Button>
@@ -385,94 +385,91 @@ export default function FamilyProfileView({ family, onBack }) {
                                                         e.stopPropagation();
                                                         setIsInvoiceModalOpen(true);
                                                     }}
-                                                    className="flex-1 bg-white/10 text-white hover:bg-white/20 rounded-xl font-bold h-10 text-xs border border-white/5"
+                                                    className="flex-1 bg-white/10 text-white hover:bg-white/20 rounded-2xl font-bold h-12 text-sm border border-white/5"
                                                 >
-                                                    <Plus className="w-3.5 h-3.5 mr-1.5" /> New Charge
+                                                    <Plus className="w-4 h-4 mr-2" /> New Charge
                                                 </Button>
                                             </div>
                                         </section>
 
-                                        {/* New Operational Grid */}
-                                        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                            {/* Col 1: Family Schedule */}
-                                            <div className="lg:col-span-1 h-[500px]">
-                                                <FamilySchedule family={family} />
+                                        {/* Slot 2: Family Schedule */}
+                                        <div className="h-[500px]">
+                                            <FamilySchedule family={family} />
+                                        </div>
+
+                                        {/* Slot 3: Tasks */}
+                                        <div className="h-[500px]">
+                                            <FamilyTasks familyEmail={family.email} />
+                                        </div>
+
+                                        {/* Slot 4: Staff Notes */}
+                                        <div className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm flex flex-col h-[500px]">
+                                            <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                                                <h3 className="text-lg font-serif text-[#333333]">Staff Notes</h3>
+                                                <Badge variant="secondary" className="bg-gray-100 text-gray-500">{notes.length}</Badge>
                                             </div>
 
-                                            {/* Col 2: Tasks & To-Dos */}
-                                            <div className="lg:col-span-1 h-[500px]">
-                                                <FamilyTasks familyEmail={family.email} />
+                                            {/* Input Area */}
+                                            <div className="mb-6 flex-shrink-0">
+                                                <form onSubmit={handleAddNote} className="relative">
+                                                    <textarea 
+                                                        value={newNote}
+                                                        onChange={(e) => setNewNote(e.target.value)}
+                                                        placeholder="Add a note about this family..."
+                                                        className="w-full bg-[#F4F4F6] rounded-2xl p-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#333333]/10 resize-none min-h-[80px]"
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                                e.preventDefault();
+                                                                handleAddNote(e);
+                                                            }
+                                                        }}
+                                                    />
+                                                    <button 
+                                                        type="submit"
+                                                        disabled={!newNote.trim() || createNoteMutation.isPending}
+                                                        className="absolute bottom-3 right-3 p-2 bg-[#333333] text-white rounded-xl hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                                    >
+                                                        {createNoteMutation.isPending ? (
+                                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                        ) : (
+                                                            <Send className="w-4 h-4" />
+                                                        )}
+                                                    </button>
+                                                </form>
                                             </div>
 
-                                            {/* Col 3: Staff Notes */}
-                                            <div className="lg:col-span-1 bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm flex flex-col h-[500px]">
-                                                <div className="flex items-center justify-between mb-4 flex-shrink-0">
-                                                    <h3 className="text-lg font-serif text-[#333333]">Staff Notes</h3>
-                                                    <Badge variant="secondary" className="bg-gray-100 text-gray-500">{notes.length}</Badge>
-                                                </div>
-                                                
-                                                {/* Input Area */}
-                                                <div className="mb-6 flex-shrink-0">
-                                                    <form onSubmit={handleAddNote} className="relative">
-                                                        <textarea 
-                                                            value={newNote}
-                                                            onChange={(e) => setNewNote(e.target.value)}
-                                                            placeholder="Add a note about this family..."
-                                                            className="w-full bg-[#F4F4F6] rounded-2xl p-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#333333]/10 resize-none min-h-[80px]"
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === 'Enter' && !e.shiftKey) {
-                                                                    e.preventDefault();
-                                                                    handleAddNote(e);
-                                                                }
-                                                            }}
-                                                        />
-                                                        <button 
-                                                            type="submit"
-                                                            disabled={!newNote.trim() || createNoteMutation.isPending}
-                                                            className="absolute bottom-3 right-3 p-2 bg-[#333333] text-white rounded-xl hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                                        >
-                                                            {createNoteMutation.isPending ? (
-                                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                            ) : (
-                                                                <Send className="w-4 h-4" />
-                                                            )}
-                                                        </button>
-                                                    </form>
-                                                </div>
-
-                                                {/* Notes Feed */}
-                                                <div className="flex-1 overflow-y-auto space-y-4 pr-2 -mr-2">
-                                                    {notes.length === 0 ? (
-                                                        <div className="h-full flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-2xl">
-                                                            <StickyNote className="w-8 h-8 mb-2 opacity-50" />
-                                                            <p className="text-sm">No notes yet</p>
-                                                        </div>
-                                                    ) : (
-                                                        notes.map((note) => (
-                                                            <div key={note.id} className="group flex gap-4">
-                                                                <div className="flex flex-col items-center gap-1">
-                                                                    <Avatar className="w-8 h-8 border border-gray-100">
-                                                                        <AvatarFallback className="bg-gray-100 text-gray-500 text-xs">
-                                                                            {note.author_name?.charAt(0) || 'S'}
-                                                                        </AvatarFallback>
-                                                                    </Avatar>
-                                                                    <div className="w-px h-full bg-gray-100 group-last:hidden" />
+                                            {/* Notes Feed */}
+                                            <div className="flex-1 overflow-y-auto space-y-4 pr-2 -mr-2">
+                                                {notes.length === 0 ? (
+                                                    <div className="h-full flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-2xl">
+                                                        <StickyNote className="w-8 h-8 mb-2 opacity-50" />
+                                                        <p className="text-sm">No notes yet</p>
+                                                    </div>
+                                                ) : (
+                                                    notes.map((note) => (
+                                                        <div key={note.id} className="group flex gap-4">
+                                                            <div className="flex flex-col items-center gap-1">
+                                                                <Avatar className="w-8 h-8 border border-gray-100">
+                                                                    <AvatarFallback className="bg-gray-100 text-gray-500 text-xs">
+                                                                        {note.author_name?.charAt(0) || 'S'}
+                                                                    </AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="w-px h-full bg-gray-100 group-last:hidden" />
+                                                            </div>
+                                                            <div className="flex-1 pb-6">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <span className="font-bold text-sm text-[#333333]">{note.author_name}</span>
+                                                                    <span className="text-xs text-gray-400">• {format(new Date(note.created_date), 'MMM d, h:mm a')}</span>
                                                                 </div>
-                                                                <div className="flex-1 pb-6">
-                                                                    <div className="flex items-center gap-2 mb-1">
-                                                                        <span className="font-bold text-sm text-[#333333]">{note.author_name}</span>
-                                                                        <span className="text-xs text-gray-400">• {format(new Date(note.created_date), 'MMM d, h:mm a')}</span>
-                                                                    </div>
-                                                                    <div className="bg-gray-50 p-3 rounded-r-2xl rounded-bl-2xl text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
-                                                                        {note.content}
-                                                                    </div>
+                                                                <div className="bg-gray-50 p-3 rounded-r-2xl rounded-bl-2xl text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                                                    {note.content}
                                                                 </div>
                                                             </div>
-                                                        ))
-                                                    )}
-                                                </div>
+                                                        </div>
+                                                    ))
+                                                )}
                                             </div>
-                                        </section>
+                                        </div>
                                     </div>
                                 </motion.div>
                             )}
