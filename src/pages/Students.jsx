@@ -345,7 +345,8 @@ export default function Students() {
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  className="h-8 w-8 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 shadow-sm"
+                                  title="Message Student"
+                                  className="h-8 w-8 text-indigo-500 bg-indigo-50/50 hover:bg-indigo-100 hover:text-indigo-700 shadow-sm border border-indigo-100"
                                   onClick={(e) => handleMessage(e, student)}
                                 >
                                   <Mail className="w-4 h-4" />
