@@ -213,25 +213,15 @@ export default function Students() {
         {/* Toolbar */}
         <div className="bg-white p-4 rounded-[24px] shadow-sm flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
           <div className="flex flex-col gap-4 w-full lg:flex-1">
-            {/* AI Search Bar Replaces Standard Search for Primary Interaction */}
+            {/* Combined Smart Search Bar */}
             <div className="w-full max-w-2xl">
-                <NaturalLanguageSearch onFilterChange={setAiFilter} />
+                <NaturalLanguageSearch 
+                  onFilterChange={setAiFilter} 
+                  onSearchChange={setSearch}
+                />
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Legacy Search Fallback / Supplement */}
-              {!aiFilter && (
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input 
-                    placeholder="Filter list by text..." 
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10 h-10 bg-[#F4F4F6] border-none rounded-full w-full text-sm focus-visible:ring-1 focus-visible:ring-gray-300"
-                  />
-                </div>
-              )}
-              
               <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-full w-full sm:w-auto self-start">
                <Button 
                  variant="ghost" 

@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
-export default function NaturalLanguageSearch({ onFilterChange }) {
+export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }) {
     const [query, setQuery] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [activeFilter, setActiveFilter] = useState(null); // The currently applied parsed filter
@@ -48,6 +48,9 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
         e.preventDefault();
         if (!query.trim()) return;
 
+        // Clear instant search to prevent conflicts with AI results
+        if (onSearchChange) onSearchChange('');
+        
         setIsProcessing(true);
         try {
             const prompt = `
@@ -169,6 +172,7 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
         setQuery('');
         setActiveFilter(null);
         onFilterChange(null);
+        if (onSearchChange) onSearchChange('');
     };
 
     return (
@@ -187,9 +191,21 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
                             )}
                         </div>
                         <Input 
-                            placeholder="Ask anything... e.g. '9 year old tap students'" 
+                            placeholder="Search by name or ask AI... (e.g. 'Active 9yr olds')" 
                             value={query}
-                            onChange={(e) => setQuery(e.target.value)}
+                            onChange={(e) => {
+                                setQuery(e.target.value);
+                                // If no AI filter is active, update simple search instantly
+                                if (!activeFilter && onSearchChange) {
+                                    onSearchChange(e.target.value);
+                                }
+                            }}
+                            onKeyDown={(e) => {
+                                // If backspacing on empty query, clear everything
+                                if (e.key === 'Backspace' && query === '') {
+                                    clearFilter();
+                                }
+                            }}
                             disabled={isProcessing}
                             className={`pl-10 pr-20 h-12 bg-white border-transparent hover:border-gray-200 focus:border-indigo-200 transition-all shadow-sm hover:shadow-md rounded-full text-base font-serif placeholder:font-sans ${
                                 activeFilter ? 'ring-2 ring-indigo-500/10' : ''
