@@ -229,7 +229,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                         <Layout className="w-5 h-5" />
                     </div>
                     <div>
-                        <h2 className="font-serif text-lg text-[#333333] leading-none">Digital Room Builder</h2>
+                        <h2 className="font-serif text-lg text-[#333333] leading-none">Family Room Builder</h2>
                         <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs text-gray-400">Editing for {family.parent_name}</span>
                             <Badge variant="outline" className="text-[10px] h-4 px-1">{activeConfig.status}</Badge>

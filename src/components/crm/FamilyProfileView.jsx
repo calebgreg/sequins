@@ -84,7 +84,7 @@ export default function FamilyProfileView({ family, onBack }) {
         { id: 'overview', label: 'Overview', icon: Users },
         { id: 'billing', label: 'Financials', icon: Wallet },
         { id: 'communication', label: 'Messaging', icon: MessageSquare },
-        { id: 'sales_room', label: 'Digital Room', icon: Layout },
+        { id: 'sales_room', label: 'Family Room', icon: Layout },
     ];
 
     const handleAddStudent = () => {
