@@ -17,7 +17,10 @@ import {
     CheckCircle2, 
     ChevronRight,
     TrendingUp,
-    Heart
+    Heart,
+    Smartphone,
+    Bell,
+    Globe
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,6 +30,11 @@ export default function StudentCommunicationTab({ student }) {
     const [subject, setSubject] = useState('');
     const [messageBody, setMessageBody] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [channels, setChannels] = useState({
+        email: true,
+        sms: false,
+        portal: false
+    });
     
     const queryClient = useQueryClient();
 
@@ -43,38 +51,78 @@ export default function StudentCommunicationTab({ student }) {
 
     const sendMessageMutation = useMutation({
         mutationFn: async (data) => {
-            // 1. Send Email Integration
-            try {
-                await base44.integrations.Core.SendEmail({
-                    to: student.parent_email,
+            const promises = [];
+            const timestamp = new Date().toISOString();
+
+            // 1. Handle Email
+            if (channels.email) {
+                try {
+                    await base44.integrations.Core.SendEmail({
+                        to: student.parent_email,
+                        subject: data.subject,
+                        body: data.content
+                    });
+                } catch (err) {
+                    console.error("Failed to send actual email", err);
+                }
+                
+                promises.push(base44.entities.Message.create({
+                    content: data.content,
                     subject: data.subject,
-                    body: data.content
-                });
-            } catch (err) {
-                console.error("Failed to send actual email", err);
-                // Proceeding to save record anyway for demo purposes if integration not configured
+                    student_id: student.id,
+                    parent_email: student.parent_email,
+                    sender: 'user',
+                    direction: 'outbound',
+                    channel: 'email',
+                    status: 'sent',
+                    timestamp
+                }));
             }
 
-            // 2. Save Message Record
-            return base44.entities.Message.create({
-                content: data.content,
-                subject: data.subject,
-                student_id: student.id,
-                parent_email: student.parent_email,
-                sender: 'user',
-                direction: 'outbound',
-                channel: 'email',
-                status: 'sent',
-                timestamp: new Date().toISOString()
-            });
+            // 2. Handle SMS (Simulated Integration)
+            if (channels.sms) {
+                // In a real app, we would call an SMS integration here
+                promises.push(base44.entities.Message.create({
+                    content: data.content, // SMS might truncate content in a real scenario
+                    subject: 'SMS', // SMS usually doesn't have subject, but schema might require it or use it for reference
+                    student_id: student.id,
+                    parent_email: student.parent_email, // Using email as identifier for parent
+                    sender: 'user',
+                    direction: 'outbound',
+                    channel: 'sms',
+                    status: 'sent',
+                    timestamp
+                }));
+            }
+
+            // 3. Handle Portal Push
+            if (channels.portal) {
+                promises.push(base44.entities.Message.create({
+                    content: data.content,
+                    subject: data.subject,
+                    student_id: student.id,
+                    parent_email: student.parent_email,
+                    sender: 'user',
+                    direction: 'outbound',
+                    channel: 'app', // 'app' = portal
+                    status: 'sent',
+                    is_alert: true, // Flag as alert/notification
+                    timestamp
+                }));
+            }
+
+            return Promise.all(promises);
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['messages', student.id]);
             setSubject('');
             setMessageBody('');
-            // Optional: Show toast
         }
     });
+
+    const toggleChannel = (channel) => {
+        setChannels(prev => ({ ...prev, [channel]: !prev[channel] }));
+    };
 
     const generateDraft = async (type) => {
         setIsGenerating(true);
@@ -295,30 +343,70 @@ export default function StudentCommunicationTab({ student }) {
                                 )}
                             </div>
 
-                            <div className="flex justify-between items-center pt-2">
-                                <div className="text-xs text-gray-400">
-                                    <span className="font-medium">Pro Tip:</span> Personalize the AI drafts before sending!
+                            <div className="pt-2 space-y-4">
+                                {/* Broadcast Toggles */}
+                                <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-2 mr-1">Broadcast To:</span>
+                                    
+                                    <button
+                                        onClick={() => toggleChannel('email')}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                                            channels.email 
+                                            ? 'bg-blue-100 text-blue-700 shadow-sm ring-2 ring-blue-500/20' 
+                                            : 'bg-white text-gray-400 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        <Mail className="w-4 h-4" /> Email
+                                    </button>
+
+                                    <button
+                                        onClick={() => toggleChannel('sms')}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                                            channels.sms 
+                                            ? 'bg-purple-100 text-purple-700 shadow-sm ring-2 ring-purple-500/20' 
+                                            : 'bg-white text-gray-400 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        <Smartphone className="w-4 h-4" /> Text / SMS
+                                    </button>
+
+                                    <button
+                                        onClick={() => toggleChannel('portal')}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                                            channels.portal 
+                                            ? 'bg-orange-100 text-orange-700 shadow-sm ring-2 ring-orange-500/20' 
+                                            : 'bg-white text-gray-400 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        <Bell className="w-4 h-4" /> Family Portal
+                                    </button>
                                 </div>
-                                <div className="flex gap-3">
-                                    <Button 
-                                        variant="ghost" 
-                                        onClick={() => { setSubject(''); setMessageBody(''); }}
-                                        className="text-gray-400 hover:text-red-500"
-                                    >
-                                        Clear
-                                    </Button>
-                                    <Button 
-                                        onClick={handleSend} 
-                                        disabled={sendMessageMutation.isPending || !subject || !messageBody}
-                                        className="bg-[#333333] text-white hover:bg-black rounded-full px-8 shadow-lg hover:shadow-xl transition-all"
-                                    >
-                                        {sendMessageMutation.isPending ? (
-                                            <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-                                        ) : (
-                                            <Send className="w-4 h-4 mr-2" />
-                                        )}
-                                        Send Email
-                                    </Button>
+
+                                <div className="flex justify-between items-center">
+                                    <div className="text-xs text-gray-400">
+                                        <span className="font-medium">Pro Tip:</span> Personalize the AI drafts before sending!
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <Button 
+                                            variant="ghost" 
+                                            onClick={() => { setSubject(''); setMessageBody(''); }}
+                                            className="text-gray-400 hover:text-red-500"
+                                        >
+                                            Clear
+                                        </Button>
+                                        <Button 
+                                            onClick={handleSend} 
+                                            disabled={sendMessageMutation.isPending || !subject || !messageBody || (!channels.email && !channels.sms && !channels.portal)}
+                                            className="bg-[#333333] text-white hover:bg-black rounded-full px-8 shadow-lg hover:shadow-xl transition-all"
+                                        >
+                                            {sendMessageMutation.isPending ? (
+                                                <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                                            ) : (
+                                                <Send className="w-4 h-4 mr-2" />
+                                            )}
+                                            Send Broadcast
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
