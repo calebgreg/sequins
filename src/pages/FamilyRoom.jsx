@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
     ChevronRight, Download, Star, Calendar, CreditCard, 
     ArrowRight, MapPin, Mail, Phone, ExternalLink, PlayCircle, Clock 
