@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { 
@@ -173,9 +174,9 @@ export default function FamilyRoomBuilder({ family, onClose }) {
 
     return (
         <div className="h-full flex flex-col bg-[#F4F4F6] overflow-hidden relative">
-            {/* Full Screen Preview Overlay */}
-            {showFullPreview && (
-                <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in duration-200">
+            {/* Full Screen Preview Overlay - Portaled to Body to escape parent transforms/z-index */}
+            {showFullPreview && createPortal(
+                <div className="fixed inset-0 z-[9999] bg-white flex flex-col animate-in fade-in duration-200 font-sans">
                     <div className="h-16 bg-[#333333] text-white flex items-center justify-between px-6 shadow-md flex-shrink-0 z-50">
                         <div className="flex items-center gap-4">
                             <h3 className="font-serif text-lg">Live Preview</h3>
@@ -203,7 +204,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                         </Button>
                     </div>
                     
-                    <div className="flex-1 bg-gray-100 overflow-hidden flex justify-center p-0 md:p-8">
+                    <div className="flex-1 bg-gray-100 overflow-hidden flex justify-center p-0 md:p-8 relative">
                         <div className={`
                             bg-white shadow-2xl overflow-hidden transition-all duration-300 relative
                             ${viewMode === 'mobile' ? 'w-[375px] h-[812px] rounded-[40px] border-[12px] border-[#333333]' : 'w-full h-full rounded-none md:rounded-xl'}
@@ -214,7 +215,8 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Toolbar */}
