@@ -87,7 +87,7 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
   return (
     <div className="flex flex-col min-h-full bg-[#F4F4F6]">
       {/* Header */}
-      <div className="px-6 py-4 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+      <div className="px-6 py-4 flex items-center justify-between sticky top-0 z-50 bg-[#F4F4F6]/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
