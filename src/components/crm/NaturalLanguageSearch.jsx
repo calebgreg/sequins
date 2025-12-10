@@ -241,8 +241,18 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
             {activeFilter && (
                 <div className="flex flex-wrap gap-2 text-xs animate-in slide-in-from-top-2">
                     {Object.entries(activeFilter.parsed_criteria_json.filters || {}).map(([key, val]) => {
-                         if (!val) return null;
-                         let displayVal = typeof val === 'object' ? JSON.stringify(val).replace(/["{}]/g, '').replace(':', ' ') : val;
+                         if (val === undefined || val === null) return null;
+                         
+                         let displayVal = val;
+                         if (typeof val === 'object') {
+                             if (val.$eq !== undefined) displayVal = val.$eq;
+                             else if (val.$gt !== undefined) displayVal = `> ${val.$gt}`;
+                             else if (val.$lt !== undefined) displayVal = `< ${val.$lt}`;
+                             else if (val.$gte !== undefined) displayVal = `>= ${val.$gte}`;
+                             else if (val.$lte !== undefined) displayVal = `<= ${val.$lte}`;
+                             else displayVal = JSON.stringify(val).replace(/["{}]/g, '').replace(':', ' ');
+                         }
+
                          return (
                             <Badge key={key} variant="secondary" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-normal">
                                 {key}: {displayVal}

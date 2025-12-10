@@ -98,7 +98,7 @@ export default function Students() {
                     const studentAge = Number(s.age);
                     const targetAge = Number(f.age.$eq);
                     // Exclude students with invalid/missing age (NaN) from matching
-                    if (isNaN(studentAge)) {
+                    if (s.age === null || s.age === undefined || s.age === '' || isNaN(studentAge)) {
                         matchesAi = false;
                     } else if (studentAge < targetAge || studentAge >= targetAge + 1) {
                         matchesAi = false;
