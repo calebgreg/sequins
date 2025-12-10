@@ -59,7 +59,8 @@ export default function FamilyRoom() {
             const configs = await base44.entities.FamilyRoomConfig.list();
             return configs.find(c => c.id === configId);
         },
-        enabled: !!configId && !isPreview
+        enabled: !!configId && !isPreview,
+        retry: false
     });
 
     const config = isPreview ? previewData : dbConfig;
@@ -87,15 +88,26 @@ export default function FamilyRoom() {
              const all = await base44.entities.Invoice.list('-issue_date', 5);
              return all.filter(inv => inv.parent_email === config?.parent_email);
         },
-        enabled: !!config?.parent_email && !isPreview
+        enabled: !!config?.parent_email && !isPreview,
+        retry: false
     });
 
     // Mock for preview if no real data
     const displayInvoices = isPreview ? [{ balance_due: 450 }] : (familyInvoices || []);
 
     if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] font-serif text-xl animate-pulse">Loading space...</div>;
-    if (!config && !isPreview) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">Unable to load room configuration.</div>;
-    if (isPreview && !config) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">Preview data not found. Try clicking preview again.</div>;
+    
+    // Debug helper for development
+    if (!config && !isPreview) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] text-center p-8">
+                <h2 className="font-serif text-2xl mb-2 text-[#333333]">Unable to load room configuration</h2>
+                <p className="text-gray-400 text-sm">ID missing and not in preview mode.</p>
+            </div>
+        );
+    }
+
+    if (isPreview && !config) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">Preview data not found. Please close this tab and click 'Live Preview' again.</div>;
 
     // Safe access to modules
     const modules = Array.isArray(config?.modules) ? config.modules : [];
