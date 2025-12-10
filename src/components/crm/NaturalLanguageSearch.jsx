@@ -229,18 +229,20 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                 {activeFilter && !activeFilter.id && (
                     <Button 
                         size="sm"
+                        variant="outline"
                         onClick={() => setIsSaveModalOpen(true)}
-                        className="h-9 rounded-full bg-[#333333] hover:bg-black text-white shadow-lg hover:shadow-xl animate-in fade-in slide-in-from-left-2 shrink-0 px-5 font-medium"
+                        className="h-9 rounded-full bg-white hover:bg-gray-50 text-[#333333] border-gray-200 shadow-sm animate-in fade-in slide-in-from-left-2 shrink-0 px-4 font-medium gap-2"
                     >
-                        Save Segment
+                        <Save className="w-4 h-4" />
+                        Save List
                     </Button>
                 )}
-            </div>
+                </div>
 
-            {/* Saved Segments List */}
-            {savedFilters.length > 0 && (
+                {/* Saved Lists */}
+                {savedFilters.length > 0 && (
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar mask-gradient animate-in slide-in-from-top-2">
-                    <span className="text-xs font-bold text-gray-300 uppercase tracking-wider shrink-0 mr-1">Segments</span>
+                    <span className="text-xs font-bold text-gray-300 uppercase tracking-wider shrink-0 mr-1">Lists</span>
                     {savedFilters.map((filter) => (
                         <button
                             key={filter.id}
@@ -307,11 +309,11 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
             <Dialog open={isSaveModalOpen} onOpenChange={setIsSaveModalOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Save Segment</DialogTitle>
+                        <DialogTitle>Save List</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label>Segment Name</Label>
+                            <Label>List Name</Label>
                             <Input 
                                 placeholder="e.g. My Thursday Jazz Kids" 
                                 value={newFilterName}
@@ -328,7 +330,7 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsSaveModalOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveFilter} disabled={!newFilterName}>Save Segment</Button>
+                        <Button onClick={handleSaveFilter} disabled={!newFilterName}>Save List</Button>
                         </DialogFooter>
                 </DialogContent>
             </Dialog>
