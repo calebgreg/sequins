@@ -92,9 +92,9 @@ export default function FamilyRoom() {
     if (!config && !isPreview) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">Unable to load room configuration.</div>;
     if (isPreview && !config) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">Preview data not found. Try clicking preview again.</div>;
 
-    const visibleModules = config.modules.filter(m => m.isVisible);
-    const themeBg = config.theme === 'elegant' ? 'bg-[#FDFBF7]' : config.theme === 'energetic' ? 'bg-white' : 'bg-gray-50';
-    const themeText = config.theme === 'energetic' ? 'text-indigo-950' : 'text-[#333333]';
+    const visibleModules = config?.modules?.filter(m => m.isVisible) || [];
+    const themeBg = config?.theme === 'elegant' ? 'bg-[#FDFBF7]' : config?.theme === 'energetic' ? 'bg-white' : 'bg-gray-50';
+    const themeText = config?.theme === 'energetic' ? 'text-indigo-950' : 'text-[#333333]';
 
     return (
         <div className={`min-h-screen font-sans ${themeBg} ${themeText}`}>
