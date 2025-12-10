@@ -102,29 +102,65 @@ export default function GlobalAiChat() {
         setIsThinking(true);
 
         try {
-            // Real Data Context
-            const [students, classes] = await Promise.all([
+            // Omnipotent Data Context - Fetching ALL key entities
+            const [students, classes, settingsList, plans, teachers] = await Promise.all([
                 base44.entities.Student.list(),
-                base44.entities.DanceClass.list()
+                base44.entities.DanceClass.list(),
+                base44.entities.StudioSettings.list(),
+                base44.entities.TuitionPlan.list(),
+                base44.entities.Teacher.list().catch(() => []) // Graceful fallback
             ]);
             
+            // 1. Process Settings
+            const settings = settingsList[0] || {};
+
+            // 2. Process Classes (Crucial for schedule questions)
+            const scheduleContext = classes.map(c => 
+                `- ${c.title} (${c.style}): ${c.day}s at ${c.start_time}:00 with ${c.teacher || 'Staff'} (${c.duration}hr)`
+            ).join('\n');
+
+            // 3. Process Students (Concise roster)
             const activeStudents = students.filter(s => s.status === 'active');
-            const studentRoster = activeStudents.map(s => `${s.name} (${s.age})`).join(', ');
-            
+            const rosterContext = activeStudents.map(s => `${s.name} (${s.age}, ${s.level})`).join(', ');
+
+            // 4. Process Tuition/Pricing
+            const pricingContext = plans.map(p => 
+                `- ${p.name}: $${p.amount} (${p.billing_frequency})`
+            ).join('\n');
+
+            // 5. Construct Master Context
             const context = `
-                DATA:
-                - Total Enrolled: ${students.length}
-                - Active: ${activeStudents.length}
-                - Classes: ${classes.length}
-                - Roster: ${studentRoster}
+                STUDIO INFORMATION:
+                Name: ${settings.name || 'The Studio'}
+                Type: ${settings.type}
+                
+                FULL CLASS SCHEDULE:
+                ${scheduleContext}
+
+                TUITION & PRICING:
+                ${pricingContext}
+
+                STUDENT ROSTER (${activeStudents.length} active):
+                ${rosterContext}
+
+                TEACHERS:
+                ${teachers.map(t => t.name).join(', ')}
             `;
 
             const response = await base44.integrations.Core.InvokeLLM({
                 prompt: `
-                    System: You are ${aiName}, an AI assistant for a dance studio. 
-                    Context: ${context}
-                    User: "${userText}"
-                    Instructions: Answer concisely in plain text. No markdown.
+                    System: You are ${aiName || 'Gene'}, the intelligent OS for this dance studio.
+                    You have access to the COMPLETE real-time database below.
+                    
+                    ${context}
+
+                    User Query: "${userText}"
+                    
+                    Instructions:
+                    1. Answer the user's question accurately using the provided data.
+                    2. If asked about schedules, list the specific days and times from the SCHEDULE section.
+                    3. If asked about students, use the ROSTER section.
+                    4. Keep answers concise, professional, and helpful. Plain text only.
                 `
             });
 
