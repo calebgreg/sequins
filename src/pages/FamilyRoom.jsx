@@ -93,11 +93,28 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     const displayInvoices = isPreview ? [{ balance_due: 450, stripe_payment_link: '#' }] : (familyInvoices || []);
 
     // Fetch classes for recommendations
-    const { data: allClasses = [] } = useQuery({
-        queryKey: ['publicClasses'],
-        queryFn: async () => base44.entities.DanceClass.list(),
-        enabled: !isLoading
-    });
+        const { data: allClasses = [] } = useQuery({
+            queryKey: ['publicClasses'],
+            queryFn: async () => base44.entities.DanceClass.list(),
+            enabled: !isLoading
+        });
+
+        // Fetch Shared Tasks
+        const { data: sharedTasks = [] } = useQuery({
+            queryKey: ['roomTasks', config?.parent_email],
+            queryFn: async () => {
+                 const all = await base44.entities.FamilyTask.list();
+                 return all.filter(t => t.parent_email === config?.parent_email && t.is_shared && t.status !== 'archived');
+            },
+            enabled: !!config?.parent_email && !isPreview,
+            retry: false
+        });
+
+        const displayTasks = isPreview ? [
+            { id: 1, title: 'Complete Enrollment Form', status: 'completed', due_date: '2025-09-01' },
+            { id: 2, title: 'Sign Liability Waiver', status: 'pending', due_date: '2025-09-05' },
+            { id: 3, title: 'Upload Immunization Records', status: 'pending', due_date: '2025-09-10' }
+        ] : sharedTasks;
 
     if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] font-serif text-xl animate-pulse">Loading space...</div>;
     
@@ -420,6 +437,58 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                              </motion.a>
                          </div>
                      )
+                }
+
+                // SHARED TASK LIST MODULE
+                if (module.type === 'task_list') {
+                    return (
+                        <div key={module.id} className="max-w-3xl mx-auto px-6 py-16">
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100"
+                            >
+                                <div className="flex items-center justify-between mb-8">
+                                    <div>
+                                        <h3 className="font-serif text-2xl text-[#333333]">{module.content.title || 'Your To-Do List'}</h3>
+                                        <p className="text-gray-400 text-sm mt-1">Please complete these items before the session starts.</p>
+                                    </div>
+                                    <div className="w-12 h-12 bg-[#333333] text-white rounded-full flex items-center justify-center font-bold font-serif">
+                                        {displayTasks.filter(t => t.status !== 'completed').length}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {displayTasks.length === 0 ? (
+                                        <div className="text-center py-8 text-gray-400 italic">You're all caught up! No tasks pending.</div>
+                                    ) : (
+                                        displayTasks.map(task => (
+                                            <div key={task.id} className="flex items-start gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50/30">
+                                                <div className={`mt-1 p-0.5 rounded-full ${task.status === 'completed' ? 'text-green-500' : 'text-gray-300'}`}>
+                                                    {task.status === 'completed' ? <Badge className="bg-green-100 text-green-700 hover:bg-green-200">Done</Badge> : <div className="w-5 h-5 rounded-full border-2 border-gray-300" />}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className={`font-bold text-[#333333] ${task.status === 'completed' ? 'line-through opacity-50' : ''}`}>{task.title}</h4>
+                                                    {task.description && <p className="text-sm text-gray-500 mt-1">{task.description}</p>}
+                                                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                                                        {task.due_date && (
+                                                            <span className="flex items-center gap-1">
+                                                                <Calendar className="w-3 h-3" /> Due {task.due_date}
+                                                            </span>
+                                                        )}
+                                                        {task.priority === 'high' && (
+                                                            <span className="text-red-500 font-bold uppercase tracking-wider">High Priority</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </motion.div>
+                        </div>
+                    );
                 }
 
                 return null;

@@ -32,7 +32,8 @@ const MODULE_TYPES = [
     { type: 'invoice_highlight', icon: DollarSign, label: 'Billing Summary', description: 'Outstanding balance card' },
     { type: 'class_recommendation', icon: Star, label: 'Class Recs', description: 'Suggested classes' },
     { type: 'cta_button', icon: MousePointerClick, label: 'Action Button', description: 'Call to action' },
-];
+    { type: 'task_list', icon: Check, label: 'Shared Tasks', description: 'Checklist for the family' },
+    ];
 
 export default function FamilyRoomBuilder({ family, onClose }) {
     const queryClient = useQueryClient();
@@ -166,9 +167,10 @@ export default function FamilyRoomBuilder({ family, onClose }) {
             case 'video_embed': return { url: '', caption: 'Watch this video' };
             case 'cta_button': return { label: 'Click Me', url: '#', style: 'primary' };
             case 'class_recommendation': return { title: 'Recommended for You', class_ids: [] };
+            case 'task_list': return { title: 'Your To-Do List' };
             default: return {};
-        }
-    };
+            }
+            };
 
     if (!activeConfig) return <div className="p-8 text-center flex items-center justify-center gap-2 text-gray-400"><Loader2 className="animate-spin" /> Loading Room Builder...</div>;
 
@@ -506,13 +508,25 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                                                 </div>
                                                             )}
 
-                                                            {(module.type === 'invoice_highlight' || module.type === 'class_recommendation') && (
+                                                            {(module.type === 'invoice_highlight' || module.type === 'class_recommendation' || module.type === 'task_list') && (
                                                                 <div className="flex flex-col items-center justify-center py-4 text-gray-400 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
                                                                     <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mb-2 shadow-sm">
-                                                                        {module.type === 'invoice_highlight' ? <DollarSign className="w-5 h-5" /> : <Star className="w-5 h-5" />}
+                                                                        {module.type === 'invoice_highlight' ? <DollarSign className="w-5 h-5" /> : module.type === 'class_recommendation' ? <Star className="w-5 h-5" /> : <Check className="w-5 h-5" />}
                                                                     </div>
-                                                                    <span className="text-xs font-medium">Dynamic {module.type === 'invoice_highlight' ? 'Billing' : 'Class'} Block</span>
-                                                                    <span className="text-[10px]">Data will be populated automatically for the family</span>
+                                                                    <span className="text-xs font-medium">
+                                                                        Dynamic {module.type === 'invoice_highlight' ? 'Billing' : module.type === 'class_recommendation' ? 'Class' : 'Task'} Block
+                                                                    </span>
+                                                                    {module.type === 'task_list' && (
+                                                                        <div className="w-full px-8 mt-4">
+                                                                            <Input 
+                                                                                value={module.content.title}
+                                                                                onChange={(e) => updateModuleContent(module.id, 'title', e.target.value)}
+                                                                                placeholder="List Title (e.g. Enrollment Checklist)"
+                                                                                className="text-center bg-white h-8 text-sm"
+                                                                            />
+                                                                        </div>
+                                                                    )}
+                                                                    <span className="text-[10px] mt-2">Data will be populated automatically for the family</span>
                                                                 </div>
                                                             )}
                                                             
