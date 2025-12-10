@@ -38,7 +38,7 @@ export default function Students() {
 
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
-    queryFn: () => base44.entities.Student.list(null, 1000),
+    queryFn: () => base44.entities.Student.list({created_date: -1}, 1000),
   });
 
   const { data: classes = [] } = useQuery({
