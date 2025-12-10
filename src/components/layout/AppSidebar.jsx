@@ -9,7 +9,8 @@ import {
   Sparkles,
   LogOut,
   Briefcase,
-  Search
+  Search,
+  CheckSquare
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useLocation } from 'react-router-dom';
@@ -24,6 +25,7 @@ export default function AppSidebar({ className = "", onSearchClick }) {
 
   const navItems = [
     { path: '/Home', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/Tasks', icon: CheckSquare, label: 'Tasks' },
     { path: '/ClassManager', icon: Calendar, label: 'Schedule' },
     { path: '/Students', icon: GraduationCap, label: 'Students' },
     { path: '/Teachers', icon: Users, label: 'Staff' },

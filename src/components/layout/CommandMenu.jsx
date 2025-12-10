@@ -12,7 +12,8 @@ import {
   Search,
   User,
   Plus,
-  FileText
+  FileText,
+  CheckSquare
 } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from '@tanstack/react-query';
@@ -59,6 +60,13 @@ export default function CommandMenu({ open, onOpenChange }) {
               >
                 <LayoutDashboard className="mr-2 h-4 w-4" />
                 <span>Dashboard</span>
+              </Command.Item>
+              <Command.Item 
+                onSelect={() => runCommand(() => navigate(createPageUrl('Tasks')))}
+                className="relative flex cursor-default select-none items-center rounded-lg px-2 py-2 text-sm outline-none aria-selected:bg-gray-100 aria-selected:text-gray-900"
+              >
+                <CheckSquare className="mr-2 h-4 w-4" />
+                <span>Tasks</span>
               </Command.Item>
               <Command.Item 
                 onSelect={() => runCommand(() => navigate(createPageUrl('ClassManager')))}
