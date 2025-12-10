@@ -87,7 +87,7 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
   return (
     <div className="flex flex-col h-full bg-[#F4F4F6] overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 flex items-center justify-between bg-[#F4F4F6] border-b border-gray-200/50 shadow-sm">
+      <div className="flex-shrink-0 px-6 py-3 flex items-center justify-between bg-[#F4F4F6] border-b border-gray-200/50 shadow-sm">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -97,14 +97,22 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div>
-            <h2 className="font-serif text-xl text-[#333333]">Student Profile</h2>
+          <div className="flex flex-col">
+            <h2 className="font-serif text-lg text-[#333333] leading-none">{student.name}</h2>
+            <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">{student.level} Student</span>
           </div>
-          </div>
-          <Button onClick={() => setActiveTab('communication')} variant="outline" className="rounded-full border-gray-200 bg-white text-[#333333] gap-2 font-serif hover:bg-[#F2DCDD] hover:border-[#F2DCDD] transition-colors">
-          <Mail className="w-4 h-4" /> Message Parent
-          </Button>
-          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+           <Button 
+              onClick={() => setIsNewEntryOpen(true)} 
+              variant="outline" 
+              className="rounded-full border-gray-200 bg-white text-[#333333] gap-2 font-serif hover:bg-[#F2DCDD] hover:border-[#F2DCDD] transition-colors h-10 px-4"
+           >
+              <Quote className="w-4 h-4" /> Log Journal
+           </Button>
+        </div>
+      </div>
 
       <div className="flex-1 overflow-y-auto px-6 md:px-8 pb-8">
         <div className="max-w-5xl mx-auto space-y-8">
