@@ -161,7 +161,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
 
     const getDefaultContent = (type) => {
         switch(type) {
-            case 'hero': return { title: 'Welcome', subtitle: 'Your personalized space', image_url: '' };
+            case 'hero': return { title: 'Welcome', subtitle: 'Your personalized space', image_url: '', images: [] };
             case 'text_block': return { heading: 'New Section', body: 'Add your content here...' };
             case 'video_embed': return { url: '', caption: 'Watch this video' };
             case 'cta_button': return { label: 'Click Me', url: '#', style: 'primary' };
@@ -370,14 +370,80 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                                                         className="resize-none border-none p-0 focus-visible:ring-0 text-gray-500"
                                                                         placeholder="Hero Subtitle"
                                                                     />
-                                                                    <div className="flex items-center gap-2">
-                                                                         <ImageIcon className="w-4 h-4 text-gray-400" />
-                                                                         <Input 
-                                                                            value={module.content.image_url}
-                                                                            onChange={(e) => updateModuleContent(module.id, 'image_url', e.target.value)}
-                                                                            className="h-8 text-xs bg-gray-50"
-                                                                            placeholder="Background Image URL (Unsplash)"
-                                                                         />
+                                                                    
+                                                                    <div className="space-y-2">
+                                                                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Background Slideshow</label>
+                                                                        
+                                                                        {/* Legacy single image support */}
+                                                                        {(!module.content.images || module.content.images.length === 0) && module.content.image_url && (
+                                                                             <div className="flex items-center gap-2 mb-2 p-2 bg-gray-50 rounded-lg">
+                                                                                 <img src={module.content.image_url} className="w-8 h-8 rounded object-cover" />
+                                                                                 <div className="flex-1 min-w-0">
+                                                                                     <div className="text-xs truncate text-gray-500">{module.content.image_url}</div>
+                                                                                 </div>
+                                                                                 <Button 
+                                                                                    size="icon" 
+                                                                                    variant="ghost" 
+                                                                                    className="h-6 w-6 text-gray-400 hover:text-red-500"
+                                                                                    onClick={() => updateModuleContent(module.id, 'image_url', '')}
+                                                                                 >
+                                                                                     <X className="w-3 h-3" />
+                                                                                 </Button>
+                                                                             </div>
+                                                                        )}
+
+                                                                        {/* Multiple Images List */}
+                                                                        {module.content.images?.map((img, idx) => (
+                                                                            <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg group">
+                                                                                <div className="w-8 h-8 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                                                                                    <img src={img} className="w-full h-full object-cover" />
+                                                                                </div>
+                                                                                <div className="flex-1 min-w-0">
+                                                                                    <div className="text-xs truncate text-gray-500">{img}</div>
+                                                                                </div>
+                                                                                <Button 
+                                                                                    size="icon" 
+                                                                                    variant="ghost" 
+                                                                                    className="h-6 w-6 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
+                                                                                    onClick={() => {
+                                                                                        const newImages = [...module.content.images];
+                                                                                        newImages.splice(idx, 1);
+                                                                                        updateModuleContent(module.id, 'images', newImages);
+                                                                                    }}
+                                                                                >
+                                                                                    <X className="w-3 h-3" />
+                                                                                </Button>
+                                                                            </div>
+                                                                        ))}
+
+                                                                        {/* Add New Image Input */}
+                                                                        <div className="flex items-center gap-2">
+                                                                             <ImageIcon className="w-4 h-4 text-gray-400" />
+                                                                             <Input 
+                                                                                className="h-8 text-xs bg-gray-50"
+                                                                                placeholder="Paste image URL and press Enter"
+                                                                                onKeyDown={(e) => {
+                                                                                    if (e.key === 'Enter' && e.currentTarget.value) {
+                                                                                        const newUrl = e.currentTarget.value;
+                                                                                        const currentImages = module.content.images || [];
+                                                                                        // If legacy image_url exists and this is first array add, preserve it or just switch to array?
+                                                                                        // Let's migrate legacy to array on first add
+                                                                                        let newImages = [...currentImages];
+                                                                                        if (newImages.length === 0 && module.content.image_url) {
+                                                                                            newImages.push(module.content.image_url);
+                                                                                        }
+                                                                                        newImages.push(newUrl);
+                                                                                        
+                                                                                        updateModuleContent(module.id, 'images', newImages);
+                                                                                        updateModuleContent(module.id, 'image_url', ''); // Clear legacy to use array source of truth
+                                                                                        e.currentTarget.value = '';
+                                                                                    }
+                                                                                }}
+                                                                             />
+                                                                        </div>
+                                                                        <div className="text-[10px] text-gray-400">
+                                                                            Pro tip: You can add multiple images to create a slideshow.
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             )}
