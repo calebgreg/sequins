@@ -240,6 +240,7 @@ export default function Students() {
                </Button>
             </div>
           </div>
+        </div>
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end">
              <DropdownMenu>
