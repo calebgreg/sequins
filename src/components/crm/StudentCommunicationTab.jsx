@@ -279,9 +279,6 @@ export default function StudentCommunicationTab({ student }) {
                         <div className="flex justify-between items-start mb-6">
                             <div>
                                 <h3 className="font-serif text-2xl text-[#333333] mb-1">Composer</h3>
-                                <p className="text-sm text-gray-400">
-                                    To: <span className="text-[#333333] font-medium">{student.parent_name}</span> &lt;{student.parent_email}&gt;
-                                </p>
                             </div>
                             
                             {/* AI Cheat Codes */}
