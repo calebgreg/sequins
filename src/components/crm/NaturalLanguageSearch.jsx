@@ -231,10 +231,11 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                         size="icon"
                         variant="ghost"
                         onClick={() => setIsSaveModalOpen(true)}
-                        className="h-10 w-10 rounded-full bg-white/40 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-md hover:bg-white/60 text-[#333333] transition-all duration-300 animate-in fade-in zoom-in shrink-0"
+                        className="h-10 w-10 rounded-full bg-gradient-to-br from-white/30 to-white/5 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:bg-white/20 text-[#333333] transition-all duration-500 animate-in fade-in zoom-in shrink-0 relative overflow-hidden ring-1 ring-white/30"
                         title="Save View"
                     >
-                        <Save className="w-4 h-4 opacity-80" />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500" />
+                        <Save className="w-4 h-4 relative z-10" />
                     </Button>
                 )}
                 </div>
