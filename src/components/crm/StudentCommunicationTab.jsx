@@ -85,8 +85,9 @@ export default function StudentCommunicationTab({ student }) {
         Student Level: ${student.level}
         
         Strict Guidelines:
-        - Tone: Professional yet warm, authentic, and personal. Avoid corporate jargon or robotic marketing speak.
-        - Style: Use short paragraphs and natural language.
+        - Tone: Professional yet warm, authentic, and personal.
+        - ABSOLUTELY FORBIDDEN: Do NOT use phrases like "I hope this finds you well", "I hope you are doing well", "I wanted to reach out", "delve", "tapestry", or generic fillers. Start the email directly with the point.
+        - Style: Use short paragraphs and natural, conversational language. Write like a human speaking to another human.
         - Quality: The email must sound like it was written by a caring human teacher, not an AI.
         `;
 
