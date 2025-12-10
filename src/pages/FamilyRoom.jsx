@@ -5,9 +5,10 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
     ChevronRight, Download, Star, Calendar, CreditCard, 
-    ArrowRight, MapPin, Mail, Phone, ExternalLink, PlayCircle 
+    ArrowRight, MapPin, Mail, Phone, ExternalLink, PlayCircle, Clock 
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
 export default function FamilyRoom({ previewConfig = null }) {
@@ -89,7 +90,14 @@ export default function FamilyRoom({ previewConfig = null }) {
     });
 
     // Mock for preview if no real data
-    const displayInvoices = isPreview ? [{ balance_due: 450 }] : (familyInvoices || []);
+    const displayInvoices = isPreview ? [{ balance_due: 450, stripe_payment_link: '#' }] : (familyInvoices || []);
+
+    // Fetch classes for recommendations
+    const { data: allClasses = [] } = useQuery({
+        queryKey: ['publicClasses'],
+        queryFn: async () => base44.entities.DanceClass.list(),
+        enabled: !isLoading
+    });
 
     if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] font-serif text-xl animate-pulse">Loading space...</div>;
     
@@ -234,6 +242,20 @@ export default function FamilyRoom({ previewConfig = null }) {
                 // INVOICE HIGHLIGHT MODULE
                 if (module.type === 'invoice_highlight') {
                     const balance = displayInvoices.reduce((sum, inv) => sum + (inv.balance_due || 0), 0) || 0;
+                    
+                    const handlePayment = () => {
+                        // Find first unpaid invoice with a link
+                        const paymentLink = displayInvoices.find(inv => (inv.balance_due > 0 && inv.stripe_payment_link))?.stripe_payment_link;
+                        
+                        if (paymentLink && paymentLink !== '#') {
+                            window.open(paymentLink, '_blank');
+                        } else if (isPreview) {
+                            toast.success("In live mode, this connects to your payment processor.");
+                        } else {
+                            toast.info("No online payment link available for this invoice.");
+                        }
+                    };
+
                     return (
                         <div key={module.id} className="py-16 px-6">
                             <div className="max-w-5xl mx-auto">
@@ -258,13 +280,78 @@ export default function FamilyRoom({ previewConfig = null }) {
                                     <div className="relative z-10 flex flex-col items-center gap-4 bg-gray-50 p-8 rounded-3xl border border-gray-100 min-w-[300px]">
                                         <div className="text-6xl font-serif text-[#333333]">${balance.toLocaleString()}</div>
                                         <div className="text-xs text-gray-400 font-medium uppercase tracking-wider">Due Immediately</div>
-                                        <Button className="w-full bg-[#333333] text-white hover:bg-black rounded-full h-12 mt-2 shadow-lg hover:shadow-xl transition-all">
+                                        <Button 
+                                            onClick={handlePayment}
+                                            className="w-full bg-[#333333] text-white hover:bg-black rounded-full h-12 mt-2 shadow-lg hover:shadow-xl transition-all"
+                                        >
                                             Pay Securely
                                         </Button>
                                     </div>
                                 </motion.div>
                             </div>
                         </div>
+                    );
+                }
+
+                // CLASS RECOMMENDATION MODULE
+                if (module.type === 'class_recommendation') {
+                    // Logic: Use specific class_ids if present, otherwise pick first 3 classes as a fallback
+                    // In a real scenario, this would filter by student age/level
+                    const recommendedClasses = (module.content.class_ids && module.content.class_ids.length > 0)
+                        ? allClasses.filter(c => module.content.class_ids.includes(c.id))
+                        : allClasses.slice(0, 3);
+
+                    if (recommendedClasses.length === 0 && !isPreview) return null; // Hide if empty in real view
+
+                    return (
+                         <div key={module.id} className="max-w-6xl mx-auto px-6 py-20">
+                             <div className="text-center mb-12">
+                                <h2 className="font-serif text-3xl text-[#333333] mb-4">{module.content.title || 'Recommended Classes'}</h2>
+                                <p className="text-gray-400 max-w-2xl mx-auto">Classes selected specifically for your dancer's level and interests.</p>
+                             </div>
+                             
+                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {recommendedClasses.length > 0 ? recommendedClasses.map(cls => (
+                                    <motion.div 
+                                        key={cls.id}
+                                        whileHover={{ y: -5 }}
+                                        className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all group"
+                                    >
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                                {cls.style}
+                                            </div>
+                                            <div className="text-[#333333] font-serif italic text-sm">{cls.level || 'All Levels'}</div>
+                                        </div>
+                                        
+                                        <h3 className="font-bold text-xl text-[#333333] mb-2 group-hover:text-indigo-600 transition-colors">{cls.title}</h3>
+                                        
+                                        <div className="space-y-2 mb-6">
+                                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                <Calendar className="w-4 h-4 text-gray-300" />
+                                                <span>{cls.day}s at {cls.start_time}:00</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                <Clock className="w-4 h-4 text-gray-300" />
+                                                <span>{cls.duration} hrs • with {cls.teacher}</span>
+                                            </div>
+                                        </div>
+
+                                        <Button className="w-full bg-white border border-gray-200 text-[#333333] hover:bg-[#333333] hover:text-white hover:border-[#333333] rounded-xl transition-all">
+                                            Register Now
+                                        </Button>
+                                    </motion.div>
+                                )) : (
+                                    // Empty state for preview if no classes exist in DB
+                                    [1, 2, 3].map(i => (
+                                        <div key={i} className="bg-gray-50 rounded-2xl p-6 border border-dashed border-gray-200 text-center flex flex-col items-center justify-center min-h-[250px] opacity-50">
+                                            <Star className="w-8 h-8 text-gray-300 mb-2" />
+                                            <p className="text-sm text-gray-400">Class Recommendation Placeholder</p>
+                                        </div>
+                                    ))
+                                )}
+                             </div>
+                         </div>
                     );
                 }
 
