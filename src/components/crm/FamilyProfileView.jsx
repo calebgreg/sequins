@@ -184,66 +184,58 @@ export default function FamilyProfileView({ family, onBack }) {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col md:flex-row p-8 pt-2 gap-8 max-w-[1600px] mx-auto w-full">
+            <div className="flex-1 overflow-hidden flex flex-col p-8 pt-2 gap-6 max-w-[1600px] mx-auto w-full">
                 
-                {/* Left Sidebar Profile Card */}
-                <div className="w-full md:w-80 flex-shrink-0 space-y-6">
-                    {/* Main Profile Card */}
-                    <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden group">
-                        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#F2DCDD]/50 to-transparent" />
-                        
-                        <div className="relative z-10 w-24 h-24 rounded-full bg-white p-1 shadow-xl mb-4 mt-4">
-                            <div className="w-full h-full rounded-full bg-[#333333] flex items-center justify-center text-white text-2xl font-serif">
-                                {family.parent_name.charAt(0)}
-                            </div>
+                {/* Header Info & Nav Row */}
+                <div className="flex flex-col xl:flex-row items-center justify-between gap-6 pb-2">
+                    {/* Compact Parent Info */}
+                    <div className="flex items-center gap-4 bg-white p-2 pr-6 rounded-full shadow-sm border border-gray-100/50">
+                        <div className="w-12 h-12 rounded-full bg-[#333333] flex items-center justify-center text-white text-lg font-serif shadow-md">
+                            {family.parent_name.charAt(0)}
                         </div>
-
-                        <h2 className="text-xl font-serif text-[#333333] mb-1 relative z-10">{family.parent_name}</h2>
-                        <Badge variant="secondary" className="mb-6 relative z-10">Primary Contact</Badge>
-
-                        <div className="w-full space-y-3 relative z-10">
-                             <a href={`mailto:${family.email}`} className="flex items-center gap-3 p-3 rounded-2xl bg-[#F4F4F6] hover:bg-[#F2DCDD] transition-colors text-sm group/item">
-                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 group-hover/item:text-[#333333]">
-                                    <Mail className="w-4 h-4" />
-                                </div>
-                                <span className="truncate flex-1 text-left">{family.email}</span>
-                             </a>
-                             {family.phone && (
-                                <a href={`tel:${family.phone}`} className="flex items-center gap-3 p-3 rounded-2xl bg-[#F4F4F6] hover:bg-[#F2DCDD] transition-colors text-sm group/item">
-                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 group-hover/item:text-[#333333]">
-                                        <Phone className="w-4 h-4" />
-                                    </div>
-                                    <span className="truncate flex-1 text-left">{family.phone}</span>
-                                </a>
-                             )}
+                        <div>
+                             <div className="flex items-center gap-2">
+                                <h2 className="font-serif text-[#333333]">{family.parent_name}</h2>
+                                <Badge variant="secondary" className="text-[10px] h-5 bg-gray-100 text-gray-500">Parent</Badge>
+                             </div>
+                             <div className="flex items-center gap-3 text-xs text-gray-400">
+                                 <a href={`mailto:${family.email}`} className="hover:text-indigo-600 flex items-center gap-1 transition-colors">
+                                     <Mail className="w-3 h-3" /> {family.email}
+                                 </a>
+                                 {family.phone && (
+                                    <>
+                                        <span className="w-0.5 h-0.5 rounded-full bg-gray-300" />
+                                        <a href={`tel:${family.phone}`} className="hover:text-indigo-600 flex items-center gap-1 transition-colors">
+                                            <Phone className="w-3 h-3" /> {family.phone}
+                                        </a>
+                                    </>
+                                 )}
+                             </div>
                         </div>
                     </div>
 
-                    {/* Navigation Pills */}
-                    <nav className="space-y-2">
+                    {/* Horizontal Nav Tabs */}
+                    <nav className="flex items-center bg-white p-1.5 rounded-full shadow-sm border border-gray-100/50 overflow-x-auto max-w-full">
                         {navItems.map(item => (
                             <button
                                 key={item.id}
                                 onClick={() => setActiveSection(item.id)}
                                 className={`
-                                    w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300
+                                    flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 text-sm font-medium whitespace-nowrap
                                     ${activeSection === item.id 
-                                        ? 'bg-white shadow-md scale-105 text-[#333333]' 
-                                        : 'text-gray-400 hover:bg-white/50 hover:text-[#333333]'}
+                                        ? 'bg-[#333333] text-white shadow-md' 
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-[#333333]'}
                                 `}
                             >
-                                <item.icon className={`w-5 h-5 ${activeSection === item.id ? 'text-[#333333]' : 'opacity-70'}`} />
-                                <span className="font-medium text-sm tracking-wide">{item.label}</span>
-                                {activeSection === item.id && <ChevronRight className="w-4 h-4 ml-auto opacity-30" />}
+                                <item.icon className="w-4 h-4" />
+                                {item.label}
                             </button>
                         ))}
                     </nav>
-
-                    {/* Quick Stats Mini - Removed as per request */}
                 </div>
 
                 {/* Main Content Area */}
-                <div className="flex-1 bg-white rounded-[40px] shadow-sm border border-gray-100/50 overflow-hidden flex flex-col relative">
+                <div className="flex-1 bg-white rounded-[40px] shadow-sm border border-gray-100/50 overflow-hidden flex flex-col relative w-full">
                     {/* Decorative background blobs */}
                     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#F2DCDD]/20 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                     
