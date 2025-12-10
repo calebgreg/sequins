@@ -4,8 +4,9 @@ import { base44 } from "@/api/base44Client";
 import { 
     Layout, Plus, GripVertical, Image as ImageIcon, Type, Video, 
     FileText, DollarSign, Star, Move, Trash2, Eye, Save, ExternalLink,
-    Palette, ArrowRight, Check, MousePointerClick, Loader2
+    Palette, ArrowRight, Check, MousePointerClick, Loader2, X, Monitor, Smartphone
 } from 'lucide-react';
+import FamilyRoom from '../../pages/FamilyRoom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +37,8 @@ export default function FamilyRoomBuilder({ family, onClose }) {
     const queryClient = useQueryClient();
     const [activeConfig, setActiveConfig] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [showFullPreview, setShowFullPreview] = useState(false);
+    const [viewMode, setViewMode] = useState('desktop');
 
     // Fetch existing config or init new
     const { data: existingConfig, isLoading } = useQuery({
@@ -169,7 +172,51 @@ export default function FamilyRoomBuilder({ family, onClose }) {
     if (!activeConfig) return <div className="p-8 text-center flex items-center justify-center gap-2 text-gray-400"><Loader2 className="animate-spin" /> Loading Room Builder...</div>;
 
     return (
-        <div className="h-full flex flex-col bg-[#F4F4F6] overflow-hidden">
+        <div className="h-full flex flex-col bg-[#F4F4F6] overflow-hidden relative">
+            {/* Full Screen Preview Overlay */}
+            {showFullPreview && (
+                <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in fade-in duration-200">
+                    <div className="h-16 bg-[#333333] text-white flex items-center justify-between px-6 shadow-md flex-shrink-0 z-50">
+                        <div className="flex items-center gap-4">
+                            <h3 className="font-serif text-lg">Live Preview</h3>
+                            <div className="flex bg-white/10 rounded-lg p-1">
+                                <button 
+                                    onClick={() => setViewMode('desktop')}
+                                    className={`p-2 rounded-md transition-all ${viewMode === 'desktop' ? 'bg-white text-[#333333]' : 'text-white/60 hover:text-white'}`}
+                                >
+                                    <Monitor className="w-4 h-4" />
+                                </button>
+                                <button 
+                                    onClick={() => setViewMode('mobile')}
+                                    className={`p-2 rounded-md transition-all ${viewMode === 'mobile' ? 'bg-white text-[#333333]' : 'text-white/60 hover:text-white'}`}
+                                >
+                                    <Smartphone className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                        <Button 
+                            variant="ghost" 
+                            onClick={() => setShowFullPreview(false)}
+                            className="text-white hover:bg-white/20 hover:text-white gap-2"
+                        >
+                            Exit Preview <X className="w-5 h-5" />
+                        </Button>
+                    </div>
+                    
+                    <div className="flex-1 bg-gray-100 overflow-hidden flex justify-center p-0 md:p-8">
+                        <div className={`
+                            bg-white shadow-2xl overflow-hidden transition-all duration-300 relative
+                            ${viewMode === 'mobile' ? 'w-[375px] h-[812px] rounded-[40px] border-[12px] border-[#333333]' : 'w-full h-full rounded-none md:rounded-xl'}
+                        `}>
+                            {/* Render FamilyRoom directly with props */}
+                            <div className="w-full h-full overflow-y-auto no-scrollbar bg-white">
+                                <FamilyRoom previewConfig={activeConfig} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Toolbar */}
             <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-4">
