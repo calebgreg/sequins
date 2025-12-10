@@ -212,16 +212,16 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
                     <PopoverTrigger asChild>
                         <Button variant="ghost" className="h-12 rounded-full border border-transparent hover:border-gray-100 text-gray-500 hover:text-[#333333] gap-2 shrink-0 bg-transparent hover:bg-white transition-all px-4">
                             <Save className="w-4 h-4" />
-                            <span className="hidden sm:inline font-medium">Saved</span>
+                            <span className="hidden sm:inline font-medium">Segments</span>
                             <ChevronDown className="w-3 h-3 opacity-50" />
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="p-0 w-64" align="end">
                         <Command>
-                            <CommandInput placeholder="Search saved filters..." />
+                            <CommandInput placeholder="Search segments..." />
                             <CommandList>
-                                <CommandEmpty>No saved filters found.</CommandEmpty>
-                                <CommandGroup heading="My Filters">
+                                <CommandEmpty>No segments found.</CommandEmpty>
+                                <CommandGroup heading="My Segments">
                                     {savedFilters.map((filter) => (
                                         <CommandItem 
                                             key={filter.id} 
@@ -253,7 +253,7 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
                         onClick={() => setIsSaveModalOpen(true)}
                         className="h-9 rounded-full bg-[#333333] hover:bg-black text-white shadow-lg hover:shadow-xl animate-in fade-in slide-in-from-left-2 shrink-0 px-5 font-medium"
                     >
-                        Save This
+                        Save Segment
                     </Button>
                 )}
             </div>
@@ -295,11 +295,11 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
             <Dialog open={isSaveModalOpen} onOpenChange={setIsSaveModalOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Save Smart Filter</DialogTitle>
+                        <DialogTitle>Save Segment</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label>Filter Name</Label>
+                            <Label>Segment Name</Label>
                             <Input 
                                 placeholder="e.g. My Thursday Jazz Kids" 
                                 value={newFilterName}
@@ -316,8 +316,8 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsSaveModalOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveFilter} disabled={!newFilterName}>Save Filter</Button>
-                    </DialogFooter>
+                        <Button onClick={handleSaveFilter} disabled={!newFilterName}>Save Segment</Button>
+                        </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>
