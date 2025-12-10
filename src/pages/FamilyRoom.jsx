@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { useSearchParams } from 'react-router-dom';
@@ -14,20 +14,35 @@ export default function FamilyRoom() {
     const [searchParams] = useSearchParams();
     const configId = searchParams.get('id');
     const isPreview = searchParams.get('preview') === 'true';
+    const [previewData, setPreviewData] = useState(null);
 
-    // Fetch Config logic
-    const { data: config, isLoading } = useQuery({
-        queryKey: ['familyRoomConfig', configId, isPreview],
-        queryFn: async () => {
-            if (isPreview) {
+    // Load local storage data for preview immediately
+    useEffect(() => {
+        if (isPreview) {
+            try {
                 const stored = localStorage.getItem('familyRoomPreview');
-                return stored ? JSON.parse(stored) : null;
+                if (stored) {
+                    setPreviewData(JSON.parse(stored));
+                }
+            } catch (e) {
+                console.error("Failed to load preview data", e);
             }
-            if (!configId) return null;
+        }
+    }, [isPreview]);
+
+    // Fetch Config logic for non-preview or fallback
+    const { data: dbConfig, isLoading: isDbLoading } = useQuery({
+        queryKey: ['familyRoomConfig', configId],
+        queryFn: async () => {
+            if (!configId || isPreview) return null;
             const configs = await base44.entities.FamilyRoomConfig.list();
             return configs.find(c => c.id === configId);
         },
+        enabled: !!configId && !isPreview
     });
+
+    const config = isPreview ? previewData : dbConfig;
+    const isLoading = isPreview ? !previewData : isDbLoading;
 
     // Mock family data fetch (would need secure token in real app)
     const { data: familyInvoices } = useQuery({
@@ -42,8 +57,9 @@ export default function FamilyRoom() {
     // Mock for preview if no real data
     const displayInvoices = isPreview ? [{ balance_due: 450 }] : (familyInvoices || []);
 
-    if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] font-serif text-xl">Loading your space...</div>;
-    if (!config) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">Unable to load room configuration.</div>;
+    if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] font-serif text-xl animate-pulse">Loading space...</div>;
+    if (!config && !isPreview) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">Unable to load room configuration.</div>;
+    if (isPreview && !config) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">Preview data not found. Try clicking preview again.</div>;
 
     const visibleModules = config.modules.filter(m => m.isVisible);
     const themeBg = config.theme === 'elegant' ? 'bg-[#FDFBF7]' : config.theme === 'energetic' ? 'bg-white' : 'bg-gray-50';
@@ -54,7 +70,7 @@ export default function FamilyRoom() {
             {/* Optional Header based on Theme */}
             <div className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto">
                  <div className="text-sm font-bold tracking-widest uppercase opacity-70">The Studio</div>
-                 {isPreview && <Badge variant="destructive" className="animate-pulse">Preview Mode</Badge>}
+                 {isPreview && <Badge variant="destructive" className="animate-pulse shadow-xl">Live Preview Mode</Badge>}
             </div>
 
             {visibleModules.map((module, idx) => {

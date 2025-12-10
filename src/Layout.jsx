@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from 'lucide-react';
 import { CommandMenuProvider, useCommandMenu } from './components/layout/CommandMenuContext';
+import { Toaster } from 'sonner';
 
 function LayoutContent({ children }) {
   const location = useLocation();
@@ -63,6 +64,7 @@ export default function Layout({ children }) {
   return (
     <CommandMenuProvider>
       <LayoutContent>{children}</LayoutContent>
+      <Toaster />
     </CommandMenuProvider>
   );
 }

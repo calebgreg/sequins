@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { 
     Layout, Plus, GripVertical, Image as ImageIcon, Type, Video, 
     FileText, DollarSign, Star, Move, Trash2, Eye, Save, ExternalLink,
-    Palette, ArrowRight, Check, MousePointerClick
+    Palette, ArrowRight, Check, MousePointerClick, Loader2
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,8 +18,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { createPageUrl } from '@/utils';
+import { createPageUrl } from '../../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 const MODULE_TYPES = [
     { type: 'hero', icon: ImageIcon, label: 'Hero Header', description: 'Big impact welcome banner' },
@@ -34,7 +35,7 @@ const MODULE_TYPES = [
 export default function FamilyRoomBuilder({ family, onClose }) {
     const queryClient = useQueryClient();
     const [activeConfig, setActiveConfig] = useState(null);
-    const [isPreviewMode, setIsPreviewMode] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Fetch existing config or init new
     const { data: existingConfig, isLoading } = useQuery({
@@ -93,8 +94,41 @@ export default function FamilyRoomBuilder({ family, onClose }) {
         onSuccess: (saved) => {
             queryClient.invalidateQueries(['familyRoom']);
             setActiveConfig(saved);
+            toast.success("Room configuration saved successfully");
+        },
+        onError: (err) => {
+            console.error("Failed to save room config:", err);
+            toast.error("Failed to save changes. Please try again.");
         }
     });
+
+    const handlePublish = () => {
+        setIsSaving(true);
+        saveMutation.mutate(activeConfig, {
+            onSettled: () => setIsSaving(false)
+        });
+    };
+
+    const handlePreview = () => {
+        try {
+            // Strategy: Try to save to DB first if possible, otherwise use local storage
+            // Using local storage for immediate preview feedback
+            localStorage.setItem('familyRoomPreview', JSON.stringify(activeConfig));
+            
+            // Construct URL
+            // If we have an ID, we could pass it, but preview=true forces reading from localStorage/draft
+            // which is better for "Previewing before publishing"
+            const url = createPageUrl('FamilyRoom?preview=true');
+            
+            const win = window.open(url, '_blank');
+            if (!win) {
+                toast.error("Pop-up blocked. Please allow pop-ups to view the preview.");
+            }
+        } catch (error) {
+            console.error("Preview error:", error);
+            toast.error("Could not launch preview.");
+        }
+    };
 
     const handleDragEnd = (result) => {
         if (!result.destination) return;
@@ -115,6 +149,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
             ...activeConfig,
             modules: [...activeConfig.modules, newModule]
         });
+        toast.info(`Added ${MODULE_TYPES.find(t => t.type === type)?.label}`);
     };
 
     const removeModule = (id) => {
@@ -145,14 +180,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
         }
     };
 
-    if (!activeConfig) return <div className="p-8 text-center">Loading Room Configuration...</div>;
-
-    const handlePreview = () => {
-        // Save current state to local storage for instant preview without saving to DB
-        localStorage.setItem('familyRoomPreview', JSON.stringify(activeConfig));
-        const url = createPageUrl('FamilyRoom?preview=true');
-        window.open(url, '_blank');
-    };
+    if (!activeConfig) return <div className="p-8 text-center flex items-center justify-center gap-2 text-gray-400"><Loader2 className="animate-spin" /> Loading Room Builder...</div>;
 
     return (
         <div className="h-full flex flex-col bg-[#F4F4F6] overflow-hidden">
@@ -177,11 +205,12 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                     </Button>
                     <div className="h-6 w-px bg-gray-200" />
                     <Button 
-                        onClick={() => saveMutation.mutate(activeConfig)} 
-                        disabled={saveMutation.isPending}
+                        onClick={handlePublish} 
+                        disabled={isSaving || saveMutation.isPending}
                         className="bg-[#333333] text-white hover:bg-black gap-2"
                     >
-                        {saveMutation.isPending ? 'Saving...' : <><Save className="w-4 h-4" /> Publish Changes</>}
+                        {(isSaving || saveMutation.isPending) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        Publish Changes
                     </Button>
                     <Button variant="ghost" size="icon" onClick={onClose}>
                         <ArrowRight className="w-5 h-5" />
@@ -222,7 +251,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                 <Input 
                                     value={activeConfig.page_title}
                                     onChange={(e) => setActiveConfig({...activeConfig, page_title: e.target.value})}
-                                    className="h-8 text-sm"
+                                    className="h-8 text-sm bg-white"
                                 />
                             </div>
                             <div>
@@ -331,6 +360,47 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                                                     />
                                                                 </div>
                                                             )}
+                                                            
+                                                            {module.type === 'video_embed' && (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                                                                        <Video className="w-4 h-4 text-gray-400" />
+                                                                        <Input 
+                                                                            value={module.content.url}
+                                                                            onChange={(e) => updateModuleContent(module.id, 'url', e.target.value)}
+                                                                            className="h-8 border-none bg-transparent"
+                                                                            placeholder="YouTube or Vimeo URL"
+                                                                        />
+                                                                    </div>
+                                                                    <Input 
+                                                                        value={module.content.caption}
+                                                                        onChange={(e) => updateModuleContent(module.id, 'caption', e.target.value)}
+                                                                        className="text-sm"
+                                                                        placeholder="Caption (optional)"
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                            
+                                                            {module.type === 'file_download' && (
+                                                                <div className="space-y-4">
+                                                                    <Input 
+                                                                        value={module.content.title}
+                                                                        onChange={(e) => updateModuleContent(module.id, 'title', e.target.value)}
+                                                                        placeholder="Resource Title (e.g. recital_handbook.pdf)"
+                                                                    />
+                                                                    <Input 
+                                                                        value={module.content.url}
+                                                                        onChange={(e) => updateModuleContent(module.id, 'url', e.target.value)}
+                                                                        placeholder="File URL"
+                                                                    />
+                                                                    <Input 
+                                                                        value={module.content.description}
+                                                                        onChange={(e) => updateModuleContent(module.id, 'description', e.target.value)}
+                                                                        placeholder="Short description"
+                                                                        className="text-sm text-gray-500"
+                                                                    />
+                                                                </div>
+                                                            )}
 
                                                             {(module.type === 'invoice_highlight' || module.type === 'class_recommendation') && (
                                                                 <div className="flex flex-col items-center justify-center py-4 text-gray-400 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
@@ -354,6 +424,19 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                                                         onChange={(e) => updateModuleContent(module.id, 'url', e.target.value)}
                                                                         placeholder="https://"
                                                                     />
+                                                                    <div className="col-span-2 flex items-center gap-2">
+                                                                        <label className="text-xs text-gray-500">Style:</label>
+                                                                        <div className="flex gap-2">
+                                                                            <button 
+                                                                                onClick={() => updateModuleContent(module.id, 'style', 'primary')}
+                                                                                className={`px-3 py-1 rounded-full text-xs ${module.content.style !== 'outline' ? 'bg-[#333333] text-white' : 'bg-gray-100'}`}
+                                                                            >Primary</button>
+                                                                            <button 
+                                                                                onClick={() => updateModuleContent(module.id, 'style', 'outline')}
+                                                                                className={`px-3 py-1 rounded-full text-xs ${module.content.style === 'outline' ? 'bg-[#333333] text-white' : 'bg-gray-100'}`}
+                                                                            >Outline</button>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                         </div>
