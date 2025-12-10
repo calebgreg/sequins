@@ -55,7 +55,7 @@ export default function CommandMenu({ open, onOpenChange }) {
             <Command.Group heading="Navigation">
               <Command.Item 
                 onSelect={() => runCommand(() => navigate(createPageUrl('Home')))}
-                className="relative flex cursor-default select-none items-center rounded-lg px-2 py-2 text-sm outline-none aria-selected:bg-gray-100 aria-selected:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                className="relative flex cursor-default select-none items-center rounded-lg px-2 py-2 text-sm outline-none aria-selected:bg-gray-100 aria-selected:text-gray-900"
               >
                 <LayoutDashboard className="mr-2 h-4 w-4" />
                 <span>Dashboard</span>
