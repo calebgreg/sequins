@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { 
     Sparkles, ArrowUp, X, Globe, Calendar, ExternalLink, 
-    Command, Bot, Search, CornerDownLeft
+    Command, Bot, Search, CornerDownLeft, CheckCircle2
 } from 'lucide-react';
 import useAiAssistant from './useAiAssistant';
+import { toast } from 'sonner';
 
 // --- Components ---
 
@@ -41,6 +42,14 @@ const MessageItem = ({ message }) => {
                             : 'bg-black/90 text-white rounded-2xl rounded-tr-sm border border-black/10'}
                     `}>
                         {message.content}
+
+                        {/* Action Feedback */}
+                        {message.action && message.action.type === 'task_created' && (
+                            <div className="mt-3 flex items-center gap-2 text-xs font-medium text-green-600 bg-green-50/50 p-2 rounded-lg border border-green-100">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Created task: "{message.action.title}"</span>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -130,46 +139,86 @@ export default function GlobalAiChat() {
 
             // 5. Construct Master Context
             const context = `
-                STUDIO INFORMATION:
-                Name: ${settings.name || 'The Studio'}
-                Type: ${settings.type}
-                
-                FULL CLASS SCHEDULE:
-                ${scheduleContext}
+            STUDIO INFORMATION:
+            Name: ${settings.name || 'The Studio'}
+            Type: ${settings.type}
 
-                TUITION & PRICING:
-                ${pricingContext}
+            FULL CLASS SCHEDULE:
+            ${scheduleContext}
 
-                STUDENT ROSTER (${activeStudents.length} active):
-                ${rosterContext}
+            TUITION & PRICING:
+            ${pricingContext}
 
-                TEACHERS:
-                ${teachers.map(t => t.name).join(', ')}
+            STUDENT ROSTER (${activeStudents.length} active):
+            ${rosterContext}
+
+            TEACHERS:
+            ${teachers.map(t => t.name).join(', ')}
             `;
 
             const response = await base44.integrations.Core.InvokeLLM({
-                prompt: `
-                    System: You are ${aiName || 'Gene'}, the intelligent OS for this dance studio.
-                    You have access to the COMPLETE real-time database below.
-                    
-                    ${context}
+            prompt: `
+              System: You are ${aiName || 'Gene'}, the intelligent OS for this dance studio.
+              You have access to the COMPLETE real-time database below.
 
-                    User Query: "${userText}"
-                    
-                    Instructions:
-                    1. Answer the user's question accurately using the provided data.
-                    2. If asked about schedules, list the specific days and times from the SCHEDULE section.
-                    3. If asked about students, use the ROSTER section.
-                    4. Keep answers concise, professional, and helpful. Plain text only.
-                `
+              ${context}
+
+              User Query: "${userText}"
+
+              Instructions:
+              1. Answer the user's question accurately using the provided data.
+              2. If the user asks to CREATE A TASK or REMINDER (e.g. "remind me to...", "add a task..."), extract the details into the 'create_task' JSON field.
+                 - If a student/person is mentioned (like "Call Cassia"), try to match their name exactly from the ROSTER in 'related_student_name'.
+                 - Set 'due_date' to YYYY-MM-DD format if a time is mentioned (today is ${new Date().toISOString().split('T')[0]}).
+              3. If asked about schedules/students/pricing, just answer in 'response_text'.
+              4. Keep 'response_text' concise, professional, and helpful.
+            `,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                  response_text: { type: "string", description: "The chat response to the user" },
+                  create_task: {
+                      type: "object",
+                      properties: {
+                          title: { type: "string" },
+                          due_date: { type: "string", format: "date" },
+                          related_student_name: { type: "string", description: "Name of student if explicitly mentioned" }
+                      }
+                  }
+              },
+              required: ["response_text"]
+            }
             });
 
-            const text = typeof response === 'string' ? response : (response.content || "Done.");
+            // Handle Task Creation
+            if (response.create_task) {
+            const { title, due_date, related_student_name } = response.create_task;
+
+            // Try to find related parent email if a student is mentioned
+            let parentEmail = null;
+            if (related_student_name) {
+              const student = activeStudents.find(s => s.name.toLowerCase().includes(related_student_name.toLowerCase()));
+              if (student) parentEmail = student.parent_email;
+            }
+
+            await base44.entities.FamilyTask.create({
+              title: title,
+              due_date: due_date || new Date().toISOString().split('T')[0],
+              status: 'pending',
+              priority: 'medium',
+              category: 'admin',
+              parent_email: parentEmail, // Can be null now
+              is_shared: false
+            });
+
+            toast.success("Task created successfully");
+            }
 
             setMessages(prev => [...prev, { 
-                id: Date.now() + 1, 
-                role: 'assistant', 
-                content: text
+            id: Date.now() + 1, 
+            role: 'assistant', 
+            content: response.response_text,
+            action: response.create_task ? { type: 'task_created', title: response.create_task.title } : null
             }]);
 
         } catch (err) {
