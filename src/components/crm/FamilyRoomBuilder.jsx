@@ -104,7 +104,9 @@ export default function FamilyRoomBuilder({ family, onClose }) {
 
     const handlePublish = () => {
         setIsSaving(true);
-        saveMutation.mutate(activeConfig, {
+        const publishedConfig = { ...activeConfig, status: 'published' };
+        setActiveConfig(publishedConfig); // Optimistic update
+        saveMutation.mutate(publishedConfig, {
             onSettled: () => setIsSaving(false)
         });
     };

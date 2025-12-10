@@ -15,17 +15,33 @@ export default function FamilyRoom() {
     const configId = searchParams.get('id');
     const isPreview = searchParams.get('preview') === 'true';
     const [previewData, setPreviewData] = useState(null);
+    const [previewError, setPreviewError] = useState(false);
 
-    // Load local storage data for preview immediately
+    // Load local storage data for preview immediately with timeout fallback
     useEffect(() => {
         if (isPreview) {
             try {
-                const stored = localStorage.getItem('familyRoomPreview');
-                if (stored) {
-                    setPreviewData(JSON.parse(stored));
-                }
+                const loadPreview = () => {
+                    const stored = localStorage.getItem('familyRoomPreview');
+                    if (stored) {
+                        setPreviewData(JSON.parse(stored));
+                        setPreviewError(false);
+                    } else {
+                        // If not found immediately, retry once after short delay (helps with tab race conditions)
+                        setTimeout(() => {
+                             const retry = localStorage.getItem('familyRoomPreview');
+                             if (retry) {
+                                 setPreviewData(JSON.parse(retry));
+                             } else {
+                                 setPreviewError(true);
+                             }
+                        }, 500);
+                    }
+                };
+                loadPreview();
             } catch (e) {
                 console.error("Failed to load preview data", e);
+                setPreviewError(true);
             }
         }
     }, [isPreview]);
@@ -42,7 +58,22 @@ export default function FamilyRoom() {
     });
 
     const config = isPreview ? previewData : dbConfig;
-    const isLoading = isPreview ? !previewData : isDbLoading;
+    const isLoading = isPreview ? (!previewData && !previewError) : isDbLoading;
+
+    if (isPreview && previewError) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] p-8 text-center">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-red-100 max-w-md">
+                    <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                        <ExternalLink className="w-6 h-6" />
+                    </div>
+                    <h2 className="font-serif text-2xl text-[#333333] mb-2">Preview Not Found</h2>
+                    <p className="text-gray-500 mb-6">We couldn't find the preview data. This usually happens if the preview window was opened directly or the data expired.</p>
+                    <Button onClick={() => window.close()} variant="outline">Close Tab</Button>
+                </div>
+            </div>
+        );
+    }
 
     // Mock family data fetch (would need secure token in real app)
     const { data: familyInvoices } = useQuery({
