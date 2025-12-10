@@ -211,71 +211,68 @@ export default function Students() {
         </div>
 
         {/* Toolbar */}
-        <div className="bg-white p-4 rounded-[24px] shadow-sm flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
-          <div className="flex flex-col gap-4 w-full lg:flex-1">
-            {/* Combined Smart Search Bar */}
-            <div className="w-full max-w-2xl">
-                <NaturalLanguageSearch 
-                  onFilterChange={setAiFilter} 
-                  onSearchChange={setSearch}
-                />
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-full w-full sm:w-auto self-start">
-               <Button 
-                 variant="ghost" 
-                 size="sm"
-                 onClick={() => setView('list')}
-                 className={`rounded-full px-4 text-xs font-medium h-8 transition-all ${view === 'list' ? 'bg-white shadow-sm text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
-               >
-                 Students
-               </Button>
-               <Button 
-                 variant="ghost" 
-                 size="sm"
-                 onClick={() => setView('families')}
-                 className={`rounded-full px-4 text-xs font-medium h-8 transition-all ${view === 'families' ? 'bg-white shadow-sm text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
-               >
-                 Families
-               </Button>
-            </div>
+        <div className="bg-white p-6 rounded-[32px] shadow-sm space-y-6">
+          {/* Top: Search Area */}
+          <div className="w-full">
+              <NaturalLanguageSearch 
+                onFilterChange={setAiFilter} 
+                onSearchChange={setSearch}
+              />
           </div>
-        </div>
-          
-          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end">
-             <Button 
-               variant="ghost" 
-               onClick={() => setBillingFilter(current => current === 'auto_pay' ? 'all' : 'auto_pay')}
-               className={`rounded-full h-10 border transition-all ${billingFilter === 'auto_pay' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'text-gray-500 bg-transparent border-transparent hover:bg-white hover:border-gray-200'}`}
-             >
-               Auto-Pay
-             </Button>
-             <Button 
-               variant="ghost" 
-               onClick={() => setBillingFilter(current => current === 'manual' ? 'all' : 'manual')}
-               className={`rounded-full h-10 border transition-all ${billingFilter === 'manual' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'text-gray-500 bg-transparent border-transparent hover:bg-white hover:border-gray-200'}`}
-             >
-               Manual Invoice
-             </Button>
 
-             <Button 
-               variant="ghost" 
-               onClick={() => setStatusFilter(current => current === 'active' ? 'all' : 'active')}
-               className={`rounded-full h-10 border transition-all ${statusFilter === 'active' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'text-gray-500 bg-transparent border-transparent hover:bg-white hover:border-gray-200'}`}
-             >
-               Active
-             </Button>
-             <Button 
-               variant="ghost" 
-               onClick={() => setStatusFilter(current => current === 'prospect' ? 'all' : 'prospect')}
-               className={`rounded-full h-10 border transition-all ${statusFilter === 'prospect' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'text-gray-500 bg-transparent border-transparent hover:bg-white hover:border-gray-200'}`}
-             >
-               Prospects
-             </Button>
-             <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#333333] hover:bg-white rounded-full w-10 h-10">
+          {/* Bottom: Filter Chips & View Toggles */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            
+            <div className="flex flex-wrap items-center gap-2">
+               {/* Primary View Toggle */}
+               <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-full mr-2">
+                 <button 
+                   onClick={() => setView('list')}
+                   className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${view === 'list' ? 'bg-white shadow-sm text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
+                 >
+                   Students
+                 </button>
+                 <button 
+                   onClick={() => setView('families')}
+                   className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${view === 'families' ? 'bg-white shadow-sm text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
+                 >
+                   Families
+                 </button>
+               </div>
+
+               {/* Divider */}
+               <div className="w-px h-6 bg-gray-100 hidden sm:block mx-1"></div>
+
+               {/* Quick Filters */}
+               <button 
+                 onClick={() => setStatusFilter(current => current === 'active' ? 'all' : 'active')}
+                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${statusFilter === 'active' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300 hover:text-[#333333]'}`}
+               >
+                 Active
+               </button>
+               <button 
+                 onClick={() => setStatusFilter(current => current === 'prospect' ? 'all' : 'prospect')}
+                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${statusFilter === 'prospect' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300 hover:text-[#333333]'}`}
+               >
+                 Prospects
+               </button>
+               <button 
+                 onClick={() => setBillingFilter(current => current === 'auto_pay' ? 'all' : 'auto_pay')}
+                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${billingFilter === 'auto_pay' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300 hover:text-[#333333]'}`}
+               >
+                 Auto-Pay
+               </button>
+               <button 
+                 onClick={() => setBillingFilter(current => current === 'manual' ? 'all' : 'manual')}
+                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${billingFilter === 'manual' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300 hover:text-[#333333]'}`}
+               >
+                 Manual
+               </button>
+            </div>
+
+            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#333333] hover:bg-gray-50 rounded-full w-10 h-10 flex-shrink-0">
                <Download className="w-5 h-5" />
-             </Button>
+            </Button>
           </div>
         </div>
 
