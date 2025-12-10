@@ -5,7 +5,7 @@ import {
     ArrowLeft, Mail, Phone, Plus, CreditCard, DollarSign, Users, 
     Clock, Calendar, MessageSquare, Star, TrendingUp, AlertCircle, 
     CheckCircle2, MoreHorizontal, FileText, Send, Paperclip, ChevronRight,
-    Wallet, Shield
+    Wallet, Shield, ArrowRight
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
