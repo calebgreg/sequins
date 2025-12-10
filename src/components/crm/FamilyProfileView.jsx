@@ -233,17 +233,7 @@ export default function FamilyProfileView({ family, onBack }) {
                         ))}
                     </nav>
 
-                    {/* Quick Stats Mini */}
-                    <div className="grid grid-cols-2 gap-3">
-                         <div className="bg-white p-4 rounded-[24px] shadow-sm">
-                             <div className="text-[10px] uppercase font-bold text-gray-300 mb-1">LTV</div>
-                             <div className="font-serif text-lg">${lifetimeValue.toLocaleString()}</div>
-                         </div>
-                         <div className="bg-white p-4 rounded-[24px] shadow-sm">
-                             <div className="text-[10px] uppercase font-bold text-gray-300 mb-1">Active</div>
-                             <div className="font-serif text-lg">{activeStudentsCount}</div>
-                         </div>
-                    </div>
+                    {/* Quick Stats Mini - Removed as per request */}
                 </div>
 
                 {/* Main Content Area */}
@@ -423,70 +413,54 @@ export default function FamilyProfileView({ family, onBack }) {
                                     className="h-full flex flex-col"
                                 >
                                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 h-full">
-                                        {/* Left Col: History & Stats */}
-                                        <div className="xl:col-span-2 flex flex-col gap-8">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                         <div className="p-6 rounded-[24px] bg-gray-50 border border-gray-100">
-                                             <div className="text-sm text-gray-500 mb-1">Open Balance</div>
-                                             <div className="text-3xl font-serif text-[#333333]">${balanceDue.toLocaleString()}</div>
-                                         </div>
-                                         <div className="p-6 rounded-[24px] bg-gray-50 border border-gray-100">
-                                             <div className="text-sm text-gray-500 mb-1">Lifetime Value</div>
-                                             <div className="text-3xl font-serif text-[#333333]">${lifetimeValue.toLocaleString()}</div>
-                                         </div>
-                                         <div className="p-6 rounded-[24px] bg-gray-50 border border-gray-100">
-                                             <div className="text-sm text-gray-500 mb-1">Last Payment</div>
-                                             <div className="text-3xl font-serif text-[#333333]">
-                                                 {lastPayment ? `$${lastPayment.amount}` : '-'}
-                                             </div>
-                                             {lastPayment && <div className="text-xs text-gray-400 mt-1">{format(new Date(lastPayment.date), 'MMM d, yyyy')}</div>}
-                                         </div>
-                                    </div>
+                                        {/* Main Col: Tuition Manager */}
+                                        <div className="xl:col-span-2 h-full min-h-[600px]">
+                                            <FamilyTuitionManager family={family} />
+                                        </div>
 
-                                            <div className="flex-1 overflow-hidden bg-white">
-                                                 <div className="flex items-center justify-between mb-4">
-                                                     <h3 className="text-lg font-serif text-[#333333]">Invoice History</h3>
-                                                     <Button variant="ghost" size="sm" className="text-gray-400">Filter</Button>
+                                        {/* Right Col: History & Stats */}
+                                        <div className="xl:col-span-1 flex flex-col gap-6 overflow-hidden">
+                                            {/* Key Metrics */}
+                                            <div className="grid grid-cols-2 gap-4 flex-shrink-0">
+                                                 <div className="p-4 rounded-[24px] bg-white border border-gray-100 shadow-sm">
+                                                     <div className="text-[10px] uppercase font-bold text-gray-400 mb-1">Open Balance</div>
+                                                     <div className="text-2xl font-serif text-[#333333]">${balanceDue.toLocaleString()}</div>
                                                  </div>
-                                                 <div className="space-y-2">
+                                                 <div className="p-4 rounded-[24px] bg-white border border-gray-100 shadow-sm">
+                                                     <div className="text-[10px] uppercase font-bold text-gray-400 mb-1">LTV</div>
+                                                     <div className="text-2xl font-serif text-[#333333]">${lifetimeValue.toLocaleString()}</div>
+                                                 </div>
+                                            </div>
+
+                                            {/* Invoice History List */}
+                                            <div className="flex-1 overflow-hidden bg-white rounded-[32px] border border-gray-100 shadow-sm p-6 flex flex-col">
+                                                 <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                                                     <h3 className="text-lg font-serif text-[#333333]">Invoice History</h3>
+                                                     <Badge variant="secondary" className="bg-gray-50 text-gray-500">{invoices.length}</Badge>
+                                                 </div>
+                                                 <div className="space-y-2 overflow-y-auto flex-1 pr-2 -mr-2">
                                                     {invoices.length === 0 ? (
                                                         <div className="text-center py-10 text-gray-400">No invoices found.</div>
                                                     ) : (
                                                         invoices.map(inv => (
-                                                            <div key={inv.id} className="group flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
-                                                                <div className="flex items-center gap-4">
-                                                                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:shadow-sm transition-all">
-                                                                        <FileText className="w-5 h-5" />
-                                                                    </div>
-                                                                    <div>
-                                                                        <div className="font-bold text-[#333333]">{inv.title}</div>
-                                                                        <div className="text-xs text-gray-400">
-                                                                            {format(new Date(inv.issue_date), 'MMM d, yyyy')} • Due {format(new Date(inv.due_date), 'MMM d')}
+                                                            <div key={inv.id} className="group flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border border-gray-50 hover:border-gray-100">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${inv.status === 'paid' ? 'bg-green-500' : inv.status === 'overdue' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+                                                                    <div className="min-w-0">
+                                                                        <div className="font-medium text-sm text-[#333333] truncate max-w-[120px]">{inv.title}</div>
+                                                                        <div className="text-[10px] text-gray-400">
+                                                                            {format(new Date(inv.issue_date), 'MMM d')}
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex items-center gap-6">
-                                                                    <div className="text-right">
-                                                                        <div className="font-serif font-medium">${inv.total_amount}</div>
-                                                                        <div className={`text-[10px] font-bold uppercase tracking-wider ${
-                                                                            inv.status === 'paid' ? 'text-green-600' : 
-                                                                            inv.status === 'overdue' ? 'text-red-600' : 'text-yellow-600'
-                                                                        }`}>
-                                                                            {inv.status}
-                                                                        </div>
-                                                                    </div>
-                                                                    <ChevronRight className="w-5 h-5 text-gray-300" />
+                                                                <div className="text-right flex-shrink-0">
+                                                                    <div className="font-serif font-medium text-sm">${inv.total_amount}</div>
                                                                 </div>
                                                             </div>
                                                         ))
                                                     )}
                                                  </div>
                                             </div>
-                                        </div>
-
-                                        {/* Right Col: Tuition Manager */}
-                                        <div className="xl:col-span-1 h-full min-h-[600px]">
-                                            <FamilyTuitionManager family={family} />
                                         </div>
                                     </div>
                                 </motion.div>

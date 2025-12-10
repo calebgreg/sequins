@@ -79,7 +79,11 @@ export default function FamilyTuitionManager({ family }) {
             }
 
             // Fallback if 0 (e.g. no pricing set up yet)
-            if (amount === 0 && studentClasses.length > 0) amount = 0; // Or keep 0
+            if (amount === 0 && studentClasses.length > 0) {
+                 // For now, if no cost is set on classes, we assume 0 or handle via manual fees. 
+                 // Keeping it 0 to be accurate to data.
+                 amount = 0; 
+            }
 
             lines.push({
                 type: 'tuition',
@@ -244,7 +248,7 @@ export default function FamilyTuitionManager({ family }) {
                                         <div key={cls.id} className="text-sm flex justify-between text-gray-600">
                                             <span>{cls.title}</span>
                                             <span className="text-gray-400 text-xs">
-                                                {settings.pricing_model === 'per_class' ? `$${cls.tuition_cost}` : `${cls.duration}h`}
+                                                {settings.pricing_model === 'per_class' ? `$${(cls.tuition_cost || 0).toFixed(2)}` : `${cls.duration}h`}
                                             </span>
                                         </div>
                                     ))}
