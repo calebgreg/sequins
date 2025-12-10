@@ -7,11 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Save, Hash, Quote, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import useNoteInference from './useNoteInference';
+import useAiAssistant from '../ai/useAiAssistant';
 
 export default function NewJournalEntryModal({ isOpen, onOpenChange, student, teacherName, classes = [] }) {
   const [content, setContent] = useState('');
   const [sentiment, setSentiment] = useState('neutral');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { checkAndTriggerAi, isProcessing: isAiProcessing, aiName } = useAiAssistant();
 
   const { detectedTags, inferredCategory, matchedClass } = useNoteInference({
     content,
@@ -24,6 +27,13 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
     setIsSubmitting(true);
 
     try {
+      const handledByAi = await checkAndTriggerAi(content, { student, teacherName, entityType: 'StudentNote' });
+      if (handledByAi) {
+          setContent('');
+          onOpenChange(false); // Close if AI handled it (e.g. created a task)
+          return;
+      }
+
       await base44.entities.StudentNote.create({
         student_name: student.name,
         class_name: matchedClass || 'General Note',
@@ -66,12 +76,21 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
              <Label className="text-xs uppercase tracking-wider text-gray-400 font-bold">Observations</Label>
              <div className="relative">
                <Textarea 
-                 placeholder="Just write naturally... e.g. 'Great turnout today in Ballet'. We'll handle the tagging."
+                 placeholder={`Write an observation or ask @${aiName}...`}
                  value={content}
                  onChange={(e) => setContent(e.target.value)}
-                 className="min-h-[120px] bg-gray-50 border-transparent rounded-xl resize-none focus:bg-white focus:border-[#F2DCDD] transition-all p-4 text-base mb-2"
+                 disabled={isAiProcessing}
+                 className={`
+                   min-h-[120px] bg-gray-50 border-transparent rounded-xl resize-none focus:bg-white focus:border-[#F2DCDD] transition-all p-4 text-base mb-2
+                   ${content.includes('@') ? 'text-indigo-900 bg-indigo-50/30' : ''}
+                 `}
                />
-               {detectedTags.length > 0 && (
+               {isAiProcessing && (
+                 <div className="absolute top-4 right-4">
+                   <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+                 </div>
+               )}
+               {detectedTags.length > 0 && !content.includes('@') && (
                  <div className="flex flex-wrap gap-2 mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="flex items-center text-xs text-[#333333] font-medium mr-1">
                       <Sparkles className="w-3 h-3 mr-1 text-purple-500" /> Auto-tagged:
@@ -109,10 +128,21 @@ export default function NewJournalEntryModal({ isOpen, onOpenChange, student, te
 
              <Button 
                 onClick={handleSubmit} 
-                disabled={isSubmitting || !content}
-                className="bg-[#333333] text-white hover:bg-black rounded-full px-8 h-12 font-serif shadow-lg shadow-gray-200"
+                disabled={isSubmitting || !content || isAiProcessing}
+                className={`
+                  rounded-full px-8 h-12 font-serif shadow-lg shadow-gray-200 text-white transition-all
+                  ${content.includes('@') ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-[#333333] hover:bg-black'}
+                `}
              >
-                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 mr-2" /> Save Entry</>}
+                {(isSubmitting || isAiProcessing) ? (
+                   <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                   content.includes('@') ? (
+                     <><Sparkles className="w-4 h-4 mr-2" /> Ask {aiName}</>
+                   ) : (
+                     <><Save className="w-4 h-4 mr-2" /> Save Entry</>
+                   )
+                )}
              </Button>
           </div>
         </div>

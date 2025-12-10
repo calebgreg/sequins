@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isPast, isToday, isTomorrow, addDays } from 'date-fns';
+import useAiAssistant from '../ai/useAiAssistant';
+import { Sparkles } from 'lucide-react';
 
 // Extracted TaskItem to handle local state buffering for text inputs
 const TaskItem = ({ task, onUpdate, onDelete, onToggleStatus, onTogglePriority, onToggleShared, expandedTaskId, setExpandedTaskId, priorityConfig }) => {
@@ -199,7 +201,8 @@ export default function FamilyTasks({ familyEmail }) {
     const inputRef = useRef(null);
     
     const queryClient = useQueryClient();
-
+    const { checkAndTriggerAi, isProcessing, aiName } = useAiAssistant();
+    
     // -- DATA --
     const { data: tasks = [] } = useQuery({
         queryKey: ['family_tasks', familyEmail],
@@ -244,9 +247,14 @@ export default function FamilyTasks({ familyEmail }) {
     });
 
     // -- HANDLERS --
-    const handleQuickAdd = (e) => {
+    const handleQuickAdd = async (e) => {
         if (e.key === 'Enter' && quickAddTitle.trim()) {
-            createMutation.mutate(quickAddTitle);
+            const handledByAi = await checkAndTriggerAi(quickAddTitle, { familyEmail });
+            if (handledByAi) {
+                setQuickAddTitle('');
+            } else {
+                createMutation.mutate(quickAddTitle);
+            }
         }
     };
 
@@ -319,16 +327,20 @@ export default function FamilyTasks({ familyEmail }) {
 
                 {/* Quick Add Input */}
                 <div className="relative group">
-                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300">
-                        <Plus className="w-5 h-5" />
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 transition-colors duration-300">
+                        {isProcessing ? <Sparkles className="w-5 h-5 animate-pulse text-indigo-500" /> : <Plus className="w-5 h-5" />}
                     </div>
                     <Input 
                         ref={inputRef}
                         value={quickAddTitle}
                         onChange={(e) => setQuickAddTitle(e.target.value)}
                         onKeyDown={handleQuickAdd}
-                        placeholder="Add a new task... (Press Enter)"
-                        className="pl-10 h-12 bg-gray-50 border-transparent focus:bg-white focus:border-indigo-100 transition-all rounded-xl text-sm"
+                        disabled={isProcessing}
+                        placeholder={`Add task or ask @${aiName}...`}
+                        className={`
+                            pl-10 h-12 border-transparent transition-all rounded-xl text-sm
+                            ${quickAddTitle.includes('@') ? 'bg-indigo-50/50 text-indigo-900 focus:bg-indigo-50 focus:border-indigo-200' : 'bg-gray-50 focus:bg-white focus:border-indigo-100'}
+                        `}
                     />
                 </div>
             </div>

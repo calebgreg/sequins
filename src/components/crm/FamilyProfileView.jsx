@@ -7,6 +7,7 @@ import {
     CheckCircle2, MoreHorizontal, FileText, Send, Paperclip, ChevronRight,
     Wallet, Shield, ArrowRight, PenSquare, StickyNote, Layout, Sparkles, FolderOpen, ListTodo
 } from 'lucide-react';
+import useAiAssistant from '../ai/useAiAssistant';
 import { Button } from "@/components/ui/button";
 import FamilyRoomBuilder from './FamilyRoomBuilder';
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ export default function FamilyProfileView({ family, onBack }) {
     const [newNote, setNewNote] = useState('');
     
     const queryClient = useQueryClient();
+    const { checkAndTriggerAi, isProcessing: isAiProcessing, aiName } = useAiAssistant();
     
     // Get current user for author name
     const { data: currentUser } = useQuery({
@@ -86,10 +88,16 @@ export default function FamilyProfileView({ family, onBack }) {
         }
     });
 
-    const handleAddNote = (e) => {
+    const handleAddNote = async (e) => {
         e.preventDefault();
         if (!newNote.trim()) return;
-        createNoteMutation.mutate(newNote);
+
+        const handledByAi = await checkAndTriggerAi(newNote, { familyEmail: family.email, currentUser });
+        if (handledByAi) {
+            setNewNote('');
+        } else {
+            createNoteMutation.mutate(newNote);
+        }
     };
 
     // Computed Metrics
@@ -407,8 +415,12 @@ export default function FamilyProfileView({ family, onBack }) {
                                                     <textarea 
                                                         value={newNote}
                                                         onChange={(e) => setNewNote(e.target.value)}
-                                                        placeholder="Add a note about this family..."
-                                                        className="w-full bg-[#F4F4F6] rounded-2xl p-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#333333]/10 resize-none min-h-[80px]"
+                                                        placeholder={`Add a note or ask @${aiName}...`}
+                                                        className={`
+                                                            w-full bg-[#F4F4F6] rounded-2xl p-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#333333]/10 resize-none min-h-[80px] transition-colors
+                                                            ${newNote.includes('@') ? 'bg-indigo-50/30 text-indigo-900 placeholder:text-indigo-300' : ''}
+                                                        `}
+                                                        disabled={isAiProcessing}
                                                         onKeyDown={(e) => {
                                                             if (e.key === 'Enter' && !e.shiftKey) {
                                                                 e.preventDefault();
@@ -418,13 +430,16 @@ export default function FamilyProfileView({ family, onBack }) {
                                                     />
                                                     <button 
                                                         type="submit"
-                                                        disabled={!newNote.trim() || createNoteMutation.isPending}
-                                                        className="absolute bottom-3 right-3 p-2 bg-[#333333] text-white rounded-xl hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                                        disabled={!newNote.trim() || createNoteMutation.isPending || isAiProcessing}
+                                                        className={`
+                                                            absolute bottom-3 right-3 p-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all
+                                                            ${newNote.includes('@') ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-[#333333] hover:bg-black text-white'}
+                                                        `}
                                                     >
-                                                        {createNoteMutation.isPending ? (
+                                                        {(createNoteMutation.isPending || isAiProcessing) ? (
                                                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                         ) : (
-                                                            <Send className="w-4 h-4" />
+                                                            newNote.includes('@') ? <Sparkles className="w-4 h-4" /> : <Send className="w-4 h-4" />
                                                         )}
                                                     </button>
                                                 </form>
