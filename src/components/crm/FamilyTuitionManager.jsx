@@ -1,0 +1,367 @@
+import React, { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from "@/api/base44Client";
+import { 
+    Calculator, Plus, Trash2, AlertCircle, Check, 
+    DollarSign, Tag, Receipt, Save, RefreshCw, X
+} from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { format } from 'date-fns';
+import { toast } from 'sonner';
+
+export default function FamilyTuitionManager({ family }) {
+    const queryClient = useQueryClient();
+    const [manualItems, setManualItems] = useState([]); // [{ type: 'fee'|'discount', description, amount }]
+    const [isPosting, setIsPosting] = useState(false);
+
+    // Fetch necessary data
+    const { data: students = [] } = useQuery({
+        queryKey: ['students'],
+        queryFn: () => base44.entities.Student.list(),
+    });
+    
+    // Filter for this family
+    const familyStudents = useMemo(() => 
+        students.filter(s => s.parent_email === family.email), 
+    [students, family.email]);
+
+    const { data: classes = [] } = useQuery({
+        queryKey: ['classes'],
+        queryFn: () => base44.entities.DanceClass.list(),
+    });
+
+    const { data: settingsList = [] } = useQuery({
+        queryKey: ['studio_settings'],
+        queryFn: () => base44.entities.StudioSettings.list(),
+    });
+    const settings = settingsList[0] || { pricing_model: 'per_class' };
+
+    const { data: discountRules = [] } = useQuery({
+        queryKey: ['discount_rules'],
+        queryFn: () => base44.entities.DiscountRule.list(),
+    });
+
+    const { data: feeTypes = [] } = useQuery({
+        queryKey: ['fee_types'],
+        queryFn: () => base44.entities.FeeType.list(),
+    });
+
+    // --- Calculation Logic (Mirrors InvoiceGenerator logic but broken down) ---
+    const calculation = useMemo(() => {
+        let lines = [];
+        let subtotal = 0;
+
+        // 1. Tuition per Student
+        familyStudents.forEach(student => {
+            const studentClasses = classes.filter(c => c.student_names?.includes(student.name));
+            let amount = 0;
+            let breakdown = [];
+
+            if (settings.pricing_model === 'hourly') {
+                const totalHours = studentClasses.reduce((sum, c) => sum + (c.duration || 1), 0);
+                const tiers = [...(settings.hourly_rate_tiers || [])].sort((a, b) => b.hours - a.hours);
+                const tier = tiers.find(t => totalHours >= t.hours) || tiers[tiers.length - 1];
+                amount = tier ? tier.rate : (totalHours * 15); // Fallback rate
+                
+                breakdown.push(`${totalHours} hrs total`);
+            } else {
+                // Per Class
+                studentClasses.forEach(c => {
+                    const cost = c.tuition_cost || 0;
+                    amount += cost;
+                    breakdown.push(`${c.title} ($${cost})`);
+                });
+            }
+
+            // Fallback if 0 (e.g. no pricing set up yet)
+            if (amount === 0 && studentClasses.length > 0) amount = 0; // Or keep 0
+
+            lines.push({
+                type: 'tuition',
+                student_name: student.name,
+                description: `Tuition (${studentClasses.length} classes)`,
+                details: breakdown.join(', '),
+                amount: amount
+            });
+            subtotal += amount;
+        });
+
+        // 2. Discounts
+        // Sibling Discount
+        const siblingRule = discountRules.find(d => d.category === 'sibling' && d.active);
+        if (siblingRule && familyStudents.length > 1) {
+            // Sort students by tuition amount descending
+            const studentTuitions = lines.filter(l => l.type === 'tuition');
+            studentTuitions.sort((a, b) => b.amount - a.amount);
+            
+            // Apply to 2nd onwards
+            for (let i = 1; i < studentTuitions.length; i++) {
+                const baseAmount = studentTuitions[i].amount;
+                const discountAmount = siblingRule.type === 'percent' 
+                    ? (baseAmount * (siblingRule.value / 100)) 
+                    : siblingRule.value;
+                
+                lines.push({
+                    type: 'discount',
+                    student_name: studentTuitions[i].student_name,
+                    description: siblingRule.name,
+                    amount: -discountAmount
+                });
+                subtotal -= discountAmount;
+            }
+        }
+
+        // Auto-Apply Promos
+        const promos = discountRules.filter(d => d.apply_automatically && d.category === 'promo' && d.active);
+        promos.forEach(promo => {
+            const discountAmount = promo.type === 'percent' 
+                ? (subtotal * (promo.value / 100)) 
+                : promo.value;
+            
+            lines.push({
+                type: 'discount',
+                student_name: 'Family',
+                description: promo.name,
+                amount: -discountAmount
+            });
+            subtotal -= discountAmount;
+        });
+
+        // 3. Manual Items (Fees/Discounts added in UI)
+        manualItems.forEach(item => {
+            const val = parseFloat(item.amount) || 0;
+            const signedAmount = item.type === 'discount' ? -Math.abs(val) : Math.abs(val);
+            lines.push({
+                type: item.type,
+                student_name: item.student_name || 'Family',
+                description: item.description,
+                amount: signedAmount,
+                isManual: true,
+                id: item.id
+            });
+            subtotal += signedAmount;
+        });
+
+        return { lines, total: subtotal };
+    }, [familyStudents, classes, settings, discountRules, manualItems]);
+
+
+    // Handlers
+    const addManualItem = (type) => {
+        setManualItems(prev => [...prev, {
+            id: Date.now(),
+            type,
+            description: type === 'fee' ? 'New Fee' : 'Custom Discount',
+            amount: 0,
+            student_name: familyStudents[0]?.name || ''
+        }]);
+    };
+
+    const updateManualItem = (id, field, value) => {
+        setManualItems(prev => prev.map(item => 
+            item.id === id ? { ...item, [field]: value } : item
+        ));
+    };
+
+    const removeManualItem = (id) => {
+        setManualItems(prev => prev.filter(item => item.id !== id));
+    };
+
+    const postInvoiceMutation = useMutation({
+        mutationFn: async () => {
+            return base44.entities.Invoice.create({
+                parent_email: family.email,
+                parent_name: family.parent_name,
+                title: `Tuition - ${format(new Date(), 'MMMM yyyy')}`,
+                issue_date: new Date().toISOString().split('T')[0],
+                due_date: format(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
+                status: 'sent',
+                items: calculation.lines.map(l => ({
+                    description: l.description,
+                    amount: l.amount,
+                    student_name: l.student_name
+                })),
+                subtotal: calculation.total,
+                total_amount: calculation.total,
+                balance_due: calculation.total,
+                notes: 'Generated via Tuition Manager'
+            });
+        },
+        onSuccess: () => {
+            toast.success("Invoice created successfully");
+            setManualItems([]);
+            queryClient.invalidateQueries(['invoices']);
+        }
+    });
+
+    return (
+        <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div>
+                    <h3 className="text-lg font-serif text-[#333333] flex items-center gap-2">
+                        <Calculator className="w-5 h-5 text-gray-400" />
+                        Tuition Picture
+                    </h3>
+                    <p className="text-xs text-gray-400 mt-1">
+                        Current monthly calculation based on enrollment & settings
+                    </p>
+                </div>
+                <Badge variant="outline" className="bg-white">
+                    {settings.pricing_model === 'hourly' ? 'Hourly Pricing' : 'Per Class Pricing'}
+                </Badge>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                
+                {/* Students Breakdown */}
+                <div className="space-y-4">
+                    {familyStudents.map(student => {
+                        const studentLines = calculation.lines.filter(l => l.student_name === student.name && l.type === 'tuition');
+                        const enrolledClasses = classes.filter(c => c.student_names?.includes(student.name));
+                        
+                        return (
+                            <div key={student.id} className="border border-gray-100 rounded-2xl p-4 hover:border-indigo-100 transition-colors">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="secondary" className="bg-[#333333] text-white font-normal">
+                                            {student.name}
+                                        </Badge>
+                                        <span className="text-xs text-gray-400">{enrolledClasses.length} Classes</span>
+                                    </div>
+                                    <div className="font-bold text-[#333333]">
+                                        ${studentLines.reduce((sum, l) => sum + l.amount, 0).toFixed(2)}
+                                    </div>
+                                </div>
+                                
+                                {/* Class List */}
+                                <div className="pl-2 border-l-2 border-gray-100 space-y-1 my-3">
+                                    {enrolledClasses.map(cls => (
+                                        <div key={cls.id} className="text-sm flex justify-between text-gray-600">
+                                            <span>{cls.title}</span>
+                                            <span className="text-gray-400 text-xs">
+                                                {settings.pricing_model === 'per_class' ? `$${cls.tuition_cost}` : `${cls.duration}h`}
+                                            </span>
+                                        </div>
+                                    ))}
+                                    {enrolledClasses.length === 0 && (
+                                        <div className="text-xs text-gray-400 italic">No classes enrolled</div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <Separator />
+
+                {/* Adjustments Section */}
+                <div>
+                    <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Adjustments</h4>
+                        <div className="flex gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => addManualItem('fee')} className="text-indigo-600 hover:bg-indigo-50 h-8">
+                                <Plus className="w-3 h-3 mr-1" /> Add Fee
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => addManualItem('discount')} className="text-green-600 hover:bg-green-50 h-8">
+                                <Tag className="w-3 h-3 mr-1" /> Apply Discount
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {/* Auto-Calculated Discounts */}
+                        {calculation.lines.filter(l => l.type === 'discount' && !l.isManual).map((line, idx) => (
+                            <div key={`auto-${idx}`} className="flex justify-between items-center p-3 bg-green-50/50 rounded-xl border border-green-100 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <Tag className="w-4 h-4 text-green-500" />
+                                    <span className="text-green-900">{line.description}</span>
+                                    <span className="text-xs text-green-600/70">({line.student_name})</span>
+                                </div>
+                                <div className="font-medium text-green-700">
+                                    -${Math.abs(line.amount).toFixed(2)}
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Manual Items */}
+                        {manualItems.map((item) => (
+                            <div key={item.id} className="flex gap-2 items-center animate-in fade-in slide-in-from-top-1">
+                                <Select 
+                                    value={item.student_name}
+                                    onValueChange={v => updateManualItem(item.id, 'student_name', v)}
+                                >
+                                    <SelectTrigger className="w-[120px] h-9 text-xs">
+                                        <SelectValue placeholder="Student" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Family">Family</SelectItem>
+                                        {familyStudents.map(s => (
+                                            <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Input 
+                                    value={item.description}
+                                    onChange={e => updateManualItem(item.id, 'description', e.target.value)}
+                                    className="h-9 text-sm flex-1"
+                                    placeholder="Description"
+                                />
+                                <div className="relative w-24">
+                                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                                    <Input 
+                                        type="number"
+                                        value={item.amount}
+                                        onChange={e => updateManualItem(item.id, 'amount', e.target.value)}
+                                        className={`h-9 text-sm pl-5 text-right ${item.type === 'discount' ? 'text-green-600' : 'text-[#333333]'}`}
+                                    />
+                                </div>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-9 w-9 text-gray-400 hover:text-red-500"
+                                    onClick={() => removeManualItem(item.id)}
+                                >
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            </div>
+                        ))}
+
+                        {calculation.lines.filter(l => l.type === 'discount').length === 0 && manualItems.length === 0 && (
+                            <div className="text-center py-4 text-xs text-gray-400 italic">
+                                No discounts or fees applied
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Total Footer */}
+            <div className="p-6 bg-gray-50 border-t border-gray-100">
+                <div className="flex justify-between items-end mb-4">
+                    <div>
+                        <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Estimated Total</div>
+                        <div className="text-3xl font-serif text-[#333333]">
+                            ${calculation.total.toFixed(2)}
+                        </div>
+                    </div>
+                    <Button 
+                        onClick={() => postInvoiceMutation.mutate()}
+                        disabled={postInvoiceMutation.isPending}
+                        className="bg-[#333333] text-white hover:bg-black rounded-xl px-8 shadow-lg gap-2"
+                    >
+                        {postInvoiceMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
+                        Post Invoice
+                    </Button>
+                </div>
+                <div className="text-[10px] text-gray-400 text-center">
+                    This will create a new invoice with the items above.
+                </div>
+            </div>
+        </div>
+    );
+}

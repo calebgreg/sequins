@@ -24,6 +24,7 @@ import {
 import StudentCommunicationTab from './StudentCommunicationTab';
 import StudentFormModal from './StudentFormModal';
 import InvoiceGenerator from '../billing/InvoiceGenerator';
+import FamilyTuitionManager from './FamilyTuitionManager';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FamilyProfileView({ family, onBack }) {
@@ -421,14 +422,10 @@ export default function FamilyProfileView({ family, onBack }) {
                                     exit={{ opacity: 0, x: -20 }}
                                     className="h-full flex flex-col"
                                 >
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h3 className="text-2xl font-serif text-[#333333]">Financial History</h3>
-                                        <Button onClick={() => setIsInvoiceModalOpen(true)} className="rounded-full bg-[#333333] text-white">
-                                            <Plus className="w-4 h-4 mr-2" /> New Invoice
-                                        </Button>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 h-full">
+                                        {/* Left Col: History & Stats */}
+                                        <div className="xl:col-span-2 flex flex-col gap-8">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                          <div className="p-6 rounded-[24px] bg-gray-50 border border-gray-100">
                                              <div className="text-sm text-gray-500 mb-1">Open Balance</div>
                                              <div className="text-3xl font-serif text-[#333333]">${balanceDue.toLocaleString()}</div>
@@ -446,40 +443,51 @@ export default function FamilyProfileView({ family, onBack }) {
                                          </div>
                                     </div>
 
-                                    <div className="flex-1 overflow-hidden bg-white">
-                                         <div className="space-y-2">
-                                            {invoices.length === 0 ? (
-                                                <div className="text-center py-10 text-gray-400">No invoices found.</div>
-                                            ) : (
-                                                invoices.map(inv => (
-                                                    <div key={inv.id} className="group flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:shadow-sm transition-all">
-                                                                <FileText className="w-5 h-5" />
-                                                            </div>
-                                                            <div>
-                                                                <div className="font-bold text-[#333333]">{inv.title}</div>
-                                                                <div className="text-xs text-gray-400">
-                                                                    {format(new Date(inv.issue_date), 'MMM d, yyyy')} • Due {format(new Date(inv.due_date), 'MMM d')}
+                                            <div className="flex-1 overflow-hidden bg-white">
+                                                 <div className="flex items-center justify-between mb-4">
+                                                     <h3 className="text-lg font-serif text-[#333333]">Invoice History</h3>
+                                                     <Button variant="ghost" size="sm" className="text-gray-400">Filter</Button>
+                                                 </div>
+                                                 <div className="space-y-2">
+                                                    {invoices.length === 0 ? (
+                                                        <div className="text-center py-10 text-gray-400">No invoices found.</div>
+                                                    ) : (
+                                                        invoices.map(inv => (
+                                                            <div key={inv.id} className="group flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:shadow-sm transition-all">
+                                                                        <FileText className="w-5 h-5" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className="font-bold text-[#333333]">{inv.title}</div>
+                                                                        <div className="text-xs text-gray-400">
+                                                                            {format(new Date(inv.issue_date), 'MMM d, yyyy')} • Due {format(new Date(inv.due_date), 'MMM d')}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-6">
+                                                                    <div className="text-right">
+                                                                        <div className="font-serif font-medium">${inv.total_amount}</div>
+                                                                        <div className={`text-[10px] font-bold uppercase tracking-wider ${
+                                                                            inv.status === 'paid' ? 'text-green-600' : 
+                                                                            inv.status === 'overdue' ? 'text-red-600' : 'text-yellow-600'
+                                                                        }`}>
+                                                                            {inv.status}
+                                                                        </div>
+                                                                    </div>
+                                                                    <ChevronRight className="w-5 h-5 text-gray-300" />
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-6">
-                                                            <div className="text-right">
-                                                                <div className="font-serif font-medium">${inv.total_amount}</div>
-                                                                <div className={`text-[10px] font-bold uppercase tracking-wider ${
-                                                                    inv.status === 'paid' ? 'text-green-600' : 
-                                                                    inv.status === 'overdue' ? 'text-red-600' : 'text-yellow-600'
-                                                                }`}>
-                                                                    {inv.status}
-                                                                </div>
-                                                            </div>
-                                                            <ChevronRight className="w-5 h-5 text-gray-300" />
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            )}
-                                         </div>
+                                                        ))
+                                                    )}
+                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Right Col: Tuition Manager */}
+                                        <div className="xl:col-span-1 h-full min-h-[600px]">
+                                            <FamilyTuitionManager family={family} />
+                                        </div>
                                     </div>
                                 </motion.div>
                             )}
