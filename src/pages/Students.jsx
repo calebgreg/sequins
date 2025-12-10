@@ -15,11 +15,13 @@ import { Link } from 'react-router-dom';
 import StudentProfileView from '../components/teacher/StudentProfileView';
 import StudentFormModal from '../components/crm/StudentFormModal';
 import MessageStudentModal from '../components/crm/MessageStudentModal';
+import NaturalLanguageSearch from '../components/crm/NaturalLanguageSearch';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Students() {
   const [view, setView] = useState('list'); // 'list' or 'families'
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(''); // Legacy simple search
+  const [aiFilter, setAiFilter] = useState(null); // New AI smart filter
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
@@ -37,6 +39,12 @@ export default function Students() {
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
+  });
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => base44.entities.DanceClass.list(),
+    enabled: !!aiFilter?.class_filters // Only fetch if we need to filter by class
   });
 
   // Stats
@@ -63,13 +71,60 @@ export default function Students() {
   }, [students]);
 
   const filteredStudents = students.filter(s => {
-    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || 
+    // 1. Base Manual Filters
+    const matchesSearch = !search || (
+                         s.name.toLowerCase().includes(search.toLowerCase()) || 
                          s.parent_email?.toLowerCase().includes(search.toLowerCase()) ||
                          s.parent_name?.toLowerCase().includes(search.toLowerCase()) ||
-                         s.tags?.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
+                         s.tags?.some(tag => tag.toLowerCase().includes(search.toLowerCase())));
+    
     const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
     const matchesBilling = billingFilter === 'all' || s.billing_method === billingFilter;
-    return matchesSearch && matchesStatus && matchesBilling;
+
+    // 2. AI Smart Filters (if active)
+    let matchesAi = true;
+    if (aiFilter) {
+        // Direct Student Filters
+        if (aiFilter.filters) {
+            const f = aiFilter.filters;
+            if (f.name && !s.name.toLowerCase().includes(f.name.toLowerCase())) matchesAi = false;
+            if (f.status && s.status !== f.status) matchesAi = false;
+            if (f.billing_method && s.billing_method !== f.billing_method) matchesAi = false;
+            if (f.level && s.level.toLowerCase() !== f.level.toLowerCase()) matchesAi = false;
+            if (f.age) {
+                if (f.age.$eq && s.age !== f.age.$eq) matchesAi = false;
+                if (f.age.$gt && s.age <= f.age.$gt) matchesAi = false;
+                if (f.age.$gte && s.age < f.age.$gte) matchesAi = false;
+                if (f.age.$lt && s.age >= f.age.$lt) matchesAi = false;
+                if (f.age.$lte && s.age > f.age.$lte) matchesAi = false;
+            }
+            if (f.tags && f.tags.length > 0) {
+                 // Check if student has ANY of the requested tags (OR logic? or AND?) - usually AND for filters
+                 const hasTags = f.tags.every(tag => s.tags?.some(t => t.toLowerCase().includes(tag.toLowerCase())));
+                 if (!hasTags) matchesAi = false;
+            }
+        }
+
+        // Class-based Filters (Indirect)
+        if (aiFilter.class_filters && matchesAi) {
+            const cf = aiFilter.class_filters;
+            // Find all classes that match the criteria
+            const matchingClasses = classes.filter(c => {
+                let match = true;
+                if (cf.day && c.day !== cf.day) match = false;
+                if (cf.style && !c.style?.toLowerCase().includes(cf.style.toLowerCase())) match = false;
+                if (cf.teacher && !c.teacher?.toLowerCase().includes(cf.teacher.toLowerCase())) match = false;
+                return match;
+            });
+            
+            // Check if student is enrolled in ANY of those matching classes
+            // DanceClass entity has "student_names" array (which is name based, not ID based in this schema)
+            const isEnrolled = matchingClasses.some(c => c.student_names?.includes(s.name));
+            if (!isEnrolled) matchesAi = false;
+        }
+    }
+
+    return matchesSearch && matchesStatus && matchesBilling && matchesAi;
   });
 
   const filteredFamilies = families.filter(f => 
@@ -145,18 +200,28 @@ export default function Students() {
         </div>
 
         {/* Toolbar */}
-        <div className="bg-white p-4 rounded-[24px] shadow-sm flex flex-col lg:flex-row gap-4 justify-between items-center">
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
-            <div className="relative flex-1 w-full sm:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input 
-                placeholder="Search by name, email, or parent..." 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-[#F4F4F6] border-none rounded-xl w-full"
-              />
+        <div className="bg-white p-4 rounded-[24px] shadow-sm flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
+          <div className="flex flex-col gap-4 w-full lg:flex-1">
+            {/* AI Search Bar Replaces Standard Search for Primary Interaction */}
+            <div className="w-full max-w-2xl">
+                <NaturalLanguageSearch onFilterChange={setAiFilter} />
             </div>
-            <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-xl w-full sm:w-auto">
+
+            <div className="flex items-center gap-4">
+              {/* Legacy Search Fallback / Supplement */}
+              {!aiFilter && (
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input 
+                    placeholder="Filter list by text..." 
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10 h-9 bg-[#F4F4F6] border-none rounded-xl w-full text-sm"
+                  />
+                </div>
+              )}
+              
+              <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-xl w-full sm:w-auto self-start">
                <Button 
                  variant="ghost" 
                  size="sm"

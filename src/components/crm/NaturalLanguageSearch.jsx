@@ -1,0 +1,294 @@
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from "@/api/base44Client";
+import { Search, Sparkles, Save, X, ChevronDown, Trash2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+
+export default function NaturalLanguageSearch({ onFilterChange }) {
+    const [query, setQuery] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [activeFilter, setActiveFilter] = useState(null); // The currently applied parsed filter
+    const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+    const [newFilterName, setNewFilterName] = useState('');
+    const [isShared, setIsShared] = useState(false);
+    const [isSavedFiltersOpen, setIsSavedFiltersOpen] = useState(false);
+
+    const queryClient = useQueryClient();
+
+    // Fetch saved filters
+    const { data: savedFilters = [] } = useQuery({
+        queryKey: ['savedFilters'],
+        queryFn: () => base44.entities.SavedFilter.list(),
+    });
+
+    // Mutation to save a filter
+    const saveFilterMutation = useMutation({
+        mutationFn: (data) => base44.entities.SavedFilter.create(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries(['savedFilters']);
+            setIsSaveModalOpen(false);
+            setNewFilterName('');
+        }
+    });
+
+    // Delete filter
+    const deleteFilterMutation = useMutation({
+        mutationFn: (id) => base44.entities.SavedFilter.delete(id),
+        onSuccess: () => queryClient.invalidateQueries(['savedFilters'])
+    });
+
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        if (!query.trim()) return;
+
+        setIsProcessing(true);
+        try {
+            const prompt = `
+            Analyze this query for a dance studio CRM and extract filter criteria.
+            Query: "${query}"
+
+            Return a valid JSON object matching this structure:
+            {
+                "filters": {
+                    "name": string (partial match),
+                    "status": "active" | "inactive" | "prospect" | "alumni",
+                    "billing_method": "auto_pay" | "manual",
+                    "age": { "$eq": number, "$gt": number, "$lt": number },
+                    "level": string,
+                    "tags": [string]
+                },
+                "class_filters": {
+                    "day": "M"|"T"|"W"|"R"|"F"|"S"|"U",
+                    "style": string,
+                    "teacher": string
+                }
+            }
+            Only include fields that are present in the query.
+            If asking for "my students" or "my classes", ignore the "my" part as we filter for the whole studio for now.
+            Example: "9 year old tap students" -> { "filters": { "age": { "$eq": 9 } }, "class_filters": { "style": "tap" } }
+            `;
+
+            const res = await base44.integrations.Core.InvokeLLM({
+                prompt,
+                response_json_schema: {
+                    type: "object",
+                    properties: {
+                        filters: {
+                            type: "object",
+                            properties: {
+                                name: { type: "string" },
+                                status: { type: "string", enum: ["active", "inactive", "prospect", "alumni"] },
+                                billing_method: { type: "string", enum: ["auto_pay", "manual"] },
+                                age: {
+                                    type: "object",
+                                    properties: {
+                                        "$eq": { type: "number" },
+                                        "$gt": { type: "number" },
+                                        "$lt": { type: "number" },
+                                        "$gte": { type: "number" },
+                                        "$lte": { type: "number" }
+                                    }
+                                },
+                                level: { type: "string" },
+                                tags: { type: "array", items: { type: "string" } }
+                            }
+                        },
+                        class_filters: {
+                            type: "object",
+                            properties: {
+                                day: { type: "string", enum: ["M", "T", "W", "R", "F", "S", "U"] },
+                                style: { type: "string" },
+                                teacher: { type: "string" }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (res) {
+                const filterData = {
+                    parsed_criteria_json: res,
+                    natural_language_query: query
+                };
+                setActiveFilter(filterData);
+                onFilterChange(res);
+            }
+        } catch (error) {
+            console.error("AI Search failed", error);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleSaveFilter = () => {
+        if (!activeFilter) return;
+        saveFilterMutation.mutate({
+            filter_name: newFilterName,
+            natural_language_query: activeFilter.natural_language_query,
+            parsed_criteria_json: activeFilter.parsed_criteria_json,
+            is_shared: isShared
+        });
+    };
+
+    const applySavedFilter = (saved) => {
+        setQuery(saved.natural_language_query);
+        setActiveFilter(saved);
+        onFilterChange(saved.parsed_criteria_json);
+        setIsSavedFiltersOpen(false);
+    };
+
+    const clearFilter = () => {
+        setQuery('');
+        setActiveFilter(null);
+        onFilterChange(null);
+    };
+
+    return (
+        <div className="flex flex-col gap-2 w-full">
+            <div className="flex items-center gap-2 w-full">
+                {/* Search Input Group */}
+                <div className="relative flex-1 group">
+                    <form onSubmit={handleSearch} className="relative">
+                        <div className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${activeFilter ? 'text-indigo-500' : 'text-gray-400'}`}>
+                            {isProcessing ? (
+                                <Sparkles className="w-4 h-4 animate-spin" />
+                            ) : activeFilter ? (
+                                <Sparkles className="w-4 h-4" />
+                            ) : (
+                                <Search className="w-4 h-4" />
+                            )}
+                        </div>
+                        <Input 
+                            placeholder="Ask anything... e.g. '9 year old tap students'" 
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            disabled={isProcessing}
+                            className={`pl-10 pr-20 bg-white border-gray-200 transition-all shadow-sm ${
+                                activeFilter ? 'border-indigo-200 ring-2 ring-indigo-500/10' : 'hover:border-gray-300'
+                            }`}
+                        />
+                        {activeFilter && (
+                             <button 
+                                type="button"
+                                onClick={clearFilter}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                             >
+                                <X className="w-3 h-3" />
+                             </button>
+                        )}
+                    </form>
+                </div>
+
+                {/* Saved Filters Dropdown */}
+                <Popover open={isSavedFiltersOpen} onOpenChange={setIsSavedFiltersOpen}>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" className="border-gray-200 text-gray-600 gap-2 shrink-0 bg-white shadow-sm">
+                            <Save className="w-4 h-4" />
+                            <span className="hidden sm:inline">Saved</span>
+                            <ChevronDown className="w-3 h-3 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-64" align="end">
+                        <Command>
+                            <CommandInput placeholder="Search saved filters..." />
+                            <CommandList>
+                                <CommandEmpty>No saved filters found.</CommandEmpty>
+                                <CommandGroup heading="My Filters">
+                                    {savedFilters.map((filter) => (
+                                        <CommandItem 
+                                            key={filter.id} 
+                                            onSelect={() => applySavedFilter(filter)}
+                                            className="flex justify-between group"
+                                        >
+                                            <span className="truncate">{filter.filter_name}</span>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteFilterMutation.mutate(filter.id);
+                                                }}
+                                                className="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </button>
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
+
+                {/* Save Current Filter Button */}
+                {activeFilter && !activeFilter.id && (
+                    <Button 
+                        size="sm"
+                        onClick={() => setIsSaveModalOpen(true)}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md animate-in fade-in slide-in-from-left-2 shrink-0"
+                    >
+                        Save This
+                    </Button>
+                )}
+            </div>
+
+            {/* Active Criteria Display */}
+            {activeFilter && (
+                <div className="flex flex-wrap gap-2 text-xs animate-in slide-in-from-top-2">
+                    {Object.entries(activeFilter.parsed_criteria_json.filters || {}).map(([key, val]) => {
+                         if (!val) return null;
+                         let displayVal = typeof val === 'object' ? JSON.stringify(val).replace(/["{}]/g, '').replace(':', ' ') : val;
+                         return (
+                            <Badge key={key} variant="secondary" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-normal">
+                                {key}: {displayVal}
+                            </Badge>
+                         );
+                    })}
+                    {Object.entries(activeFilter.parsed_criteria_json.class_filters || {}).map(([key, val]) => {
+                         if (!val) return null;
+                         return (
+                            <Badge key={key} variant="secondary" className="bg-purple-50 text-purple-700 border-purple-100 font-normal">
+                                Class {key}: {val}
+                            </Badge>
+                         );
+                    })}
+                </div>
+            )}
+
+            {/* Save Modal */}
+            <Dialog open={isSaveModalOpen} onOpenChange={setIsSaveModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Save Smart Filter</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Filter Name</Label>
+                            <Input 
+                                placeholder="e.g. My Thursday Jazz Kids" 
+                                value={newFilterName}
+                                onChange={(e) => setNewFilterName(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <Label>Share with team?</Label>
+                            <Switch checked={isShared} onCheckedChange={setIsShared} />
+                        </div>
+                        <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+                            Query: "{activeFilter?.natural_language_query}"
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsSaveModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleSaveFilter} disabled={!newFilterName}>Save Filter</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+}
