@@ -207,44 +207,7 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
                     </form>
                 </div>
 
-                {/* Saved Filters Dropdown */}
-                <Popover open={isSavedFiltersOpen} onOpenChange={setIsSavedFiltersOpen}>
-                    <PopoverTrigger asChild>
-                        <Button variant="ghost" className="h-12 rounded-full border border-transparent hover:border-gray-100 text-gray-500 hover:text-[#333333] gap-2 shrink-0 bg-transparent hover:bg-white transition-all px-4">
-                            <Save className="w-4 h-4" />
-                            <span className="hidden sm:inline font-medium">Segments</span>
-                            <ChevronDown className="w-3 h-3 opacity-50" />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-64" align="end">
-                        <Command>
-                            <CommandInput placeholder="Search segments..." />
-                            <CommandList>
-                                <CommandEmpty>No segments found.</CommandEmpty>
-                                <CommandGroup heading="My Segments">
-                                    {savedFilters.map((filter) => (
-                                        <CommandItem 
-                                            key={filter.id} 
-                                            onSelect={() => applySavedFilter(filter)}
-                                            className="flex justify-between group"
-                                        >
-                                            <span className="truncate">{filter.filter_name}</span>
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    deleteFilterMutation.mutate(filter.id);
-                                                }}
-                                                className="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                            </button>
-                                        </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                            </CommandList>
-                        </Command>
-                    </PopoverContent>
-                </Popover>
+
 
                 {/* Save Current Filter Button */}
                 {activeFilter && !activeFilter.id && (
@@ -257,6 +220,39 @@ export default function NaturalLanguageSearch({ onFilterChange }) {
                     </Button>
                 )}
             </div>
+
+            {/* Saved Segments List */}
+            {savedFilters.length > 0 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar mask-gradient animate-in slide-in-from-top-2">
+                    <span className="text-xs font-bold text-gray-300 uppercase tracking-wider shrink-0 mr-1">Segments</span>
+                    {savedFilters.map((filter) => (
+                        <button
+                            key={filter.id}
+                            onClick={() => applySavedFilter(filter)}
+                            className={`
+                                group flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all shrink-0 border
+                                ${activeFilter?.id === filter.id 
+                                    ? 'bg-[#333333] text-white border-[#333333] shadow-md' 
+                                    : 'bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:text-[#333333] hover:shadow-sm'}
+                            `}
+                        >
+                            <span>{filter.filter_name}</span>
+                            <span 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteFilterMutation.mutate(filter.id);
+                                }}
+                                className={`
+                                    opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-full
+                                    ${activeFilter?.id === filter.id ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-400 hover:text-red-500'}
+                                `}
+                            >
+                                <X className="w-3 h-3" />
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* Active Criteria Display */}
             {activeFilter && (
