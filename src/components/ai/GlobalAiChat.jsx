@@ -1,63 +1,90 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { 
-    Sparkles, ArrowUp, Mic, X, Zap, Command, 
-    Bot, ChevronRight, CornerDownLeft
+    Sparkles, ArrowUp, X, Globe, Calendar, ArrowRight, 
+    ExternalLink, MapPin, Image as ImageIcon, Loader2,
+    CheckCircle2, ChevronDown
 } from 'lucide-react';
-import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import useAiAssistant from './useAiAssistant';
 
-// --- Ethereal Background Component ---
-const LivingBackground = ({ state }) => { // state: 'idle', 'thinking', 'listening'
-    return (
-        <div className="absolute inset-0 overflow-hidden rounded-[40px] pointer-events-none">
-            <motion.div 
-                animate={{ 
-                    scale: state === 'thinking' ? [1, 1.2, 1] : 1,
-                    opacity: state === 'thinking' ? 0.6 : 0.3,
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500/20 via-transparent to-transparent blur-[100px]"
-            />
-            <motion.div 
-                animate={{ 
-                    rotate: 360,
-                    scale: state === 'thinking' ? [1.1, 0.9, 1.1] : 1 
-                }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                className="absolute top-0 right-0 w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-500/10 via-pink-500/5 to-transparent blur-[80px] rounded-full"
-            />
-        </div>
-    );
-};
+// --- Rich Content Renderers ---
 
-// --- Transcendent Message Item ---
-const MessageStream = ({ message, isLast }) => {
+const LinkPreview = ({ data }) => (
+    <div className="flex items-center gap-3 p-3 bg-white/50 hover:bg-white/80 border border-white/60 rounded-xl transition-colors cursor-pointer group">
+        <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0">
+            <Globe className="w-5 h-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+            <h4 className="text-sm font-medium text-gray-900 truncate">{data.title}</h4>
+            <p className="text-xs text-gray-500 truncate">{data.url}</p>
+        </div>
+        <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-indigo-500 transition-colors" />
+    </div>
+);
+
+const ReminderCard = ({ data }) => (
+    <div className="flex items-start gap-3 p-3 bg-amber-50/50 border border-amber-100/60 rounded-xl">
+        <div className="mt-0.5 text-amber-500">
+            <Calendar className="w-5 h-5" />
+        </div>
+        <div>
+            <h4 className="text-sm font-medium text-amber-900">Reminder Set</h4>
+            <p className="text-sm text-amber-700/80">{data.text}</p>
+            <div className="mt-1.5 inline-flex items-center text-[10px] font-bold text-amber-600 uppercase tracking-wider bg-amber-100/50 px-2 py-1 rounded-md">
+                {data.time}
+            </div>
+        </div>
+    </div>
+);
+
+const ActionCard = ({ data }) => (
+    <div className="flex items-center gap-3 p-2 pr-4 bg-emerald-50/50 border border-emerald-100/60 rounded-full w-fit">
+        <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm">
+            <CheckCircle2 className="w-4 h-4" />
+        </div>
+        <span className="text-sm font-medium text-emerald-900">{data.text}</span>
+    </div>
+);
+
+// --- Message Item ---
+const MessageItem = ({ message }) => {
     const isAi = message.role === 'assistant';
-    
+
     return (
         <motion.div 
-            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            className={`flex flex-col mb-8 ${isAi ? 'items-start' : 'items-end'}`}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className={`flex flex-col mb-4 ${isAi ? 'items-start' : 'items-end'}`}
         >
-            <div className={`
-                max-w-[85%] text-lg md:text-xl font-light leading-relaxed tracking-wide
-                ${isAi ? 'text-gray-800' : 'text-gray-500 text-right font-serif italic'}
-            `}>
-                {message.content}
-            </div>
-            
-            {message.action && (
-                <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="mt-4 flex items-center gap-3 px-4 py-3 bg-white/50 border border-white/60 shadow-sm rounded-xl backdrop-blur-md"
-                >
-                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                    <span className="text-sm font-medium text-gray-600 uppercase tracking-widest">{message.action}</span>
-                </motion.div>
+            {/* Text Bubble */}
+            {message.content && (
+                <div className={`
+                    px-4 py-2.5 rounded-[20px] text-[15px] leading-relaxed max-w-[90%]
+                    ${isAi 
+                        ? 'bg-white/60 text-gray-800 backdrop-blur-md shadow-sm border border-white/50' 
+                        : 'bg-[#111] text-white shadow-md'}
+                `}>
+                    {message.content}
+                </div>
+            )}
+
+            {/* Rich Attachments */}
+            {message.attachments && (
+                <div className="mt-2 space-y-2 w-full max-w-[90%]">
+                    {message.attachments.map((att, i) => (
+                        <motion.div 
+                            key={i}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                        >
+                            {att.type === 'link' && <LinkPreview data={att} />}
+                            {att.type === 'reminder' && <ReminderCard data={att} />}
+                            {att.type === 'action' && <ActionCard data={att} />}
+                        </motion.div>
+                    ))}
+                </div>
             )}
         </motion.div>
     );
@@ -66,253 +93,200 @@ const MessageStream = ({ message, isLast }) => {
 export default function GlobalAiChat() {
     const [isOpen, setIsOpen] = useState(false);
     const [inputValue, setInputValue] = useState('');
-    const [aiState, setAiState] = useState('idle'); // idle, thinking
-    const [messages, setMessages] = useState([]);
+    const [isThinking, setIsThinking] = useState(false);
     
-    const scrollRef = useRef(null);
-    const inputRef = useRef(null);
-    const { aiName } = useAiAssistant();
+    // Initial State: Just a suggestion
+    const [messages, setMessages] = useState([]);
 
-    // Reset on close
-    useEffect(() => {
-        if (!isOpen) {
-            setMessages([]);
-            setInputValue('');
-            setAiState('idle');
-        }
-    }, [isOpen]);
+    const inputRef = useRef(null);
+    const scrollRef = useRef(null);
+    const containerRef = useRef(null);
+    const { aiName } = useAiAssistant();
 
     // Auto-scroll
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [messages]);
+    }, [messages, isOpen, isThinking]);
 
-    // Focus
+    // Click outside to collapse
     useEffect(() => {
-        if (isOpen && inputRef.current) {
-            setTimeout(() => inputRef.current.focus(), 100);
-        }
-    }, [isOpen]);
-
-    // Toggle with Cmd+J or similar could go here
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
-                e.preventDefault();
-                setIsOpen(prev => !prev);
-            }
-            if (e.key === 'Escape' && isOpen) {
-                setIsOpen(false);
+        const handleClickOutside = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target) && isOpen) {
+                // Only collapse if empty input, otherwise keep focus
+                if (!inputValue.trim()) setIsOpen(false);
             }
         };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen]);
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen, inputValue]);
 
     const handleSend = async () => {
         if (!inputValue.trim()) return;
 
-        const userMsg = { 
-            id: Date.now().toString(), 
-            role: 'user', 
-            content: inputValue, 
-            timestamp: new Date() 
-        };
-        
-        setMessages(prev => [...prev, userMsg]);
+        // Open if not already
+        if (!isOpen) setIsOpen(true);
+
+        const userText = inputValue;
         setInputValue('');
-        setAiState('thinking');
         
-        // Placeholder loading message
-        const loadingId = 'loading-' + Date.now();
-        
+        // Add User Message
+        setMessages(prev => [...prev, { id: Date.now(), role: 'user', content: userText }]);
+        setIsThinking(true);
+
         try {
             const response = await base44.integrations.Core.InvokeLLM({
                 prompt: `
-                    You are ${aiName}, an omniscient studio intelligence.
-                    User: "${userMsg.content}"
+                    You are ${aiName}, a sophisticated studio assistant.
+                    User: "${userText}"
                     
-                    Respond with profound clarity and brevity. 
-                    Do not use typical chatbot pleasantries. 
-                    Be the voice of the studio.
+                    Respond concisely.
                 `
             });
 
-            const text = typeof response === 'string' ? response : (response.content || "Command not recognized.");
+            const text = typeof response === 'string' ? response : (response.content || "Done.");
 
-            setMessages(prev => [...prev, {
-                id: loadingId,
-                role: 'assistant',
+            // Simulate Rich Content for demo purposes based on keywords
+            const attachments = [];
+            const lowerText = userText.toLowerCase();
+            
+            if (lowerText.includes('website') || lowerText.includes('link')) {
+                attachments.push({ type: 'link', title: 'Studio Homepage', url: 'https://studio.com' });
+            }
+            if (lowerText.includes('remind') || lowerText.includes('schedule')) {
+                attachments.push({ type: 'reminder', text: 'Prepare for 5pm class', time: 'Today, 4:45 PM' });
+            }
+            if (lowerText.includes('email') || lowerText.includes('send') || lowerText.includes('create')) {
+                attachments.push({ type: 'action', text: 'Draft created' });
+            }
+
+            setMessages(prev => [...prev, { 
+                id: Date.now() + 1, 
+                role: 'assistant', 
                 content: text,
-                timestamp: new Date()
+                attachments: attachments.length > 0 ? attachments : null
             }]);
 
         } catch (err) {
-            setMessages(prev => [...prev, {
-                id: loadingId,
-                role: 'assistant',
-                content: "Connection severed.",
-                timestamp: new Date()
-            }]);
+            setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', content: "I couldn't reach the server." }]);
         } finally {
-            setAiState('idle');
+            setIsThinking(false);
         }
     };
 
     return (
-        <>
-            {/* --- Ethereal Trigger (Bottom Center) --- */}
-            <AnimatePresence>
-                {!isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50"
-                    >
-                        <motion.button
-                            onClick={() => setIsOpen(true)}
-                            whileHover={{ scale: 1.05, y: -2 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="group relative flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-xl border border-white/60 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.08)] hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)] transition-all duration-300"
+        <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center pointer-events-none">
+            <motion.div
+                ref={containerRef}
+                layout
+                initial={{ width: '180px', height: '50px', borderRadius: '25px' }}
+                animate={{ 
+                    width: isOpen ? '400px' : '180px',
+                    height: isOpen ? 'auto' : '50px',
+                    borderRadius: isOpen ? '24px' : '25px',
+                    y: isOpen ? 0 : 0
+                }}
+                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                className={`
+                    pointer-events-auto
+                    relative bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.12)]
+                    flex flex-col overflow-hidden
+                `}
+                style={{ maxHeight: '600px' }}
+            >
+                {/* --- Content Area (Collapsible) --- */}
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex-1 overflow-y-auto px-4 pt-4 pb-2 min-h-[100px] max-h-[400px] scroll-smooth no-scrollbar flex flex-col"
+                            ref={scrollRef}
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="flex items-center justify-center w-5 h-5">
-                                <Sparkles className="w-4 h-4 text-indigo-600" />
-                            </div>
-                            <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
-                                Ask {aiName}
-                            </span>
-                            <div className="pl-2 border-l border-gray-200 text-xs text-gray-400 font-mono">
-                                ⌘J
-                            </div>
-                        </motion.button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* --- The Intelligence Plane (Overlay) --- */}
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-[#F4F4F6]/60 backdrop-blur-3xl"
-                    >
-                        {/* Close Trigger (Background Click) */}
-                        <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
-
-                        <motion.div 
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="relative w-full max-w-2xl max-h-[80vh] flex flex-col z-10"
-                        >
-                            {/* Main Card */}
-                            <div className="relative bg-white/40 backdrop-blur-2xl border border-white/50 shadow-2xl rounded-[40px] overflow-hidden flex flex-col min-h-[400px]">
-                                <LivingBackground state={aiState} />
-
-                                {/* Header */}
-                                <div className="relative flex items-center justify-between px-8 py-6 flex-shrink-0 z-10">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-2 h-2 rounded-full ${aiState === 'thinking' ? 'bg-indigo-500 animate-pulse' : 'bg-green-500'}`} />
-                                        <span className="text-sm font-medium text-gray-500 uppercase tracking-widest">{aiName} Intelligence</span>
-                                    </div>
-                                    <button 
-                                        onClick={() => setIsOpen(false)}
-                                        className="p-2 text-gray-400 hover:text-gray-800 transition-colors rounded-full hover:bg-white/20"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
+                            {messages.length === 0 && (
+                                <div className="flex flex-col items-center justify-center flex-1 py-8 text-center opacity-40">
+                                    <Sparkles className="w-6 h-6 mb-2" />
+                                    <p className="text-sm font-medium">How can I help?</p>
                                 </div>
+                            )}
+                            
+                            {messages.map(msg => (
+                                <MessageItem key={msg.id} message={msg} />
+                            ))}
 
-                                {/* Stream Area */}
-                                <div 
-                                    ref={scrollRef}
-                                    className="relative flex-1 overflow-y-auto px-8 py-4 no-scrollbar z-10 flex flex-col"
+                            {isThinking && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex items-center gap-2 text-xs text-gray-400 pl-2 mb-2"
                                 >
-                                    {messages.length === 0 ? (
-                                        <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60">
-                                            <Bot className="w-12 h-12 text-gray-300 mb-6" strokeWidth={1} />
-                                            <h3 className="text-2xl font-serif text-gray-700 mb-2">How can I assist you?</h3>
-                                            <p className="text-gray-400 font-light max-w-xs mx-auto">
-                                                I can analyze revenue, manage students, or draft communications.
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-6 pb-20">
-                                            {messages.map((msg, i) => (
-                                                <MessageStream 
-                                                    key={msg.id} 
-                                                    message={msg} 
-                                                    isLast={i === messages.length - 1} 
-                                                />
-                                            ))}
-                                            {aiState === 'thinking' && (
-                                                <motion.div 
-                                                    initial={{ opacity: 0 }} 
-                                                    animate={{ opacity: 1 }}
-                                                    className="flex items-center gap-2 text-gray-400"
-                                                >
-                                                    <Sparkles className="w-4 h-4 animate-spin-slow" />
-                                                    <span className="text-sm font-light tracking-widest uppercase">Processing</span>
-                                                </motion.div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Input Stage */}
-                                <div className="relative p-6 z-20">
-                                    <div className="relative group">
-                                        <div className="absolute inset-0 bg-white/50 rounded-[32px] blur-md transition-all duration-300 group-focus-within:bg-white/80 group-focus-within:shadow-[0_0_40px_rgba(255,255,255,0.6)]" />
-                                        <div className="relative flex items-center bg-white/80 border border-white shadow-lg rounded-[32px] overflow-hidden transition-all duration-300 group-focus-within:ring-2 ring-indigo-500/10">
-                                            <input
-                                                ref={inputRef}
-                                                value={inputValue}
-                                                onChange={(e) => setInputValue(e.target.value)}
-                                                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                                                placeholder="Type your request..."
-                                                className="flex-1 bg-transparent border-none px-6 py-5 text-lg text-gray-800 placeholder:text-gray-400 focus:ring-0 focus:outline-none font-light"
-                                            />
-                                            <div className="pr-4 flex items-center gap-2">
-                                                <div className="h-6 w-px bg-gray-200 mx-2" />
-                                                <button 
-                                                    onClick={handleSend}
-                                                    disabled={!inputValue.trim()}
-                                                    className={`
-                                                        w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300
-                                                        ${inputValue.trim() 
-                                                            ? 'bg-[#333333] text-white shadow-lg scale-100' 
-                                                            : 'bg-gray-100 text-gray-300 scale-90'}
-                                                    `}
-                                                >
-                                                    {inputValue.trim() ? <ArrowUp className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Footer Hints */}
-                                    <div className="flex justify-between items-center mt-4 px-4 text-[10px] text-gray-400 font-medium uppercase tracking-widest">
-                                        <div className="flex gap-4">
-                                            <span className="hover:text-gray-600 cursor-pointer transition-colors">History</span>
-                                            <span className="hover:text-gray-600 cursor-pointer transition-colors">Settings</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <CornerDownLeft className="w-3 h-3" /> to send
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    <span>Processing...</span>
+                                </motion.div>
+                            )}
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </>
+                    )}
+                </AnimatePresence>
+
+                {/* --- Input Bar --- */}
+                <div 
+                    className="flex items-center h-[50px] px-1.5 shrink-0 cursor-text"
+                    onClick={() => {
+                        setIsOpen(true);
+                        inputRef.current?.focus();
+                    }}
+                >
+                    {/* Icon / Trigger */}
+                    <div className="w-10 h-10 flex items-center justify-center text-indigo-500 shrink-0">
+                        <Sparkles className="w-5 h-5 fill-indigo-500/10" />
+                    </div>
+
+                    {/* Input Field */}
+                    <input
+                        ref={inputRef}
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSend();
+                            if (e.key === 'Escape') {
+                                setIsOpen(false);
+                                inputRef.current?.blur();
+                            }
+                        }}
+                        placeholder={isOpen ? "Ask anything..." : `Ask ${aiName}...`}
+                        className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-gray-800 placeholder:text-gray-500 font-medium px-2"
+                    />
+
+                    {/* Action Button */}
+                    <AnimatePresence mode="wait">
+                        {inputValue.trim() ? (
+                            <motion.button
+                                key="send"
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.5, opacity: 0 }}
+                                onClick={(e) => { e.stopPropagation(); handleSend(); }}
+                                className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-indigo-600 transition-colors shadow-sm"
+                            >
+                                <ArrowUp className="w-4 h-4" />
+                            </motion.button>
+                        ) : isOpen ? (
+                            <motion.button
+                                key="close"
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.5, opacity: 0 }}
+                                onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
+                                className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                            >
+                                <ChevronDown className="w-4 h-4" />
+                            </motion.button>
+                        ) : null}
+                    </AnimatePresence>
+                </div>
+            </motion.div>
+        </div>
     );
 }
