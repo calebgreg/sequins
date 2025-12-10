@@ -430,7 +430,6 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                     <div>
                          <h4 className="font-bold uppercase tracking-widest text-xs text-white/50 mb-6">Quick Links</h4>
                          <div className="space-y-3 text-sm text-white/70">
-                             <a href="#" className="block hover:text-white">Parent Portal</a>
                              <a href="#" className="block hover:text-white">Class Schedule</a>
                              <a href="#" className="block hover:text-white">Terms & Policies</a>
                          </div>
