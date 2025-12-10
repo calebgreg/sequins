@@ -5,7 +5,7 @@ import {
     ArrowLeft, Mail, Phone, Plus, CreditCard, DollarSign, Users, 
     Clock, Calendar, MessageSquare, Star, TrendingUp, AlertCircle, 
     CheckCircle2, MoreHorizontal, FileText, Send, Paperclip, ChevronRight,
-    Wallet, Shield, ArrowRight, PenSquare, StickyNote, Layout
+    Wallet, Shield, ArrowRight, PenSquare, StickyNote, Layout, Sparkles
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import FamilyRoomBuilder from './FamilyRoomBuilder';
