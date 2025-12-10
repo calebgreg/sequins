@@ -304,30 +304,42 @@ export default function FamilyProfileView({ family, onBack }) {
                                     </section>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        {/* Recent Financials Preview */}
-                                        <section className="bg-[#F4F4F6]/50 rounded-[32px] p-6">
-                                            <div className="flex items-center justify-between mb-6">
-                                                <h3 className="text-lg font-serif text-[#333333]">Recent Invoices</h3>
-                                                <Button variant="link" onClick={() => setActiveSection('billing')} className="text-indigo-600">View All</Button>
-                                            </div>
-                                            <div className="space-y-3">
-                                                {invoices.slice(0, 3).map(inv => (
-                                                    <div key={inv.id} className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-transparent hover:border-indigo-100 transition-all">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={`w-2 h-2 rounded-full ${inv.status === 'paid' ? 'bg-green-500' : 'bg-red-500'}`} />
-                                                            <div>
-                                                                <div className="font-medium text-sm text-[#333333]">{inv.title}</div>
-                                                                <div className="text-xs text-gray-400">{format(new Date(inv.issue_date), 'MMM d')}</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="font-serif">${inv.total_amount}</div>
+                                        {/* Tuition Snapshot Widget */}
+                                        <section className="bg-gradient-to-br from-[#333333] to-black rounded-[32px] p-8 text-white relative overflow-hidden group cursor-pointer transition-transform hover:scale-[1.01]" onClick={() => setActiveSection('billing')}>
+                                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-white/10 transition-colors" />
+                                            
+                                            <div className="relative z-10 flex flex-col h-full justify-between min-h-[250px]">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <div className="text-xs font-bold uppercase tracking-widest text-white/50 mb-2">Financial Snapshot</div>
+                                                        <h3 className="font-serif text-3xl text-white mb-1">
+                                                            {balanceDue > 0 ? 'Payment Due' : 'All Clear'}
+                                                        </h3>
+                                                        <p className="text-white/60 text-sm">
+                                                            {balanceDue > 0 ? 'Action required on account' : 'Account is in good standing'}
+                                                        </p>
                                                     </div>
-                                                ))}
-                                                {invoices.length === 0 && <div className="text-center text-sm text-gray-400 py-4">No recent activity</div>}
-                                                
-                                                <Button onClick={() => setIsInvoiceModalOpen(true)} className="w-full mt-4 bg-[#333333] text-white hover:bg-black rounded-xl shadow-lg">
-                                                    <Sparkles className="w-4 h-4 mr-2" /> Run Tuition
-                                                </Button>
+                                                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white backdrop-blur-sm group-hover:bg-white group-hover:text-[#333333] transition-all">
+                                                        <Wallet className="w-6 h-6" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-6">
+                                                    <div className="flex items-end gap-2">
+                                                        <div className="text-6xl font-serif font-light">${balanceDue.toLocaleString()}</div>
+                                                        <div className="text-white/50 mb-2 font-medium">USD</div>
+                                                    </div>
+                                                    
+                                                    <Button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setActiveSection('billing');
+                                                        }}
+                                                        className="w-full bg-white text-[#333333] hover:bg-gray-100 rounded-xl shadow-lg font-bold h-12 gap-2"
+                                                    >
+                                                        <Sparkles className="w-4 h-4 text-indigo-500" /> Manage Tuition
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </section>
 

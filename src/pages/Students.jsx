@@ -167,7 +167,14 @@ export default function Students() {
       <StudentProfileView 
         student={selectedStudent} 
         teacherName={currentUser?.full_name || "Admin Staff"} 
-        onBack={() => setSelectedStudent(null)} 
+        onBack={() => setSelectedStudent(null)}
+        onViewFamily={() => {
+            const family = families.find(f => f.email === selectedStudent.parent_email);
+            if (family) {
+                setSelectedStudent(null);
+                setSelectedFamily(family);
+            }
+        }}
       />
     );
   }

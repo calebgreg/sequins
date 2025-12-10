@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, Calendar, Star, TrendingUp, Clock, CheckCircle2, AlertCircle, MapPin, Sparkles, Quote, MoreHorizontal, Zap, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Mail, Calendar, Star, TrendingUp, Clock, CheckCircle2, AlertCircle, MapPin, Sparkles, Quote, MoreHorizontal, Zap, MessageCircle, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { format, getDay } from 'date-fns';
 import NewJournalEntryModal from './NewJournalEntryModal';
 import StudentCommunicationTab from '../crm/StudentCommunicationTab';
 
-export default function StudentProfileView({ student, teacherName, onBack }) {
+export default function StudentProfileView({ student, teacherName, onBack, onViewFamily }) {
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('activity');
 
@@ -102,6 +102,15 @@ export default function StudentProfileView({ student, teacherName, onBack }) {
         </div>
         
         <div className="flex items-center gap-2">
+           {onViewFamily && (
+              <Button 
+                  onClick={onViewFamily}
+                  variant="ghost"
+                  className="rounded-full text-gray-500 hover:text-[#333333] hover:bg-white gap-2 h-10 px-4"
+              >
+                  <Users className="w-4 h-4" /> Family Profile
+              </Button>
+           )}
            <Button 
               onClick={() => setIsNewEntryOpen(true)} 
               variant="outline" 
