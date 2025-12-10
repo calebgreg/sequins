@@ -121,7 +121,9 @@ export default function FamilyRoomBuilder({ family, onClose }) {
             // Construct URL
             // If we have an ID, we could pass it, but preview=true forces reading from localStorage/draft
             // which is better for "Previewing before publishing"
-            const url = createPageUrl('FamilyRoom?preview=true');
+            // Ensure query param is appended correctly
+            const pageUrl = createPageUrl('FamilyRoom');
+            const url = `${pageUrl}${pageUrl.includes('?') ? '&' : '?'}preview=true`;
             
             const win = window.open(url, '_blank');
             if (!win) {

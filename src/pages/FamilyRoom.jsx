@@ -19,6 +19,7 @@ export default function FamilyRoom() {
 
     // Load local storage data for preview immediately with timeout fallback
     useEffect(() => {
+        let timeoutId;
         if (isPreview) {
             try {
                 const loadPreview = () => {
@@ -28,10 +29,11 @@ export default function FamilyRoom() {
                         setPreviewError(false);
                     } else {
                         // If not found immediately, retry once after short delay (helps with tab race conditions)
-                        setTimeout(() => {
+                        timeoutId = setTimeout(() => {
                              const retry = localStorage.getItem('familyRoomPreview');
                              if (retry) {
                                  setPreviewData(JSON.parse(retry));
+                                 setPreviewError(false);
                              } else {
                                  setPreviewError(true);
                              }
@@ -44,6 +46,9 @@ export default function FamilyRoom() {
                 setPreviewError(true);
             }
         }
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+        };
     }, [isPreview]);
 
     // Fetch Config logic for non-preview or fallback
