@@ -5,7 +5,7 @@ import {
     ArrowLeft, Mail, Phone, Plus, CreditCard, DollarSign, Users, 
     Clock, Calendar, MessageSquare, Star, TrendingUp, AlertCircle, 
     CheckCircle2, MoreHorizontal, FileText, Send, Paperclip, ChevronRight,
-    Wallet, Shield, ArrowRight, PenSquare, StickyNote, Layout, Sparkles
+    Wallet, Shield, ArrowRight, PenSquare, StickyNote, Layout, Sparkles, FolderOpen, ListTodo
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import FamilyRoomBuilder from './FamilyRoomBuilder';
@@ -25,6 +25,9 @@ import StudentCommunicationTab from './StudentCommunicationTab';
 import StudentFormModal from './StudentFormModal';
 import InvoiceGenerator from '../billing/InvoiceGenerator';
 import FamilyTuitionManager from './FamilyTuitionManager';
+import FamilyTasks from './FamilyTasks';
+import FamilyDocuments from './FamilyDocuments';
+import FamilySchedule from './FamilySchedule';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FamilyProfileView({ family, onBack }) {
@@ -113,6 +116,7 @@ export default function FamilyProfileView({ family, onBack }) {
     const navItems = [
         { id: 'overview', label: 'Overview', icon: Users },
         { id: 'billing', label: 'Financials', icon: Wallet },
+        { id: 'documents', label: 'Docs & Files', icon: FolderOpen },
         { id: 'communication', label: 'Messaging', icon: MessageSquare },
         { id: 'sales_room', label: 'Family Room', icon: Layout },
     ];
@@ -388,75 +392,101 @@ export default function FamilyProfileView({ family, onBack }) {
                                             </div>
                                         </section>
 
-                                        {/* Staff Notes Feed */}
-                                        <section className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm flex flex-col h-[500px]">
-                                            <div className="flex items-center justify-between mb-4 flex-shrink-0">
-                                                <h3 className="text-lg font-serif text-[#333333]">Staff Notes</h3>
-                                                <Badge variant="secondary" className="bg-gray-100 text-gray-500">{notes.length}</Badge>
-                                            </div>
-                                            
-                                            {/* Input Area */}
-                                            <div className="mb-6 flex-shrink-0">
-                                                <form onSubmit={handleAddNote} className="relative">
-                                                    <textarea 
-                                                        value={newNote}
-                                                        onChange={(e) => setNewNote(e.target.value)}
-                                                        placeholder="Add a note about this family..."
-                                                        className="w-full bg-[#F4F4F6] rounded-2xl p-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#333333]/10 resize-none min-h-[80px]"
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                                e.preventDefault();
-                                                                handleAddNote(e);
-                                                            }
-                                                        }}
-                                                    />
-                                                    <button 
-                                                        type="submit"
-                                                        disabled={!newNote.trim() || createNoteMutation.isPending}
-                                                        className="absolute bottom-3 right-3 p-2 bg-[#333333] text-white rounded-xl hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                                    >
-                                                        {createNoteMutation.isPending ? (
-                                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                        ) : (
-                                                            <Send className="w-4 h-4" />
-                                                        )}
-                                                    </button>
-                                                </form>
+                                        {/* New Operational Grid */}
+                                        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                            {/* Col 1: Family Schedule */}
+                                            <div className="lg:col-span-1 h-[500px]">
+                                                <FamilySchedule family={family} />
                                             </div>
 
-                                            {/* Notes Feed */}
-                                            <div className="flex-1 overflow-y-auto space-y-4 pr-2 -mr-2">
-                                                {notes.length === 0 ? (
-                                                    <div className="h-full flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-2xl">
-                                                        <StickyNote className="w-8 h-8 mb-2 opacity-50" />
-                                                        <p className="text-sm">No notes yet</p>
-                                                    </div>
-                                                ) : (
-                                                    notes.map((note) => (
-                                                        <div key={note.id} className="group flex gap-4">
-                                                            <div className="flex flex-col items-center gap-1">
-                                                                <Avatar className="w-8 h-8 border border-gray-100">
-                                                                    <AvatarFallback className="bg-gray-100 text-gray-500 text-xs">
-                                                                        {note.author_name?.charAt(0) || 'S'}
-                                                                    </AvatarFallback>
-                                                                </Avatar>
-                                                                <div className="w-px h-full bg-gray-100 group-last:hidden" />
-                                                            </div>
-                                                            <div className="flex-1 pb-6">
-                                                                <div className="flex items-center gap-2 mb-1">
-                                                                    <span className="font-bold text-sm text-[#333333]">{note.author_name}</span>
-                                                                    <span className="text-xs text-gray-400">• {format(new Date(note.created_date), 'MMM d, h:mm a')}</span>
-                                                                </div>
-                                                                <div className="bg-gray-50 p-3 rounded-r-2xl rounded-bl-2xl text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
-                                                                    {note.content}
-                                                                </div>
-                                                            </div>
+                                            {/* Col 2: Tasks & To-Dos */}
+                                            <div className="lg:col-span-1 h-[500px]">
+                                                <FamilyTasks familyEmail={family.email} />
+                                            </div>
+
+                                            {/* Col 3: Staff Notes */}
+                                            <div className="lg:col-span-1 bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm flex flex-col h-[500px]">
+                                                <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                                                    <h3 className="text-lg font-serif text-[#333333]">Staff Notes</h3>
+                                                    <Badge variant="secondary" className="bg-gray-100 text-gray-500">{notes.length}</Badge>
+                                                </div>
+                                                
+                                                {/* Input Area */}
+                                                <div className="mb-6 flex-shrink-0">
+                                                    <form onSubmit={handleAddNote} className="relative">
+                                                        <textarea 
+                                                            value={newNote}
+                                                            onChange={(e) => setNewNote(e.target.value)}
+                                                            placeholder="Add a note about this family..."
+                                                            className="w-full bg-[#F4F4F6] rounded-2xl p-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#333333]/10 resize-none min-h-[80px]"
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                                    e.preventDefault();
+                                                                    handleAddNote(e);
+                                                                }
+                                                            }}
+                                                        />
+                                                        <button 
+                                                            type="submit"
+                                                            disabled={!newNote.trim() || createNoteMutation.isPending}
+                                                            className="absolute bottom-3 right-3 p-2 bg-[#333333] text-white rounded-xl hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                                        >
+                                                            {createNoteMutation.isPending ? (
+                                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                            ) : (
+                                                                <Send className="w-4 h-4" />
+                                                            )}
+                                                        </button>
+                                                    </form>
+                                                </div>
+
+                                                {/* Notes Feed */}
+                                                <div className="flex-1 overflow-y-auto space-y-4 pr-2 -mr-2">
+                                                    {notes.length === 0 ? (
+                                                        <div className="h-full flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-2xl">
+                                                            <StickyNote className="w-8 h-8 mb-2 opacity-50" />
+                                                            <p className="text-sm">No notes yet</p>
                                                         </div>
-                                                    ))
-                                                )}
+                                                    ) : (
+                                                        notes.map((note) => (
+                                                            <div key={note.id} className="group flex gap-4">
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <Avatar className="w-8 h-8 border border-gray-100">
+                                                                        <AvatarFallback className="bg-gray-100 text-gray-500 text-xs">
+                                                                            {note.author_name?.charAt(0) || 'S'}
+                                                                        </AvatarFallback>
+                                                                    </Avatar>
+                                                                    <div className="w-px h-full bg-gray-100 group-last:hidden" />
+                                                                </div>
+                                                                <div className="flex-1 pb-6">
+                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                        <span className="font-bold text-sm text-[#333333]">{note.author_name}</span>
+                                                                        <span className="text-xs text-gray-400">• {format(new Date(note.created_date), 'MMM d, h:mm a')}</span>
+                                                                    </div>
+                                                                    <div className="bg-gray-50 p-3 rounded-r-2xl rounded-bl-2xl text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                                                        {note.content}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
                                             </div>
                                         </section>
                                     </div>
+                                </motion.div>
+                            )}
+
+                            {/* DOCUMENTS SECTION */}
+                            {activeSection === 'documents' && (
+                                <motion.div 
+                                    key="documents"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="h-full flex flex-col"
+                                >
+                                    <FamilyDocuments familyEmail={family.email} />
                                 </motion.div>
                             )}
 
