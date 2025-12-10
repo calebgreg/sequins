@@ -38,7 +38,7 @@ export default function Students() {
 
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
-    queryFn: () => base44.entities.Student.list(),
+    queryFn: () => base44.entities.Student.list(null, 1000),
   });
 
   const { data: classes = [] } = useQuery({
@@ -97,7 +97,12 @@ export default function Students() {
                 if (f.age.$eq !== undefined) {
                     const studentAge = Number(s.age);
                     const targetAge = Number(f.age.$eq);
-                    if (studentAge < targetAge || studentAge >= targetAge + 1) matchesAi = false;
+                    // Exclude students with invalid/missing age (NaN) from matching
+                    if (isNaN(studentAge)) {
+                        matchesAi = false;
+                    } else if (studentAge < targetAge || studentAge >= targetAge + 1) {
+                        matchesAi = false;
+                    }
                 }
                 if (f.age.$gt !== undefined && Number(s.age) <= Number(f.age.$gt)) matchesAi = false;
                 if (f.age.$gte !== undefined && Number(s.age) < Number(f.age.$gte)) matchesAi = false;
