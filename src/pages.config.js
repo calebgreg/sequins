@@ -7,6 +7,7 @@ import Students from './pages/Students';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import Features from './pages/Features';
+import FamilyRoom from './pages/FamilyRoom';
 import __Layout from './Layout.jsx';
 
 
@@ -20,6 +21,7 @@ export const PAGES = {
     "Billing": Billing,
     "Settings": Settings,
     "Features": Features,
+    "FamilyRoom": FamilyRoom,
 }
 
 export const pagesConfig = {

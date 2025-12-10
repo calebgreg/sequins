@@ -5,9 +5,10 @@ import {
     ArrowLeft, Mail, Phone, Plus, CreditCard, DollarSign, Users, 
     Clock, Calendar, MessageSquare, Star, TrendingUp, AlertCircle, 
     CheckCircle2, MoreHorizontal, FileText, Send, Paperclip, ChevronRight,
-    Wallet, Shield, ArrowRight, PenSquare, StickyNote
+    Wallet, Shield, ArrowRight, PenSquare, StickyNote, Layout
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import FamilyRoomBuilder from './FamilyRoomBuilder';
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,7 +28,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FamilyProfileView({ family, onBack }) {
     // family: { email, parent_name, phone, students: [] }
-    const [activeSection, setActiveSection] = useState('overview'); // overview, billing, students, communication
+    const [activeSection, setActiveSection] = useState('overview'); // overview, billing, students, communication, sales_room
     const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
     const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
     const [studentToEdit, setStudentToEdit] = useState(null);
@@ -83,6 +84,7 @@ export default function FamilyProfileView({ family, onBack }) {
         { id: 'overview', label: 'Overview', icon: Users },
         { id: 'billing', label: 'Financials', icon: Wallet },
         { id: 'communication', label: 'Messaging', icon: MessageSquare },
+        { id: 'sales_room', label: 'Digital Room', icon: Layout },
     ];
 
     const handleAddStudent = () => {
@@ -436,6 +438,22 @@ export default function FamilyProfileView({ family, onBack }) {
                                     className="h-full flex flex-col -m-8" // Negative margin to fill container
                                 >
                                     <StudentCommunicationTab student={communicationProxyStudent} />
+                                </motion.div>
+                            )}
+
+                            {/* DIGITAL SALES ROOM BUILDER */}
+                            {activeSection === 'sales_room' && (
+                                <motion.div 
+                                    key="sales_room"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    className="h-full flex flex-col -m-8"
+                                >
+                                    <FamilyRoomBuilder 
+                                        family={family} 
+                                        onClose={() => setActiveSection('overview')}
+                                    />
                                 </motion.div>
                             )}
 
