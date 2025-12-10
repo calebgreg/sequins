@@ -186,8 +186,8 @@ export default function GlobalAiChat() {
                 {/* Input Bar */}
                 <div 
                     className={`
-                        w-full bg-white/90 backdrop-blur-xl shadow-lg
-                        border border-white/60 ring-1 ring-black/5 rounded-full 
+                        w-full bg-gray-50/40 backdrop-blur-md shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)]
+                        border-b border-white/30 ring-1 ring-black/10 rounded-full 
                         flex items-center gap-2.5 px-3 py-2 transition-all duration-300
                         ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-90 hover:scale-100 hover:opacity-100'}
                     `}
