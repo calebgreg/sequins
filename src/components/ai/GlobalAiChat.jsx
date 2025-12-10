@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/utils"; // Assuming you have a cn utility
 import useAiAssistant from './useAiAssistant';
 
 // --- Components ---
