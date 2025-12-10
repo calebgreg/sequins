@@ -172,6 +172,15 @@ export default function Students() {
     );
   }
 
+  if (selectedFamily) {
+    return (
+      <FamilyProfileView 
+        family={selectedFamily} 
+        onBack={() => setSelectedFamily(null)} 
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F4F4F6] p-6 md:p-12 font-sans text-[#333333]">
       <div className="max-w-7xl mx-auto space-y-8">
