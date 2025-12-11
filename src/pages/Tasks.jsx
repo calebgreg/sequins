@@ -181,17 +181,34 @@ export default function TasksPage() {
     
     const queryClient = useQueryClient();
     const { checkAndTriggerAi, isProcessing, aiName } = useAiAssistant();
+
+    const { data: currentUser } = useQuery({
+        queryKey: ['me'],
+        queryFn: () => base44.auth.me(),
+        retry: false
+    });
     
     const { data: tasks = [] } = useQuery({
-        queryKey: ['all_tasks'],
+        queryKey: ['all_tasks', currentUser?.email],
         queryFn: async () => {
-            const all = await base44.entities.FamilyTask.list();
+            if (!currentUser) return [];
+            
+            let all;
+            if (currentUser.role === 'admin') {
+                all = await base44.entities.FamilyTask.list();
+            } else {
+                // For parents, only show tasks related to them and marked as shared
+                const myTasks = await base44.entities.FamilyTask.list();
+                all = myTasks.filter(t => t.parent_email === currentUser.email && t.is_shared);
+            }
+
             return all.sort((a, b) => {
                 if (a.status !== b.status) return a.status === 'completed' ? 1 : -1;
                 if (a.priority === 'high' && b.priority !== 'high') return -1;
                 return new Date(a.due_date) - new Date(b.due_date);
             });
-        }
+        },
+        enabled: !!currentUser
     });
 
     const createMutation = useMutation({
@@ -201,8 +218,9 @@ export default function TasksPage() {
             priority: 'medium',
             category: 'admin',
             due_date: new Date().toISOString().split('T')[0],
-            is_shared: false,
-            assigned_to: 'Staff'
+            is_shared: currentUser?.role !== 'admin', // Auto-share if created by parent
+            parent_email: currentUser?.role !== 'admin' ? currentUser.email : null, // Auto-link to parent if created by parent
+            assigned_to: currentUser?.role === 'admin' ? currentUser.full_name : 'Staff'
         }),
         onSuccess: () => {
             setQuickAddTitle('');

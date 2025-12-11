@@ -73,6 +73,13 @@ export default function GlobalAiChat() {
     const [inputValue, setInputValue] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const [messages, setMessages] = useState([]);
+    
+    // Get Current User
+    const { data: currentUser } = useQuery({
+        queryKey: ['me'],
+        queryFn: () => base44.auth.me().catch(() => null),
+        retry: false
+    });
 
     const inputRef = useRef(null);
     const scrollRef = useRef(null);
@@ -139,33 +146,40 @@ export default function GlobalAiChat() {
 
             // 5. Construct Master Context
             const context = `
-            STUDIO INFORMATION:
-            Name: ${settings.name || 'The Studio'}
-            Type: ${settings.type}
+                CURRENT USER:
+                Name: ${currentUser?.full_name || 'Guest'}
+                Email: ${currentUser?.email || 'N/A'}
+                Role: ${currentUser?.role || 'visitor'}
 
-            FULL CLASS SCHEDULE:
-            ${scheduleContext}
+                STUDIO INFORMATION:
+                Name: ${settings.name || 'The Studio'}
+                Type: ${settings.type}
 
-            TUITION & PRICING:
-            ${pricingContext}
+                FULL CLASS SCHEDULE:
+                ${scheduleContext}
 
-            STUDENT ROSTER (${activeStudents.length} active):
-            ${rosterContext}
+                TUITION & PRICING:
+                ${pricingContext}
 
-            TEACHERS:
-            ${teachers.map(t => t.name).join(', ')}
+                STUDENT ROSTER (${activeStudents.length} active):
+                ${rosterContext}
+
+                TEACHERS:
+                ${teachers.map(t => t.name).join(', ')}
             `;
 
             const response = await base44.integrations.Core.InvokeLLM({
-            prompt: `
-              System: You are ${aiName || 'Gene'}, the intelligent OS for this dance studio.
-              You have access to the COMPLETE real-time database below.
+                prompt: `
+                    System: You are ${aiName || 'Gene'}, the intelligent OS for this dance studio.
+                    You are talking to ${currentUser?.full_name || 'a guest'} (${currentUser?.role || 'visitor'}).
 
-              ${context}
+                    You have access to the COMPLETE real-time database below.
 
-              User Query: "${userText}"
+                    ${context}
 
-              Instructions:
+                    User Query: "${userText}"
+
+                    Instructions:
               1. Answer the user's question accurately using the provided data.
               2. If the user asks to CREATE A TASK or REMINDER (e.g. "remind me to...", "add a task..."), extract the details into the 'create_task' JSON field.
                  - If a student/person is mentioned (like "Call Cassia"), try to match their name exactly from the ROSTER in 'related_student_name'.
