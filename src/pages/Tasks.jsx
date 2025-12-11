@@ -246,6 +246,10 @@ export default function TasksPage() {
         updateMutation.mutate({ id: task.id, [field]: value });
     };
 
+    const handleDelete = (id) => {
+        deleteMutation.mutate(id);
+    };
+
     const filteredTasks = tasks.filter(t => {
         const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             (t.parent_email && t.parent_email.toLowerCase().includes(searchQuery.toLowerCase()));
