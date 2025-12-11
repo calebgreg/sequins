@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
+import { useQuery } from '@tanstack/react-query';
 import { 
     Sparkles, ArrowUp, X, Globe, Calendar, ExternalLink, 
     Command, Bot, Search, CornerDownLeft, CheckCircle2
