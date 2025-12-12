@@ -23,6 +23,8 @@ export default function TeacherEditModal({ isOpen, onOpenChange, teacher, onSave
         if (teacher) {
             reset({
                 name: teacher.name || "",
+                email: teacher.email || "",
+                phone: teacher.phone || "",
                 bio: teacher.bio || "",
                 styles: teacher.styles || [],
                 availability: teacher.availability || ""
@@ -45,6 +47,17 @@ export default function TeacherEditModal({ isOpen, onOpenChange, teacher, onSave
                     <div className="space-y-2">
                         <Label htmlFor="name">Full Name</Label>
                         <Input id="name" {...register("name", { required: true })} />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" type="email" {...register("email")} placeholder="staff@studio.com" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="phone">Phone (for AI Texting)</Label>
+                            <Input id="phone" {...register("phone")} placeholder="+1234567890" />
+                        </div>
                     </div>
 
                     <div className="space-y-2">
