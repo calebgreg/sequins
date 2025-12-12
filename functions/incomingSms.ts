@@ -11,16 +11,18 @@ Deno.serve(async (req) => {
         }
 
         // 2. Parse Input (Handle both Form Data and JSON)
-        let fromNumber, body;
+        let fromNumber, body, toNumber;
         const contentType = req.headers.get("content-type") || "";
 
         if (contentType.includes("application/json")) {
             const json = await req.json();
             fromNumber = json.From || json.from;
+            toNumber = json.To || json.to;
             body = json.Body || json.body;
         } else {
             const formData = await req.formData();
             fromNumber = formData.get('From');
+            toNumber = formData.get('To');
             body = formData.get('Body');
         }
 
@@ -28,7 +30,7 @@ Deno.serve(async (req) => {
             return new Response("Missing From or Body", { status: 400 });
         }
 
-        console.log(`[SMS] Received from ${fromNumber}: ${body}`);
+        console.log(`[SMS] Received from ${fromNumber} to ${toNumber}: ${body}`);
 
         // 3. Identify Sender (Staff)
         console.log("[SMS] identifying sender...");
@@ -126,15 +128,44 @@ Deno.serve(async (req) => {
             // Proceed to send SMS anyway
         }
 
-        // 8. Return TwiML
-        console.log("[SMS] Generating TwiML...");
-        const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${replyText}</Message></Response>`;
-        console.log(`[SMS] Sending TwiML response: ${twiml}`);
+        // 8. Explicitly Send SMS via Twilio API (More robust than TwiML)
+        console.log("[SMS] Sending reply via Twilio API...");
 
-        return new Response(twiml, {
-            headers: { "Content-Type": "text/xml" },
-            status: 200
-        });
+        const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
+        const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+
+        if (!accountSid || !authToken) {
+            console.error("Missing Twilio Credentials in Secrets");
+            throw new Error("Missing Twilio Credentials");
+        }
+
+        const twilioParams = new URLSearchParams();
+        twilioParams.append('To', fromNumber);
+        twilioParams.append('From', toNumber || Deno.env.get("TWILIO_PHONE_NUMBER")); // Fallback if toNumber missing
+        twilioParams.append('Body', replyText);
+
+        const twilioRes = await fetch(
+            `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`),
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: twilioParams
+            }
+        );
+
+        if (!twilioRes.ok) {
+            const errorText = await twilioRes.text();
+            console.error(`[SMS] Twilio API Error: ${twilioRes.status} ${errorText}`);
+        } else {
+            const successData = await twilioRes.json();
+            console.log(`[SMS] Message sent successfully! SID: ${successData.sid}`);
+        }
+
+        // Return empty response to Twilio Webhook (to stop it from waiting)
+        return new Response(null, { status: 200 });
 
     } catch (error) {
         console.error("[SMS ERROR]", error.message);
