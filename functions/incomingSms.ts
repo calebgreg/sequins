@@ -89,7 +89,14 @@ Deno.serve(async (req) => {
         });
         console.log("[SMS] LLM responded");
 
-        const replyText = typeof llmResponse === 'string' ? llmResponse : JSON.stringify(llmResponse);
+        let replyText = typeof llmResponse === 'string' ? llmResponse : JSON.stringify(llmResponse);
+
+        // XML Escape the reply text to prevent TwiML errors
+        replyText = replyText.replace(/&/g, '&amp;')
+                             .replace(/</g, '&lt;')
+                             .replace(/>/g, '&gt;')
+                             .replace(/"/g, '&quot;')
+                             .replace(/'/g, '&apos;');
 
         // 7. Save Messages to History
         await base44.asServiceRole.entities.ConversationMessage.create({
