@@ -10,10 +10,19 @@ Deno.serve(async (req) => {
             return new Response("Method not allowed", { status: 405 });
         }
 
-        // 2. Parse Twilio Form Data
-        const formData = await req.formData();
-        const fromNumber = formData.get('From');
-        const body = formData.get('Body');
+        // 2. Parse Input (Handle both Form Data and JSON)
+        let fromNumber, body;
+        const contentType = req.headers.get("content-type") || "";
+
+        if (contentType.includes("application/json")) {
+            const json = await req.json();
+            fromNumber = json.From || json.from;
+            body = json.Body || json.body;
+        } else {
+            const formData = await req.formData();
+            fromNumber = formData.get('From');
+            body = formData.get('Body');
+        }
 
         if (!fromNumber || !body) {
             return new Response("Missing From or Body", { status: 400 });
@@ -22,9 +31,18 @@ Deno.serve(async (req) => {
         console.log(`Received SMS from ${fromNumber}: ${body}`);
 
         // 3. Identify Sender (Staff)
-        // We use service role to search teachers as this is a system webhook
-        const teachers = await base44.asServiceRole.entities.Teacher.filter({ phone: fromNumber });
-        const teacher = teachers[0];
+        // Normalize phone for search (strip non-digits to match flexible formats)
+        // Note: Ideally we should store E.164, but this helps if data is messy
+        const normalizedFrom = fromNumber.replace(/\D/g, ''); 
+        
+        // Fetch all teachers and find match (inefficient but safe for small staff lists)
+        // TODO: Optimize if teacher list grows large
+        const allTeachers = await base44.asServiceRole.entities.Teacher.list();
+        const teacher = allTeachers.find(t => {
+            if (!t.phone) return false;
+            const tPhone = t.phone.replace(/\D/g, '');
+            return tPhone.includes(normalizedFrom) || normalizedFrom.includes(tPhone);
+        });
         
         const senderName = teacher ? teacher.name : "Unknown Staff";
         const senderContext = teacher ? `You are talking to ${teacher.name}, a dance teacher.` : "You are talking to a staff member (phone unknown).";
@@ -99,12 +117,18 @@ Deno.serve(async (req) => {
         });
 
     } catch (error) {
-        console.error("Error processing SMS:", error);
-        // Fallback TwiML
-        const errorTwiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>Sorry, I encountered an error processing your message.</Message></Response>`;
+        console.error("Error processing SMS:", error.message, error.stack);
+        
+        // Check for specific errors
+        let errorMessage = "Sorry, I encountered an error processing your message.";
+        if (error.name === 'TimeoutError') {
+             errorMessage = "Sorry, I'm thinking too hard and timed out.";
+        }
+
+        const errorTwiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${errorMessage}</Message></Response>`;
         return new Response(errorTwiml, {
             headers: { "Content-Type": "text/xml" },
-            status: 200 // Return 200 so Twilio doesn't retry indefinitely
+            status: 200 
         });
     }
 });
