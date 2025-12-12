@@ -46,7 +46,10 @@ Deno.serve(async (req) => {
 
         const senderName = teacher ? teacher.name : "Unknown Staff";
         console.log(`[SMS] Sender identified as: ${senderName}`);
-        const senderContext = teacher ? `You are talking to ${teacher.name}, a dance teacher.` : "You are talking to a staff member (phone unknown).";
+        
+        const senderContext = teacher 
+            ? `You are assisting ${teacher.name}, a staff member/teacher at the studio. YOU ARE THEIR EXECUTIVE ASSISTANT. Do not treat them like a student or customer. Help them manage their classes, students, and schedule.` 
+            : "You are assisting a staff member. Help them manage the studio.";
 
         // 4. Retrieve Conversation History
         console.log("[SMS] fetching history...");
