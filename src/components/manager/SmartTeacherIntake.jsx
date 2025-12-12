@@ -14,6 +14,8 @@ export default function SmartTeacherIntake({ onSave, isSaving }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
+    phone: '',
     styles: [],
     availability: '',
     bio: ''
@@ -28,6 +30,8 @@ export default function SmartTeacherIntake({ onSave, isSaving }) {
           Extract teacher information from the following text (resume, email, or notes).
           Return a JSON object with:
           - name: Full name
+          - email: Email address if found.
+          - phone: Phone number if found.
           - styles: Array of strings (e.g. "Ballet", "Jazz"). Normalize to standard dance styles.
           - availability: A summary string of when they can teach.
           - bio: A polished, professional biography suitable for parents to read (rewrite if necessary).
@@ -39,6 +43,8 @@ export default function SmartTeacherIntake({ onSave, isSaving }) {
           type: "object",
           properties: {
             name: { type: "string" },
+            email: { type: "string" },
+            phone: { type: "string" },
             styles: { type: "array", items: { type: "string" } },
             availability: { type: "string" },
             bio: { type: "string" }
@@ -118,6 +124,25 @@ export default function SmartTeacherIntake({ onSave, isSaving }) {
                   onChange={e => setFormData({...formData, name: e.target.value})} 
                   placeholder="Full Name" 
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input 
+                    value={formData.email} 
+                    onChange={e => setFormData({...formData, email: e.target.value})} 
+                    placeholder="staff@studio.com" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone (AI Texting)</Label>
+                  <Input 
+                    value={formData.phone} 
+                    onChange={e => setFormData({...formData, phone: e.target.value})} 
+                    placeholder="+1234567890" 
+                  />
+                </div>
               </div>
               
               <div className="space-y-2">
