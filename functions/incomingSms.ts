@@ -98,25 +98,38 @@ Deno.serve(async (req) => {
                              .replace(/"/g, '&quot;')
                              .replace(/'/g, '&apos;');
 
-        // 7. Save Messages to History
-        await base44.asServiceRole.entities.ConversationMessage.create({
-            phone_number: fromNumber,
-            role: 'user',
-            content: body,
-            teacher_email: teacher ? teacher.email : null,
-            timestamp: new Date().toISOString()
-        });
+        // 7. Save Messages to History (Non-blocking)
+        console.log("[SMS] Saving conversation history...");
+        try {
+            // Using individual try-catch for DB ops to prevent blocking the response
+            const userMsgPromise = base44.asServiceRole.entities.ConversationMessage.create({
+                phone_number: fromNumber,
+                role: 'user',
+                content: body,
+                teacher_email: teacher ? teacher.email : undefined,
+                timestamp: new Date().toISOString()
+            });
 
-        await base44.asServiceRole.entities.ConversationMessage.create({
-            phone_number: fromNumber,
-            role: 'assistant',
-            content: replyText,
-            teacher_email: teacher ? teacher.email : null,
-            timestamp: new Date().toISOString()
-        });
+            const assistantMsgPromise = base44.asServiceRole.entities.ConversationMessage.create({
+                phone_number: fromNumber,
+                role: 'assistant',
+                content: replyText,
+                teacher_email: teacher ? teacher.email : undefined,
+                timestamp: new Date().toISOString()
+            });
+
+            // Await them but catch errors locally
+            await Promise.all([userMsgPromise, assistantMsgPromise]);
+            console.log("[SMS] History saved successfully");
+        } catch (dbError) {
+            console.error("[SMS] Failed to save history (continuing to send SMS):", dbError.message);
+            // Proceed to send SMS anyway
+        }
 
         // 8. Return TwiML
+        console.log("[SMS] Generating TwiML...");
         const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${replyText}</Message></Response>`;
+        console.log(`[SMS] Sending TwiML response: ${twiml}`);
 
         return new Response(twiml, {
             headers: { "Content-Type": "text/xml" },
