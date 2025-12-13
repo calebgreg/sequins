@@ -149,7 +149,7 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
         <div className={`min-h-screen font-sans ${themeBg} ${themeText} overflow-x-hidden`}>
             {/* Optional Header based on Theme */}
             <div className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto">
-                 <div className="text-sm font-bold tracking-widest uppercase opacity-70">The Studio</div>
+                 <div className="text-sm font-bold tracking-widest uppercase opacity-70">{config?.header_text || 'The Studio'}</div>
                  {isPreview && !previewConfig && <Badge variant="destructive" className="animate-pulse shadow-xl">Live Preview Mode</Badge>}
             </div>
 

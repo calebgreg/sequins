@@ -75,6 +75,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                 setActiveConfig({
                     parent_email: family.email,
                     page_title: `Welcome, ${family.parent_name.split(' ')[0]}!`,
+                    header_text: 'The Studio',
                     status: 'draft',
                     theme: 'elegant',
                     modules: [
@@ -337,6 +338,15 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                     value={activeConfig.page_title}
                                     onChange={(e) => setActiveConfig({...activeConfig, page_title: e.target.value})}
                                     className="h-8 text-sm bg-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-gray-500 mb-1 block">Header Text</label>
+                                <Input 
+                                    value={activeConfig.header_text || ''}
+                                    onChange={(e) => setActiveConfig({...activeConfig, header_text: e.target.value})}
+                                    className="h-8 text-sm bg-white"
+                                    placeholder="The Studio"
                                 />
                             </div>
                             <div>
