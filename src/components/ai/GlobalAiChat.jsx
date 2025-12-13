@@ -45,13 +45,10 @@ const MessageItem = ({ message }) => {
                         {message.content}
 
                         {/* Action Feedback */}
-                        {message.action && message.action.type === 'action_executed' && (
+                        {message.action && message.action.type === 'task_created' && (
                             <div className="mt-3 flex items-center gap-2 text-xs font-medium text-green-600 bg-green-50/50 p-2 rounded-lg border border-green-100">
                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                <span>
-                                    {message.action.details.action} {message.action.details.entity}
-                                    {message.action.details.result?.title && `: "${message.action.details.result.title}"`}
-                                </span>
+                                <span>Created task: "{message.action.title}"</span>
                             </div>
                         )}
                     </div>
@@ -122,36 +119,162 @@ export default function GlobalAiChat() {
         setIsThinking(true);
 
         try {
-            // Call the backend Coordinator "Agent"
-            const { data } = await base44.functions.invoke('geneCoordinator', { prompt: userText });
+            // Omnipotent Data Context - Fetching ALL key entities
+            const [students, classes, settingsList, plans, teachers] = await Promise.all([
+                base44.entities.Student.list(),
+                base44.entities.DanceClass.list(),
+                base44.entities.StudioSettings.list(),
+                base44.entities.TuitionPlan.list(),
+                base44.entities.Teacher.list().catch(() => []) // Graceful fallback
+            ]);
             
-            if (data.action_result) {
-                if (data.action_result.type === 'success') {
-                    const { entity, action, result } = data.action_result;
-                    let actionDesc = `${action} ${entity}`;
-                    if (entity === 'FamilyTask' && result.title) actionDesc = `Created task: "${result.title}"`;
-                    if (entity === 'FamilyNote') actionDesc = `Added note to family`;
-                    
-                    toast.success(`Action Executed: ${actionDesc}`);
+            // 1. Process Settings
+            const settings = settingsList[0] || {};
+
+            // 2. Process Classes (Crucial for schedule questions)
+            const scheduleContext = classes.map(c => 
+                `- ${c.title} (${c.style}): ${c.day}s at ${c.start_time}:00 with ${c.teacher || 'Staff'} (${c.duration}hr)`
+            ).join('\n');
+
+            // 3. Process Students (Concise roster)
+            const activeStudents = students.filter(s => s.status === 'active');
+            const rosterContext = activeStudents.map(s => `${s.name} (${s.age}, ${s.level})`).join(', ');
+
+            // 4. Process Tuition/Pricing
+            const pricingContext = plans.map(p => 
+                `- ${p.name}: $${p.amount} (${p.billing_frequency})`
+            ).join('\n');
+
+            // 5. Construct Master Context
+            const context = `
+                CURRENT USER:
+                Name: ${currentUser?.full_name || 'Guest'}
+                Email: ${currentUser?.email || 'N/A'}
+                Role: ${currentUser?.role || 'visitor'}
+
+                STUDIO INFORMATION:
+                Name: ${settings.name || 'The Studio'}
+                Type: ${settings.type}
+
+                FULL CLASS SCHEDULE:
+                ${scheduleContext}
+
+                TUITION & PRICING:
+                ${pricingContext}
+
+                STUDENT ROSTER (${activeStudents.length} active):
+                ${rosterContext}
+
+                TEACHERS:
+                ${teachers.map(t => t.name).join(', ')}
+            `;
+
+            const response = await base44.integrations.Core.InvokeLLM({
+                prompt: `
+                    System: You are ${aiName || 'Gene'}, the intelligent OS for this dance studio.
+                    You are talking to ${currentUser?.full_name || 'a guest'} (${currentUser?.role || 'visitor'}).
+
+                    You have access to the COMPLETE real-time database below.
+
+                    ${context}
+
+                    User Query: "${userText}"
+
+                    Instructions:
+              1. Answer the user's question accurately using the provided data.
+              2. If the user asks to CREATE A TASK (e.g. "remind me to...", "add a task..."), extract the details into the 'create_task' JSON field.
+              3. If the user asks to ADD A NOTE (e.g. "add a note to the Cramer family", "note: student is improving"), extract into 'create_note'.
+                 - Match names to the ROSTER for 'related_name'.
+              4. Keep 'response_text' concise, professional, and helpful.
+            `,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                  response_text: { type: "string", description: "The chat response to the user" },
+                  create_task: {
+                      type: "object",
+                      properties: {
+                          title: { type: "string" },
+                          due_date: { type: "string", format: "date" },
+                          related_student_name: { type: "string", description: "Name of student if explicitly mentioned" }
+                      }
+                  },
+                  create_note: {
+                      type: "object",
+                      properties: {
+                          content: { type: "string" },
+                          related_name: { type: "string", description: "Name of student or family mentioned" }
+                      }
+                  }
+              },
+              required: ["response_text"]
+            }
+            });
+
+            // Handle Task Creation
+            if (response.create_task) {
+                const { title, due_date, related_student_name } = response.create_task;
+                let parentEmail = null;
+                if (related_student_name) {
+                  const student = activeStudents.find(s => s.name.toLowerCase().includes(related_student_name.toLowerCase()));
+                  if (student) parentEmail = student.parent_email;
+                }
+                await base44.entities.FamilyTask.create({
+                  title: title,
+                  due_date: due_date || new Date().toISOString().split('T')[0],
+                  status: 'pending',
+                  priority: 'medium',
+                  category: 'admin',
+                  parent_email: parentEmail,
+                  is_shared: false
+                });
+                toast.success("Task created successfully");
+            }
+
+            // Handle Note Creation
+            if (response.create_note) {
+                const { content, related_name } = response.create_note;
+                let parentEmail = null;
+
+                // Try to find matching student/family
+                if (related_name) {
+                    const lowerName = related_name.toLowerCase();
+                    const student = activeStudents.find(s => 
+                        s.name.toLowerCase().includes(lowerName) || 
+                        (s.parent_name && s.parent_name.toLowerCase().includes(lowerName)) ||
+                        (s.parent_email && s.parent_email.toLowerCase().includes(lowerName))
+                    );
+                    if (student) parentEmail = student.parent_email;
+                }
+
+                if (parentEmail) {
+                    await base44.entities.FamilyNote.create({
+                        parent_email: parentEmail,
+                        content: content,
+                        author_name: currentUser?.full_name || 'AI Assistant',
+                        is_pinned: false
+                    });
+                    toast.success("Note added to family account");
                 } else {
-                    toast.error(`Action Failed: ${data.action_result.message}`);
+                    // Fallback if no specific family found? Maybe generic note or warning?
+                    // For now, we'll just not create it or maybe attach to current user if they are a parent?
+                    // But assuming staff context mostly.
+                    toast.warning("Could not link note to a specific family/student.");
                 }
             }
 
             setMessages(prev => [...prev, { 
-                id: Date.now() + 1, 
-                role: 'assistant', 
-                content: data.response_text,
-                action: data.action_result ? { 
-                    type: 'action_executed', 
-                    details: data.action_result 
-                } : null
+            id: Date.now() + 1, 
+            role: 'assistant', 
+            content: response.response_text,
+            action: response.create_task ? { type: 'task_created', title: response.create_task.title } : 
+                    response.create_note ? { type: 'note_created' } : null
             }]);
 
-        } catch (err) {
+            } catch (err) {
             console.error("GlobalAiChat Error:", err);
-            setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', content: "I'm having trouble connecting to my backend brain right now." }]);
-        } finally {
+            setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', content: "I encountered an error processing that request." }]);
+            } finally {
             setIsThinking(false);
         }
     };
@@ -175,7 +298,28 @@ export default function GlobalAiChat() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 font-sans text-gray-900 pointer-events-none">
             <div ref={containerRef} className="pointer-events-auto flex flex-col items-center">
                 
-                {/* Input Bar - NOW FIRST (Top of stack) */}
+                {/* Chat History Panel (Appears Above) */}
+                {isOpen && (messages.length > 0 || isThinking) && (
+                    <div className="w-full mb-2 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl overflow-hidden ring-1 ring-black/5 animate-in slide-in-from-bottom-2 fade-in duration-200">
+                        <div 
+                            ref={scrollRef}
+                            className="max-h-[40vh] overflow-y-auto p-4 scroll-smooth"
+                        >
+                            {messages.map(msg => (
+                                <MessageItem key={msg.id} message={msg} />
+                            ))}
+                            
+                            {isThinking && (
+                                <div className="flex items-center gap-2 text-gray-400 text-sm px-1 py-2">
+                                    <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                                    <span>Thinking...</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Input Bar */}
                 <div 
                     className={`
                         w-full bg-gray-50/40 backdrop-blur-md shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)]
@@ -215,44 +359,20 @@ export default function GlobalAiChat() {
                                 K
                             </div>
                         )}
-
-                        {isOpen && (
-                            <button 
-                                onClick={(e) => { 
-                                    e.stopPropagation();
-                                    setIsOpen(false); 
-                                    setMessages([]); 
-                                }}
-                                className="w-6 h-6 rounded-full hover:bg-black/5 text-gray-400 hover:text-gray-600 flex items-center justify-center transition-colors"
-                            >
-                                <X className="w-3.5 h-3.5" />
-                            </button>
-                        )}
                     </div>
                 </div>
 
-                {/* Chat History Panel - NOW SECOND (Below Input) */}
-                {isOpen && (messages.length > 0 || isThinking) && (
-                    <div className="w-full mt-2 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl overflow-hidden ring-1 ring-black/5 animate-in slide-in-from-top-2 fade-in duration-200">
-                        <div 
-                            ref={scrollRef}
-                            className="max-h-[40vh] overflow-y-auto p-4 scroll-smooth"
+                {/* Optional "Close" hit area when open but empty, to make it feel dismissible */}
+                {isOpen && messages.length > 0 && (
+                    <div className="absolute -bottom-8">
+                        <button 
+                            onClick={() => { setIsOpen(false); setMessages([]); }} 
+                            className="text-[10px] text-gray-400 hover:text-gray-600 font-medium bg-white/50 px-3 py-1 rounded-full backdrop-blur-sm"
                         >
-                            {messages.map(msg => (
-                                <MessageItem key={msg.id} message={msg} />
-                            ))}
-                            
-                            {isThinking && (
-                                <div className="flex items-center gap-2 text-gray-400 text-sm px-1 py-2">
-                                    <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                                    <span>Thinking...</span>
-                                </div>
-                            )}
-                        </div>
+                            Close Chat
+                        </button>
                     </div>
                 )}
-
-
             </div>
         </div>
     );
