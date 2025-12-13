@@ -11,18 +11,16 @@ Deno.serve(async (req) => {
         }
 
         // 2. Parse Input (Handle both Form Data and JSON)
-        let fromNumber, body, toNumber;
+        let fromNumber, body;
         const contentType = req.headers.get("content-type") || "";
 
         if (contentType.includes("application/json")) {
             const json = await req.json();
             fromNumber = json.From || json.from;
-            toNumber = json.To || json.to;
             body = json.Body || json.body;
         } else {
             const formData = await req.formData();
             fromNumber = formData.get('From');
-            toNumber = formData.get('To');
             body = formData.get('Body');
         }
 
@@ -30,14 +28,27 @@ Deno.serve(async (req) => {
             return new Response("Missing From or Body", { status: 400 });
         }
 
-        console.log(`[SMS] Received from ${fromNumber} to ${toNumber}: ${body}`);
+        console.log(`[SMS] Received from ${fromNumber}: ${body}`);
 
-        // 3. Identify Sender (Staff)
-        console.log("[SMS] identifying sender...");
-        // Normalize phone for search (strip non-digits to match flexible formats)
+        // 3. Identify Sender (Staff) & Fetch Context Data
+        console.log("[SMS] Fetching context data...");
+        
+        // Run fetches in parallel for speed
+        const [allTeachers, students, classes, settingsList, plans, history] = await Promise.all([
+            base44.asServiceRole.entities.Teacher.list(),
+            base44.asServiceRole.entities.Student.list(),
+            base44.asServiceRole.entities.DanceClass.list(),
+            base44.asServiceRole.entities.StudioSettings.list(),
+            base44.asServiceRole.entities.TuitionPlan.list(),
+            base44.asServiceRole.entities.ConversationMessage.filter(
+                { phone_number: fromNumber },
+                '-timestamp', 
+                10
+            )
+        ]);
+
+        // Identify Teacher
         const normalizedFrom = fromNumber.replace(/\D/g, ''); 
-
-        const allTeachers = await base44.asServiceRole.entities.Teacher.list();
         const teacher = allTeachers.find(t => {
             if (!t.phone) return false;
             const tPhone = t.phone.replace(/\D/g, '');
@@ -45,107 +56,139 @@ Deno.serve(async (req) => {
         });
 
         const senderName = teacher ? teacher.name : "Unknown Staff";
-        console.log(`[SMS] Sender identified as: ${senderName}`);
-        
-        const senderContext = teacher 
-            ? `You are assisting ${teacher.name}, a staff member/teacher at the studio. YOU ARE THEIR EXECUTIVE ASSISTANT. Do not treat them like a student or customer. Help them manage their classes, students, and schedule.` 
-            : "You are assisting a staff member. Help them manage the studio.";
-
-        // 4. Retrieve Conversation History
-        console.log("[SMS] fetching history...");
-        const history = await base44.asServiceRole.entities.ConversationMessage.filter(
-            { phone_number: fromNumber },
-            '-timestamp', 
-            10
-        );
-
-        const conversationHistory = history.reverse().map(msg => 
-            `${msg.role === 'user' ? 'User' : 'Gene'}: ${msg.content}`
-        ).join('\n');
-
-        // 5. Build Context & Prompt
-        console.log("[SMS] fetching settings...");
-        const settingsList = await base44.asServiceRole.entities.StudioSettings.list();
         const settings = settingsList[0] || {};
         const aiName = settings.ai_assistant_name || 'Gene';
 
-        const prompt = `
-            System: You are ${aiName}, the intelligent OS for ${settings.name || 'the dance studio'}.
-            ${senderContext}
+        // 4. Prepare Context Strings
+        const activeStudents = students.filter(s => s.status === 'active');
+        
+        // Format concise schedule for SMS context
+        const scheduleContext = classes.map(c => 
+            `- ${c.title} (${c.style}): ${c.day}s ${c.start_time}:00 w/ ${c.teacher || 'Staff'}`
+        ).join('\n');
+        
+        // Concise roster for SMS context (name only to save tokens)
+        const rosterContext = activeStudents.map(s => s.name).join(', ');
 
-            Context:
-            - Provide helpful, concise answers suitable for SMS (short, text-only).
-            - You have memory of the recent conversation.
+        const conversationHistory = history.reverse().map(msg => 
+            `${msg.role === 'user' ? 'User' : aiName}: ${msg.content}`
+        ).join('\n');
 
-            Conversation History:
-            ${conversationHistory}
+        const systemContext = `
+            System: You are ${aiName}, the intelligent executive assistant for ${settings.name || 'the dance studio'}.
+            You are assisting ${senderName}, a staff member.
+            
+            FULL CLASS SCHEDULE:
+            ${scheduleContext}
 
-            Current Message:
-            User: ${body}
+            STUDENT ROSTER:
+            ${rosterContext}
 
             Instructions:
-            Reply as ${aiName}. Keep it brief (under 160 chars if possible, max 300).
+            1. Answer the user's question accurately using the provided data.
+            2. If the user asks to CREATE A TASK (e.g., "remind me to...", "add a task..."), use the 'create_task' JSON field.
+               - Extract 'related_student_name' if a student is mentioned.
+               - Infer 'due_date' (today is ${new Date().toISOString().split('T')[0]}).
+            3. Keep 'response_text' concise (SMS friendly, under 300 chars preferably).
         `;
 
-        // 6. Invoke LLM
+        // 5. Invoke LLM
         console.log("[SMS] invoking LLM...");
-        const llmResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-            prompt: prompt
+        const response = await base44.asServiceRole.integrations.Core.InvokeLLM({
+            prompt: `
+                ${systemContext}
+
+                Conversation History:
+                ${conversationHistory}
+
+                Current Message:
+                User: ${body}
+            `,
+            response_json_schema: {
+                type: "object",
+                properties: {
+                    response_text: { type: "string", description: "The SMS response to the user" },
+                    create_task: {
+                        type: "object",
+                        properties: {
+                            title: { type: "string" },
+                            due_date: { type: "string", format: "date" },
+                            related_student_name: { type: "string", description: "Name of student if explicitly mentioned" },
+                            priority: { type: "string", enum: ["low", "medium", "high"], default: "medium" }
+                        }
+                    }
+                },
+                required: ["response_text"]
+            }
         });
-        console.log("[SMS] LLM responded");
 
-        let replyText = typeof llmResponse === 'string' ? llmResponse : JSON.stringify(llmResponse);
+        let replyText = response.response_text;
 
-        // XML Escape the reply text to prevent TwiML errors
-        replyText = replyText.replace(/&/g, '&amp;')
-                             .replace(/</g, '&lt;')
-                             .replace(/>/g, '&gt;')
-                             .replace(/"/g, '&quot;')
-                             .replace(/'/g, '&apos;');
+        // 6. Handle Actions (Task Creation)
+        if (response.create_task) {
+            console.log("[SMS] Creating task...", response.create_task);
+            const { title, due_date, related_student_name, priority } = response.create_task;
+            
+            let parentEmail = null;
+            if (related_student_name) {
+                const student = activeStudents.find(s => s.name.toLowerCase().includes(related_student_name.toLowerCase()));
+                if (student) parentEmail = student.parent_email;
+            }
 
-        // 7. Save Messages to History (Non-blocking)
-        console.log("[SMS] Saving conversation history...");
-        try {
-            // Using individual try-catch for DB ops to prevent blocking the response
-            const userMsgPromise = base44.asServiceRole.entities.ConversationMessage.create({
-                phone_number: fromNumber,
-                role: 'user',
-                content: body,
-                teacher_email: teacher ? teacher.email : undefined,
-                timestamp: new Date().toISOString()
+            await base44.asServiceRole.entities.FamilyTask.create({
+                title: title,
+                due_date: due_date || new Date().toISOString().split('T')[0],
+                status: 'pending',
+                priority: priority || 'medium',
+                category: 'admin',
+                parent_email: parentEmail,
+                assigned_to: senderName,
+                is_shared: false
             });
-
-            const assistantMsgPromise = base44.asServiceRole.entities.ConversationMessage.create({
-                phone_number: fromNumber,
-                role: 'assistant',
-                content: replyText,
-                teacher_email: teacher ? teacher.email : undefined,
-                timestamp: new Date().toISOString()
-            });
-
-            // Await them but catch errors locally
-            await Promise.all([userMsgPromise, assistantMsgPromise]);
-            console.log("[SMS] History saved successfully");
-        } catch (dbError) {
-            console.error("[SMS] Failed to save history (continuing to send SMS):", dbError.message);
-            // Proceed to send SMS anyway
+            
+            // Append confirmation to reply if not already implicit
+            if (!replyText.toLowerCase().includes("task")) {
+                replyText += ` (Task created: "${title}")`;
+            }
         }
 
-        // 8. Explicitly Send SMS via Twilio API (More robust than TwiML)
-        console.log("[SMS] Sending reply via Twilio API...");
+        // 7. Save History
+        try {
+            await Promise.all([
+                base44.asServiceRole.entities.ConversationMessage.create({
+                    phone_number: fromNumber,
+                    role: 'user',
+                    content: body,
+                    teacher_email: teacher ? teacher.email : undefined,
+                    timestamp: new Date().toISOString()
+                }),
+                base44.asServiceRole.entities.ConversationMessage.create({
+                    phone_number: fromNumber,
+                    role: 'assistant',
+                    content: replyText,
+                    teacher_email: teacher ? teacher.email : undefined,
+                    timestamp: new Date().toISOString()
+                })
+            ]);
+        } catch (dbError) {
+            console.error("[SMS] Failed to save history:", dbError.message);
+        }
+
+        // 8. Send SMS via Twilio (using Messaging Service SID)
+        console.log("[SMS] Sending reply via Twilio...");
 
         const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
         const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+        const messagingServiceSid = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
 
-        if (!accountSid || !authToken) {
-            console.error("Missing Twilio Credentials in Secrets");
-            throw new Error("Missing Twilio Credentials");
+        if (!accountSid || !authToken || !messagingServiceSid) {
+            throw new Error("Missing Twilio Credentials (SID, Token, or Messaging Service SID)");
         }
 
         const twilioParams = new URLSearchParams();
         twilioParams.append('To', fromNumber);
-        twilioParams.append('From', toNumber || Deno.env.get("TWILIO_PHONE_NUMBER")); // Fallback if toNumber missing
         twilioParams.append('Body', replyText);
+        twilioParams.append('MessagingServiceSid', messagingServiceSid); 
 
         const twilioRes = await fetch(
             `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
@@ -163,24 +206,15 @@ Deno.serve(async (req) => {
             const errorText = await twilioRes.text();
             console.error(`[SMS] Twilio API Error: ${twilioRes.status} ${errorText}`);
         } else {
-            const successData = await twilioRes.json();
-            console.log(`[SMS] Message sent successfully! SID: ${successData.sid}`);
+            console.log(`[SMS] Message sent successfully!`);
         }
 
-        // Return empty response to Twilio Webhook (to stop it from waiting)
         return new Response(null, { status: 200 });
 
     } catch (error) {
         console.error("[SMS ERROR]", error.message);
-        console.error(error.stack);
-
-        let errorMessage = "Sorry, I encountered an error processing your message.";
-        if (error.name === 'TimeoutError') {
-             errorMessage = "Sorry, I'm thinking too hard and timed out.";
-        }
-
-        const errorTwiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${errorMessage}</Message></Response>`;
-        return new Response(errorTwiml, {
+        // Fallback TwiML in case of error, to prevent Twilio retry loops
+        return new Response(`<?xml version="1.0" encoding="UTF-8"?><Response></Response>`, {
             headers: { "Content-Type": "text/xml" },
             status: 200 
         });
