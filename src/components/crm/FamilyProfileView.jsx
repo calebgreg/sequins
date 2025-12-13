@@ -399,7 +399,7 @@ export default function FamilyProfileView({ family, onBack }) {
 
                                         {/* Slot 3: Tasks */}
                                         <div className="h-[500px]">
-                                            <FamilyTasks familyEmail={family.email} />
+                                            <FamilyTasks familyEmail={family.email} currentUser={currentUser} />
                                         </div>
 
                                         {/* Slot 4: Staff Notes */}
