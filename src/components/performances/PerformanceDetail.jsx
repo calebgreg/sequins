@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { 
@@ -26,6 +26,7 @@ const findConflicts = (routineA, routineB) => {
 export default function PerformanceDetail({ performanceId, onBack }) {
     const [isEditing, setIsEditing] = useState(false);
     const [newRoutineTitle, setNewRoutineTitle] = useState('');
+    const [formData, setFormData] = useState({});
     const queryClient = useQueryClient();
 
     // 1. Fetch Performance Data
@@ -33,6 +34,16 @@ export default function PerformanceDetail({ performanceId, onBack }) {
         queryKey: ['performance', performanceId],
         queryFn: () => base44.entities.Performance.list().then(list => list.find(p => p.id === performanceId))
     });
+
+    useEffect(() => {
+        if (performance) {
+            setFormData({
+                title: performance.title || '',
+                date: performance.date || '',
+                venue: performance.venue || ''
+            });
+        }
+    }, [performance]);
 
     // 2. Fetch Routines
     const { data: routines = [] } = useQuery({
@@ -54,8 +65,8 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     const updatePerformance = useMutation({
         mutationFn: (data) => base44.entities.Performance.update(performanceId, data),
         onSuccess: () => {
-            setIsEditing(false);
             queryClient.invalidateQueries(['performance', performanceId]);
+            toast.success("Event updated");
         }
     });
 
@@ -132,8 +143,8 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                         <div className="space-y-4 max-w-2xl">
                             {isEditing ? (
                                 <Input 
-                                    value={performance.title}
-                                    onChange={(e) => updatePerformance.mutate({ ...performance, title: e.target.value })} // Note: This fires on every keystroke, ideally debounced or on blur
+                                    value={formData.title || ''}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     className="text-4xl font-serif bg-white/10 border-white/20 text-white h-16 px-4 rounded-xl"
                                 />
                             ) : (
@@ -148,8 +159,8 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                     {isEditing ? (
                                         <input 
                                             type="date" 
-                                            value={performance.date} 
-                                            onChange={(e) => updatePerformance.mutate({ ...performance, date: e.target.value })} // simplified
+                                            value={formData.date || ''} 
+                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                                             className="bg-transparent border-none text-white focus:outline-none"
                                         />
                                     ) : format(new Date(performance.date), 'MMMM d, yyyy')}
@@ -158,9 +169,9 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                     <MapPin className="w-4 h-4 text-pink-300" />
                                     {isEditing ? (
                                         <input 
-                                            value={performance.venue || ''} 
+                                            value={formData.venue || ''} 
                                             placeholder="Set Venue"
-                                            onChange={(e) => updatePerformance.mutate({ ...performance, venue: e.target.value })} // simplified
+                                            onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
                                             className="bg-transparent border-none text-white focus:outline-none w-32"
                                         />
                                     ) : (performance.venue || 'TBD')}
@@ -174,11 +185,16 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                         <div className="flex gap-3">
                             <Button 
-                                onClick={() => setIsEditing(!isEditing)}
+                                onClick={() => {
+                                    if (isEditing) {
+                                        updatePerformance.mutate({ ...performance, ...formData });
+                                    }
+                                    setIsEditing(!isEditing);
+                                }}
                                 variant="outline" 
                                 className="bg-transparent text-white border-white/20 hover:bg-white/10"
                             >
-                                {isEditing ? 'Done' : 'Edit Details'}
+                                {isEditing ? 'Save' : 'Edit Details'}
                             </Button>
                             <Button 
                                 onClick={() => toast.info("Show Mode is coming soon!", { description: "This feature will allow you to run the show in real-time." })}
