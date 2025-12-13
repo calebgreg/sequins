@@ -141,6 +141,9 @@ Deno.serve(async (req) => {
                     if (entity === 'FamilyTask') {
                         if (!payload.assigned_to) payload.assigned_to = user.full_name;
                     }
+                    if (entity === 'StudentNote') {
+                        if (!payload.date) payload.date = new Date().toISOString().split('T')[0];
+                    }
 
                     result = await base44.entities[entity].create(payload);
                 } else if (action === 'update') {
