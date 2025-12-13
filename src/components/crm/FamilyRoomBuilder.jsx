@@ -469,42 +469,15 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                                                                 placeholder="Paste image URL and press Enter"
                                                                                 onKeyDown={(e) => {
                                                                                     if (e.key === 'Enter') {
-                                                                                        const val = e.currentTarget.value;
-                                                                                        if (val) {
-                                                                                            setActiveConfig(current => {
-                                                                                                const mod = current.modules.find(m => m.id === module.id);
-                                                                                                if (!mod) return current;
-                                                                                                const imgs = [...(mod.content.images || [])];
-                                                                                                if (imgs.length === 0 && mod.content.image_url) imgs.push(mod.content.image_url);
-                                                                                                imgs.push(val);
-                                                                                                
-                                                                                                return {
-                                                                                                    ...current,
-                                                                                                    modules: current.modules.map(m => m.id === module.id ? { ...m, content: { ...m.content, images: imgs, image_url: '' } } : m)
-                                                                                                };
-                                                                                            });
-                                                                                            e.currentTarget.value = '';
-                                                                                            toast.success("Image added to slideshow");
-                                                                                        }
+                                                                                        e.preventDefault();
+                                                                                        handleAddImage(module.id, e.currentTarget.value);
+                                                                                        e.currentTarget.value = '';
                                                                                     }
                                                                                 }}
                                                                                 onBlur={(e) => {
-                                                                                    const val = e.target.value;
-                                                                                    if (val) {
-                                                                                        setActiveConfig(current => {
-                                                                                            const mod = current.modules.find(m => m.id === module.id);
-                                                                                            if (!mod) return current;
-                                                                                            const imgs = [...(mod.content.images || [])];
-                                                                                            if (imgs.length === 0 && mod.content.image_url) imgs.push(mod.content.image_url);
-                                                                                            imgs.push(val);
-                                                                                            
-                                                                                            return {
-                                                                                                ...current,
-                                                                                                modules: current.modules.map(m => m.id === module.id ? { ...m, content: { ...m.content, images: imgs, image_url: '' } } : m)
-                                                                                            };
-                                                                                        });
+                                                                                    if (e.target.value) {
+                                                                                        handleAddImage(module.id, e.target.value);
                                                                                         e.target.value = '';
-                                                                                        toast.success("Image added to slideshow");
                                                                                     }
                                                                                 }}
                                                                              />
