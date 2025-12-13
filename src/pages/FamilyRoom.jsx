@@ -53,11 +53,12 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     const { data: dbConfig, isLoading: isDbLoading } = useQuery({
         queryKey: ['familyRoomConfig', configId],
         queryFn: async () => {
-            if (!configId || isPreview) return null;
+            if (isPreview) return null;
             const configs = await base44.entities.FamilyRoomConfig.list();
-            return configs.find(c => c.id === configId);
+            // If ID is provided, use it. Otherwise, fallback to the most recent config for demo purposes.
+            return configId ? configs.find(c => c.id === configId) : configs[0];
         },
-        enabled: !!configId && !isPreview,
+        enabled: !isPreview,
         retry: false
     });
 
