@@ -40,10 +40,55 @@ export default function PerformanceDetail({ performanceId, onBack }) {
             setFormData({
                 title: performance.title || '',
                 date: performance.date || '',
-                venue: performance.venue || ''
+                venue: performance.venue || null // venue is now an object or null
             });
+            // Initial display value for venue input
+            setVenueSearch(performance.venue?.venue_name || performance.venue || ''); 
         }
     }, [performance]);
+
+    // Venue Autocomplete State
+    const [venueSearch, setVenueSearch] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
+
+    // Debounce logic for venue search
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (isEditing && venueSearch.length > 2 && showSuggestions) {
+                setIsFetchingSuggestions(true);
+                try {
+                    const { data } = await base44.functions.invoke('googlePlacesAutocomplete', { query: venueSearch });
+                    setSuggestions(data.suggestions || []);
+                } catch (err) {
+                    console.error("Failed to fetch suggestions", err);
+                } finally {
+                    setIsFetchingSuggestions(false);
+                }
+            } else {
+                setSuggestions([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [venueSearch, isEditing, showSuggestions]);
+
+    const handleVenueSelect = async (placeId, description) => {
+        setVenueSearch(description);
+        setShowSuggestions(false);
+        
+        try {
+            const { data: details } = await base44.functions.invoke('googlePlacesDetails', { place_id: placeId });
+            setFormData(prev => ({
+                ...prev,
+                venue: details
+            }));
+            toast.success("Venue details linked!");
+        } catch (err) {
+            toast.error("Failed to get venue details");
+        }
+    };
 
     // 2. Fetch Routines
     const { data: routines = [] } = useQuery({
@@ -168,13 +213,45 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                 <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
                                     <MapPin className="w-4 h-4 text-pink-300" />
                                     {isEditing ? (
-                                        <input 
-                                            value={formData.venue || ''} 
-                                            placeholder="Set Venue"
-                                            onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                                            className="bg-transparent border-none text-white focus:outline-none w-32"
-                                        />
-                                    ) : (performance.venue || 'TBD')}
+                                        <div className="relative">
+                                            <input 
+                                                value={venueSearch} 
+                                                placeholder="Search Venue..."
+                                                onChange={(e) => {
+                                                    setVenueSearch(e.target.value);
+                                                    setShowSuggestions(true);
+                                                }}
+                                                onFocus={() => setShowSuggestions(true)}
+                                                className="bg-transparent border-none text-white focus:outline-none w-64 placeholder:text-white/50"
+                                            />
+                                            {showSuggestions && (suggestions.length > 0 || isFetchingSuggestions) && (
+                                                <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-lg shadow-xl text-gray-800 z-50 overflow-hidden text-sm">
+                                                    {isFetchingSuggestions && <div className="p-3 text-gray-400 text-xs">Loading...</div>}
+                                                    {suggestions.map((s) => (
+                                                        <div 
+                                                            key={s.place_id}
+                                                            onClick={() => handleVenueSelect(s.place_id, s.description)}
+                                                            className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
+                                                        >
+                                                            <div className="font-bold text-[#333333]">{s.main_text}</div>
+                                                            <div className="text-xs text-gray-500 truncate">{s.secondary_text}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col">
+                                            <span className="font-bold">
+                                                {performance.venue?.venue_name || (typeof performance.venue === 'string' ? performance.venue : 'TBD')}
+                                            </span>
+                                            {performance.venue?.formatted_address && (
+                                                <span className="text-[10px] opacity-80 max-w-[200px] truncate">
+                                                    {performance.venue.formatted_address}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
                                     <Timer className="w-4 h-4 text-amber-300" />
