@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from '@tanstack/react-query';
@@ -173,10 +172,31 @@ export default function GlobalAiChat() {
     };
 
     return (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 font-sans text-gray-900 pointer-events-none">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 font-sans text-gray-900 pointer-events-none">
             <div ref={containerRef} className="pointer-events-auto flex flex-col items-center">
                 
-                {/* Input Bar - NOW FIRST */}
+                {/* Chat History Panel (Appears Above) */}
+                {isOpen && (messages.length > 0 || isThinking) && (
+                    <div className="w-full mb-2 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl overflow-hidden ring-1 ring-black/5 animate-in slide-in-from-bottom-2 fade-in duration-200">
+                        <div 
+                            ref={scrollRef}
+                            className="max-h-[40vh] overflow-y-auto p-4 scroll-smooth"
+                        >
+                            {messages.map(msg => (
+                                <MessageItem key={msg.id} message={msg} />
+                            ))}
+                            
+                            {isThinking && (
+                                <div className="flex items-center gap-2 text-gray-400 text-sm px-1 py-2">
+                                    <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                                    <span>Thinking...</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Input Bar */}
                 <div 
                     className={`
                         w-full bg-gray-50/40 backdrop-blur-md shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)]
@@ -218,27 +238,6 @@ export default function GlobalAiChat() {
                         )}
                     </div>
                 </div>
-
-                {/* Chat History Panel - NOW SECOND */}
-                {isOpen && (messages.length > 0 || isThinking) && (
-                    <div className="w-full mt-2 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl overflow-hidden ring-1 ring-black/5 animate-in slide-in-from-top-2 fade-in duration-200">
-                        <div 
-                            ref={scrollRef}
-                            className="max-h-[40vh] overflow-y-auto p-4 scroll-smooth"
-                        >
-                            {messages.map(msg => (
-                                <MessageItem key={msg.id} message={msg} />
-                            ))}
-                            
-                            {isThinking && (
-                                <div className="flex items-center gap-2 text-gray-400 text-sm px-1 py-2">
-                                    <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                                    <span>Thinking...</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
 
                 {/* Optional "Close" hit area */}
                 {isOpen && messages.length > 0 && (
