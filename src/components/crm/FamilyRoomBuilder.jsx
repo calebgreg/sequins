@@ -174,6 +174,34 @@ export default function FamilyRoomBuilder({ family, onClose }) {
         setActiveConfig({ ...activeConfig, modules: newModules });
     };
 
+    const handleAddImage = (moduleId, url) => {
+        if (!url || !url.trim()) return;
+        
+        const mod = activeConfig.modules.find(m => m.id === moduleId);
+        if (!mod) return;
+        
+        const currentImages = mod.content.images || [];
+        const newImages = [...currentImages];
+        // Migration: include legacy image if it exists and we're starting a list
+        if (newImages.length === 0 && mod.content.image_url) {
+            newImages.push(mod.content.image_url);
+        }
+        newImages.push(url.trim());
+        
+        const newModules = activeConfig.modules.map(m => {
+             if (m.id === moduleId) {
+                 return { ...m, content: { ...m.content, images: newImages, image_url: '' } };
+             }
+             return m;
+        });
+        
+        const newConfig = { ...activeConfig, modules: newModules };
+        setActiveConfig(newConfig);
+        
+        // Auto-save the config to ensure images are persisted immediately
+        saveMutation.mutate(newConfig);
+    };
+
     const getDefaultContent = (type) => {
         switch(type) {
             case 'hero': return { title: 'Welcome', subtitle: 'Your personalized space', image_url: '', images: [] };
