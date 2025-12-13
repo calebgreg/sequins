@@ -144,6 +144,19 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     
     const themeBg = config?.theme === 'elegant' ? 'bg-[#FDFBF7]' : config?.theme === 'energetic' ? 'bg-white' : 'bg-gray-50';
     const themeText = config?.theme === 'energetic' ? 'text-indigo-950' : 'text-[#333333]';
+    
+    // Dynamic footer styles based on theme
+    const footerBg = config?.theme === 'elegant' ? 'bg-[#2A2826]' : config?.theme === 'energetic' ? 'bg-indigo-900' : 'bg-gray-900';
+    const footerText = 'text-white';
+
+    const footer = config?.footer_settings || {
+        title: "The Studio",
+        description: "Excellence in dance education since 2010.",
+        contact_email: "hello@studio.com",
+        contact_phone: "(555) 123-4567",
+        contact_address: "123 Dance Ave, NY",
+        show_footer: true
+    };
 
     return (
         <div className={`min-h-screen font-sans ${themeBg} ${themeText} overflow-x-hidden`}>
@@ -525,40 +538,48 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
             })}
 
             {/* Footer */}
-            <div className="bg-[#1a1a1a] text-white py-24 mt-24">
-                <div className={`max-w-5xl mx-auto px-6 grid grid-cols-1 ${!isMobilePreview ? 'md:grid-cols-3' : ''} gap-12 text-center ${!isMobilePreview ? 'md:text-left' : ''}`}>
-                    <div>
-                        <h3 className="font-serif text-3xl mb-6">The Studio</h3>
-                        <p className="text-white/40 leading-relaxed text-sm">
-                            Excellence in dance education since 2010. Creating artists, building character, and fostering community.
-                        </p>
-                    </div>
-                    <div>
-                        <h4 className="font-bold uppercase tracking-widest text-xs text-white/50 mb-6">Contact</h4>
-                        <div className="space-y-4 text-sm text-white/70">
-                            <p className="flex items-center justify-center md:justify-start gap-3 hover:text-white transition-colors cursor-pointer">
-                                <Mail className="w-4 h-4" /> hello@studio.com
-                            </p>
-                            <p className="flex items-center justify-center md:justify-start gap-3 hover:text-white transition-colors cursor-pointer">
-                                <Phone className="w-4 h-4" /> (555) 123-4567
-                            </p>
-                            <p className="flex items-center justify-center md:justify-start gap-3 hover:text-white transition-colors cursor-pointer">
-                                <MapPin className="w-4 h-4" /> 123 Dance Ave, NY
+            {footer.show_footer && (
+                <div className={`${footerBg} ${footerText} py-24 mt-24 transition-colors duration-500`}>
+                    <div className={`max-w-5xl mx-auto px-6 grid grid-cols-1 ${!isMobilePreview ? 'md:grid-cols-3' : ''} gap-12 text-center ${!isMobilePreview ? 'md:text-left' : ''}`}>
+                        <div>
+                            <h3 className="font-serif text-3xl mb-6">{footer.title}</h3>
+                            <p className="text-white/40 leading-relaxed text-sm whitespace-pre-line">
+                                {footer.description}
                             </p>
                         </div>
+                        <div>
+                            <h4 className="font-bold uppercase tracking-widest text-xs text-white/50 mb-6">Contact</h4>
+                            <div className="space-y-4 text-sm text-white/70">
+                                {footer.contact_email && (
+                                    <p className="flex items-center justify-center md:justify-start gap-3 hover:text-white transition-colors cursor-pointer">
+                                        <Mail className="w-4 h-4" /> {footer.contact_email}
+                                    </p>
+                                )}
+                                {footer.contact_phone && (
+                                    <p className="flex items-center justify-center md:justify-start gap-3 hover:text-white transition-colors cursor-pointer">
+                                        <Phone className="w-4 h-4" /> {footer.contact_phone}
+                                    </p>
+                                )}
+                                {footer.contact_address && (
+                                    <p className="flex items-center justify-center md:justify-start gap-3 hover:text-white transition-colors cursor-pointer">
+                                        <MapPin className="w-4 h-4" /> {footer.contact_address}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        <div>
+                             <h4 className="font-bold uppercase tracking-widest text-xs text-white/50 mb-6">Quick Links</h4>
+                             <div className="space-y-3 text-sm text-white/70">
+                                 <a href="#" className="block hover:text-white">Class Schedule</a>
+                                 <a href="#" className="block hover:text-white">Terms & Policies</a>
+                             </div>
+                        </div>
                     </div>
-                    <div>
-                         <h4 className="font-bold uppercase tracking-widest text-xs text-white/50 mb-6">Quick Links</h4>
-                         <div className="space-y-3 text-sm text-white/70">
-                             <a href="#" className="block hover:text-white">Class Schedule</a>
-                             <a href="#" className="block hover:text-white">Terms & Policies</a>
-                         </div>
+                    <div className="max-w-5xl mx-auto px-6 mt-16 pt-8 border-t border-white/10 text-center text-xs text-white/20">
+                        © 2025 {footer.title}. Powered by Base44.
                     </div>
                 </div>
-                <div className="max-w-5xl mx-auto px-6 mt-16 pt-8 border-t border-white/10 text-center text-xs text-white/20">
-                    © 2025 The Studio. Powered by Base44.
-                </div>
-            </div>
+            )}
         </div>
     );
 }

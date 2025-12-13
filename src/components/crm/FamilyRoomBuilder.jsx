@@ -69,7 +69,17 @@ export default function FamilyRoomBuilder({ family, onClose }) {
     useEffect(() => {
         if (!isLoading && !activeConfig) {
             if (existingConfig) {
-                setActiveConfig(existingConfig);
+                setActiveConfig({
+                    ...existingConfig,
+                    footer_settings: existingConfig.footer_settings || {
+                        title: "The Studio",
+                        description: "Excellence in dance education since 2010.",
+                        contact_email: "hello@studio.com",
+                        contact_phone: "(555) 123-4567",
+                        contact_address: "123 Dance Ave, NY",
+                        show_footer: true
+                    }
+                });
             } else {
                 // Default Template
                 setActiveConfig({
@@ -78,6 +88,14 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                     header_text: 'The Studio',
                     status: 'draft',
                     theme: 'elegant',
+                    footer_settings: {
+                        title: "The Studio",
+                        description: "Excellence in dance education since 2010.",
+                        contact_email: "hello@studio.com",
+                        contact_phone: "(555) 123-4567",
+                        contact_address: "123 Dance Ave, NY",
+                        show_footer: true
+                    },
                     modules: [
                         {
                             id: 'mod_1',
@@ -364,6 +382,73 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                             }`} />
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-gray-100 mt-4">
+                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Footer Settings</label>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="text-xs text-gray-500">Show Footer</label>
+                                        <Switch 
+                                            checked={activeConfig.footer_settings?.show_footer ?? true}
+                                            onCheckedChange={(checked) => setActiveConfig({
+                                                ...activeConfig, 
+                                                footer_settings: { ...activeConfig.footer_settings, show_footer: checked }
+                                            })}
+                                            className="scale-75 origin-right"
+                                        />
+                                    </div>
+                                    
+                                    {(activeConfig.footer_settings?.show_footer ?? true) && (
+                                        <>
+                                            <Input 
+                                                value={activeConfig.footer_settings?.title || ''}
+                                                onChange={(e) => setActiveConfig({
+                                                    ...activeConfig, 
+                                                    footer_settings: { ...activeConfig.footer_settings, title: e.target.value }
+                                                })}
+                                                className="h-8 text-xs bg-white mb-2"
+                                                placeholder="Footer Title"
+                                            />
+                                            <Textarea 
+                                                value={activeConfig.footer_settings?.description || ''}
+                                                onChange={(e) => setActiveConfig({
+                                                    ...activeConfig, 
+                                                    footer_settings: { ...activeConfig.footer_settings, description: e.target.value }
+                                                })}
+                                                className="min-h-[60px] text-xs bg-white mb-2 resize-none"
+                                                placeholder="Footer Description"
+                                            />
+                                            <Input 
+                                                value={activeConfig.footer_settings?.contact_email || ''}
+                                                onChange={(e) => setActiveConfig({
+                                                    ...activeConfig, 
+                                                    footer_settings: { ...activeConfig.footer_settings, contact_email: e.target.value }
+                                                })}
+                                                className="h-8 text-xs bg-white mb-1"
+                                                placeholder="Contact Email"
+                                            />
+                                            <Input 
+                                                value={activeConfig.footer_settings?.contact_phone || ''}
+                                                onChange={(e) => setActiveConfig({
+                                                    ...activeConfig, 
+                                                    footer_settings: { ...activeConfig.footer_settings, contact_phone: e.target.value }
+                                                })}
+                                                className="h-8 text-xs bg-white mb-1"
+                                                placeholder="Contact Phone"
+                                            />
+                                            <Input 
+                                                value={activeConfig.footer_settings?.contact_address || ''}
+                                                onChange={(e) => setActiveConfig({
+                                                    ...activeConfig, 
+                                                    footer_settings: { ...activeConfig.footer_settings, contact_address: e.target.value }
+                                                })}
+                                                className="h-8 text-xs bg-white"
+                                                placeholder="Contact Address"
+                                            />
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
