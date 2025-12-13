@@ -438,22 +438,24 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                                                              <ImageIcon className="w-4 h-4 text-gray-400" />
                                                                              <Input 
                                                                                 className="h-8 text-xs bg-gray-50"
-                                                                                placeholder="Paste image URL and press Enter"
-                                                                                onKeyDown={(e) => {
-                                                                                    if (e.key === 'Enter' && e.currentTarget.value) {
-                                                                                        const newUrl = e.currentTarget.value;
+                                                                                placeholder="Paste image URL"
+                                                                                onBlur={(e) => {
+                                                                                    if (e.target.value) {
+                                                                                        const newUrl = e.target.value;
                                                                                         const currentImages = module.content.images || [];
-                                                                                        // If legacy image_url exists and this is first array add, preserve it or just switch to array?
-                                                                                        // Let's migrate legacy to array on first add
                                                                                         let newImages = [...currentImages];
                                                                                         if (newImages.length === 0 && module.content.image_url) {
                                                                                             newImages.push(module.content.image_url);
                                                                                         }
                                                                                         newImages.push(newUrl);
-                                                                                        
                                                                                         updateModuleContent(module.id, 'images', newImages);
-                                                                                        updateModuleContent(module.id, 'image_url', ''); // Clear legacy to use array source of truth
-                                                                                        e.currentTarget.value = '';
+                                                                                        updateModuleContent(module.id, 'image_url', '');
+                                                                                        e.target.value = '';
+                                                                                    }
+                                                                                }}
+                                                                                onKeyDown={(e) => {
+                                                                                    if (e.key === 'Enter' && e.currentTarget.value) {
+                                                                                        e.target.blur(); // Trigger onBlur
                                                                                     }
                                                                                 }}
                                                                              />
