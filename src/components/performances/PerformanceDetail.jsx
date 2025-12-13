@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { 
-    ArrowLeft, Calendar, MapPin, Clock, Plus, GripVertical, 
-    Music, Users, AlertTriangle, CheckCircle2, Mic2, Save,
-    PlayCircle, PauseCircle, Timer, Trash2
+    ArrowLeft, Calendar, MapPin, Plus, GripVertical, 
+    Music, Users, AlertTriangle, Mic2,
+    PlayCircle, Timer, Trash2
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
