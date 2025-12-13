@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { 
     Layout, Plus, GripVertical, Image as ImageIcon, Type, Video, 
     FileText, DollarSign, Star, Move, Trash2, Eye, Save, ExternalLink,
-    Palette, ArrowRight, Check, MousePointerClick, Loader2, X, Monitor, Smartphone
+    Palette, ArrowRight, Check, MousePointerClick, Loader2, X, Monitor, Smartphone, Calendar
 } from 'lucide-react';
 import FamilyRoom from '../../pages/FamilyRoom';
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { createPageUrl } from '../../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,6 +38,7 @@ const MODULE_TYPES = [
     { type: 'file_download', icon: FileText, label: 'Resource', description: 'PDFs or docs for download' },
     { type: 'invoice_highlight', icon: DollarSign, label: 'Billing Summary', description: 'Outstanding balance card' },
     { type: 'class_recommendation', icon: Star, label: 'Class Recs', description: 'Suggested classes' },
+    { type: 'event_details_card', icon: Calendar, label: 'Event Card', description: 'Highlight a performance' },
     { type: 'cta_button', icon: MousePointerClick, label: 'Action Button', description: 'Call to action' },
     { type: 'task_list', icon: Check, label: 'Shared Tasks', description: 'Checklist for the family' },
     ];
@@ -41,6 +49,12 @@ export default function FamilyRoomBuilder({ family, onClose }) {
     const [isSaving, setIsSaving] = useState(false);
     const [showFullPreview, setShowFullPreview] = useState(false);
     const [viewMode, setViewMode] = useState('desktop');
+
+    // Fetch performances for the dropdown
+    const { data: performances = [] } = useQuery({
+        queryKey: ['performances'],
+        queryFn: () => base44.entities.Performance.list(),
+    });
 
     // Fetch existing config or init new
     const { data: existingConfig, isLoading } = useQuery({
@@ -167,6 +181,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
             case 'video_embed': return { url: '', caption: 'Watch this video' };
             case 'cta_button': return { label: 'Click Me', url: '#', style: 'primary' };
             case 'class_recommendation': return { title: 'Recommended for You', class_ids: [] };
+            case 'event_details_card': return { performance_id: '' };
             case 'task_list': return { title: 'Your To-Do List' };
             default: return {};
             }
@@ -527,6 +542,37 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                                                         </div>
                                                                     )}
                                                                     <span className="text-[10px] mt-2">Data will be populated automatically for the family</span>
+                                                                </div>
+                                                            )}
+
+                                                            {module.type === 'event_details_card' && (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        <Calendar className="w-4 h-4 text-gray-500" />
+                                                                        <span className="text-sm font-medium text-[#333333]">Featured Event</span>
+                                                                    </div>
+                                                                    <Select 
+                                                                        value={module.content.performance_id} 
+                                                                        onValueChange={(val) => updateModuleContent(module.id, 'performance_id', val)}
+                                                                    >
+                                                                        <SelectTrigger className="w-full">
+                                                                            <SelectValue placeholder="Select an event..." />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            {performances.length === 0 ? (
+                                                                                <SelectItem value="none" disabled>No upcoming events found</SelectItem>
+                                                                            ) : (
+                                                                                performances.map(p => (
+                                                                                    <SelectItem key={p.id} value={p.id}>
+                                                                                        {p.title} ({new Date(p.date).toLocaleDateString()})
+                                                                                    </SelectItem>
+                                                                                ))
+                                                                            )}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                    <p className="text-[10px] text-gray-400">
+                                                                        Select the performance you want to highlight on this card.
+                                                                    </p>
                                                                 </div>
                                                             )}
                                                             
