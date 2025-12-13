@@ -135,7 +135,9 @@ export default function PerformancesPage() {
                                 <div className="mt-auto flex items-center justify-between text-sm text-gray-500">
                                     <div className="flex items-center gap-2">
                                         <MapPin className="w-4 h-4" />
-                                        <span className="truncate max-w-[150px]">{perf.venue || 'No venue set'}</span>
+                                        <span className="truncate max-w-[150px]">
+                                            {perf.venue?.venue_name || (typeof perf.venue === 'string' ? perf.venue : 'No venue set')}
+                                        </span>
                                     </div>
                                     <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-[#333333] group-hover:text-white transition-colors">
                                         <ChevronRight className="w-4 h-4" />
