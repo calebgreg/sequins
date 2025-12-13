@@ -185,7 +185,23 @@ Deno.serve(async (req) => {
             throw new Error("Missing Twilio Credentials (SID, Token, or Messaging Service SID)");
         }
 
-
+        // Debug: Check Messaging Service Status (User Request)
+        console.log("[Twilio] Checking Service SID:", messagingServiceSid);
+        const svcCheck = await fetch(
+            `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messaging/Services/${messagingServiceSid}.json`,
+            {
+                headers: { "Authorization": "Basic " + btoa(`${accountSid}:${authToken}`) }
+            }
+        );
+        console.log("[Twilio] Service check status:", svcCheck.status);
+        const svcBody = await svcCheck.text();
+        console.log("[Twilio] Service check body:", svcBody);
+        
+        if (!svcCheck.ok) {
+             console.error("[Twilio] Service check failed. Aborting send.");
+             // Return error directly so we see it in test output
+             return Response.json({ error: "Messaging Service Invalid", details: JSON.parse(svcBody) }, { status: 400 });
+        }
 
         const twilioParams = new URLSearchParams();
         twilioParams.append('To', fromNumber);
