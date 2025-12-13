@@ -113,7 +113,9 @@ export default function FamilyRoomBuilder({ family, onClose }) {
         },
         onSuccess: (saved) => {
             queryClient.invalidateQueries(['familyRoom']);
-            setActiveConfig(saved);
+            // Only update state from server if it's a new record (to get the ID)
+            // Otherwise keep local state to prevent overwriting optimistic updates or race conditions
+            setActiveConfig(prev => prev.id ? prev : saved);
             toast.success("Room configuration saved successfully");
         },
         onError: (err) => {
