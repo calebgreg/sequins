@@ -182,10 +182,9 @@ export default function GlobalAiChat() {
 
                     Instructions:
               1. Answer the user's question accurately using the provided data.
-              2. If the user asks to CREATE A TASK or REMINDER (e.g. "remind me to...", "add a task..."), extract the details into the 'create_task' JSON field.
-                 - If a student/person is mentioned (like "Call Cassia"), try to match their name exactly from the ROSTER in 'related_student_name'.
-                 - Set 'due_date' to YYYY-MM-DD format if a time is mentioned (today is ${new Date().toISOString().split('T')[0]}).
-              3. If asked about schedules/students/pricing, just answer in 'response_text'.
+              2. If the user asks to CREATE A TASK (e.g. "remind me to...", "add a task..."), extract the details into the 'create_task' JSON field.
+              3. If the user asks to ADD A NOTE (e.g. "add a note to the Cramer family", "note: student is improving"), extract into 'create_note'.
+                 - Match names to the ROSTER for 'related_name'.
               4. Keep 'response_text' concise, professional, and helpful.
             `,
             response_json_schema: {
@@ -199,6 +198,13 @@ export default function GlobalAiChat() {
                           due_date: { type: "string", format: "date" },
                           related_student_name: { type: "string", description: "Name of student if explicitly mentioned" }
                       }
+                  },
+                  create_note: {
+                      type: "object",
+                      properties: {
+                          content: { type: "string" },
+                          related_name: { type: "string", description: "Name of student or family mentioned" }
+                      }
                   }
               },
               required: ["response_text"]
@@ -207,38 +213,68 @@ export default function GlobalAiChat() {
 
             // Handle Task Creation
             if (response.create_task) {
-            const { title, due_date, related_student_name } = response.create_task;
-
-            // Try to find related parent email if a student is mentioned
-            let parentEmail = null;
-            if (related_student_name) {
-              const student = activeStudents.find(s => s.name.toLowerCase().includes(related_student_name.toLowerCase()));
-              if (student) parentEmail = student.parent_email;
+                const { title, due_date, related_student_name } = response.create_task;
+                let parentEmail = null;
+                if (related_student_name) {
+                  const student = activeStudents.find(s => s.name.toLowerCase().includes(related_student_name.toLowerCase()));
+                  if (student) parentEmail = student.parent_email;
+                }
+                await base44.entities.FamilyTask.create({
+                  title: title,
+                  due_date: due_date || new Date().toISOString().split('T')[0],
+                  status: 'pending',
+                  priority: 'medium',
+                  category: 'admin',
+                  parent_email: parentEmail,
+                  is_shared: false
+                });
+                toast.success("Task created successfully");
             }
 
-            await base44.entities.FamilyTask.create({
-              title: title,
-              due_date: due_date || new Date().toISOString().split('T')[0],
-              status: 'pending',
-              priority: 'medium',
-              category: 'admin',
-              parent_email: parentEmail, // Can be null now
-              is_shared: false
-            });
+            // Handle Note Creation
+            if (response.create_note) {
+                const { content, related_name } = response.create_note;
+                let parentEmail = null;
 
-            toast.success("Task created successfully");
+                // Try to find matching student/family
+                if (related_name) {
+                    const lowerName = related_name.toLowerCase();
+                    const student = activeStudents.find(s => 
+                        s.name.toLowerCase().includes(lowerName) || 
+                        (s.parent_name && s.parent_name.toLowerCase().includes(lowerName)) ||
+                        (s.parent_email && s.parent_email.toLowerCase().includes(lowerName))
+                    );
+                    if (student) parentEmail = student.parent_email;
+                }
+
+                if (parentEmail) {
+                    await base44.entities.FamilyNote.create({
+                        parent_email: parentEmail,
+                        content: content,
+                        author_name: currentUser?.full_name || 'AI Assistant',
+                        is_pinned: false
+                    });
+                    toast.success("Note added to family account");
+                } else {
+                    // Fallback if no specific family found? Maybe generic note or warning?
+                    // For now, we'll just not create it or maybe attach to current user if they are a parent?
+                    // But assuming staff context mostly.
+                    toast.warning("Could not link note to a specific family/student.");
+                }
             }
 
             setMessages(prev => [...prev, { 
             id: Date.now() + 1, 
             role: 'assistant', 
             content: response.response_text,
-            action: response.create_task ? { type: 'task_created', title: response.create_task.title } : null
+            action: response.create_task ? { type: 'task_created', title: response.create_task.title } : 
+                    response.create_note ? { type: 'note_created' } : null
             }]);
 
-        } catch (err) {
-            setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', content: "I couldn't reach the database." }]);
-        } finally {
+            } catch (err) {
+            console.error("GlobalAiChat Error:", err);
+            setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', content: "I encountered an error processing that request." }]);
+            } finally {
             setIsThinking(false);
         }
     };
