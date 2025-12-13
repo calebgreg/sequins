@@ -215,6 +215,19 @@ export default function GlobalAiChat() {
                                 K
                             </div>
                         )}
+
+                        {isOpen && (
+                            <button 
+                                onClick={(e) => { 
+                                    e.stopPropagation();
+                                    setIsOpen(false); 
+                                    setMessages([]); 
+                                }}
+                                className="w-6 h-6 rounded-full hover:bg-black/5 text-gray-400 hover:text-gray-600 flex items-center justify-center transition-colors"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -239,17 +252,7 @@ export default function GlobalAiChat() {
                     </div>
                 )}
 
-                {/* Close Button (if needed) */}
-                {isOpen && messages.length > 0 && (
-                    <div className="absolute -bottom-8">
-                        <button 
-                            onClick={() => { setIsOpen(false); setMessages([]); }} 
-                            className="text-[10px] text-gray-400 hover:text-gray-600 font-medium bg-white/50 px-3 py-1 rounded-full backdrop-blur-sm"
-                        >
-                            Close Chat
-                        </button>
-                    </div>
-                )}
+
             </div>
         </div>
     );
