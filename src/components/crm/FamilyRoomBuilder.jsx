@@ -440,22 +440,42 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                                                                 className="h-8 text-xs bg-gray-50"
                                                                                 placeholder="Paste image URL"
                                                                                 onBlur={(e) => {
-                                                                                    if (e.target.value) {
-                                                                                        const newUrl = e.target.value;
-                                                                                        const currentImages = module.content.images || [];
-                                                                                        let newImages = [...currentImages];
-                                                                                        if (newImages.length === 0 && module.content.image_url) {
-                                                                                            newImages.push(module.content.image_url);
-                                                                                        }
-                                                                                        newImages.push(newUrl);
-                                                                                        updateModuleContent(module.id, 'images', newImages);
-                                                                                        updateModuleContent(module.id, 'image_url', '');
+                                                                                    const val = e.target.value;
+                                                                                    if (val) {
+                                                                                        setActiveConfig(current => {
+                                                                                            const currentMod = current.modules.find(m => m.id === module.id);
+                                                                                            if (!currentMod) return current;
+                                                                                            
+                                                                                            const currentImages = currentMod.content.images || [];
+                                                                                            const legacyUrl = currentMod.content.image_url;
+                                                                                            let newImages = [...currentImages];
+                                                                                            
+                                                                                            if (newImages.length === 0 && legacyUrl) {
+                                                                                                newImages.push(legacyUrl);
+                                                                                            }
+                                                                                            newImages.push(val);
+
+                                                                                            const newModules = current.modules.map(m => {
+                                                                                                if (m.id === module.id) {
+                                                                                                    return { 
+                                                                                                        ...m, 
+                                                                                                        content: { 
+                                                                                                            ...m.content, 
+                                                                                                            images: newImages,
+                                                                                                            image_url: '' 
+                                                                                                        } 
+                                                                                                    };
+                                                                                                }
+                                                                                                return m;
+                                                                                            });
+                                                                                            return { ...current, modules: newModules };
+                                                                                        });
                                                                                         e.target.value = '';
                                                                                     }
                                                                                 }}
                                                                                 onKeyDown={(e) => {
-                                                                                    if (e.key === 'Enter' && e.currentTarget.value) {
-                                                                                        e.target.blur(); // Trigger onBlur
+                                                                                    if (e.key === 'Enter') {
+                                                                                        e.target.blur();
                                                                                     }
                                                                                 }}
                                                                              />
