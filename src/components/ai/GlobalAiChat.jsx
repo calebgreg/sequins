@@ -45,10 +45,13 @@ const MessageItem = ({ message }) => {
                         {message.content}
 
                         {/* Action Feedback */}
-                        {message.action && message.action.type === 'task_created' && (
+                        {message.action && message.action.type === 'action_executed' && (
                             <div className="mt-3 flex items-center gap-2 text-xs font-medium text-green-600 bg-green-50/50 p-2 rounded-lg border border-green-100">
                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                <span>Created task: "{message.action.title}"</span>
+                                <span>
+                                    {message.action.details.action} {message.action.details.entity}
+                                    {message.action.details.result?.title && `: "${message.action.details.result.title}"`}
+                                </span>
                             </div>
                         )}
                     </div>
@@ -119,156 +122,30 @@ export default function GlobalAiChat() {
         setIsThinking(true);
 
         try {
-            // Omnipotent Data Context - Fetching ALL key entities
-            const [students, classes, settingsList, plans, teachers] = await Promise.all([
-                base44.entities.Student.list(),
-                base44.entities.DanceClass.list(),
-                base44.entities.StudioSettings.list(),
-                base44.entities.TuitionPlan.list(),
-                base44.entities.Teacher.list().catch(() => []) // Graceful fallback
-            ]);
+            // Call the backend Coordinator "Agent"
+            const { data } = await base44.functions.invoke('geneCoordinator', { prompt: userText });
             
-            // 1. Process Settings
-            const settings = settingsList[0] || {};
-
-            // 2. Process Classes (Crucial for schedule questions)
-            const scheduleContext = classes.map(c => 
-                `- ${c.title} (${c.style}): ${c.day}s at ${c.start_time}:00 with ${c.teacher || 'Staff'} (${c.duration}hr)`
-            ).join('\n');
-
-            // 3. Process Students (Concise roster)
-            const activeStudents = students.filter(s => s.status === 'active');
-            const rosterContext = activeStudents.map(s => `${s.name} (${s.age}, ${s.level})`).join(', ');
-
-            // 4. Process Tuition/Pricing
-            const pricingContext = plans.map(p => 
-                `- ${p.name}: $${p.amount} (${p.billing_frequency})`
-            ).join('\n');
-
-            // 5. Construct Master Context
-            const context = `
-                CURRENT USER:
-                Name: ${currentUser?.full_name || 'Guest'}
-                Email: ${currentUser?.email || 'N/A'}
-                Role: ${currentUser?.role || 'visitor'}
-
-                STUDIO INFORMATION:
-                Name: ${settings.name || 'The Studio'}
-                Type: ${settings.type}
-
-                FULL CLASS SCHEDULE:
-                ${scheduleContext}
-
-                TUITION & PRICING:
-                ${pricingContext}
-
-                STUDENT ROSTER (${activeStudents.length} active):
-                ${rosterContext}
-
-                TEACHERS:
-                ${teachers.map(t => t.name).join(', ')}
-            `;
-
-            const response = await base44.integrations.Core.InvokeLLM({
-                prompt: `
-                    System: You are ${aiName || 'Gene'}, the intelligent OS for this dance studio.
-                    You are talking to ${currentUser?.full_name || 'a guest'} (${currentUser?.role || 'visitor'}).
-
-                    You have access to the COMPLETE real-time database below.
-
-                    ${context}
-
-                    User Query: "${userText}"
-
-                    Instructions:
-              1. Answer the user's question accurately using the provided data.
-              2. If the user asks to CREATE A TASK (e.g. "remind me to...", "add a task..."), extract the details into the 'create_task' JSON field.
-              3. If the user asks to ADD A NOTE (e.g. "add a note to the Cramer family", "note: student is improving"), extract into 'create_note'.
-                 - Match names to the ROSTER for 'related_name'.
-              4. Keep 'response_text' concise, professional, and helpful.
-            `,
-            response_json_schema: {
-              type: "object",
-              properties: {
-                  response_text: { type: "string", description: "The chat response to the user" },
-                  create_task: {
-                      type: "object",
-                      properties: {
-                          title: { type: "string" },
-                          due_date: { type: "string", format: "date" },
-                          related_student_name: { type: "string", description: "Name of student if explicitly mentioned" }
-                      }
-                  },
-                  create_note: {
-                      type: "object",
-                      properties: {
-                          content: { type: "string" },
-                          related_name: { type: "string", description: "Name of student or family mentioned" }
-                      }
-                  }
-              },
-              required: ["response_text"]
-            }
-            });
-
-            // Handle Task Creation
-            if (response.create_task) {
-                const { title, due_date, related_student_name } = response.create_task;
-                let parentEmail = null;
-                if (related_student_name) {
-                  const student = activeStudents.find(s => s.name.toLowerCase().includes(related_student_name.toLowerCase()));
-                  if (student) parentEmail = student.parent_email;
-                }
-                await base44.entities.FamilyTask.create({
-                  title: title,
-                  due_date: due_date || new Date().toISOString().split('T')[0],
-                  status: 'pending',
-                  priority: 'medium',
-                  category: 'admin',
-                  parent_email: parentEmail,
-                  is_shared: false
-                });
-                toast.success("Task created successfully");
-            }
-
-            // Handle Note Creation
-            if (response.create_note) {
-                const { content, related_name } = response.create_note;
-                let parentEmail = null;
-
-                // Try to find matching student/family
-                if (related_name) {
-                    const lowerName = related_name.toLowerCase();
-                    const student = activeStudents.find(s => 
-                        s.name.toLowerCase().includes(lowerName) || 
-                        (s.parent_name && s.parent_name.toLowerCase().includes(lowerName)) ||
-                        (s.parent_email && s.parent_email.toLowerCase().includes(lowerName))
-                    );
-                    if (student) parentEmail = student.parent_email;
-                }
-
-                if (parentEmail) {
-                    await base44.entities.FamilyNote.create({
-                        parent_email: parentEmail,
-                        content: content,
-                        author_name: currentUser?.full_name || 'AI Assistant',
-                        is_pinned: false
-                    });
-                    toast.success("Note added to family account");
+            if (data.action_result) {
+                if (data.action_result.type === 'success') {
+                    const { entity, action, result } = data.action_result;
+                    let actionDesc = `${action} ${entity}`;
+                    if (entity === 'FamilyTask' && result.title) actionDesc = `Created task: "${result.title}"`;
+                    if (entity === 'FamilyNote') actionDesc = `Added note to family`;
+                    
+                    toast.success(`Action Executed: ${actionDesc}`);
                 } else {
-                    // Fallback if no specific family found? Maybe generic note or warning?
-                    // For now, we'll just not create it or maybe attach to current user if they are a parent?
-                    // But assuming staff context mostly.
-                    toast.warning("Could not link note to a specific family/student.");
+                    toast.error(`Action Failed: ${data.action_result.message}`);
                 }
             }
 
             setMessages(prev => [...prev, { 
-            id: Date.now() + 1, 
-            role: 'assistant', 
-            content: response.response_text,
-            action: response.create_task ? { type: 'task_created', title: response.create_task.title } : 
-                    response.create_note ? { type: 'note_created' } : null
+                id: Date.now() + 1, 
+                role: 'assistant', 
+                content: data.response_text,
+                action: data.action_result ? { 
+                    type: 'action_executed', 
+                    details: data.action_result 
+                } : null
             }]);
 
             } catch (err) {
