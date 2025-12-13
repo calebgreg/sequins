@@ -15,8 +15,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from 'date-fns';
 import useAiAssistant from '../components/ai/useAiAssistant';
 import { Sparkles } from 'lucide-react';
+import TaskComments from '../components/tasks/TaskComments';
 
-const TaskItem = ({ task, onUpdate, onDelete, onToggleStatus, onTogglePriority, expandedTaskId, setExpandedTaskId, priorityConfig }) => {
+const TaskItem = ({ task, currentUser, onUpdate, onDelete, onToggleStatus, onTogglePriority, expandedTaskId, setExpandedTaskId, priorityConfig }) => {
     const [localTitle, setLocalTitle] = useState(task.title);
     const [localDescription, setLocalDescription] = useState(task.description || '');
     
@@ -164,9 +165,13 @@ const TaskItem = ({ task, onUpdate, onDelete, onToggleStatus, onTogglePriority, 
                                     <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete Task
                                 </Button>
                             </div>
-                        </div>
-                    </motion.div>
-                )}
+
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                <TaskComments taskId={task.id} currentUser={currentUser} />
+                            </div>
+                            </div>
+                            </motion.div>
+                            )}
             </AnimatePresence>
         </motion.div>
     );
@@ -353,6 +358,7 @@ export default function TasksPage() {
                             <TaskItem 
                                 key={task.id}
                                 task={task}
+                                currentUser={currentUser}
                                 onUpdate={handleUpdate}
                                 onDelete={handleDelete}
                                 onToggleStatus={toggleStatus}
