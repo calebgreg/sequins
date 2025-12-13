@@ -6,12 +6,33 @@ import BillingWidget from '../components/portal/BillingWidget';
 import BillingPortal from '../components/portal/BillingPortal';
 import ScheduleTimeline from '../components/portal/ScheduleTimeline';
 import AIChatWidget from '../components/portal/AIChatWidget';
+import EventDetailCard from '../components/portal/EventDetailCard';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FamilyPortal() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isBillingOpen, setIsBillingOpen] = useState(false);
+
+  // Fetch Current User
+  const { data: user } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => base44.auth.me().catch(() => null),
+  });
+
+  // Fetch Family Room Config
+  const { data: familyConfigList = [] } = useQuery({
+    queryKey: ['familyRoomConfig', user?.email],
+    queryFn: () => base44.entities.FamilyRoomConfig.filter({ parent_email: user?.email }),
+    enabled: !!user?.email
+  });
+  const familyConfig = familyConfigList[0];
+
+  // Fetch Performances (for event cards)
+  const { data: performances = [] } = useQuery({
+    queryKey: ['performances'],
+    queryFn: () => base44.entities.Performance.list(),
+  });
 
   // Fetch Invoices for Balance
   const { data: invoices = [] } = useQuery({
@@ -94,6 +115,17 @@ export default function FamilyPortal() {
           </AnimatePresence>
 
           <ScheduleTimeline classes={filteredClasses} />
+
+          {/* Dynamic Modules (like Event Cards) */}
+          {familyConfig?.modules?.filter(m => m.isVisible && m.type === 'event_details_card').map(module => {
+             const perf = performances.find(p => p.id === module.content.performance_id);
+             if (!perf) return null;
+             return (
+               <div key={module.id} className="mt-8">
+                  <EventDetailCard performance={perf} />
+               </div>
+             );
+          })}
         </div>
 
         {/* Right Column: AI Chat */}
