@@ -173,10 +173,12 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     return (
         <div className="space-y-6">
             {/* --- Quarterback Header --- */}
-            <div className="bg-[#333333] text-white rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+            <div className="bg-[#333333] text-white rounded-[32px] shadow-2xl relative group">
+                <div className="absolute inset-0 overflow-hidden rounded-[32px]">
+                    <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+                </div>
                 
-                <div className="relative z-10">
+                <div className="relative z-10 p-8">
                     <button 
                         onClick={onBack}
                         className="flex items-center text-white/60 hover:text-white transition-colors mb-6 text-sm font-medium uppercase tracking-wider"
