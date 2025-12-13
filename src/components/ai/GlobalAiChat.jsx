@@ -343,7 +343,7 @@ export default function GlobalAiChat() {
                         onFocus={handleFocus}
                         onKeyDown={handleKeyDown}
                         placeholder={`Ask ${aiName}...`}
-                        className="flex-1 bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none h-full font-medium"
+                        className="flex-1 bg-transparent border-none text-[13px] text-pink-500 placeholder:text-pink-300 focus:ring-0 focus:outline-none h-full font-medium"
                     />
 
                     <div className="flex items-center gap-2">
