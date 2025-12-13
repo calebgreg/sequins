@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import EventDetailCard from '@/components/portal/EventDetailCard';
 
 export default function FamilyRoom({ previewConfig = null, isMobilePreview = false }) {
     const [searchParams] = useSearchParams();
@@ -58,6 +59,12 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
         },
         enabled: !!configId && !isPreview,
         retry: false
+    });
+
+    // Fetch performances for event cards
+    const { data: performances = [] } = useQuery({
+        queryKey: ['performances'],
+        queryFn: () => base44.entities.Performance.list(),
     });
 
     const config = previewConfig || (urlPreview ? previewData : dbConfig);
@@ -390,6 +397,28 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                                 )}
                              </div>
                          </div>
+                    );
+                }
+
+                // EVENT DETAILS CARD MODULE
+                if (module.type === 'event_details_card') {
+                    const perf = performances.find(p => p.id === module.content.performance_id);
+                    if (!perf && !isPreview) return null;
+                    
+                    // Preview mock if needed
+                    const displayPerf = perf || (isPreview ? {
+                        title: "Winter Showcase 2025",
+                        date: "2025-12-12",
+                        venue: { venue_name: "Abbey Theater", formatted_address: "5600 Post Rd, Dublin, OH 43017" },
+                        routines: [{ duration_seconds: 180 }, { duration_seconds: 240 }]
+                    } : null);
+
+                    if (!displayPerf) return null;
+
+                    return (
+                        <div key={module.id} className="max-w-5xl mx-auto px-6 py-12">
+                            <EventDetailCard performance={displayPerf} />
+                        </div>
                     );
                 }
 
