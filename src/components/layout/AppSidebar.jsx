@@ -10,8 +10,9 @@ import {
   LogOut,
   Briefcase,
   Search,
-  CheckSquare
-} from 'lucide-react';
+  CheckSquare,
+  Mic2
+  } from 'lucide-react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
@@ -37,6 +38,7 @@ export default function AppSidebar({ className = "", onSearchClick }) {
     { path: '/ClassManager', icon: Calendar, label: 'Schedule' },
     { path: '/Students', icon: GraduationCap, label: 'Students' },
     { path: '/Teachers', icon: Users, label: 'Staff' },
+    { path: '/Performances', icon: Mic2, label: 'Performances' },
     { path: '/Billing', icon: CreditCard, label: 'Billing' },
     { path: '/Features', icon: Sparkles, label: 'Features' },
     { path: '/Settings', icon: Settings, label: 'Settings' },
