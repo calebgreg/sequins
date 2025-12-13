@@ -7,6 +7,7 @@ import {
     PlayCircle, PauseCircle, Timer, Trash2
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { toast } from 'sonner';
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -179,7 +180,10 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                             >
                                 {isEditing ? 'Done' : 'Edit Details'}
                             </Button>
-                            <Button className="bg-white text-[#333333] hover:bg-gray-100 font-bold shadow-lg shadow-black/20">
+                            <Button 
+                                onClick={() => toast.info("Show Mode is coming soon!", { description: "This feature will allow you to run the show in real-time." })}
+                                className="bg-white text-[#333333] hover:bg-gray-100 font-bold shadow-lg shadow-black/20"
+                            >
                                 <PlayCircle className="w-4 h-4 mr-2" /> Start Show Mode
                             </Button>
                         </div>
@@ -371,7 +375,10 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                         <p className="text-white/80 text-sm mb-4">
                             Need help ordering the show? I can minimize quick changes for you.
                         </p>
-                        <Button className="w-full bg-white text-indigo-600 hover:bg-indigo-50 border-none font-bold">
+                        <Button 
+                            onClick={() => toast.info("AI Optimization", { description: "I'm learning how to optimize your run sheet. Check back soon!" })}
+                            className="w-full bg-white text-indigo-600 hover:bg-indigo-50 border-none font-bold"
+                        >
                             <Mic2 className="w-4 h-4 mr-2" /> "Optimize Run Order"
                         </Button>
                     </div>
