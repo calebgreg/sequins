@@ -438,44 +438,45 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                                                                              <ImageIcon className="w-4 h-4 text-gray-400" />
                                                                              <Input 
                                                                                 className="h-8 text-xs bg-gray-50"
-                                                                                placeholder="Paste image URL"
+                                                                                placeholder="Paste image URL and press Enter"
+                                                                                onKeyDown={(e) => {
+                                                                                    if (e.key === 'Enter') {
+                                                                                        const val = e.currentTarget.value;
+                                                                                        if (val) {
+                                                                                            setActiveConfig(current => {
+                                                                                                const mod = current.modules.find(m => m.id === module.id);
+                                                                                                if (!mod) return current;
+                                                                                                const imgs = [...(mod.content.images || [])];
+                                                                                                if (imgs.length === 0 && mod.content.image_url) imgs.push(mod.content.image_url);
+                                                                                                imgs.push(val);
+                                                                                                
+                                                                                                return {
+                                                                                                    ...current,
+                                                                                                    modules: current.modules.map(m => m.id === module.id ? { ...m, content: { ...m.content, images: imgs, image_url: '' } } : m)
+                                                                                                };
+                                                                                            });
+                                                                                            e.currentTarget.value = '';
+                                                                                            toast.success("Image added to slideshow");
+                                                                                        }
+                                                                                    }
+                                                                                }}
                                                                                 onBlur={(e) => {
                                                                                     const val = e.target.value;
                                                                                     if (val) {
                                                                                         setActiveConfig(current => {
-                                                                                            const currentMod = current.modules.find(m => m.id === module.id);
-                                                                                            if (!currentMod) return current;
+                                                                                            const mod = current.modules.find(m => m.id === module.id);
+                                                                                            if (!mod) return current;
+                                                                                            const imgs = [...(mod.content.images || [])];
+                                                                                            if (imgs.length === 0 && mod.content.image_url) imgs.push(mod.content.image_url);
+                                                                                            imgs.push(val);
                                                                                             
-                                                                                            const currentImages = currentMod.content.images || [];
-                                                                                            const legacyUrl = currentMod.content.image_url;
-                                                                                            let newImages = [...currentImages];
-                                                                                            
-                                                                                            if (newImages.length === 0 && legacyUrl) {
-                                                                                                newImages.push(legacyUrl);
-                                                                                            }
-                                                                                            newImages.push(val);
-
-                                                                                            const newModules = current.modules.map(m => {
-                                                                                                if (m.id === module.id) {
-                                                                                                    return { 
-                                                                                                        ...m, 
-                                                                                                        content: { 
-                                                                                                            ...m.content, 
-                                                                                                            images: newImages,
-                                                                                                            image_url: '' 
-                                                                                                        } 
-                                                                                                    };
-                                                                                                }
-                                                                                                return m;
-                                                                                            });
-                                                                                            return { ...current, modules: newModules };
+                                                                                            return {
+                                                                                                ...current,
+                                                                                                modules: current.modules.map(m => m.id === module.id ? { ...m, content: { ...m.content, images: imgs, image_url: '' } } : m)
+                                                                                            };
                                                                                         });
                                                                                         e.target.value = '';
-                                                                                    }
-                                                                                }}
-                                                                                onKeyDown={(e) => {
-                                                                                    if (e.key === 'Enter') {
-                                                                                        e.target.blur();
+                                                                                        toast.success("Image added to slideshow");
                                                                                     }
                                                                                 }}
                                                                              />
