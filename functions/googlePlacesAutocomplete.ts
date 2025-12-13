@@ -29,9 +29,6 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
                 input: query,
-                // Optional: Restrict to establishments or geocodes if needed, 
-                // but for general venue search, default is usually fine.
-                // We can also add session tokens if we were managing sessions.
             })
         });
 

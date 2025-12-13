@@ -19,7 +19,6 @@ Deno.serve(async (req) => {
         }
 
         // New Places API (v1) - Get Details
-        // FieldMask is required to specify which fields to return
         const fields = 'id,displayName,formattedAddress,location';
         const url = `https://places.googleapis.com/v1/places/${place_id}`;
         
@@ -38,7 +37,6 @@ Deno.serve(async (req) => {
             return Response.json({ error: data.error?.message || 'Failed to fetch place details' }, { status: googleRes.status });
         }
 
-        // Map response to our entity structure
         const venueDetails = {
             venue_name: data.displayName?.text || '',
             formatted_address: data.formattedAddress || '',
