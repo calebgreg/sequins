@@ -16,8 +16,16 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import Notifications from './Notifications';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from "@/api/base44Client";
 
 export default function AppSidebar({ className = "", onSearchClick }) {
+  const { data: currentUser } = useQuery({
+      queryKey: ['me'],
+      queryFn: () => base44.auth.me().catch(() => null),
+      retry: false
+  });
   const location = useLocation();
   
   // Helper to check active state
@@ -64,6 +72,12 @@ export default function AppSidebar({ className = "", onSearchClick }) {
                 <p>Search & Commands</p>
              </TooltipContent>
           </Tooltip>
+
+          <div className="w-8 h-px bg-white/10" />
+
+          <div className="mb-2">
+             <Notifications currentUser={currentUser} />
+          </div>
 
           <div className="w-8 h-px bg-white/10" />
 
