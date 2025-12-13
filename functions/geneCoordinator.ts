@@ -69,8 +69,10 @@ Deno.serve(async (req) => {
             - FamilyNote: create (parent_email, content, is_pinned)
             - StudentNote: create (student_name, content, category, sentiment)
             - Student: update (id, status, notes, etc) - *Use with caution*
-            
+            - Student: read (payload: { name: "student name" }) - Use this to look up details like phone, email, address, etc.
+
             IMPORTANT:
+            - If the user asks for personal info (phone, email, etc.) that isn't in the context, use the 'read' action to look it up.
             - When creating FamilyTask or FamilyNote, you MUST resolve a name to a 'parent_email' from the Roster.
             - If you cannot resolve a name to a specific entity, ask for clarification instead of guessing.
             - Default 'due_date' for tasks is today (${new Date().toISOString().split('T')[0]}).
@@ -100,7 +102,7 @@ Deno.serve(async (req) => {
                             },
                             action: { 
                                 type: "string", 
-                                enum: ["create", "update"] 
+                                enum: ["create", "update", "read"] 
                             },
                             payload: {
                                 type: "object",
@@ -133,7 +135,39 @@ Deno.serve(async (req) => {
                 // so standard RLS (Row Level Security) applies automatically.
                 
                 let result;
-                if (action === 'create') {
+
+                if (action === 'read') {
+                    // Handle Read/Lookup Action
+                    if (entity === 'Student') {
+                        const searchName = (payload.name || '').toLowerCase();
+                        // Search in the already fetched students list (memory cache) for efficiency
+                        const foundStudent = students.find(s => s.name.toLowerCase().includes(searchName));
+
+                        if (foundStudent) {
+                            // Re-invoke LLM with the found data to generate the natural language answer
+                            const answer = await base44.integrations.Core.InvokeLLM({
+                                prompt: `
+                                    SYSTEM: You are Gene.
+                                    CONTEXT: The user asked a question about ${foundStudent.name}.
+                                    RETRIEVED DATA: ${JSON.stringify(foundStudent)}
+
+                                    USER ORIGINAL QUESTION: "${prompt}"
+
+                                    INSTRUCTION: Answer the user's question directly using the RETRIEVED DATA. Be concise and professional.
+                                `
+                            });
+
+                            // Update the response text to the user
+                            responseText = typeof answer === 'string' ? answer : answer.response_text || "Found the information.";
+
+                            // We successfully answered, no need for a generic "Action Executed" toast for a simple question
+                            actionResult = null; 
+                        } else {
+                            responseText = `I couldn't find a student named "${payload.name}".`;
+                            actionResult = { type: 'error', message: 'Student not found' };
+                        }
+                    }
+                } else if (action === 'create') {
                     // Enrich payload with metadata if needed
                     if (entity === 'FamilyNote') {
                         payload.author_name = user.full_name || 'Gene AI';
@@ -146,12 +180,12 @@ Deno.serve(async (req) => {
                     }
 
                     result = await base44.entities[entity].create(payload);
+                    actionResult = { type: 'success', entity, action, result };
                 } else if (action === 'update') {
                     if (!entity_id) throw new Error("Missing entity_id for update action");
                     result = await base44.entities[entity].update(entity_id, payload);
+                    actionResult = { type: 'success', entity, action, result };
                 }
-
-                actionResult = { type: 'success', entity, action, result };
                 
                 // Append confirmation to text if not present (optional, LLM usually handles this in response_text)
                 // but we can add a system flag for the frontend to show a nice checkmark
