@@ -18,25 +18,33 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Google Maps API key not configured' }, { status: 500 });
         }
 
-        // Fetch details: name, formatted_address, geometry (lat, lng)
-        const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&fields=name,formatted_address,geometry&key=${apiKey}`;
+        // New Places API (v1) - Get Details
+        // FieldMask is required to specify which fields to return
+        const fields = 'id,displayName,formattedAddress,location';
+        const url = `https://places.googleapis.com/v1/places/${place_id}`;
         
-        const googleRes = await fetch(url);
+        const googleRes = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Goog-Api-Key': apiKey,
+                'X-Goog-FieldMask': fields
+            }
+        });
+
         const data = await googleRes.json();
 
-        if (data.status !== 'OK') {
+        if (!googleRes.ok) {
             console.error('Google API error:', data);
-            return Response.json({ error: 'Failed to fetch place details' }, { status: 500 });
+            return Response.json({ error: data.error?.message || 'Failed to fetch place details' }, { status: googleRes.status });
         }
 
-        const result = data.result;
-        
+        // Map response to our entity structure
         const venueDetails = {
-            venue_name: result.name,
-            formatted_address: result.formatted_address,
-            place_id: place_id,
-            lat: result.geometry?.location?.lat,
-            lng: result.geometry?.location?.lng
+            venue_name: data.displayName?.text || '',
+            formatted_address: data.formattedAddress || '',
+            place_id: data.id,
+            lat: data.location?.latitude,
+            lng: data.location?.longitude
         };
 
         return Response.json(venueDetails);

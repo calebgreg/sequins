@@ -18,22 +18,40 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Google Maps API key not configured' }, { status: 500 });
         }
 
-        const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&types=establishment|geocode&key=${apiKey}`;
+        // New Places API (v1)
+        const url = 'https://places.googleapis.com/v1/places:autocomplete';
         
-        const googleRes = await fetch(url);
+        const googleRes = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': apiKey
+            },
+            body: JSON.stringify({
+                input: query,
+                // Optional: Restrict to establishments or geocodes if needed, 
+                // but for general venue search, default is usually fine.
+                // We can also add session tokens if we were managing sessions.
+            })
+        });
+
         const data = await googleRes.json();
 
-        if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+        if (!googleRes.ok) {
             console.error('Google API error:', data);
-            return Response.json({ error: 'Failed to fetch suggestions' }, { status: 500 });
+            return Response.json({ error: data.error?.message || 'Failed to fetch suggestions' }, { status: googleRes.status });
         }
 
-        const suggestions = (data.predictions || []).map(p => ({
-            description: p.description,
-            place_id: p.place_id,
-            main_text: p.structured_formatting?.main_text || p.description,
-            secondary_text: p.structured_formatting?.secondary_text || ''
-        }));
+        // Map the new API response format to our frontend expectation
+        const suggestions = (data.suggestions || []).map(item => {
+            const p = item.placePrediction;
+            return {
+                description: p.text?.text, // Full text
+                place_id: p.placeId,
+                main_text: p.structuredFormat?.mainText?.text || p.text?.text,
+                secondary_text: p.structuredFormat?.secondaryText?.text || ''
+            };
+        });
 
         return Response.json({ suggestions });
 
