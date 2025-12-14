@@ -375,7 +375,7 @@ export default function StudentCommunicationTab({ student, className = "" }) {
                                             : 'bg-white text-gray-400 hover:bg-gray-100'
                                         }`}
                                     >
-                                        <Bell className="w-4 h-4" /> Family Portal
+                                        <Bell className="w-4 h-4" /> Family Room
                                     </button>
                                 </div>
 
