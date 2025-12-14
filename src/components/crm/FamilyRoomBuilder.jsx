@@ -101,7 +101,7 @@ export default function FamilyRoomBuilder({ family, onClose }) {
                             id: 'mod_1',
                             type: 'hero',
                             content: {
-                                title: `The ${family.parent_name.split(' ').pop()} Family Portal`,
+                                title: `The ${family.parent_name.split(' ').pop()} Family Room`,
                                 subtitle: "We're so excited to have you with us this season.",
                                 image_url: "https://images.unsplash.com/photo-1518834107812-67b0b7c58434?q=80&w=2535&auto=format&fit=crop"
                             },
