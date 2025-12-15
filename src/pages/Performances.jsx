@@ -12,12 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import PerformanceDetail from '../components/performances/PerformanceDetail';
-import CreatePerformanceModal from '../components/performances/CreatePerformanceModal';
+
 import ProducerWorkspace from '../components/performances/ProducerWorkspace';
 
 export default function PerformancesPage() {
     const [selectedPerformanceId, setSelectedPerformanceId] = useState(null);
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
     const [view, setView] = useState('list'); // 'list' | 'producer'
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -29,17 +29,7 @@ export default function PerformancesPage() {
         queryFn: () => base44.entities.Performance.list('-date'),
     });
 
-    const createPerformance = useMutation({
-        mutationFn: (data) => base44.entities.Performance.create({
-            ...data,
-            status: 'planning' // Default status
-        }),
-        onSuccess: (newPerf) => {
-            queryClient.invalidateQueries(['performances']);
-            setSelectedPerformanceId(newPerf.id);
-            setIsCreateModalOpen(false);
-        }
-    });
+
 
     const filteredPerformances = performances.filter(p => 
         p.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -80,15 +70,10 @@ export default function PerformancesPage() {
                 <div className="flex gap-3">
                     <Button 
                         onClick={() => setView('producer')}
-                        className="bg-white hover:bg-gray-50 text-[#333333] border border-gray-200 rounded-full px-6 h-12 shadow-sm transition-all hover:shadow-md"
+                        className="bg-[#333333] hover:bg-black text-white rounded-full px-8 h-12 shadow-lg shadow-gray-200 transition-all hover:scale-105 group"
                     >
-                        <PenTool className="w-4 h-4 mr-2" /> Open Drafting Table
-                    </Button>
-                    <Button 
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="bg-[#333333] hover:bg-black text-white rounded-full px-6 h-12 shadow-lg shadow-gray-200 transition-all hover:scale-105"
-                    >
-                        <Plus className="w-5 h-5 mr-2" /> Create Event
+                        <PenTool className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" /> 
+                        Open Drafting Table
                     </Button>
                 </div>
             </div>
@@ -104,12 +89,7 @@ export default function PerformancesPage() {
                 />
             </div>
 
-            <CreatePerformanceModal 
-                open={isCreateModalOpen} 
-                onOpenChange={setIsCreateModalOpen}
-                onSubmit={(data) => createPerformance.mutate(data)}
-                isLoading={createPerformance.isPending}
-            />
+
 
             {/* Event Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
