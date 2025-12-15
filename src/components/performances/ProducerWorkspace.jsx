@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
     Loader2, Sparkles, AlertTriangle, Music, ArrowRight, Save, Wand2, X, 
     ChevronLeft, Calendar, PenTool, MapPin, Trophy, Star, Users, LayoutTemplate, Clock,
-    CheckSquare, ShieldAlert, FileText, Shirt, Lightbulb, Speaker, Move
+    CheckSquare, ShieldAlert, FileText, Shirt, Lightbulb, Speaker, Footprints
 } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -549,7 +549,7 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                                                 {/* Stage Action */}
                                                                 <div className="bg-indigo-50/50 p-3 rounded-lg border border-indigo-100">
                                                                     <div className="flex items-center gap-2 text-xs font-bold text-indigo-800 uppercase tracking-wider mb-1">
-                                                                        <Move className="w-3 h-3" /> Stage Action
+                                                                        <Footprints className="w-3 h-3" /> Stage Action
                                                                     </div>
                                                                     <p className="text-sm text-indigo-900 leading-snug">{segment.stage_action}</p>
                                                                 </div>
