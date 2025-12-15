@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
     Loader2, Sparkles, AlertTriangle, Music, ArrowRight, Save, Wand2, X, 
-    ChevronLeft, Calendar, PenTool, MapPin, Trophy, Star, Users, LayoutTemplate
+    ChevronLeft, Calendar, PenTool, MapPin, Trophy, Star, Users, LayoutTemplate, Clock
 } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from '@tanstack/react-query';
