@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, Check, AlertTriangle, Music, ArrowRight, Save } from 'lucide-react';
+import { Loader2, Sparkles, Check, AlertTriangle, Music, ArrowRight, Save, Wand2, X } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProducerAIModal({ open, onOpenChange, onPlanCreated }) {
     const [prompt, setPrompt] = useState('');
@@ -31,33 +31,15 @@ export default function ProducerAIModal({ open, onOpenChange, onPlanCreated }) {
 
     const generatePlanMutation = useMutation({
         mutationFn: async (userPrompt) => {
-            // Build Context
             const context = {
-                studio: {
-                    studio_name: studioSettings?.name || "My Dance Studio"
-                },
-                venue: {
-                    theater_size: null, // Let AI infer or ask
-                    stage_width_ft: null,
-                    stage_depth_ft: null,
-                    wings: null,
-                    backstage_notes: null
-                },
-                show_config: {
-                    num_shows: null,
-                    target_runtime_minutes: null,
-                    intermission: true,
-                    announcements_style: "brief"
-                },
+                studio: { studio_name: studioSettings?.name || "My Dance Studio" },
                 classes: classes
-                    .filter(c => c.type !== 'admin') // Exclude admin blocks
+                    .filter(c => c.type !== 'admin')
                     .map(c => ({
                         class_id: c.id,
                         name: c.title,
-                        style: c.style || c.title, // Fallback to title if style missing
-                        age_range: "Mixed", // Default as we don't have strict age data on class
-                        dancer_count: c.student_names?.length || 5, // Default to 5 if empty/unknown
-                        skill_level: "Mixed",
+                        style: c.style || c.title,
+                        dancer_count: c.student_names?.length || 5,
                         approx_length_minutes: (c.duration || 1) * 60,
                         notes: `Taught by ${c.teacher || 'Staff'}`
                     }))
@@ -83,10 +65,9 @@ export default function ProducerAIModal({ open, onOpenChange, onPlanCreated }) {
 
     const createEventMutation = useMutation({
         mutationFn: async (plan) => {
-            // 1. Create Performance
             const performanceData = {
                 title: plan.extracted_intake.theme_or_story_seed || "New Recital",
-                date: new Date().toISOString().split('T')[0], // Default to today, user can change
+                date: new Date().toISOString().split('T')[0],
                 status: 'planning',
                 type: 'recital',
                 description: plan.producer_writeup
@@ -94,10 +75,9 @@ export default function ProducerAIModal({ open, onOpenChange, onPlanCreated }) {
             
             const newPerf = await base44.entities.Performance.create(performanceData);
 
-            // 2. Create Routines
             const routines = plan.show_plan.run_of_show
                 .filter(segment => segment.segment_type === 'performance')
-                .map((segment, index) => ({
+                .map((segment) => ({
                     performance_id: newPerf.id,
                     title: segment.title,
                     order_index: segment.order,
@@ -106,8 +86,6 @@ export default function ProducerAIModal({ open, onOpenChange, onPlanCreated }) {
                     notes: segment.stage_notes
                 }));
 
-            // Bulk create isn't available for all entities in standard SDK sometimes, strictly use create loop if needed or bulkCreate if supported.
-            // Documentation says bulkCreate exists.
             if (routines.length > 0) {
                 await base44.entities.PerformanceRoutine.bulkCreate(routines);
             }
@@ -118,7 +96,6 @@ export default function ProducerAIModal({ open, onOpenChange, onPlanCreated }) {
             toast.success("Event created successfully!");
             onPlanCreated(newPerf.id);
             onOpenChange(false);
-            // Reset state
             setGeneratedPlan(null);
             setPrompt('');
         },
@@ -136,245 +113,268 @@ export default function ProducerAIModal({ open, onOpenChange, onPlanCreated }) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-[#F4F4F6]">
-                {/* Header */}
-                <div className="p-6 bg-[#333333] text-white flex justify-between items-start shrink-0">
-                    <div>
-                        <DialogTitle className="text-2xl font-serif flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-amber-300" />
-                            Sequins Producer
-                        </DialogTitle>
-                        <DialogDescription className="text-white/60 mt-1">
-                            Your AI show director. Describe your vision, and we'll build the plan.
-                        </DialogDescription>
+            <DialogContent className="max-w-5xl h-[90vh] p-0 gap-0 bg-[#FDFBF7] overflow-hidden border-none shadow-2xl flex flex-col">
+                
+                {/* Custom Header */}
+                <div className="h-16 border-b border-gray-100 flex items-center justify-between px-8 bg-white shrink-0 z-10">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-[#333333] rounded-lg flex items-center justify-center text-white">
+                            <Sparkles className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h2 className="font-serif text-lg text-[#333333]">Sequins Producer</h2>
+                        </div>
                     </div>
+                    <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="rounded-full hover:bg-gray-100">
+                        <X className="w-5 h-5 text-gray-400" />
+                    </Button>
                 </div>
 
-                {/* Main Content Area */}
-                <div className="flex-1 overflow-hidden flex flex-col">
-                    {!generatedPlan ? (
-                        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-2xl mx-auto w-full">
-                            {isGenerating ? (
-                                <div className="space-y-6 animate-in fade-in duration-500">
-                                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-lg">
-                                        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                <div className="flex-1 overflow-hidden relative">
+                    <AnimatePresence mode="wait">
+                        {!generatedPlan ? (
+                            <motion.div 
+                                key="input-state"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="h-full flex flex-col items-center justify-center p-8 md:p-12 max-w-3xl mx-auto"
+                            >
+                                {isGenerating ? (
+                                    <div className="text-center space-y-8">
+                                        <div className="relative w-24 h-24 mx-auto">
+                                            <div className="absolute inset-0 border-4 border-indigo-100 rounded-full animate-ping opacity-20" />
+                                            <div className="relative w-full h-full bg-white rounded-full flex items-center justify-center shadow-xl border border-indigo-50">
+                                                <Wand2 className="w-10 h-10 text-indigo-600 animate-pulse" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-3xl font-serif text-[#333333] mb-3">Designing your show...</h3>
+                                            <div className="h-6 overflow-hidden relative">
+                                                <motion.div 
+                                                    animate={{ y: [-24, 0, 0, -24, -48, -48, -72] }}
+                                                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                                                    className="text-gray-400 font-medium"
+                                                >
+                                                    <p className="h-6">Analyzing class roster...</p>
+                                                    <p className="h-6">Balancing energy curves...</p>
+                                                    <p className="h-6">Curating music selections...</p>
+                                                    <p className="h-6">Structuring run of show...</p>
+                                                </motion.div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-[#333333]">Designing your show...</h3>
-                                        <p className="text-gray-500 mt-2">Sequins is analyzing your classes, balancing energy levels, and curating music.</p>
+                                ) : (
+                                    <div className="w-full space-y-8">
+                                        <div className="text-center space-y-3">
+                                            <h1 className="text-4xl md:text-5xl font-serif text-[#333333]">What are we creating?</h1>
+                                            <p className="text-lg text-gray-500 max-w-xl mx-auto">
+                                                Share your theme, constraints, or vision. Sequins will handle the logistics.
+                                            </p>
+                                        </div>
+
+                                        <div className="bg-white p-2 rounded-[24px] shadow-xl shadow-gray-200/50 border border-gray-100">
+                                            <Textarea 
+                                                value={prompt}
+                                                onChange={(e) => setPrompt(e.target.value)}
+                                                placeholder="e.g. A 'Winter Wonderland' recital. 2 hours max. We need to start with the 3-year-olds and end with the seniors. Keep transitions tight."
+                                                className="min-h-[200px] text-xl p-6 border-none focus-visible:ring-0 resize-none font-light placeholder:text-gray-300 rounded-[20px]"
+                                            />
+                                            <div className="px-4 pb-4 flex items-center justify-between border-t border-gray-50 pt-4 mt-2">
+                                                <div className="flex items-center gap-2 text-xs text-gray-400 font-medium uppercase tracking-wider">
+                                                    <Sparkles className="w-3 h-3 text-indigo-400" />
+                                                    {classes.length} Classes Available
+                                                </div>
+                                                <Button 
+                                                    onClick={handleGenerate} 
+                                                    disabled={!prompt.trim()}
+                                                    className="bg-[#333333] hover:bg-black text-white rounded-full px-8 h-12 text-base font-medium shadow-lg hover:shadow-xl transition-all"
+                                                >
+                                                    Generate Plan <ArrowRight className="w-4 h-4 ml-2" />
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-center gap-3">
+                                            {["Story-driven Recital", "Holiday Showcase", "Competition Lineup"].map(tag => (
+                                                <button 
+                                                    key={tag}
+                                                    onClick={() => setPrompt(prev => prev ? prev + " " + tag : tag)}
+                                                    className="px-4 py-2 bg-white rounded-full text-sm text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 border border-gray-100 transition-colors"
+                                                >
+                                                    {tag}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </motion.div>
+                        ) : (
+                            <motion.div 
+                                key="result-state"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="h-full flex flex-col md:flex-row bg-[#FDFBF7]"
+                            >
+                                {/* Left Sidebar - Producer Notes */}
+                                <div className="w-full md:w-80 border-r border-gray-200 bg-white p-6 overflow-y-auto shrink-0 z-10">
+                                    <div className="space-y-8">
+                                        <div>
+                                            <h3 className="font-serif text-2xl text-[#333333] mb-4">Producer's Note</h3>
+                                            <div className="prose prose-sm prose-gray leading-relaxed text-gray-600">
+                                                {generatedPlan.producer_writeup}
+                                            </div>
+                                        </div>
+
+                                        {/* Risk Flags */}
+                                        {generatedPlan.show_plan.producer_notes.risk_flags.length > 0 && (
+                                            <div className="bg-amber-50 rounded-xl p-5 border border-amber-100">
+                                                <h4 className="font-bold text-amber-900 text-sm uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                    <AlertTriangle className="w-4 h-4" /> Watch Outs
+                                                </h4>
+                                                <ul className="space-y-2">
+                                                    {generatedPlan.show_plan.producer_notes.risk_flags.map((risk, i) => (
+                                                        <li key={i} className="text-sm text-amber-800 flex items-start gap-2 leading-snug">
+                                                            <span className="mt-1.5 w-1 h-1 rounded-full bg-amber-400 shrink-0" />
+                                                            {risk}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        {/* Questions */}
+                                        {generatedPlan.questions && generatedPlan.questions.length > 0 && (
+                                            <div className="bg-indigo-50 rounded-xl p-5 border border-indigo-100">
+                                                <h4 className="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-3">
+                                                    Clarifications
+                                                </h4>
+                                                <ul className="space-y-2">
+                                                    {generatedPlan.questions.map((q, i) => (
+                                                        <li key={i} className="text-sm text-indigo-800 flex items-start gap-2 leading-snug">
+                                                            <span className="mt-1.5 w-1 h-1 rounded-full bg-indigo-400 shrink-0" />
+                                                            {q}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="w-full space-y-6">
-                                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-left">
-                                        <label className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-2 block">
-                                            Tell Sequins about your show
-                                        </label>
-                                        <Textarea 
-                                            value={prompt}
-                                            onChange={(e) => setPrompt(e.target.value)}
-                                            placeholder="e.g. We're doing a 'Time Travel' theme. We have a lot of little kids so put them early. I want a big finale with the seniors. About 2 hours long."
-                                            className="min-h-[150px] text-lg p-4 border-gray-200 focus:border-indigo-500 transition-all resize-none"
-                                        />
-                                        <div className="mt-4 flex justify-between items-center">
-                                            <p className="text-xs text-gray-400">
-                                                Sequins knows about your {classes.length} active classes.
-                                            </p>
+
+                                {/* Main Content - Run Sheet & Music */}
+                                <div className="flex-1 flex flex-col overflow-hidden bg-gray-50/50">
+                                    <div className="p-4 md:p-8 flex-1 overflow-y-auto">
+                                        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl mx-auto">
+                                            <div className="flex items-center justify-between mb-6">
+                                                <TabsList className="bg-white p-1 rounded-full border border-gray-200 shadow-sm h-12">
+                                                    <TabsTrigger value="overview" className="rounded-full px-6 h-10 text-sm font-medium data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all">Run of Show</TabsTrigger>
+                                                    <TabsTrigger value="music" className="rounded-full px-6 h-10 text-sm font-medium data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all">Music & Vibes</TabsTrigger>
+                                                </TabsList>
+                                                
+                                                <div className="text-sm font-serif text-gray-500 italic">
+                                                    Total Runtime: {generatedPlan.show_plan.run_of_show.reduce((acc, s) => acc + s.estimated_minutes, 0).toFixed(0)} mins
+                                                </div>
+                                            </div>
+
+                                            <TabsContent value="overview" className="mt-0 space-y-4 focus-visible:ring-0">
+                                                {generatedPlan.show_plan.run_of_show.map((segment, idx) => (
+                                                    <motion.div 
+                                                        key={idx}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: idx * 0.05 }}
+                                                        className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all group"
+                                                    >
+                                                        <div className="flex items-start gap-4">
+                                                            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-sm font-bold text-gray-400 font-mono shrink-0">
+                                                                {segment.order}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-3 mb-1">
+                                                                    <h4 className="text-lg font-bold text-[#333333]">{segment.title}</h4>
+                                                                    {segment.segment_type !== 'performance' && (
+                                                                        <Badge variant="secondary" className="bg-gray-100 text-gray-500 font-normal border-none">
+                                                                            {segment.segment_type}
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-gray-500 text-sm">{segment.stage_notes}</p>
+                                                                
+                                                                {segment.transition_notes && (
+                                                                    <div className="mt-3 flex items-center gap-2 text-xs text-indigo-600 bg-indigo-50/50 p-2 rounded-lg inline-flex">
+                                                                        <ArrowRight className="w-3 h-3" />
+                                                                        Transition: {segment.transition_notes}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="text-right shrink-0">
+                                                                <div className="text-sm font-bold text-[#333333]">{segment.estimated_minutes}m</div>
+                                                                <div className="text-xs text-gray-400">est.</div>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                ))}
+                                            </TabsContent>
+
+                                            <TabsContent value="music" className="mt-0 grid grid-cols-1 gap-4">
+                                                {generatedPlan.show_plan.music_recommendations.map((rec, i) => (
+                                                    <motion.div 
+                                                        key={i} 
+                                                        initial={{ opacity: 0, scale: 0.98 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex gap-6"
+                                                    >
+                                                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl flex items-center justify-center shrink-0 border border-white shadow-inner">
+                                                            <Music className="w-8 h-8 text-indigo-400" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <h4 className="font-bold text-xl text-[#333333] mb-1">{rec.primary_song.title}</h4>
+                                                            <p className="text-sm text-gray-500 font-medium mb-4">{rec.primary_song.artist}</p>
+                                                            
+                                                            <div className="bg-gray-50 p-3 rounded-xl text-sm text-gray-600 italic border border-gray-100">
+                                                                "{rec.primary_song.why_this_fits}"
+                                                            </div>
+
+                                                            {rec.primary_song.content_cautions && (
+                                                                <div className="mt-3 flex items-center gap-2 text-xs font-bold text-amber-600 uppercase tracking-wide">
+                                                                    <AlertTriangle className="w-3 h-3" /> Content Caution: {rec.primary_song.content_cautions}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </motion.div>
+                                                ))}
+                                            </TabsContent>
+                                        </Tabs>
+                                    </div>
+                                    
+                                    {/* Action Footer */}
+                                    <div className="p-6 bg-white border-t border-gray-100 flex items-center justify-between shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
+                                        <Button variant="ghost" onClick={() => setGeneratedPlan(null)} className="text-gray-400 hover:text-[#333333]">
+                                            Start Over
+                                        </Button>
+                                        <div className="flex items-center gap-3">
+                                            <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-full px-6">
+                                                Cancel
+                                            </Button>
                                             <Button 
-                                                onClick={handleGenerate} 
-                                                disabled={!prompt.trim()}
-                                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-8 h-12 shadow-lg hover:shadow-indigo-200 transition-all"
+                                                onClick={() => createEventMutation.mutate(generatedPlan)} 
+                                                disabled={createEventMutation.isPending}
+                                                className="bg-[#333333] hover:bg-black text-white rounded-full px-8 h-12 shadow-lg hover:shadow-xl transition-all"
                                             >
-                                                <Sparkles className="w-4 h-4 mr-2" /> Generate Plan
+                                                {createEventMutation.isPending ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                                ) : (
+                                                    <Save className="w-4 h-4 mr-2" />
+                                                )}
+                                                Create Event from Plan
                                             </Button>
                                         </div>
                                     </div>
-                                    
-                                    <div className="grid grid-cols-3 gap-4 text-left">
-                                        <div className="p-4 bg-white rounded-xl border border-gray-100">
-                                            <span className="block text-xl mb-2">🎭</span>
-                                            <h4 className="font-bold text-sm text-[#333333]">Smart Flow</h4>
-                                            <p className="text-xs text-gray-400 mt-1">Optimizes for costume changes and energy curves.</p>
-                                        </div>
-                                        <div className="p-4 bg-white rounded-xl border border-gray-100">
-                                            <span className="block text-xl mb-2">🎵</span>
-                                            <h4 className="font-bold text-sm text-[#333333]">Music Ideas</h4>
-                                            <p className="text-xs text-gray-400 mt-1">Gets specific song recs that fit your theme.</p>
-                                        </div>
-                                        <div className="p-4 bg-white rounded-xl border border-gray-100">
-                                            <span className="block text-xl mb-2">📋</span>
-                                            <h4 className="font-bold text-sm text-[#333333]">Run Sheet</h4>
-                                            <p className="text-xs text-gray-400 mt-1">Builds a complete, editable run of show.</p>
-                                        </div>
-                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="flex-1 flex flex-col overflow-hidden">
-                            <div className="flex-1 overflow-y-auto">
-                                <div className="p-8 max-w-5xl mx-auto space-y-8">
-                                    {/* Producer Writeup */}
-                                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-indigo-100">
-                                        <div className="flex items-start gap-4">
-                                            <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center shrink-0">
-                                                <Sparkles className="w-6 h-6 text-indigo-600" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-serif text-xl text-[#333333] mb-2">Producer's Note</h3>
-                                                <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-                                                    {generatedPlan.producer_writeup}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                        <TabsList className="bg-white p-1 rounded-xl border border-gray-100 mb-6">
-                                            <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700">Run of Show</TabsTrigger>
-                                            <TabsTrigger value="music" className="rounded-lg data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700">Music & Notes</TabsTrigger>
-                                            <TabsTrigger value="risks" className="rounded-lg data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700">Risks & Fixes</TabsTrigger>
-                                        </TabsList>
-
-                                        <TabsContent value="overview" className="mt-0">
-                                            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                                                <table className="w-full text-sm">
-                                                    <thead className="bg-gray-50 text-gray-400 font-medium text-xs uppercase tracking-wider text-left">
-                                                        <tr>
-                                                            <th className="px-6 py-3 w-16 text-center">#</th>
-                                                            <th className="px-6 py-3">Segment</th>
-                                                            <th className="px-6 py-3">Notes</th>
-                                                            <th className="px-6 py-3 text-right">Time</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-50">
-                                                        {generatedPlan.show_plan.run_of_show.map((segment, idx) => (
-                                                            <tr key={idx} className="hover:bg-gray-50/50">
-                                                                <td className="px-6 py-4 text-center text-gray-400 font-mono">{segment.order}</td>
-                                                                <td className="px-6 py-4">
-                                                                    <div className="font-bold text-[#333333]">{segment.title}</div>
-                                                                    {segment.segment_type !== 'performance' && (
-                                                                        <Badge variant="secondary" className="mt-1 text-[10px] uppercase">{segment.segment_type}</Badge>
-                                                                    )}
-                                                                </td>
-                                                                <td className="px-6 py-4 text-gray-500">
-                                                                    {segment.stage_notes}
-                                                                    {segment.transition_notes && (
-                                                                        <div className="text-xs text-indigo-500 mt-1 italic">
-                                                                            Transition: {segment.transition_notes}
-                                                                        </div>
-                                                                    )}
-                                                                </td>
-                                                                <td className="px-6 py-4 text-right font-mono text-gray-400">
-                                                                    {segment.estimated_minutes}m
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </TabsContent>
-
-                                        <TabsContent value="music" className="mt-0 space-y-4">
-                                            {generatedPlan.show_plan.music_recommendations.map((rec, i) => (
-                                                <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 flex gap-4">
-                                                    <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center shrink-0">
-                                                        <Music className="w-5 h-5 text-indigo-600" />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="font-bold text-[#333333]">{rec.primary_song.title}</h4>
-                                                        <p className="text-sm text-gray-500">by {rec.primary_song.artist}</p>
-                                                        <p className="text-sm mt-2 text-gray-600 bg-gray-50 p-2 rounded-lg inline-block">
-                                                            💡 {rec.primary_song.why_this_fits}
-                                                        </p>
-                                                        {rec.primary_song.content_cautions && (
-                                                            <div className="mt-2 text-xs text-amber-600 flex items-center gap-1">
-                                                                <AlertTriangle className="w-3 h-3" />
-                                                                {rec.primary_song.content_cautions}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </TabsContent>
-
-                                        <TabsContent value="risks" className="mt-0">
-                                            <div className="grid grid-cols-2 gap-6">
-                                                <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100">
-                                                    <h4 className="font-bold text-amber-800 mb-4 flex items-center gap-2">
-                                                        <AlertTriangle className="w-4 h-4" /> Risk Flags
-                                                    </h4>
-                                                    <ul className="space-y-2">
-                                                        {generatedPlan.show_plan.producer_notes.risk_flags.map((risk, i) => (
-                                                            <li key={i} className="text-sm text-amber-900 flex items-start gap-2">
-                                                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                                                                {risk}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                                <div className="bg-green-50 p-6 rounded-2xl border border-green-100">
-                                                    <h4 className="font-bold text-green-800 mb-4 flex items-center gap-2">
-                                                        <Check className="w-4 h-4" /> Recommended Fixes
-                                                    </h4>
-                                                    <ul className="space-y-2">
-                                                        {generatedPlan.show_plan.producer_notes.fixes.map((fix, i) => (
-                                                            <li key={i} className="text-sm text-green-900 flex items-start gap-2">
-                                                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
-                                                                {fix}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </TabsContent>
-                                    </Tabs>
-
-                                    {/* Clarifying Questions */}
-                                    {generatedPlan.questions && generatedPlan.questions.length > 0 && (
-                                        <div className="bg-indigo-900 text-white p-6 rounded-2xl">
-                                            <h4 className="font-serif text-lg mb-3">Sequins needs to know:</h4>
-                                            <ul className="space-y-2 mb-4">
-                                                {generatedPlan.questions.map((q, i) => (
-                                                    <li key={i} className="flex items-start gap-3 text-indigo-100">
-                                                        <span className="font-bold text-indigo-400">?</span>
-                                                        {q}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                            <p className="text-xs text-indigo-300">
-                                                (You can Accept this plan now and refine details later, or close and try a more specific prompt)
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Footer Actions */}
-                            <div className="p-6 bg-white border-t border-gray-100 flex justify-between items-center shrink-0">
-                                <Button variant="ghost" onClick={() => setGeneratedPlan(null)}>
-                                    Back to Prompt
-                                </Button>
-                                <div className="flex gap-3">
-                                    <Button variant="outline" onClick={() => onOpenChange(false)}>
-                                        Cancel
-                                    </Button>
-                                    <Button 
-                                        onClick={() => createEventMutation.mutate(generatedPlan)} 
-                                        disabled={createEventMutation.isPending}
-                                        className="bg-[#333333] hover:bg-black text-white rounded-full px-6"
-                                    >
-                                        {createEventMutation.isPending ? (
-                                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                        ) : (
-                                            <Save className="w-4 h-4 mr-2" />
-                                        )}
-                                        Create Event from Plan
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </DialogContent>
         </Dialog>
