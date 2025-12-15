@@ -289,10 +289,10 @@ export default function PerformanceDetail({ performanceId, onBack }) {
             </div>
 
             {/* --- Main Workspace --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                {/* Left Col: Run Sheet (The Quarterback View) */}
-                <div className="lg:col-span-2 space-y-6">
+            <div className="max-w-6xl mx-auto">
+
+                {/* Run Sheet (The Quarterback View) */}
+                <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-2xl font-serif text-[#333333] flex items-center gap-2">
                             Run Sheet <Badge className="bg-gray-100 text-gray-500">{routines.length} Acts</Badge>
@@ -442,51 +442,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                     allStudents={students}
                     />
 
-                    {/* Right Col: Stats & Quick Actions */}
-                <div className="space-y-6">
-                    {/* Stats Card */}
-                    <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm">
-                        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Event Stats</h3>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">Total Routines</span>
-                                <span className="font-serif text-xl">{routines.length}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">Total Performers</span>
-                                {/* De-dupe students across all routines */}
-                                <span className="font-serif text-xl">
-                                    {new Set(routines.flatMap(r => r.performers || [])).size}
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">Est. Duration</span>
-                                <span className="font-serif text-xl">{totalDurationFormatted}</span>
-                            </div>
-                        </div>
-                        <div className="mt-6 pt-6 border-t border-gray-100">
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <AlertTriangle className="w-4 h-4 text-amber-500" />
-                                <span>3 Potential Conflicts</span>
-                            </div>
-                        </div>
                     </div>
-
-                    {/* Quick Tools */}
-                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-[32px] text-white shadow-lg">
-                        <h3 className="text-lg font-serif mb-2">AI Assistant</h3>
-                        <p className="text-white/80 text-sm mb-4">
-                            Need help ordering the show? I can minimize quick changes for you.
-                        </p>
-                        <Button 
-                            onClick={() => toast.info("AI Optimization", { description: "I'm learning how to optimize your run sheet. Check back soon!" })}
-                            className="w-full bg-white text-indigo-600 hover:bg-indigo-50 border-none font-bold"
-                        >
-                            <Mic2 className="w-4 h-4 mr-2" /> "Optimize Run Order"
-                        </Button>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }
