@@ -11,7 +11,7 @@ import {
     CheckSquare, ShieldAlert, FileText, Shirt, Lightbulb, Speaker, Footprints
 } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -36,6 +36,7 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
         }
     }, [chatHistory, isGenerating]);
     const [activeTab, setActiveTab] = useState('tasks');
+    const queryClient = useQueryClient();
 
     // Manual Event Details State
     const [eventDetails, setEventDetails] = useState({
@@ -162,11 +163,12 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
             return newPerf;
         },
         onSuccess: (newPerf) => {
+            queryClient.invalidateQueries(['performances']);
             toast.success("Event created successfully!");
             onPlanCreated(newPerf.id);
             // Reset state
             setGeneratedPlan(null);
-            setPrompt('');
+            setCurrentInput('');
             setEventDetails({ title: '', date: '', type: 'recital', venue: '' });
         },
         onError: (err) => {
