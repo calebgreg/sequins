@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { 
     Calendar, MapPin, Clock, Users, Music, MoveVertical, 
     Plus, Search, ChevronRight, Play, Settings, AlertCircle,
-    MoreHorizontal, Mic2, Star, Trophy
+    MoreHorizontal, Mic2, Star, Trophy, Sparkles
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
