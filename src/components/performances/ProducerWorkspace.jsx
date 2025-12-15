@@ -374,12 +374,18 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                                     key={i}
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
-                                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                                    className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                                                 >
-                                                    <div className={`max-w-[80%] rounded-2xl p-4 shadow-sm ${
+                                                    {msg.role === 'assistant' && (
+                                                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 border border-indigo-200">
+                                                            <Sparkles className="w-4 h-4 text-indigo-600" />
+                                                        </div>
+                                                    )}
+                                                    
+                                                    <div className={`max-w-[80%] rounded-2xl p-5 shadow-sm leading-relaxed ${
                                                         msg.role === 'user' 
-                                                            ? 'bg-[#333333] text-white rounded-br-none' 
-                                                            : 'bg-white border border-gray-100 text-gray-800 rounded-bl-none'
+                                                            ? 'bg-[#1a1a1a] text-white rounded-tr-none' 
+                                                            : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
                                                     }`}>
                                                         <div className="text-sm leading-relaxed">
                                                             <ReactMarkdown 
@@ -398,10 +404,16 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                             ))}
                                             
                                             {isGenerating && (
-                                                <div className="flex justify-start">
-                                                    <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-none p-4 shadow-sm flex items-center gap-2">
-                                                        <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
-                                                        <span className="text-gray-400 text-sm">Thinking...</span>
+                                                <div className="flex gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 border border-indigo-200">
+                                                        <Sparkles className="w-4 h-4 text-indigo-600" />
+                                                    </div>
+                                                    <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-none p-4 shadow-sm flex items-center gap-2">
+                                                        <div className="flex space-x-1">
+                                                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
