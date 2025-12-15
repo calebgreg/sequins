@@ -23,7 +23,7 @@ const OUTPUT_SCHEMA = {
         "constraints": { "type": "array", "items": { "type": "string" } },
         "assumptions": { "type": "array", "items": { "type": "string" } }
       },
-      "required": ["show_type_used", "theme_or_story_seed", "theater_size", "num_shows", "target_runtime_minutes", "constraints", "assumptions"]
+      "required": ["show_type_used", "theme_or_story_seed", "constraints", "assumptions"]
     },
     "show_plan": {
       "type": "object",
@@ -41,128 +41,88 @@ const OUTPUT_SCHEMA = {
               "class_id": { "type": ["string", "null"] },
               "title": { "type": "string" },
               "estimated_minutes": { "type": "number", "minimum": 0.2, "maximum": 20 },
-              "stage_notes": { "type": "string", "description": "Includes characters, costume notes, lighting cues, and blocking." },
-              "transition_notes": { "type": "string" }
+              "visual_concept": { "type": "string", "description": "Lighting, mood, backdrop settings" },
+              "costume_concept": { "type": "string", "description": "Specific costume details" },
+              "prop_requirements": { "type": "array", "items": { "type": "string" } },
+              "music_selection": {
+                "type": "object",
+                "properties": {
+                    "title": { "type": "string" },
+                    "artist": { "type": "string" },
+                    "edit_notes": { "type": "string" }
+                },
+                "required": ["title", "artist"]
+              },
+              "stage_action": { "type": "string", "description": "Blocking notes and movement" }
             },
-            "required": ["order", "segment_type", "class_id", "title", "estimated_minutes", "stage_notes", "transition_notes"]
+            "required": ["order", "segment_type", "title", "estimated_minutes", "visual_concept", "costume_concept", "stage_action"]
           }
         },
-        "music_recommendations": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "class_id": { "type": "string" },
-              "primary_song": {
+        "production_tasks": {
+            "type": "array",
+            "items": {
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                  "title": { "type": "string" },
-                  "artist": { "type": "string" },
-                  "why_this_fits": { "type": "string" },
-                  "target_length_seconds": { "type": "integer", "minimum": 60, "maximum": 360 },
-                  "edit_notes": { "type": "string" },
-                  "content_cautions": { "type": "string" }
+                    "department": { "type": "string", "enum": ["admin", "costume", "lighting", "sound", "stage_management", "choreography"] },
+                    "task": { "type": "string" },
+                    "detail": { "type": "string" },
+                    "priority": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+                    "due_milestone": { "type": "string", "enum": ["concept_lock", "1_month_out", "tech_week", "show_day", "post_show"] }
                 },
-                "required": ["title", "artist", "why_this_fits", "target_length_seconds", "edit_notes", "content_cautions"]
-              },
-              "alternates": {
-                "type": "array",
-                "minItems": 2,
-                "maxItems": 4,
-                "items": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "title": { "type": "string" },
-                    "artist": { "type": "string" },
-                    "why_this_fits": { "type": "string" }
-                  },
-                  "required": ["title", "artist", "why_this_fits"]
-                }
-              }
-            },
-            "required": ["class_id", "primary_song", "alternates"]
-          }
+                "required": ["department", "task", "priority", "due_milestone"]
+            }
         },
-        "producer_notes": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "what_to_lock_first": { "type": "array", "items": { "type": "string" }, "minItems": 3, "maxItems": 8 },
-            "risk_flags": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
-            "fixes": { "type": "array", "items": { "type": "string" }, "minItems": 2 }
-          },
-          "required": ["what_to_lock_first", "risk_flags", "fixes"]
-        },
-        "rehearsal_plan": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "phases": { "type": "array", "items": { "type": "string" }, "minItems": 3, "maxItems": 7 },
-            "call_time_plan": { "type": "string" },
-            "top_priorities": { "type": "array", "items": { "type": "string" }, "minItems": 6, "maxItems": 12 }
-          },
-          "required": ["phases", "call_time_plan", "top_priorities"]
+        "risk_mitigation": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "risk": { "type": "string" },
+                    "severity": { "type": "string", "enum": ["high", "medium", "low"] },
+                    "mitigation_plan": { "type": "string" }
+                },
+                "required": ["risk", "severity", "mitigation_plan"]
+            }
         }
       },
-      "required": ["throughline", "run_of_show", "music_recommendations", "producer_notes", "rehearsal_plan"]
+      "required": ["throughline", "run_of_show", "production_tasks", "risk_mitigation"]
     }
   },
   "required": ["producer_writeup", "questions", "extracted_intake", "show_plan"]
 };
 
 // PHASE 1: Conversational Creative Producer
-const CREATIVE_SYSTEM_PROMPT = `You are Sequins, an expert Creative Producer. You are competent, efficient, and easy to talk to.
-Your Goal: Help the user define their show concept and fill in the details to create a production-ready plan.
+const CREATIVE_SYSTEM_PROMPT = `You are Sequins, an expert Creative Producer & Project Manager for dance productions. 
+Your Goal: Help the user define their show concept and then RIGOROUSLY PLAN the execution.
 
 CRITICAL BEHAVIORS:
-1. **LISTEN FIRST:** If the user has a specific idea (e.g., "Frozen"), accept it enthusiastically and help them execute it well. Do not push for "unique" or "anti-cliché" angles unless they ask for help brainstorming.
-2. **BE CAPABLE & DIRECT:** You are a pro. If a decision is needed, you can ask a direct yes/no question (e.g., "Do you want a finale?") or an open-ended one. Use whatever moves the plan forward efficiently.
-3. **FILL IN THE GAPS:** If the user is stuck, offer competent, standard suggestions to keep things moving.
-4. **NORMAL HUMAN TONE:** Be professional and cool, but approachable. No "hipster" attitude. Just a helpful expert.
+1. **BE ACTION-ORIENTED:** Do not just chat about ideas. Constantly push for decisions that allow you to build the plan. "Great theme. Shall we lock that in so I can start the task list?"
+2. **THINK LOGISTICS:** If they suggest a complex prop, ask "Do we have budget for that, or are we building it?"
+3. **FILL IN THE GAPS:** Use your expertise to suggest standard production requirements (ticketing, ushers, quick change booths).
+4. **PROFESSIONAL TONE:** Competent, organized, experienced.
 
-Style: Concise (1-3 sentences). Direct. Helpful.
-
-Example interaction:
-User: "I want to do a Frozen theme."
-You: "Great choice, lots of material to work with. Do you want to follow the movie plot strictly, or just use the music and characters as a general theme?"
-User: "Let's start with the seniors."
-You: "Perfect. We can have them open the show. Should they be the 'Ice Harvesters' for a strong opening, or something more elegant like 'Snow Flurries'?"`;
+Style: Concise. Directive. Efficient.
+`;
 
 // PHASE 2: Structured Data Parser/Converter
-const PARSER_SYSTEM_PROMPT = `You are the "Sequins Architect" - the Lead Creative Producer.
-Your job is to take a creative conversation and the studio context, and synthesize a COMPLETE, PRODUCTION-READY SHOW PLAN.
+const PARSER_SYSTEM_PROMPT = `You are the "Sequins Architect" - Lead Production Manager.
+Your job is to take a creative conversation and synthesize a HIGHLY ACTIONABLE, DETAILED PROJECT PLAN.
 
-Input: A full conversation history + studio context.
+Input: Conversation history + studio context.
 Output: A JSON object strictly adhering to the schema.
-IMPORTANT: Your response MUST be ONLY the JSON object. Do NOT include any conversational text, markdown formatting (like \`\`\`json), or other non-JSON elements.
 
-CRITICAL MINDSET:
-- You are not a summarizer. You are a CREATOR.
-- The user discussion provided the "seeds" (theme, vibe, key moments). YOU must grow the "forest".
-- If the user didn't specify a detail (e.g., song for the 5-year-olds), YOU MUST INVENT ONE that fits the theme perfectly.
-- **GENERIC IS FAILURE.** "Dancers enter" is a fail. "The Moonbeams drift in from stage left wearing glowing tulle" is a win.
+CRITICAL INSTRUCTIONS:
+1. **BE SPECIFIC:** Do not write "Get costumes". Write "Order 15 sequin leotards for Jazz 1 from Weissman." (Invent plausible details if needed to show the example).
+2. **GENERATE TASKS:** The 'production_tasks' array is the most important part. Break down the show into concrete to-dos across all departments.
+   - Music: Editing tracks, licensing.
+   - Costumes: Measuring, ordering, fittings.
+   - Admin: Ticketing setup, parent emails.
+3. **REALISTIC RISKS:** specific risks (e.g. "Quick change for Senior tap routine") and specific mitigation plans (e.g. "Assign 2 parents to backstage left").
+4. **COMPLETE THE RUN OF SHOW:** Every segment needs lighting concepts, specific prop lists, and costume notes.
 
-INSTRUCTIONS FOR SPECIFIC FIELDS:
-1. **run_of_show -> stage_notes**: This is the heart of the plan. It must be a mini-script for the Stage Manager.
-   - **Characters:** Assign a thematic role to EVERY class. (e.g. Jazz 1 isn't "Jazz 1", they are "The Newsies" or "The Royal Guards").
-   - **Visuals:** Specify lighting cues (e.g. "Warm amber wash", "Strobe on the drop") and costume concepts.
-   - **Action:** "Enter SL", "Form pyramid", "Exits running". Be decisive.
-   
-2. **producer_notes -> risk_flags**: identifying REAL production risks.
-   - BAD: "Make sure costumes fit."
-   - GOOD: "Quick change for Miss Sarah between Act 1 Sc 2 and 3 is tight (90 seconds). Needs a dresser preset SL."
-
-3. **music_recommendations**:
-   - If a song wasn't picked in chat, pick a specific, real song that matches the theme.
-
-4. **holistic flow**: 
-   - Ensure the show has a beginning, middle, and end. 
-   - If there are gaps in the run of show, insert "transition" or "emcee" segments to glue it together.
-
-Your output is not a suggestion. It is the Draft 1 Project Plan. Make it actionable, bold, and complete.
+Your output must be ready to be handed to a Stage Manager and a Project Manager to execute immediately.
 
 Schema:
 ${JSON.stringify(OUTPUT_SCHEMA, null, 2)}

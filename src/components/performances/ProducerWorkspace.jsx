@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
     Loader2, Sparkles, AlertTriangle, Music, ArrowRight, Save, Wand2, X, 
-    ChevronLeft, Calendar, PenTool, MapPin, Trophy, Star, Users, LayoutTemplate, Clock
+    ChevronLeft, Calendar, PenTool, MapPin, Trophy, Star, Users, LayoutTemplate, Clock,
+    CheckSquare, ShieldAlert, FileText, Shirt, Lightbulb, Speaker
 } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -33,7 +34,7 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [chatHistory, isGenerating]);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('tasks');
 
     // Manual Event Details State
     const [eventDetails, setEventDetails] = useState({
@@ -142,12 +143,19 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                         order_index: segment.order,
                         duration_seconds: Math.round(segment.estimated_minutes * 60),
                         class_id: segment.class_id,
-                        notes: segment.stage_notes
+                        notes: segment.stage_action, // Mapped from stage_action
+                        costume_details: segment.costume_concept,
+                        lighting_notes: segment.visual_concept,
+                        song_title: segment.music_selection?.title,
+                        artist: segment.music_selection?.artist
                     }));
 
                 if (routines.length > 0) {
                     await base44.entities.PerformanceRoutine.bulkCreate(routines);
                 }
+                
+                // Note: Production Tasks and Risk Mitigation would typically be saved here 
+                // to a Tasks entity, but for now we are just setting up the display.
             }
 
             return newPerf;
@@ -424,60 +432,72 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                             animate={{ opacity: 1 }}
                             className="h-full flex flex-col md:flex-row"
                         >
-                            {/* Left Sidebar - Producer Notes */}
-                            <div className="w-full md:w-80 border-r border-gray-100 bg-white p-6 overflow-y-auto shrink-0 z-10">
-                                <div className="space-y-8">
-                                    <div>
-                                        <h3 className="font-serif text-2xl text-[#333333] mb-4">Producer's Note</h3>
-                                        <div className="prose prose-sm prose-gray leading-relaxed text-gray-600">
-                                            {generatedPlan.producer_writeup}
-                                        </div>
-                                    </div>
-
-                                    {/* Risk Flags */}
-                                    {generatedPlan.show_plan.producer_notes.risk_flags.length > 0 && (
-                                        <div className="bg-amber-50 rounded-xl p-5 border border-amber-100">
-                                            <h4 className="font-bold text-amber-900 text-sm uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                <AlertTriangle className="w-4 h-4" /> Watch Outs
-                                            </h4>
-                                            <ul className="space-y-2">
-                                                {generatedPlan.show_plan.producer_notes.risk_flags.map((risk, i) => (
-                                                    <li key={i} className="text-sm text-amber-800 flex items-start gap-2 leading-snug">
-                                                        <span className="mt-1.5 w-1 h-1 rounded-full bg-amber-400 shrink-0" />
-                                                        {risk}
-                                                    </li>
+                            {/* Left Sidebar - Action Items */}
+                            <div className="w-full md:w-96 border-r border-gray-100 bg-white flex flex-col shrink-0 z-10 h-full">
+                                <div className="p-6 border-b border-gray-100">
+                                    <h3 className="font-serif text-xl text-[#333333]">Action Plan</h3>
+                                    <p className="text-xs text-gray-400 mt-1">Generated tasks & risks</p>
+                                </div>
+                                
+                                <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                                    {/* Risks */}
+                                    {generatedPlan.show_plan.risk_mitigation?.length > 0 && (
+                                        <div>
+                                            <h4 className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3 px-2">Critical Risks</h4>
+                                            <div className="space-y-3">
+                                                {generatedPlan.show_plan.risk_mitigation.map((risk, i) => (
+                                                    <div key={i} className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                                                        <div className="flex items-start gap-2 mb-2">
+                                                            <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                                            <span className="font-bold text-amber-900 text-sm leading-tight">{risk.risk}</span>
+                                                        </div>
+                                                        <div className="text-xs text-amber-800/80 pl-6 border-l-2 border-amber-200 ml-2">
+                                                            Mitigation: {risk.mitigation_plan}
+                                                        </div>
+                                                    </div>
                                                 ))}
-                                            </ul>
+                                            </div>
                                         </div>
                                     )}
 
-                                    {/* Questions */}
-                                    {generatedPlan.questions && generatedPlan.questions.length > 0 && (
-                                        <div className="bg-indigo-50 rounded-xl p-5 border border-indigo-100">
-                                            <h4 className="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-3">
-                                                Clarifications
-                                            </h4>
-                                            <ul className="space-y-2">
-                                                {generatedPlan.questions.map((q, i) => (
-                                                    <li key={i} className="text-sm text-indigo-800 flex items-start gap-2 leading-snug">
-                                                        <span className="mt-1.5 w-1 h-1 rounded-full bg-indigo-400 shrink-0" />
-                                                        {q}
-                                                    </li>
+                                    {/* Tasks */}
+                                    {generatedPlan.show_plan.production_tasks?.length > 0 && (
+                                        <div>
+                                            <h4 className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3 px-2">Tasks by Department</h4>
+                                            <div className="space-y-3">
+                                                {generatedPlan.show_plan.production_tasks.map((task, i) => (
+                                                    <div key={i} className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm flex items-start gap-3">
+                                                        <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
+                                                            task.priority === 'critical' ? 'bg-red-500' : 
+                                                            task.priority === 'high' ? 'bg-orange-400' : 'bg-green-400'
+                                                        }`} />
+                                                        <div>
+                                                            <div className="font-medium text-sm text-[#333333] leading-snug">{task.task}</div>
+                                                            <div className="flex items-center gap-2 mt-2">
+                                                                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal bg-gray-100 text-gray-500">
+                                                                    {task.department}
+                                                                </Badge>
+                                                                <span className="text-[10px] text-gray-400 border-l border-gray-200 pl-2">
+                                                                    Due: {task.due_milestone}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 ))}
-                                            </ul>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Main Content - Run Sheet & Music */}
+                            {/* Main Content - Run Sheet */}
                             <div className="flex-1 flex flex-col overflow-hidden bg-gray-50/30">
                                 <div className="p-4 md:p-8 flex-1 overflow-y-auto">
                                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl mx-auto">
                                         <div className="flex items-center justify-between mb-6">
                                             <TabsList className="bg-white p-1 rounded-full border border-gray-200 shadow-sm h-12">
-                                                <TabsTrigger value="overview" className="rounded-full px-6 h-10 text-sm font-medium data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all">Run of Show</TabsTrigger>
-                                                <TabsTrigger value="music" className="rounded-full px-6 h-10 text-sm font-medium data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all">Music & Vibes</TabsTrigger>
+                                                <TabsTrigger value="tasks" className="rounded-full px-6 h-10 text-sm font-medium data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all">Run of Show</TabsTrigger>
+                                                <TabsTrigger value="details" className="rounded-full px-6 h-10 text-sm font-medium data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all">Full Details</TabsTrigger>
                                             </TabsList>
                                             
                                             <div className="text-sm font-serif text-gray-500 italic flex items-center gap-2">
@@ -486,73 +506,101 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                             </div>
                                         </div>
 
-                                        <TabsContent value="overview" className="mt-0 space-y-4 focus-visible:ring-0">
+                                        <TabsContent value="tasks" className="mt-0 space-y-4 focus-visible:ring-0">
                                             {generatedPlan.show_plan.run_of_show.map((segment, idx) => (
                                                 <motion.div 
                                                     key={idx}
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     transition={{ delay: idx * 0.05 }}
-                                                    className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all group"
+                                                    className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all group"
                                                 >
-                                                    <div className="flex items-start gap-4">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-sm font-bold text-gray-400 font-mono shrink-0">
+                                                    <div className="flex items-start gap-5">
+                                                        <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-lg font-bold text-gray-400 font-mono shrink-0 border border-gray-200">
                                                             {segment.order}
                                                         </div>
+                                                        
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-3 mb-1">
-                                                                <h4 className="text-lg font-bold text-[#333333]">{segment.title}</h4>
-                                                                {segment.segment_type !== 'performance' && (
-                                                                    <Badge variant="secondary" className="bg-gray-100 text-gray-500 font-normal border-none">
-                                                                        {segment.segment_type}
-                                                                    </Badge>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <div className="flex items-center gap-3">
+                                                                    <h4 className="text-xl font-bold text-[#333333]">{segment.title}</h4>
+                                                                    {segment.segment_type !== 'performance' && (
+                                                                        <Badge variant="outline" className="text-gray-500 font-normal">
+                                                                            {segment.segment_type}
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <div className="font-mono font-bold text-[#333333]">{segment.estimated_minutes}m</div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                                                {/* Stage Action */}
+                                                                <div className="bg-indigo-50/50 p-3 rounded-lg border border-indigo-100">
+                                                                    <div className="flex items-center gap-2 text-xs font-bold text-indigo-800 uppercase tracking-wider mb-1">
+                                                                        <Move className="w-3 h-3" /> Stage Action
+                                                                    </div>
+                                                                    <p className="text-sm text-indigo-900 leading-snug">{segment.stage_action}</p>
+                                                                </div>
+
+                                                                {/* Tech / Visuals */}
+                                                                <div className="bg-amber-50/50 p-3 rounded-lg border border-amber-100">
+                                                                    <div className="flex items-center gap-2 text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">
+                                                                        <Lightbulb className="w-3 h-3" /> Visuals
+                                                                    </div>
+                                                                    <p className="text-sm text-amber-900 leading-snug">{segment.visual_concept}</p>
+                                                                </div>
+
+                                                                {/* Costumes */}
+                                                                <div className="bg-pink-50/50 p-3 rounded-lg border border-pink-100">
+                                                                    <div className="flex items-center gap-2 text-xs font-bold text-pink-800 uppercase tracking-wider mb-1">
+                                                                        <Shirt className="w-3 h-3" /> Costumes
+                                                                    </div>
+                                                                    <p className="text-sm text-pink-900 leading-snug">{segment.costume_concept}</p>
+                                                                </div>
+
+                                                                {/* Music */}
+                                                                {segment.music_selection && (
+                                                                    <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                                                                        <div className="flex items-center gap-2 text-xs font-bold text-blue-800 uppercase tracking-wider mb-1">
+                                                                            <Music className="w-3 h-3" /> Music
+                                                                        </div>
+                                                                        <p className="text-sm text-blue-900 leading-snug font-medium">
+                                                                            {segment.music_selection.title} <span className="text-blue-900/60 font-normal">- {segment.music_selection.artist}</span>
+                                                                        </p>
+                                                                        {segment.music_selection.edit_notes && (
+                                                                             <div className="text-xs text-blue-700 mt-1 italic">
+                                                                                 Note: {segment.music_selection.edit_notes}
+                                                                             </div>
+                                                                        )}
+                                                                    </div>
                                                                 )}
                                                             </div>
-                                                            <p className="text-gray-500 text-sm">{segment.stage_notes}</p>
-                                                            
-                                                            {segment.transition_notes && (
-                                                                <div className="mt-3 flex items-center gap-2 text-xs text-indigo-600 bg-indigo-50/50 p-2 rounded-lg inline-flex">
-                                                                    <ArrowRight className="w-3 h-3" />
-                                                                    Transition: {segment.transition_notes}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div className="text-right shrink-0">
-                                                            <div className="text-sm font-bold text-[#333333]">{segment.estimated_minutes}m</div>
-                                                            <div className="text-xs text-gray-400">est.</div>
                                                         </div>
                                                     </div>
                                                 </motion.div>
                                             ))}
                                         </TabsContent>
 
-                                        <TabsContent value="music" className="mt-0 grid grid-cols-1 gap-4">
-                                            {generatedPlan.show_plan.music_recommendations.map((rec, i) => (
-                                                <motion.div 
-                                                    key={i} 
-                                                    initial={{ opacity: 0, scale: 0.98 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex gap-6"
-                                                >
-                                                    <div className="w-16 h-16 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl flex items-center justify-center shrink-0 border border-white shadow-inner">
-                                                        <Music className="w-8 h-8 text-indigo-400" />
+                                        <TabsContent value="details" className="mt-0">
+                                            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                                                <h3 className="font-serif text-2xl text-[#333333] mb-6">Producer's Full Writeup</h3>
+                                                <div className="prose prose-gray max-w-none leading-loose text-lg">
+                                                    {generatedPlan.producer_writeup}
+                                                </div>
+                                                
+                                                {generatedPlan.questions?.length > 0 && (
+                                                    <div className="mt-8 pt-8 border-t border-gray-100">
+                                                        <h4 className="font-bold text-[#333333] mb-4">Pending Clarifications</h4>
+                                                        <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                                                            {generatedPlan.questions.map((q, i) => (
+                                                                <li key={i}>{q}</li>
+                                                            ))}
+                                                        </ul>
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <h4 className="font-bold text-xl text-[#333333] mb-1">{rec.primary_song.title}</h4>
-                                                        <p className="text-sm text-gray-500 font-medium mb-4">{rec.primary_song.artist}</p>
-                                                        
-                                                        <div className="bg-gray-50 p-3 rounded-xl text-sm text-gray-600 italic border border-gray-100">
-                                                            "{rec.primary_song.why_this_fits}"
-                                                        </div>
-
-                                                        {rec.primary_song.content_cautions && (
-                                                            <div className="mt-3 flex items-center gap-2 text-xs font-bold text-amber-600 uppercase tracking-wide">
-                                                                <AlertTriangle className="w-3 h-3" /> Content Caution: {rec.primary_song.content_cautions}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </motion.div>
-                                            ))}
+                                                )}
+                                            </div>
                                         </TabsContent>
                                     </Tabs>
                                 </div>
