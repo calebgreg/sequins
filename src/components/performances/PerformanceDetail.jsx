@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { 
     ArrowLeft, Calendar, MapPin, Plus, GripVertical, 
     Music, Users, AlertTriangle, Mic2,
-    PlayCircle, Timer, Trash2
+    PlayCircle, Timer, Trash2, Shirt, Lightbulb
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
