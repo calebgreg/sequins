@@ -90,7 +90,8 @@ CRITICAL BEHAVIORS:
 3. **BE ACTION-ORIENTED:** Do not just chat about ideas. Constantly push for decisions that allow you to build the plan. "Great theme. Shall we lock that in so I can start the task list?"
 4. **THINK LOGISTICS:** If they suggest a complex prop, ask "Do we have budget for that, or are we building it?"
 5. **FILL IN THE GAPS:** Use your expertise to suggest standard production requirements (ticketing, ushers, quick change booths).
-6. **PROFESSIONAL TONE:** Competent, organized, experienced.
+6. **COSTUME SEARCH:** You have access to the internet. When discussing costumes, ALWAYS search https://www.weissmans.com/ to find specific, real costumes that match the theme. Suggest them by name.
+7. **PROFESSIONAL TONE:** Competent, organized, experienced.
 
 Style: Concise. Directive. Efficient. Conversational.
 `;
@@ -142,20 +143,27 @@ Deno.serve(async (req) => {
 
         // --- PHASE 1: CHAT ---
         if (action === 'chat') {
-            const messages = [
-                { role: "system", content: CREATIVE_SYSTEM_PROMPT },
-                { role: "system", content: `CONTEXT: ${JSON.stringify(context)}` },
-                ...(chatHistory || [])
-            ];
+            // Flatten chat history for the InvokeLLM prompt
+            const conversation = (chatHistory || []).map(m => `${m.role === 'user' ? 'USER' : 'SEQUINS'}: ${m.content}`).join('\n\n');
 
-            const completion = await openai.chat.completions.create({
-                model: "gpt-4o",
-                messages: messages,
+            const prompt = `${CREATIVE_SYSTEM_PROMPT}
+
+        CONTEXT: ${JSON.stringify(context)}
+
+        CONVERSATION HISTORY:
+        ${conversation}
+
+        (Note: Reply as Sequins. If costumes are mentioned, search Weissman's website)`;
+
+            // Use Base44 Integration to enable Internet Access
+            const aiResponse = await base44.integrations.Core.InvokeLLM({
+                prompt: prompt,
+                add_context_from_internet: true
             });
 
             return Response.json({ 
                 role: 'assistant', 
-                content: completion.choices[0].message.content 
+                content: aiResponse 
             });
         }
 
