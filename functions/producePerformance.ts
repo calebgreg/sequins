@@ -139,6 +139,7 @@ Your job is to take a creative conversation and the studio context, and synthesi
 
 Input: A full conversation history + studio context.
 Output: A JSON object strictly adhering to the schema.
+IMPORTANT: Your response MUST be ONLY the JSON object. Do NOT include any conversational text, markdown formatting (like \`\`\`json), or other non-JSON elements.
 
 CRITICAL MINDSET:
 - You are not a summarizer. You are a CREATOR.
@@ -227,7 +228,14 @@ Deno.serve(async (req) => {
                 response_format: { type: "json_object" }
             });
 
-            const content = completion.choices[0].message.content;
+            let content = completion.choices[0].message.content;
+            
+            // Clean up markdown code blocks if present (safeguard)
+            if (content.includes('```json')) {
+                content = content.split('```json')[1].split('```')[0].trim();
+            } else if (content.includes('```')) {
+                content = content.split('```')[1].split('```')[0].trim();
+            }
             
             let parsedContent;
             try {
