@@ -128,7 +128,7 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                 date: eventDetails.date,
                 status: 'planning',
                 type: eventDetails.type,
-                venue: eventDetails.venue,
+                venue: eventDetails.venue ? { venue_name: eventDetails.venue } : null,
                 description: plan?.producer_writeup || "Manually created event."
             };
             
