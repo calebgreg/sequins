@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
     Loader2, Sparkles, AlertTriangle, Music, ArrowRight, Save, Wand2, X, 
     ChevronLeft, Calendar, PenTool, MapPin, Trophy, Star, Users, LayoutTemplate, Clock,
-    CheckSquare, ShieldAlert, FileText, Shirt, Lightbulb, Speaker, Footprints
+    CheckSquare, ShieldAlert, FileText, Shirt, Lightbulb, Speaker, Footprints, Plus
 } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -26,8 +26,8 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
     const [currentInput, setCurrentInput] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [isFinalizing, setIsFinalizing] = useState(false);
-    const [generatedPlan, setGeneratedPlan] = useState(null);
-    const scrollRef = React.useRef(null);
+            const [generatedPlan, setGeneratedPlan] = useState(null);
+            const scrollRef = React.useRef(null);
 
     // Auto-scroll to bottom of chat
     React.useEffect(() => {
