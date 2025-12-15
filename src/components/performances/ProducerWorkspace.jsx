@@ -15,9 +15,19 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
-    const [prompt, setPrompt] = useState('');
+    const [chatHistory, setChatHistory] = useState([]);
+    const [currentInput, setCurrentInput] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isFinalizing, setIsFinalizing] = useState(false);
     const [generatedPlan, setGeneratedPlan] = useState(null);
+    const scrollRef = React.useRef(null);
+
+    // Auto-scroll to bottom of chat
+    React.useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [chatHistory, isGenerating]);
     const [activeTab, setActiveTab] = useState('overview');
 
     // Manual Event Details State
@@ -39,43 +49,65 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
         queryFn: () => base44.entities.DanceClass.list()
     });
 
-    const generatePlanMutation = useMutation({
-        mutationFn: async (userPrompt) => {
-            const context = {
-                studio: { studio_name: studioSettings?.name || "My Dance Studio" },
-                event_details: eventDetails, // Pass manual details to AI context
-                classes: classes
-                    .filter(c => c.type !== 'admin')
-                    .map(c => ({
-                        class_id: c.id,
-                        name: c.title,
-                        style: c.style || c.title,
-                        dancer_count: c.student_names?.length || 5,
-                        approx_length_minutes: (c.duration || 1) * 60,
-                        notes: `Taught by ${c.teacher || 'Staff'}`
-                    }))
-            };
+    const getContext = () => ({
+        studio: { studio_name: studioSettings?.name || "My Dance Studio" },
+        event_details: eventDetails,
+        classes: classes
+            .filter(c => c.type !== 'admin')
+            .map(c => ({
+                class_id: c.id,
+                name: c.title,
+                style: c.style || c.title,
+                dancer_count: c.student_names?.length || 5,
+                approx_length_minutes: (c.duration || 1) * 60,
+                notes: `Taught by ${c.teacher || 'Staff'}`
+            }))
+    });
 
+    // Phase 1: Chat Interaction
+    const chatMutation = useMutation({
+        mutationFn: async (newMessage) => {
+            const newHistory = [...chatHistory, { role: 'user', content: newMessage }];
+            setChatHistory(newHistory); // Optimistic update
+            
             const response = await base44.functions.invoke('producePerformance', {
-                producer_prompt: userPrompt,
-                context: context
+                action: 'chat',
+                chatHistory: newHistory,
+                context: getContext()
             });
+            return response.data;
+        },
+        onSuccess: (aiMessage) => {
+            setChatHistory(prev => [...prev, aiMessage]);
+            setIsGenerating(false);
+        },
+        onError: () => {
+            toast.error("Connection failed. Please try again.");
+            setIsGenerating(false);
+        }
+    });
 
+    // Phase 2: Finalize Plan (JSON)
+    const finalizePlanMutation = useMutation({
+        mutationFn: async () => {
+            const response = await base44.functions.invoke('producePerformance', {
+                action: 'generate_plan',
+                chatHistory: chatHistory,
+                context: getContext()
+            });
             return response.data;
         },
         onSuccess: (data) => {
             setGeneratedPlan(data);
-            setIsGenerating(false);
-            // Auto-fill title if AI suggests a better one and user didn't set a strong one?
-            // For now, let's respect user input but fallback to AI if empty
+            setIsFinalizing(false);
             if (!eventDetails.title && data.extracted_intake.theme_or_story_seed) {
                 setEventDetails(prev => ({ ...prev, title: data.extracted_intake.theme_or_story_seed }));
             }
         },
         onError: (err) => {
             console.error(err);
-            toast.error("Failed to generate plan. Please try again.");
-            setIsGenerating(false);
+            toast.error("Failed to compile the plan.");
+            setIsFinalizing(false);
         }
     });
 
@@ -129,10 +161,21 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
         }
     });
 
-    const handleGenerate = () => {
-        if (!prompt.trim()) return;
+    const handleSendMessage = () => {
+        if (!currentInput.trim()) return;
+        const msg = currentInput;
+        setCurrentInput('');
         setIsGenerating(true);
-        generatePlanMutation.mutate(prompt);
+        chatMutation.mutate(msg);
+    };
+
+    const handleFinalize = () => {
+        if (chatHistory.length === 0) {
+            toast.error("Please discuss the event with Sequins first!");
+            return;
+        }
+        setIsFinalizing(true);
+        finalizePlanMutation.mutate();
     };
 
     const handleManualCreate = () => {
@@ -178,8 +221,8 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                             exit={{ opacity: 0, y: -10 }}
                             className="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden"
                         >
-                            {isGenerating ? (
-                                <div className="w-full h-full flex flex-col items-center justify-center p-12">
+                            {isFinalizing ? (
+                                <div className="w-full h-full flex flex-col items-center justify-center p-12 bg-white/90 backdrop-blur-sm z-50 absolute inset-0">
                                     <div className="text-center space-y-8 max-w-md">
                                         <div className="relative w-24 h-24 mx-auto">
                                             <div className="absolute inset-0 border-4 border-indigo-100 rounded-full animate-ping opacity-20" />
@@ -188,23 +231,25 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                             </div>
                                         </div>
                                         <div>
-                                            <h3 className="text-3xl font-serif text-[#333333] mb-3">Designing your show...</h3>
+                                            <h3 className="text-3xl font-serif text-[#333333] mb-3">Drafting your blueprints...</h3>
                                             <div className="h-6 overflow-hidden relative">
                                                 <motion.div 
                                                     animate={{ y: [-24, 0, 0, -24, -48, -48, -72] }}
                                                     transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                                                     className="text-gray-400 font-medium"
                                                 >
-                                                    <p className="h-6">Analyzing class roster...</p>
-                                                    <p className="h-6">Balancing energy curves...</p>
-                                                    <p className="h-6">Curating music selections...</p>
                                                     <p className="h-6">Structuring run of show...</p>
+                                                    <p className="h-6">Assigning costumes & lighting...</p>
+                                                    <p className="h-6">Finalizing rehearsal schedules...</p>
+                                                    <p className="h-6">Calculating runtimes...</p>
                                                 </motion.div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            ) : (
+                            ) : null}
+                            
+                            {!isFinalizing && (
                                 <>
                                     {/* Left: Event Logistics */}
                                     <div className="w-full lg:w-1/3 bg-white border-r border-gray-100 p-8 lg:p-10 flex flex-col overflow-y-auto">
@@ -279,51 +324,108 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                         </div>
                                     </div>
 
-                                    {/* Right: AI Creative Brief */}
-                                    <div className="flex-1 p-8 lg:p-12 flex flex-col justify-center bg-[#FDFBF7]">
-                                        <div className="max-w-2xl mx-auto w-full space-y-8">
-                                            <div className="text-center space-y-3">
-                                                <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
-                                                    <Sparkles className="w-3 h-3" /> AI Assistant Available
-                                                </div>
-                                                <h1 className="text-4xl font-serif text-[#333333]">Creative Brief</h1>
-                                                <p className="text-gray-500">
-                                                    Describe your vision, and we'll draft a complete run sheet, select music, and organize the logistics for you.
-                                                </p>
-                                            </div>
+                                    {/* Right: AI Creative Producer Chat */}
+                                    <div className="flex-1 flex flex-col bg-[#FDFBF7] h-full overflow-hidden">
+                                        {/* Chat Header */}
+                                        <div className="p-6 pb-2 shrink-0">
+                                             <div className="flex items-center justify-between">
+                                                 <div>
+                                                     <h2 className="font-serif text-2xl text-[#333333]">Producer Session</h2>
+                                                     <p className="text-gray-500 text-sm">Brainstorm themes, music, and flow with Sequins.</p>
+                                                 </div>
+                                                 {chatHistory.length > 2 && (
+                                                     <Button 
+                                                         onClick={handleFinalize}
+                                                         className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full"
+                                                         disabled={isFinalizing}
+                                                     >
+                                                         {isFinalizing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                                                         Generate Final Plan
+                                                     </Button>
+                                                 )}
+                                             </div>
+                                        </div>
 
-                                            <div className="bg-white p-2 rounded-[32px] shadow-xl shadow-indigo-100/50 border border-gray-100 relative group transition-all hover:shadow-2xl hover:shadow-indigo-100/80">
-                                                <Textarea 
-                                                    value={prompt}
-                                                    onChange={(e) => setPrompt(e.target.value)}
-                                                    placeholder="e.g. A 2-hour 'Winter Wonderland' show. Start with the youngest dancers (3-5yo) to get them home early. End with the Senior Company production number. We need smooth transitions."
-                                                    className="min-h-[240px] text-lg p-8 border-none focus-visible:ring-0 resize-none font-light placeholder:text-gray-300 rounded-[28px] bg-transparent leading-relaxed"
-                                                />
-                                                <div className="px-6 pb-6 flex items-center justify-between border-t border-gray-50 pt-4 mt-2">
-                                                    <div className="flex items-center gap-2 text-xs text-gray-400 font-medium uppercase tracking-wider bg-gray-50 px-3 py-1.5 rounded-full">
-                                                        <Users className="w-3 h-3 text-indigo-400" />
-                                                        {classes.length} Classes Loaded
+                                        {/* Chat Messages */}
+                                        <div 
+                                            ref={scrollRef}
+                                            className="flex-1 overflow-y-auto p-6 space-y-6"
+                                        >
+                                            {chatHistory.length === 0 && (
+                                                <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-50 space-y-4">
+                                                    <Sparkles className="w-12 h-12" />
+                                                    <p className="text-center max-w-sm">
+                                                        "Hello! I'm Sequins. Tell me about your upcoming show—what's the vibe, the theme, or the biggest challenge you're facing?"
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {chatHistory.map((msg, i) => (
+                                                <motion.div 
+                                                    key={i}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                                >
+                                                    <div className={`max-w-[80%] rounded-2xl p-4 shadow-sm ${
+                                                        msg.role === 'user' 
+                                                            ? 'bg-[#333333] text-white rounded-br-none' 
+                                                            : 'bg-white border border-gray-100 text-gray-800 rounded-bl-none'
+                                                    }`}>
+                                                        <div className="whitespace-pre-wrap leading-relaxed">
+                                                            {msg.content}
+                                                        </div>
                                                     </div>
-                                                    <Button 
-                                                        onClick={handleGenerate} 
-                                                        disabled={!prompt.trim()}
-                                                        className="bg-[#333333] hover:bg-black text-white rounded-full px-8 h-12 text-base font-medium shadow-lg hover:shadow-xl transition-all"
-                                                    >
-                                                        Generate Full Plan <ArrowRight className="w-4 h-4 ml-2" />
-                                                    </Button>
+                                                </motion.div>
+                                            ))}
+                                            
+                                            {isGenerating && (
+                                                <div className="flex justify-start">
+                                                    <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-none p-4 shadow-sm flex items-center gap-2">
+                                                        <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                                                        <span className="text-gray-400 text-sm">Thinking...</span>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
+                                        </div>
 
-                                            <div className="flex flex-wrap justify-center gap-3">
-                                                {["Story-driven Recital", "Holiday Showcase", "Competition Lineup"].map(tag => (
-                                                    <button 
-                                                        key={tag}
-                                                        onClick={() => setPrompt(prev => prev ? prev + " " + tag : tag)}
-                                                        className="px-4 py-2 bg-white rounded-full text-xs font-medium text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 border border-gray-100 transition-colors shadow-sm"
-                                                    >
-                                                        + {tag}
-                                                    </button>
-                                                ))}
+                                        {/* Input Area */}
+                                        <div className="p-6 pt-2 shrink-0">
+                                            <div className="bg-white p-2 rounded-[24px] shadow-lg shadow-gray-100 border border-gray-200 flex items-end gap-2 relative z-20">
+                                                <Textarea 
+                                                    value={currentInput}
+                                                    onChange={(e) => setCurrentInput(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            handleSendMessage();
+                                                        }
+                                                    }}
+                                                    placeholder="Type your message..."
+                                                    className="min-h-[50px] max-h-[150px] border-none focus-visible:ring-0 resize-none bg-transparent py-3 px-4 text-base"
+                                                />
+                                                <Button 
+                                                    onClick={handleSendMessage} 
+                                                    disabled={!currentInput.trim() || isGenerating}
+                                                    size="icon"
+                                                    className="h-10 w-10 rounded-full bg-[#333333] hover:bg-black text-white shrink-0 mb-1 mr-1"
+                                                >
+                                                    <ArrowRight className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                            <div className="flex gap-2 mt-3 px-2 overflow-x-auto pb-2">
+                                                 {chatHistory.length === 0 && ["Winter Theme", "Recital 2025", "Story Ideas"].map(tag => (
+                                                     <button 
+                                                         key={tag}
+                                                         onClick={() => {
+                                                             setCurrentInput(tag); 
+                                                             // Optional: auto-send
+                                                         }}
+                                                         className="whitespace-nowrap px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-500 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+                                                     >
+                                                         + {tag}
+                                                     </button>
+                                                 ))}
                                             </div>
                                         </div>
                                     </div>

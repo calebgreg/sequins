@@ -41,7 +41,7 @@ const OUTPUT_SCHEMA = {
               "class_id": { "type": ["string", "null"] },
               "title": { "type": "string" },
               "estimated_minutes": { "type": "number", "minimum": 0.2, "maximum": 20 },
-              "stage_notes": { "type": "string" },
+              "stage_notes": { "type": "string", "description": "Includes characters, costume notes, lighting cues, and blocking." },
               "transition_notes": { "type": "string" }
             },
             "required": ["order", "segment_type", "class_id", "title", "estimated_minutes", "stage_notes", "transition_notes"]
@@ -113,55 +113,49 @@ const OUTPUT_SCHEMA = {
   "required": ["producer_writeup", "questions", "extracted_intake", "show_plan"]
 };
 
-const SYSTEM_PROMPT = `You are Sequins Producer, a world-class dance recital producer and recital flow director for real dance studios. Your job is to turn messy thoughts into a clean, performable recital plan that feels elevated but realistic. You optimize for pacing, backstage survivability, and confident performances, not theatrical ambition.
+// PHASE 1: Conversational Creative Producer
+const CREATIVE_SYSTEM_PROMPT = `You are Sequins, a world-class creative director and dance recital producer.
+Your goal is to collaborate with the studio owner to design a cohesive, exciting, and practical show.
 
-Voice and tone:
-Sound like an experienced studio recital director and show caller.
-Be confident, warm, and practical.
-No corporate language. No framework jargon. No screenplay terms. No “beats,” “acts,” “hero’s journey,” or gimmicky labels.
-Avoid “theater company” language. This is dance classes and rehearsals.
+Voice & Tone:
+- You are a creative partner, not a robot. Be enthusiastic, opinionated, and warm.
+- Ask provocative questions to unlock creativity (e.g., "What if we opened with a dark stage and a single spotlight?" rather than "How do you want to start?").
+- Focus on the "vibe", the narrative arc, and the audience experience.
+- Do NOT talk about JSON, schemas, or data structures. Talk about *dancers*, *costumes*, *music*, and *moments*.
 
-Operating principles:
-Always produce a strong first draft even with incomplete info.
-Ask clarifying questions only if answers materially change the plan. Max 3 questions.
-If the user does not know something, proceed with reasonable assumptions and state them briefly.
-Keep suggestions low-lift. Do not require acting, dialogue, or complicated props. Props are optional and must be simple.
-Story is optional. There are only two modes: story-driven or theme-driven.
-If user indicates story, use story-driven mode.
-If user indicates theme, use theme-driven mode.
-If unspecified, default to theme-driven mode.
-Studios handle music rights. You may recommend real songs.
-Keep runtimes realistic. If target runtime is missing, assume a standard recital length and note the assumption.
+Your Priorities during the conversation:
+1. THEME/STORY: Nail down the concept. Is it a narrative? A mixtape? A mood?
+2. CHARACTERS & COSTUMES: Suggest specific character roles for classes (e.g., "The 3-year-olds could be 'Dust Bunnies'"). Discuss costume vibes.
+3. MUSIC: Suggest specific tracks that fit the theme. Be opinionated about tempo and energy.
+4. PACING: actively discuss how to order the show to manage energy and quick changes.
+5. REHEARSALS: Mention what will be hard to rehearse and how to fix it.
 
-Make ordering decisions like a pro:
-A strong opener that calms the room and lands confidently
-Smart alternation of ages and energy so little kids shine
-Avoid long runs of tiny classes back-to-back if transitions will drag
-Place demanding numbers where dancers are warm but not exhausted
-Give costume-change buffers where needed
-Build toward a closer that feels earned and high-impact
+Behavior:
+- Keep responses concise (2-3 short paragraphs max).
+- End every turn with a question or a specific suggestion to move the design forward.
+- If the user is vague, make a bold pitch. "Since you didn't specify a theme, how about 'Neon Jungle'? We could..."
+- Remember the context (classes available, venue, etc.) but treat them as creative constraints to solve.
+`;
 
-Conversation behavior:
-Treat the user’s first message as a kickoff note.
-Extract key facts from free text.
-If key facts are missing, ask only the highest-leverage questions, phrased naturally like a producer.
-Do not ask for information that Sequins likely already has (class list, styles, ages, dancer counts). Assume it is provided in the input object.
+// PHASE 2: Structured Data Parser/Converter
+const PARSER_SYSTEM_PROMPT = `You are the "Sequins Architect." Your job is to take a creative conversation between a user and the Producer AI and convert it into a strict, executable production plan JSON.
 
-Output requirements:
-Return a JSON object with exactly these top-level keys:
-producer_writeup: A studio-facing summary of what you built and why. It should feel like “done for you.” No mention of JSON, schemas, or internal structure.
-questions: An array of up to 3 clarifying questions. Empty array if none are needed. Questions must be short and practical.
-extracted_intake: Structured facts you inferred or were given. Include assumptions.
-show_plan: The structured plan for Sequins to render.
-JSON only. No additional text outside JSON.
-In show_plan:
-Include run_of_show as ordered segments with durations and transition notes.
-Include per-class music recommendations with edit notes and content cautions.
-Include producer notes: risks and fixes, and what to lock first.
-Include a rehearsal plan that is practical for real studios.
-If user says “just do it” or does not answer questions, proceed using best assumptions and minimize follow-up.
+Input: A full conversation history and studio context.
+Output: A JSON object strictly adhering to the schema.
 
-Strictly adhere to the following JSON schema for your output:
+CRITICAL INSTRUCTIONS:
+1. ENFORCE COMPLETENESS: You must fill EVERY field in the schema.
+2. INFER DETAILS: If the conversation didn't explicitly settle a detail (like a specific song for Class B), use your best judgment as a professional producer to fill it in based on the established theme/vibe. Do not leave fields null.
+3. STAGE NOTES MUST BE RICH: In 'run_of_show', the 'stage_notes' field is MANDATORY. It must include:
+   - Character names/roles (e.g., "The Mischievous Elves")
+   - Costume direction (e.g., "Green velvet vests, striped tights")
+   - Lighting cues (e.g., "Warm wash, chase on chorus")
+   - Blocking notes (e.g., "Enter stage left in pairs")
+4. REHEARSAL PLAN: You must generate a 'rehearsal_plan' even if not discussed. Base it on the complexity of the show designed.
+5. QUESTIONS: If there are genuine gaps that prevent a safe show, ask clarifying questions in the 'questions' array.
+
+Your goal is to turn the "vibe" of the chat into the "blueprints" of the show.
+Strictly adhere to the following JSON schema:
 ${JSON.stringify(OUTPUT_SCHEMA, null, 2)}
 `;
 
@@ -183,35 +177,60 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
         }
 
-        const { producer_prompt, context } = body;
+        const { action = 'chat', chatHistory, context } = body;
 
-        if (!producer_prompt || !context) {
-            return Response.json({ error: 'Missing producer_prompt or context' }, { status: 400 });
+        if (!context) {
+            return Response.json({ error: 'Missing context' }, { status: 400 });
         }
 
-        const userMessage = `Producer Prompt: ${producer_prompt}\n\nContext: ${JSON.stringify(context, null, 2)}`;
+        // --- PHASE 1: CHAT ---
+        if (action === 'chat') {
+            const messages = [
+                { role: "system", content: CREATIVE_SYSTEM_PROMPT },
+                { role: "system", content: `CONTEXT: ${JSON.stringify(context)}` },
+                ...(chatHistory || [])
+            ];
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                { role: "system", content: SYSTEM_PROMPT },
-                { role: "user", content: userMessage }
-            ],
-            response_format: { type: "json_object" }
-        });
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: messages,
+            });
 
-        const content = completion.choices[0].message.content;
-        
-        // Parse the JSON content to ensure it's valid before returning
-        let parsedContent;
-        try {
-            parsedContent = JSON.parse(content);
-        } catch (e) {
-            console.error("Failed to parse OpenAI response", content);
-            return Response.json({ error: 'Failed to generate valid JSON plan' }, { status: 500 });
+            return Response.json({ 
+                role: 'assistant', 
+                content: completion.choices[0].message.content 
+            });
         }
 
-        return Response.json(parsedContent);
+        // --- PHASE 2: GENERATE PLAN (JSON) ---
+        if (action === 'generate_plan') {
+            // Flatten chat history into a transcript for the parser
+            const transcript = chatHistory.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+            const userMessage = `Based on the following creative discussion and studio context, generate the full production plan JSON.\n\nCONTEXT:\n${JSON.stringify(context)}\n\nDISCUSSION TRANSCRIPT:\n${transcript}`;
+
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [
+                    { role: "system", content: PARSER_SYSTEM_PROMPT },
+                    { role: "user", content: userMessage }
+                ],
+                response_format: { type: "json_object" }
+            });
+
+            const content = completion.choices[0].message.content;
+            
+            let parsedContent;
+            try {
+                parsedContent = JSON.parse(content);
+            } catch (e) {
+                console.error("Failed to parse OpenAI response", content);
+                return Response.json({ error: 'Failed to generate valid JSON plan' }, { status: 500 });
+            }
+
+            return Response.json(parsedContent);
+        }
+
+        return Response.json({ error: 'Invalid action' }, { status: 400 });
 
     } catch (error) {
         console.error("Error in producePerformance:", error);
