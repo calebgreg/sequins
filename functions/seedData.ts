@@ -21,7 +21,12 @@ function getRandom(arr) {
 }
 
 function getRandomSubarray(arr, size) {
-    const shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
+    const shuffled = arr.slice(0);
+    let i = arr.length;
+    let min = i - size;
+    let temp;
+    let index;
+    
     while (i-- > min) {
         index = Math.floor((i + 1) * Math.random());
         temp = shuffled[index];
