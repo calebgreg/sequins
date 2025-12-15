@@ -13,12 +13,12 @@ import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import PerformanceDetail from '../components/performances/PerformanceDetail';
 import CreatePerformanceModal from '../components/performances/CreatePerformanceModal';
-import ProducerAIModal from '../components/performances/ProducerAIModal';
+import ProducerWorkspace from '../components/performances/ProducerWorkspace';
 
 export default function PerformancesPage() {
     const [selectedPerformanceId, setSelectedPerformanceId] = useState(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [isProducerModalOpen, setIsProducerModalOpen] = useState(false);
+    const [view, setView] = useState('list'); // 'list' | 'producer'
     const [searchQuery, setSearchQuery] = useState('');
 
     const queryClient = useQueryClient();
@@ -54,6 +54,18 @@ export default function PerformancesPage() {
         );
     }
 
+    if (view === 'producer') {
+        return (
+            <ProducerWorkspace 
+                onCancel={() => setView('list')}
+                onPlanCreated={(id) => {
+                    setView('list');
+                    setSelectedPerformanceId(id);
+                }}
+            />
+        );
+    }
+
     return (
         <div className="max-w-[1600px] mx-auto space-y-8 p-4 md:p-0">
             {/* Header */}
@@ -67,14 +79,14 @@ export default function PerformancesPage() {
                 </div>
                 <div className="flex gap-3">
                     <Button 
-                        onClick={() => setIsProducerModalOpen(true)}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-6 h-12 shadow-lg shadow-indigo-200"
+                        onClick={() => setView('producer')}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-6 h-12 shadow-lg shadow-indigo-200 transition-all hover:scale-105"
                     >
                         <Sparkles className="w-5 h-5 mr-2" /> AI Producer
                     </Button>
                     <Button 
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="bg-[#333333] hover:bg-black text-white rounded-full px-6 h-12 shadow-lg shadow-gray-200"
+                        className="bg-[#333333] hover:bg-black text-white rounded-full px-6 h-12 shadow-lg shadow-gray-200 transition-all hover:scale-105"
                     >
                         <Plus className="w-5 h-5 mr-2" /> Create Event
                     </Button>
@@ -97,12 +109,6 @@ export default function PerformancesPage() {
                 onOpenChange={setIsCreateModalOpen}
                 onSubmit={(data) => createPerformance.mutate(data)}
                 isLoading={createPerformance.isPending}
-            />
-
-            <ProducerAIModal 
-                open={isProducerModalOpen}
-                onOpenChange={setIsProducerModalOpen}
-                onPlanCreated={(id) => setSelectedPerformanceId(id)}
             />
 
             {/* Event Grid */}
