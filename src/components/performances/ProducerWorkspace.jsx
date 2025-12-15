@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, AlertTriangle, Music, ArrowRight, Save, Wand2, X, ChevronLeft, Calendar } from 'lucide-react';
+import { Loader2, Sparkles, AlertTriangle, Music, ArrowRight, Save, Wand2, X, ChevronLeft, Calendar, PenTool } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -118,11 +118,11 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                         <ChevronLeft className="w-5 h-5 text-gray-500" />
                     </Button>
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md shadow-indigo-200">
-                            <Sparkles className="w-4 h-4" />
+                        <div className="w-8 h-8 bg-[#333333] rounded-lg flex items-center justify-center text-white shadow-sm">
+                            <PenTool className="w-4 h-4" />
                         </div>
                         <div>
-                            <h2 className="font-serif text-lg text-[#333333]">New Event with Sequins</h2>
+                            <h2 className="font-serif text-lg text-[#333333]">Drafting Table</h2>
                         </div>
                     </div>
                 </div>

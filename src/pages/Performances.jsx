@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { 
     Calendar, MapPin, Clock, Users, Music, MoveVertical, 
     Plus, Search, ChevronRight, Play, Settings, AlertCircle,
-    MoreHorizontal, Mic2, Star, Trophy, Sparkles
+    MoreHorizontal, Mic2, Star, Trophy, Sparkles, PenTool
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,9 +80,9 @@ export default function PerformancesPage() {
                 <div className="flex gap-3">
                     <Button 
                         onClick={() => setView('producer')}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-6 h-12 shadow-lg shadow-indigo-200 transition-all hover:scale-105"
+                        className="bg-white hover:bg-gray-50 text-[#333333] border border-gray-200 rounded-full px-6 h-12 shadow-sm transition-all hover:shadow-md"
                     >
-                        <Sparkles className="w-5 h-5 mr-2" /> AI Producer
+                        <PenTool className="w-4 h-4 mr-2" /> Open Drafting Table
                     </Button>
                     <Button 
                         onClick={() => setIsCreateModalOpen(true)}
