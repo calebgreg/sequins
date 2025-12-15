@@ -10,7 +10,7 @@ const OUTPUT_SCHEMA = {
   "additionalProperties": false,
   "properties": {
     "producer_writeup": { "type": "string" },
-    "questions": { "type": "array", "items": { "type": "string" }, "maxItems": 3 },
+    "questions": { "type": "array", "items": { "type": "string" }, "maxItems": 1 },
     "extracted_intake": {
       "type": "object",
       "additionalProperties": false,
@@ -73,21 +73,8 @@ const OUTPUT_SCHEMA = {
                 "required": ["department", "task", "priority", "due_milestone"]
             }
         },
-        "risk_mitigation": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                    "risk": { "type": "string" },
-                    "severity": { "type": "string", "enum": ["high", "medium", "low"] },
-                    "mitigation_plan": { "type": "string" }
-                },
-                "required": ["risk", "severity", "mitigation_plan"]
-            }
-        }
-      },
-      "required": ["throughline", "run_of_show", "production_tasks", "risk_mitigation"]
+        },
+        "required": ["throughline", "run_of_show", "production_tasks"]
     }
   },
   "required": ["producer_writeup", "questions", "extracted_intake", "show_plan"]
@@ -121,8 +108,7 @@ CRITICAL INSTRUCTIONS:
    - Music: Editing tracks, licensing.
    - Costumes: Measuring, ordering, fittings.
    - Admin: Ticketing setup, parent emails.
-3. **REALISTIC RISKS:** specific risks (e.g. "Quick change for Senior tap routine") and specific mitigation plans (e.g. "Assign 2 parents to backstage left").
-4. **COMPLETE THE RUN OF SHOW:** Every segment needs lighting concepts, specific prop lists, and costume notes.
+3. **COMPLETE THE RUN OF SHOW:** Every segment needs lighting concepts, specific prop lists, and costume notes.
 
 Your output must be ready to be handed to a Stage Manager and a Project Manager to execute immediately.
 
