@@ -18,12 +18,13 @@ Deno.serve(async (req) => {
 
         // 1. Fetch Context Data (Omnipotent View)
         // We fetch key entities to help the LLM understand names, schedules, and existing data.
-        const [students, classes, settingsList, plans, teachers] = await Promise.all([
+        const [students, classes, settingsList, plans, teachers, performances] = await Promise.all([
             base44.entities.Student.list(),
             base44.entities.DanceClass.list(),
             base44.entities.StudioSettings.list(),
             base44.entities.TuitionPlan.list(),
             base44.entities.Teacher.list(),
+            base44.entities.Performance.list(),
         ]);
 
         const settings = settingsList[0] || {};
@@ -39,6 +40,11 @@ Deno.serve(async (req) => {
             `${c.title} (${c.style}) on ${c.day} @ ${c.start_time}:00`
         ).join('\n');
 
+        const performanceContext = performances.map(p => {
+            const venueName = typeof p.venue === 'object' ? (p.venue?.venue_name || 'TBD') : (p.venue || 'TBD');
+            return `Event: ${p.title} | Date: ${p.date} | Status: ${p.status} | Venue: ${venueName} | Description: ${p.description || 'N/A'}`;
+        }).join('\n');
+
         const teacherContext = teachers.map(t => t.name).join(', ');
 
         const systemContext = `
@@ -52,12 +58,16 @@ Deno.serve(async (req) => {
             - Students: ${activeStudents.length} active students
             - Teachers: ${teacherContext}
             - Classes: ${classes.length} scheduled classes
+            - Performances: ${performances.length} upcoming events
             
             ROSTER SNAPSHOT (Use for resolving names to emails/IDs):
             ${rosterContext}
 
             SCHEDULE SNAPSHOT:
             ${classContext}
+
+            UPCOMING PERFORMANCES / EVENTS:
+            ${performanceContext}
 
             INSTRUCTIONS:
             1. Analyze the user's request.
