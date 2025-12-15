@@ -14,6 +14,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 
 export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
     const [chatHistory, setChatHistory] = useState([
@@ -378,8 +379,17 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                                             ? 'bg-[#333333] text-white rounded-br-none' 
                                                             : 'bg-white border border-gray-100 text-gray-800 rounded-bl-none'
                                                     }`}>
-                                                        <div className="whitespace-pre-wrap leading-relaxed">
-                                                            {msg.content}
+                                                        <div className="text-sm leading-relaxed">
+                                                            <ReactMarkdown 
+                                                                components={{
+                                                                    ul: ({node, ...props}) => <ul className="list-disc pl-4 space-y-1 my-2" {...props} />,
+                                                                    ol: ({node, ...props}) => <ol className="list-decimal pl-4 space-y-1 my-2" {...props} />,
+                                                                    p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                                                                    strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+                                                                }}
+                                                            >
+                                                                {msg.content}
+                                                            </ReactMarkdown>
                                                         </div>
                                                     </div>
                                                 </motion.div>
