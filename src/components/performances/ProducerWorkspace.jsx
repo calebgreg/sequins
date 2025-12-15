@@ -352,11 +352,25 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                             className="flex-1 overflow-y-auto p-6 space-y-6"
                                         >
                                             {chatHistory.length === 0 && (
-                                                <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-50 space-y-4">
-                                                    <Sparkles className="w-12 h-12" />
-                                                    <p className="text-center max-w-sm">
-                                                        "Hello! I'm Sequins. Tell me about your upcoming show—what's the vibe, the theme, or the biggest challenge you're facing?"
-                                                    </p>
+                                                <div className="flex flex-col h-full justify-end pb-8 px-8 max-w-4xl mx-auto w-full">
+                                                    <h3 className="text-xl font-serif text-[#333333] mb-6 opacity-40">Select a workflow to begin</h3>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {[
+                                                            { title: "Design Show from Scratch", desc: "Generate a complete theme, narrative, and run of show structure.", prompt: "I need to design a new show from scratch. Help me brainstorm themes and structure." },
+                                                            { title: "Optimize Class Order", desc: "Balance energy, quick changes, and cast logistics.", prompt: "I have a list of classes. Help me create an optimized run of show that handles quick changes." },
+                                                            { title: "Curate Music & Vibe", desc: "Find distinct songs and edit points for a specific era or mood.", prompt: "I need music recommendations for my show. Let's start with the opening number." },
+                                                            { title: "Develop Show Concept", desc: "Flesh out a vague idea into a full production.", prompt: "I have a vague theme idea but need help fleshing it out into a full production." }
+                                                        ].map((action, i) => (
+                                                            <button
+                                                                key={i}
+                                                                onClick={() => setCurrentInput(action.prompt)}
+                                                                className="text-left p-5 rounded-2xl border border-gray-200 bg-white hover:border-indigo-600 hover:ring-1 hover:ring-indigo-600 hover:shadow-md transition-all group"
+                                                            >
+                                                                <div className="font-bold text-[#333333] group-hover:text-indigo-600 mb-1 text-base">{action.title}</div>
+                                                                <div className="text-sm text-gray-500 group-hover:text-gray-600">{action.desc}</div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             )}
 
@@ -413,20 +427,7 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                                     <ArrowRight className="w-4 h-4" />
                                                 </Button>
                                             </div>
-                                            <div className="flex gap-2 mt-3 px-2 overflow-x-auto pb-2">
-                                                 {chatHistory.length === 0 && ["Winter Theme", "Recital 2025", "Story Ideas"].map(tag => (
-                                                     <button 
-                                                         key={tag}
-                                                         onClick={() => {
-                                                             setCurrentInput(tag); 
-                                                             // Optional: auto-send
-                                                         }}
-                                                         className="whitespace-nowrap px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-500 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
-                                                     >
-                                                         + {tag}
-                                                     </button>
-                                                 ))}
-                                            </div>
+
                                         </div>
                                     </div>
                                 </>
