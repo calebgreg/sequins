@@ -1,9 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
-import OpenAI from 'npm:openai';
-
-const openai = new OpenAI({
-    apiKey: Deno.env.get("OPENAI_API_KEY"),
-});
+// OpenAI import removed to use Base44 Integration
 
 const OUTPUT_SCHEMA = {
   "type": "object",
@@ -112,9 +108,6 @@ CRITICAL INSTRUCTIONS:
 3. **COMPLETE THE RUN OF SHOW:** Every segment needs lighting concepts, specific prop lists, and costume notes.
 
 Your output must be ready to be handed to a Stage Manager and a Project Manager to execute immediately.
-
-Schema:
-${JSON.stringify(OUTPUT_SCHEMA, null, 2)}
 `;
 
 Deno.serve(async (req) => {
@@ -171,35 +164,23 @@ Deno.serve(async (req) => {
         if (action === 'generate_plan') {
             // Flatten chat history into a transcript for the parser
             const transcript = chatHistory.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
-            const userMessage = `Based on the following creative discussion and studio context, generate the full production plan JSON.\n\nCONTEXT:\n${JSON.stringify(context)}\n\nDISCUSSION TRANSCRIPT:\n${transcript}`;
+            const fullPrompt = `${PARSER_SYSTEM_PROMPT}
 
-            const completion = await openai.chat.completions.create({
-                model: "gpt-4o",
-                messages: [
-                    { role: "system", content: PARSER_SYSTEM_PROMPT },
-                    { role: "user", content: userMessage }
-                ],
-                response_format: { type: "json_object" }
+Based on the following creative discussion and studio context, generate the full production plan JSON.
+
+CONTEXT:
+${JSON.stringify(context)}
+
+DISCUSSION TRANSCRIPT:
+${transcript}`;
+
+            // Use Base44 Integration for structured output
+            const aiResponse = await base44.integrations.Core.InvokeLLM({
+                prompt: fullPrompt,
+                response_json_schema: OUTPUT_SCHEMA
             });
 
-            let content = completion.choices[0].message.content;
-            
-            // Clean up markdown code blocks if present (safeguard)
-            if (content.includes('```json')) {
-                content = content.split('```json')[1].split('```')[0].trim();
-            } else if (content.includes('```')) {
-                content = content.split('```')[1].split('```')[0].trim();
-            }
-            
-            let parsedContent;
-            try {
-                parsedContent = JSON.parse(content);
-            } catch (e) {
-                console.error("Failed to parse OpenAI response", content);
-                return Response.json({ error: 'Failed to generate valid JSON plan' }, { status: 500 });
-            }
-
-            return Response.json(parsedContent);
+            return Response.json(aiResponse);
         }
 
         return Response.json({ error: 'Invalid action' }, { status: 400 });
