@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import RoutineDetailSheet from './RoutineDetailSheet';
 
 // --- Conflict Helper ---
 // Checks if any student in routine A is also in routine B
@@ -27,6 +28,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     const [isEditing, setIsEditing] = useState(false);
     const [newRoutineTitle, setNewRoutineTitle] = useState('');
     const [formData, setFormData] = useState({});
+    const [selectedRoutine, setSelectedRoutine] = useState(null);
     const queryClient = useQueryClient();
 
     // 1. Fetch Performance Data
@@ -338,9 +340,10 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                         <div
                                                             ref={provided.innerRef}
                                                             {...provided.draggableProps}
+                                                            onClick={() => setSelectedRoutine(routine)}
                                                             className={`
-                                                                relative rounded-2xl border transition-all duration-200 group
-                                                                ${snapshot.isDragging ? 'bg-white shadow-2xl scale-105 z-50 border-indigo-200' : 'bg-white border-transparent hover:border-gray-100 hover:bg-gray-50'}
+                                                                relative rounded-2xl border transition-all duration-200 group cursor-pointer
+                                                                ${snapshot.isDragging ? 'bg-white shadow-2xl scale-105 z-50 border-indigo-200' : 'bg-white border-transparent hover:border-indigo-100 hover:bg-gray-50'}
                                                             `}
                                                         >
                                                             {/* Conflict Alert Line */}
@@ -353,7 +356,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                                                             <div className="grid grid-cols-12 items-center p-3">
                                                                 {/* Handle & Number */}
-                                                                <div className="col-span-1 flex items-center justify-center gap-2">
+                                                                <div className="col-span-1 flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                                     <div {...provided.dragHandleProps} className="text-gray-300 cursor-grab active:cursor-grabbing hover:text-gray-500">
                                                                         <GripVertical className="w-4 h-4" />
                                                                     </div>
@@ -380,22 +383,17 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                                                                 {/* Tech Info */}
                                                                 <div className="col-span-3 px-4">
-                                                                    {/* Placeholder for Lighting/Costume quick tags */}
-                                                                    <div className="flex gap-1">
-                                                                         {routine.costume_details ? (
-                                                                             <div className="w-2 h-2 rounded-full bg-pink-400" title="Costumes Checked" />
-                                                                         ) : (
-                                                                             <div className="w-2 h-2 rounded-full bg-gray-200" title="No Costume Details" />
-                                                                         )}
-                                                                         {routine.lighting_notes ? (
-                                                                             <div className="w-2 h-2 rounded-full bg-amber-400" title="Lighting Set" />
-                                                                         ) : (
-                                                                             <div className="w-2 h-2 rounded-full bg-gray-200" title="No Lighting Details" />
-                                                                         )}
+                                                                    <div className="flex gap-2">
+                                                                         <div className={`p-1.5 rounded-md ${routine.costume_details ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-300'}`} title={routine.costume_details || "No costume details"}>
+                                                                             <Shirt className="w-3.5 h-3.5" />
+                                                                         </div>
+                                                                         <div className={`p-1.5 rounded-md ${routine.lighting_notes ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-300'}`} title={routine.lighting_notes || "No lighting details"}>
+                                                                             <Lightbulb className="w-3.5 h-3.5" />
+                                                                         </div>
                                                                     </div>
                                                                     {hasConflict && (
-                                                                        <div className="text-[10px] text-red-500 mt-1 leading-tight">
-                                                                            Conflict w/ Prev
+                                                                        <div className="text-[10px] text-red-500 mt-2 leading-tight flex items-center gap-1 font-medium">
+                                                                            <AlertTriangle className="w-3 h-3" /> Quick Change
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -409,7 +407,10 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                         variant="ghost" 
                                                                         size="icon" 
                                                                         className="h-8 w-8 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                        onClick={() => deleteRoutine.mutate(routine.id)}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            if (confirm("Delete this routine?")) deleteRoutine.mutate(routine.id);
+                                                                        }}
                                                                     >
                                                                         <Trash2 className="w-4 h-4" />
                                                                     </Button>
@@ -432,9 +433,16 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                             </div>
                         )}
                     </div>
-                </div>
+                    </div>
 
-                {/* Right Col: Stats & Quick Actions */}
+                    <RoutineDetailSheet 
+                    routine={selectedRoutine} 
+                    open={!!selectedRoutine} 
+                    onOpenChange={(open) => !open && setSelectedRoutine(null)}
+                    allStudents={students}
+                    />
+
+                    {/* Right Col: Stats & Quick Actions */}
                 <div className="space-y-6">
                     {/* Stats Card */}
                     <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm">
