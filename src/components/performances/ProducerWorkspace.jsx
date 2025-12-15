@@ -18,8 +18,8 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
     const [chatHistory, setChatHistory] = useState([
         { 
             role: 'assistant', 
-            content: "I'm ready to lead your production meeting. I've reviewed your active classes and studio settings.\n\nWhat are we creating? A narrative recital? A seasonal showcase? \n\nPitch me your vision—or if you don't have one yet, tell me, and I'll propose a few concepts." 
-        }
+            content: "I'm ready. What are we working on?" 
+            }
     ]);
     const [currentInput, setCurrentInput] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
