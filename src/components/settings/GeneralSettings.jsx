@@ -140,33 +140,55 @@ export default function GeneralSettings() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-100">
-            {/* Music Preference */}
+            {/* Music Integrations */}
             <div className="space-y-4">
                <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
                     <Music className="w-4 h-4" />
                   </div>
                   <div>
-                    <Label className="text-base">Music Provider</Label>
-                    <p className="text-[10px] text-gray-500">Default service for playlist generation</p>
+                    <Label className="text-base">Music Services</Label>
+                    <p className="text-[10px] text-gray-500">Connect your account for seamless playback</p>
                   </div>
                </div>
-               
-               <Select 
-                 value={formData.music_preference} 
-                 onValueChange={(v) => {
-                   setFormData({...formData, music_preference: v});
-                   setIsDirty(true);
-                 }}
-               >
-                 <SelectTrigger className="h-11 rounded-xl">
-                   <SelectValue />
-                 </SelectTrigger>
-                 <SelectContent>
-                   <SelectItem value="spotify">Spotify</SelectItem>
-                   <SelectItem value="apple_music">Apple Music</SelectItem>
-                 </SelectContent>
-               </Select>
+
+               <div className="grid grid-cols-1 gap-3">
+                   {/* Spotify */}
+                   <div className={`flex items-center justify-between p-4 rounded-xl border transition-all ${formData.music_preference === 'spotify' ? 'bg-[#1DB954]/5 border-[#1DB954]/20 shadow-sm' : 'bg-white border-gray-100 hover:border-gray-200'}`}>
+                       <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 rounded-full bg-[#1DB954] flex items-center justify-center text-white shadow-sm">
+                               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                           </div>
+                           <div>
+                               <div className="font-bold text-sm text-gray-900">Spotify</div>
+                               <div className="text-xs text-gray-500">{formData.music_preference === 'spotify' ? 'Active account connected' : 'Not connected'}</div>
+                           </div>
+                       </div>
+                       {formData.music_preference === 'spotify' ? (
+                           <Button variant="outline" size="sm" onClick={() => { setFormData({...formData, music_preference: null}); setIsDirty(true); }} className="text-gray-500 hover:text-red-600 hover:bg-red-50 text-xs h-8 rounded-full border-gray-200">Disconnect</Button>
+                       ) : (
+                           <Button size="sm" onClick={() => { setFormData({...formData, music_preference: 'spotify'}); setIsDirty(true); }} className="bg-[#1DB954] hover:bg-[#1ed760] text-white text-xs h-8 rounded-full px-4 shadow-sm">Connect</Button>
+                       )}
+                   </div>
+
+                   {/* Apple Music */}
+                   <div className={`flex items-center justify-between p-4 rounded-xl border transition-all ${formData.music_preference === 'apple_music' ? 'bg-[#FA243C]/5 border-[#FA243C]/20 shadow-sm' : 'bg-white border-gray-100 hover:border-gray-200'}`}>
+                       <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 rounded-full bg-[#FA243C] flex items-center justify-center text-white shadow-sm">
+                               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.24-.87 3.56-.74c1.52.13 2.67.62 3.4 1.53-2.9 1.5-2.4 5.37.52 6.64-.67 1.83-1.6 3.63-2.56 4.8zm-5.4-15.16c.55-1.74 2.22-3 4.1-3.12.3 2-1.72 4.2-4.1 3.12z"/></svg>
+                           </div>
+                           <div>
+                               <div className="font-bold text-sm text-gray-900">Apple Music</div>
+                               <div className="text-xs text-gray-500">{formData.music_preference === 'apple_music' ? 'Active account connected' : 'Not connected'}</div>
+                           </div>
+                       </div>
+                       {formData.music_preference === 'apple_music' ? (
+                           <Button variant="outline" size="sm" onClick={() => { setFormData({...formData, music_preference: null}); setIsDirty(true); }} className="text-gray-500 hover:text-red-600 hover:bg-red-50 text-xs h-8 rounded-full border-gray-200">Disconnect</Button>
+                       ) : (
+                           <Button size="sm" onClick={() => { setFormData({...formData, music_preference: 'apple_music'}); setIsDirty(true); }} className="bg-[#FA243C] hover:bg-[#fd4a5d] text-white text-xs h-8 rounded-full px-4 shadow-sm">Connect</Button>
+                       )}
+                   </div>
+               </div>
             </div>
 
             {/* Costume Vendors */}
