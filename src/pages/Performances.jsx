@@ -32,7 +32,22 @@ export default function PerformancesPage() {
 
     const updateStatusMutation = useMutation({
         mutationFn: ({ id, status }) => base44.entities.Performance.update(id, { status }),
-        onSuccess: () => {
+        onMutate: async ({ id, status }) => {
+            await queryClient.cancelQueries(['performances']);
+            const previousPerformances = queryClient.getQueryData(['performances']);
+            
+            queryClient.setQueryData(['performances'], (old) => {
+                return old.map(p => 
+                    p.id === id ? { ...p, status } : p
+                );
+            });
+            
+            return { previousPerformances };
+        },
+        onError: (err, newTodo, context) => {
+            queryClient.setQueryData(['performances'], context.previousPerformances);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries(['performances']);
         }
     });
@@ -43,7 +58,6 @@ export default function PerformancesPage() {
         const { draggableId, destination } = result;
         const newStatus = destination.droppableId;
         
-        // Optimistic check
         const performance = performances.find(p => p.id === draggableId);
         if (performance && performance.status !== newStatus) {
             updateStatusMutation.mutate({ id: draggableId, status: newStatus });
