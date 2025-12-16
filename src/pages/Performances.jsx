@@ -181,7 +181,7 @@ export default function PerformancesPage() {
                                                                         </div>
                                                                     </div>
                                                                     
-                                                                    <h3 className="font-serif text-lg text-[#333333] mb-3 leading-snug group-hover:text-indigo-600 transition-colors">
+                                                                    <h3 className="font-serif text-lg text-[#333333] mb-3 leading-snug group-hover:text-indigo-600 transition-colors h-14 line-clamp-2">
                                                                         {perf.title}
                                                                     </h3>
 
