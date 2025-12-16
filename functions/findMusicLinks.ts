@@ -18,21 +18,21 @@ Deno.serve(async (req) => {
 
         const prompt = `Find the official Spotify and Apple Music links for the song "${song_title}"${artist ? ` by "${artist}"` : ''}.
 
-        CRITICAL: The song title is likely the same as the album title. You MUST find the link to the *Individual Track/Song*, not the full album.
+        CRITICAL: 
+        1. You MUST find the link to the *Individual Track/Song*, not the full album.
+        2. **NO FAKE LINKS**: If you cannot find a working, verifiable link, return null. Do NOT output placeholder IDs like "12345", "3J0J0J", or "example". 
 
         Search Strategy:
         1. Search specifically for "${song_title} ${artist} spotify track" to find the /track/ URL.
         2. Search specifically for "${song_title} ${artist} apple music song" to find the song deep link.
 
         Validation:
-        - Spotify Link: MUST contain '/track/'. (e.g. https://open.spotify.com/track/...) - Do NOT return /album/ links.
+        - Spotify Link: MUST be a real link. Example: https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT
         - Apple Music Link: MUST point to the song (usually contains '?i=' parameter).
-
-        If you find an album page, you must look at the tracklist and extract the specific link for the song "${song_title}".
 
         Return JSON: { "spotify_link": "...", "apple_music_link": "..." }`;
 
-        const response = await base44.integrations.Core.InvokeLLM({
+        let response = await base44.integrations.Core.InvokeLLM({
             prompt: prompt,
             add_context_from_internet: true,
             response_json_schema: {
@@ -43,6 +43,20 @@ Deno.serve(async (req) => {
                 }
             }
         });
+
+        // Extra Validation Layer to catch hallucinations
+        if (response.spotify_link) {
+            // Spotify IDs are typically 22 alphanumeric chars. 
+            // We'll use a regex that looks for /track/ followed by at least 20 alphanumeric chars.
+            // This filters out "3J0J0J0J0J0J0J0J0J0J0" and other repeated garbage or short placeholders.
+            const isValidId = /\/track\/[a-zA-Z0-9]{20,30}/.test(response.spotify_link);
+            const isGarbage = /0J0J|12345|example/.test(response.spotify_link);
+            
+            if (!isValidId || isGarbage) {
+                console.log("Discarding invalid/hallucinated Spotify link:", response.spotify_link);
+                response.spotify_link = null;
+            }
+        }
 
         return Response.json(response);
 
