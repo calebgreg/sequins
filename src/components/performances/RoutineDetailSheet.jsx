@@ -314,6 +314,42 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                     placeholder="Describe specific costume requirements, colors, and accessories..."
                                     className="min-h-[80px] bg-[#F9F9FB] border-gray-100 focus:bg-white focus:border-indigo-200 transition-all resize-none"
                                 />
+                                {formData.costume_product_suggestions && formData.costume_product_suggestions.length > 0 && (
+                                    <div className="mt-3 space-y-2">
+                                        <Label className="text-[10px] font-bold text-pink-500 uppercase tracking-wider flex items-center gap-1">
+                                            <Sparkles className="w-3 h-3" /> AI Sourced Options
+                                        </Label>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                            {formData.costume_product_suggestions.map((item, idx) => (
+                                                <a 
+                                                    key={idx} 
+                                                    href={item.url} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer" 
+                                                    className="group relative block bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-md transition-all"
+                                                >
+                                                    <div className="aspect-[3/4] bg-gray-50 relative">
+                                                        {item.image_url ? (
+                                                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center">
+                                                                <Shirt className="w-8 h-8 text-gray-200" />
+                                                            </div>
+                                                        )}
+                                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                            <ExternalLink className="w-6 h-6 text-white drop-shadow-md" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-2">
+                                                        <p className="text-xs font-medium text-gray-700 line-clamp-2 leading-snug group-hover:text-indigo-600 transition-colors">
+                                                            {item.name}
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-2">
