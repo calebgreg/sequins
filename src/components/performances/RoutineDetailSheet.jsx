@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,14 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2, PlayCircle, ExternalLink, X, Mic } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2, PlayCircle, ExternalLink, X, Mic, Plus, Check } from "lucide-react";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function RoutineDetailSheet({ routine, open, onOpenChange, allStudents }) {
+export default function RoutineDetailSheet({ routine, open, onOpenChange, allStudents = [] }) {
     const [formData, setFormData] = useState({});
     const [isSearchingMusic, setIsSearchingMusic] = useState(false);
+    const [searchStudent, setSearchStudent] = useState("");
     const queryClient = useQueryClient();
 
     useEffect(() => {
@@ -104,27 +107,42 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
     const isValidApple = (url) => url && url.includes('music.apple.com');
     const hasValidMusic = isValidSpotify(formData.spotify_link) || isValidApple(formData.apple_music_link);
 
+    const filteredStudents = useMemo(() => {
+        if (!searchStudent) return allStudents;
+        return allStudents.filter(s => s.name.toLowerCase().includes(searchStudent.toLowerCase()));
+    }, [allStudents, searchStudent]);
+
+    const toggleStudent = (studentId) => {
+        const currentPerformers = formData.performers || [];
+        const newPerformers = currentPerformers.includes(studentId)
+            ? currentPerformers.filter(id => id !== studentId)
+            : [...currentPerformers, studentId];
+        setFormData({ ...formData, performers: newPerformers });
+    };
+
     if (!routine) return null;
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-                <SheetHeader className="mb-6">
-                    <SheetTitle className="text-2xl font-serif">Edit Routine</SheetTitle>
-                    <SheetDescription>
-                        Configure technical details, music, and performers for this act.
-                    </SheetDescription>
-                </SheetHeader>
+            <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-0 bg-[#FDFBF7]">
+                <div className="p-6 pb-2 border-b border-gray-100 bg-white sticky top-0 z-10">
+                    <SheetHeader>
+                        <SheetTitle className="text-2xl font-serif text-[#333333]">Edit Routine</SheetTitle>
+                        <SheetDescription>
+                            Configure details for {formData.title || 'this act'}
+                        </SheetDescription>
+                    </SheetHeader>
+                </div>
 
-                <div className="space-y-8">
+                <div className="p-6 space-y-8">
                     {/* Basic Info */}
-                    <div className="space-y-4">
+                    <div className="space-y-5 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                         <div className="space-y-2">
-                            <Label>Routine Title</Label>
+                            <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Routine Title</Label>
                             <Input 
                                 value={formData.title || ''} 
                                 onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                className="text-lg font-medium"
+                                className="text-lg font-medium border-gray-200 bg-[#F9F9FB] focus:bg-white transition-colors h-11"
                             />
                         </div>
 
@@ -277,84 +295,136 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                         </div>
                     </div>
 
-                    <Separator />
-
                     {/* Tech Details */}
-                    <div className="space-y-4">
-                        <h3 className="font-serif text-lg">Production Details</h3>
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                        <h3 className="font-serif text-xl text-[#333333] flex items-center gap-2">
+                            <Lightbulb className="w-5 h-5 text-gray-400" />
+                            Production Details
+                        </h3>
                         
-                        <div className="space-y-2">
-                            <Label className="flex items-center gap-2 text-pink-600"><Shirt className="w-4 h-4" /> Costume Notes</Label>
-                            <Textarea 
-                                value={formData.costume_details || ''} 
-                                onChange={(e) => setFormData({...formData, costume_details: e.target.value})}
-                                placeholder="Describe costume requirements..."
-                                className="bg-pink-50/30 border-pink-100 focus-visible:ring-pink-200"
-                            />
-                        </div>
+                        <div className="grid grid-cols-1 gap-6">
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <Shirt className="w-3 h-3" /> Costumes
+                                </Label>
+                                <Textarea 
+                                    value={formData.costume_details || ''} 
+                                    onChange={(e) => setFormData({...formData, costume_details: e.target.value})}
+                                    placeholder="Describe specific costume requirements, colors, and accessories..."
+                                    className="min-h-[80px] bg-[#F9F9FB] border-gray-100 focus:bg-white focus:border-indigo-200 transition-all resize-none"
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label className="flex items-center gap-2 text-amber-600"><Lightbulb className="w-4 h-4" /> Lighting / Tech</Label>
-                            <Textarea 
-                                value={formData.lighting_notes || ''} 
-                                onChange={(e) => setFormData({...formData, lighting_notes: e.target.value})}
-                                placeholder="Lighting cues, props, projections..."
-                                className="bg-amber-50/30 border-amber-100 focus-visible:ring-amber-200"
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <Lightbulb className="w-3 h-3" /> Lighting & Tech
+                                </Label>
+                                <Textarea 
+                                    value={formData.lighting_notes || ''} 
+                                    onChange={(e) => setFormData({...formData, lighting_notes: e.target.value})}
+                                    placeholder="Lighting cues, mood, props, and special effects..."
+                                    className="min-h-[80px] bg-[#F9F9FB] border-gray-100 focus:bg-white focus:border-indigo-200 transition-all resize-none"
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label className="flex items-center gap-2"><StickyNote className="w-4 h-4" /> General Notes</Label>
-                            <Textarea 
-                                value={formData.notes || ''} 
-                                onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                                placeholder="Choreography notes, entrance/exit..."
-                            />
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <StickyNote className="w-3 h-3" /> Notes
+                                </Label>
+                                <Textarea 
+                                    value={formData.notes || ''} 
+                                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                                    placeholder="Choreography notes, entrance/exit, blocking..."
+                                    className="min-h-[80px] bg-[#F9F9FB] border-gray-100 focus:bg-white focus:border-indigo-200 transition-all resize-none"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <Separator />
-
                     {/* Performers */}
-                    <div className="space-y-4">
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                          <div className="flex items-center justify-between">
-                            <Label className="flex items-center gap-2"><Users className="w-4 h-4" /> Cast ({formData.performers?.length || 0})</Label>
+                            <h3 className="font-serif text-xl text-[#333333] flex items-center gap-2">
+                                <Users className="w-5 h-5 text-gray-400" />
+                                Cast <Badge variant="secondary" className="rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100">{formData.performers?.length || 0}</Badge>
+                            </h3>
                         </div>
                         
-                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 h-40 overflow-y-auto text-sm text-gray-500">
-                            {/* Simple placeholder for student selection - fully implementing a multi-select student picker is complex for this modal size but this is where it would go */}
-                            <p className="italic">Performers list management coming in next update.</p>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                                {formData.performers?.map(pid => {
-                                    const st = allStudents?.find(s => s.id === pid);
-                                    return (
-                                        <Badge key={pid} variant="secondary">
-                                            {st ? st.name : 'Unknown Student'}
-                                        </Badge>
-                                    )
-                                })}
+                        <div className="space-y-3">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <Input 
+                                    placeholder="Search students..." 
+                                    value={searchStudent}
+                                    onChange={(e) => setSearchStudent(e.target.value)}
+                                    className="pl-9 bg-[#F9F9FB] border-gray-100 focus:bg-white"
+                                />
                             </div>
+
+                            <ScrollArea className="h-[200px] pr-4">
+                                <div className="space-y-2">
+                                    {filteredStudents.length > 0 ? (
+                                        filteredStudents.map(student => {
+                                            const isSelected = (formData.performers || []).includes(student.id);
+                                            return (
+                                                <div 
+                                                    key={student.id}
+                                                    onClick={() => toggleStudent(student.id)}
+                                                    className={`flex items-center gap-3 p-2 rounded-xl border cursor-pointer transition-all group ${
+                                                        isSelected 
+                                                            ? 'bg-indigo-50 border-indigo-200 shadow-sm' 
+                                                            : 'bg-white border-gray-100 hover:border-indigo-100 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                                                        isSelected ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500 group-hover:bg-indigo-100 group-hover:text-indigo-600'
+                                                    }`}>
+                                                        {student.name.substring(0, 2).toUpperCase()}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className={`font-medium text-sm truncate ${isSelected ? 'text-indigo-900' : 'text-gray-700'}`}>
+                                                            {student.name}
+                                                        </div>
+                                                        <div className="text-xs text-gray-400 truncate">
+                                                            {student.level} • {student.age} yrs
+                                                        </div>
+                                                    </div>
+                                                    {isSelected && (
+                                                        <Check className="w-4 h-4 text-indigo-600 mr-1" />
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-400 text-sm">
+                                            No students found
+                                        </div>
+                                    )}
+                                </div>
+                            </ScrollArea>
                         </div>
                     </div>
                 </div>
 
-                <SheetFooter className="mt-8 gap-2 sm:gap-0">
-                    <Button 
-                        variant="destructive" 
+                <div className="p-6 border-t border-gray-100 bg-white sticky bottom-0 z-10 flex items-center justify-between gap-3">
+                     <Button 
+                        variant="ghost" 
                         onClick={() => {
                             if (confirm("Are you sure you want to delete this routine?")) {
                                 deleteRoutine.mutate();
                             }
                         }}
-                        className="mr-auto"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
                     >
                         <Trash2 className="w-4 h-4 mr-2" /> Delete
                     </Button>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button onClick={handleSave} className="bg-[#333333] text-white hover:bg-black">
-                        <Save className="w-4 h-4 mr-2" /> Save Changes
-                    </Button>
-                </SheetFooter>
+                    <div className="flex items-center gap-3">
+                        <Button variant="ghost" onClick={() => onOpenChange(false)} className="rounded-full">Cancel</Button>
+                        <Button onClick={handleSave} className="bg-[#333333] text-white hover:bg-black rounded-full px-6 shadow-lg hover:shadow-xl transition-all">
+                            <Save className="w-4 h-4 mr-2" /> Save Changes
+                        </Button>
+                    </div>
+                </div>
             </SheetContent>
         </Sheet>
     );
