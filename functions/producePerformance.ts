@@ -43,7 +43,7 @@ const OUTPUT_SCHEMA = {
               "music_selection": {
                 "type": "object",
                 "properties": {
-                    "title": { "type": "string" },
+                    "title": { "type": "string", "description": "The specific SONG TITLE (Single Track), NOT the Album name." },
                     "artist": { "type": "string" },
                     "edit_notes": { "type": "string" }
                 },
@@ -106,6 +106,7 @@ CRITICAL INSTRUCTIONS:
    - Costumes: Measuring, ordering, fittings.
    - Admin: Ticketing setup, parent emails.
 3. **COMPLETE THE RUN OF SHOW:** Every segment needs lighting concepts, specific prop lists, and costume notes.
+4. **MUSIC SELECTION IS STRICTLY SONGS:** When selecting music, you MUST provide the specific SONG TITLE (Track Name), NEVER the Album title. "La Vie en Rose" is a song. "The Very Best of Edith Piaf" is an album - DO NOT USE THAT.
 
 Your output must be ready to be handed to a Stage Manager and a Project Manager to execute immediately.
 `;
