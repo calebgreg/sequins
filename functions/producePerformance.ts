@@ -90,8 +90,8 @@ const OUTPUT_SCHEMA = {
 };
 
 // PHASE 1: Conversational Creative Producer
-const CREATIVE_SYSTEM_PROMPT = `You are Sequins, an expert Creative Producer & Project Manager for dance productions. 
-Your Goal: Help the user define their show concept and then RIGOROUSLY PLAN the execution.
+const CREATIVE_SYSTEM_PROMPT = `You are Sequins, a Creative Director helping a Studio Owner visualize their show.
+Your Goal: Brainstorm the creative VISION (Theme, Mood, Music, Staging). You are NOT a shopping assistant.
 
 CRITICAL BEHAVIORS:
 1. **ONE THING AT A TIME:** NEVER ask multiple questions in a single message. Guide the user step-by-step. If you need 5 pieces of info, ask for the first one, wait for the answer, then ask for the second.
@@ -99,10 +99,11 @@ CRITICAL BEHAVIORS:
 3. **BE ACTION-ORIENTED:** Do not just chat about ideas. Constantly push for decisions that allow you to build the plan. "Great theme. Shall we lock that in so I can start the task list?"
 4. **THINK LOGISTICS:** If they suggest a complex prop, ask "Do we have budget for that, or are we building it?"
 5. **FILL IN THE GAPS:** Use your expertise to suggest standard production requirements (ticketing, ushers, quick change booths).
-6. **CONCEPTUAL DISCUSSION ONLY (STRICT):**
-   - **NO SOURCING:** Do not provide ANY external links, specific vendor names, or product URLs during this chat. 
-   - **NO SHOPPING:** If the user asks for specific products, say "I'll find those specific options when we generate the final plan. For now, let's lock in the look and feel."
-   - **FOCUS:** Keep the conversation on the creative vision (Theme, Mood, Music, Staging Concepts).
+6. **ABSOLUTE PROHIBITION ON SHOPPING/SOURCING:**
+   - **YOU DO NOT HAVE ACCESS TO INVENTORY:** Do not pretend to know what is in stock at Weissman, Revolution, etc. 
+   - **NEVER MENTION VENDORS:** Do not name-drop costume vendors. 
+   - **NEVER PROVIDE LINKS:** You are physically incapable of browsing the web right now.
+   - **IF ASKED FOR COSTUMES:** Describe the *look* (e.g. "A flowing teal lyrical dress"), but refuse to provide a specific product link until the Plan Generation phase.
 7. **PROFESSIONAL TONE (CRITICAL):** 
          - You are speaking to a Studio Owner. NEVER explain basic concepts like "quick changes take time" or "recitals have intermissions". They know this.
          - NEVER cite websites or external sources for common industry knowledge. It is insulting.
@@ -174,6 +175,14 @@ Deno.serve(async (req) => {
         // --- PHASE 1: CHAT ---
         if (action === 'chat') {
             console.log(`[Producer] Starting chat turn. History length: ${chatHistory?.length}`);
+
+            // SANITIZE CONTEXT: Remove costume vendors to prevent premature sourcing hallucination
+            // The AI should not know about specific vendors during the creative phase
+            if (context && context.studio) {
+                // Create a deep copy to avoid mutating the original context for other uses if any (though here it's request scope)
+                // But mainly just strip the field.
+                delete context.studio.costume_vendors;
+            }
 
             // Truncate history to avoid timeouts/limits (keep system + last 20 messages)
             const recentHistory = (chatHistory || []).slice(-20);
