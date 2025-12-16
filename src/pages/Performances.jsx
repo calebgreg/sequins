@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import PerformanceDetail from '../components/performances/PerformanceDetail';
 
 import ProducerWorkspace from '../components/performances/ProducerWorkspace';
@@ -29,11 +30,37 @@ export default function PerformancesPage() {
         queryFn: () => base44.entities.Performance.list('-date'),
     });
 
+    const updateStatusMutation = useMutation({
+        mutationFn: ({ id, status }) => base44.entities.Performance.update(id, { status }),
+        onSuccess: () => {
+            queryClient.invalidateQueries(['performances']);
+        }
+    });
 
+    const onDragEnd = (result) => {
+        if (!result.destination) return;
+        
+        const { draggableId, destination } = result;
+        const newStatus = destination.droppableId;
+        
+        // Optimistic check
+        const performance = performances.find(p => p.id === draggableId);
+        if (performance && performance.status !== newStatus) {
+            updateStatusMutation.mutate({ id: draggableId, status: newStatus });
+        }
+    };
 
     const filteredPerformances = performances.filter(p => 
         p.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const columns = {
+        planning: { label: 'Planning', color: 'bg-amber-50 border-amber-100 text-amber-900' },
+        rehearsal: { label: 'Rehearsal', color: 'bg-blue-50 border-blue-100 text-blue-900' },
+        showtime: { label: 'Showtime', color: 'bg-purple-50 border-purple-100 text-purple-900' },
+        completed: { label: 'Completed', color: 'bg-green-50 border-green-100 text-green-900' },
+        archived: { label: 'Archived', color: 'bg-gray-50 border-gray-100 text-gray-900' }
+    };
 
     if (selectedPerformanceId) {
         return (
@@ -91,63 +118,78 @@ export default function PerformancesPage() {
 
 
 
-            {/* Event Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Kanban Board */}
+            <div className="overflow-x-auto pb-8">
                 {isLoading ? (
-                    <div className="col-span-full py-20 text-center text-gray-400">Loading events...</div>
-                ) : filteredPerformances.length === 0 ? (
-                    <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-3xl">
-                        <Mic2 className="w-12 h-12 mb-4 opacity-20" />
-                        <p>No performances found. Create your first event!</p>
-                    </div>
+                    <div className="py-20 text-center text-gray-400">Loading events...</div>
                 ) : (
-                    filteredPerformances.map(perf => (
-                        <motion.div
-                            key={perf.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            whileHover={{ y: -4 }}
-                            onClick={() => setSelectedPerformanceId(perf.id)}
-                            className="bg-white group rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl transition-all cursor-pointer overflow-hidden flex flex-col h-[280px]"
-                        >
-                            {/* Card Header / Image Area Placeholder */}
-                            <div className={`h-24 p-6 relative flex items-start justify-between ${
-                                perf.type === 'competition' ? 'bg-gradient-to-r from-blue-50 to-indigo-50' : 
-                                perf.type === 'showcase' ? 'bg-gradient-to-r from-purple-50 to-pink-50' :
-                                'bg-gradient-to-r from-amber-50 to-orange-50'
-                            }`}>
-                                <Badge className="bg-white/80 backdrop-blur-sm text-[#333333] shadow-sm border-none">
-                                    {perf.status}
-                                </Badge>
-                                <div className="p-2 bg-white/50 rounded-full">
-                                    {perf.type === 'competition' ? <Trophy className="w-5 h-5 text-blue-400" /> : <Star className="w-5 h-5 text-amber-400" />}
-                                </div>
-                            </div>
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <div className="flex gap-6 min-w-[1200px]">
+                            {Object.entries(columns).map(([columnId, columnDef]) => {
+                                const columnItems = filteredPerformances.filter(p => p.status === columnId);
+                                
+                                return (
+                                    <div key={columnId} className="flex-1 min-w-[300px] flex flex-col">
+                                        <div className={`mb-4 p-3 rounded-xl border flex items-center justify-between ${columnDef.color}`}>
+                                            <span className="font-bold uppercase tracking-wider text-xs">{columnDef.label}</span>
+                                            <Badge variant="secondary" className="bg-white/50 border-none">{columnItems.length}</Badge>
+                                        </div>
 
-                            <div className="p-6 pt-2 flex-1 flex flex-col">
-                                <div className="mb-4">
-                                    <div className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
-                                        {format(new Date(perf.date), 'MMMM d, yyyy')}
-                                    </div>
-                                    <h3 className="text-2xl font-serif text-[#333333] group-hover:text-indigo-600 transition-colors line-clamp-2">
-                                        {perf.title}
-                                    </h3>
-                                </div>
+                                        <Droppable droppableId={columnId}>
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    {...provided.droppableProps}
+                                                    ref={provided.innerRef}
+                                                    className={`flex-1 rounded-2xl transition-colors min-h-[500px] p-2 ${
+                                                        snapshot.isDraggingOver ? 'bg-gray-50/80 ring-2 ring-indigo-100' : 'bg-transparent'
+                                                    }`}
+                                                >
+                                                    {columnItems.map((perf, index) => (
+                                                        <Draggable key={perf.id} draggableId={perf.id} index={index}>
+                                                            {(provided, snapshot) => (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    {...provided.dragHandleProps}
+                                                                    onClick={() => setSelectedPerformanceId(perf.id)}
+                                                                    className={`
+                                                                        bg-white mb-4 rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing group
+                                                                        ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-xl ring-2 ring-indigo-500 z-50' : 'border-gray-100'}
+                                                                    `}
+                                                                    style={provided.draggableProps.style}
+                                                                >
+                                                                    <div className="flex justify-between items-start mb-3">
+                                                                        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                                                            {format(new Date(perf.date), 'MMM d, yyyy')}
+                                                                        </div>
+                                                                        <div className="p-1.5 bg-gray-50 rounded-full text-gray-400">
+                                                                            {perf.type === 'competition' ? <Trophy className="w-3 h-3" /> : <Star className="w-3 h-3" />}
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <h3 className="font-serif text-lg text-[#333333] mb-3 leading-snug group-hover:text-indigo-600 transition-colors">
+                                                                        {perf.title}
+                                                                    </h3>
 
-                                <div className="mt-auto flex items-center justify-between text-sm text-gray-500">
-                                    <div className="flex items-center gap-2">
-                                        <MapPin className="w-4 h-4" />
-                                        <span className="truncate max-w-[150px]">
-                                            {perf.venue?.venue_name || (typeof perf.venue === 'string' ? perf.venue : 'No venue set')}
-                                        </span>
+                                                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                                        <MapPin className="w-3 h-3 text-gray-300" />
+                                                                        <span className="truncate">
+                                                                            {perf.venue?.venue_name || (typeof perf.venue === 'string' ? perf.venue : 'No venue set')}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </Draggable>
+                                                    ))}
+                                                    {provided.placeholder}
+                                                </div>
+                                            )}
+                                        </Droppable>
                                     </div>
-                                    <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-[#333333] group-hover:text-white transition-colors">
-                                        <ChevronRight className="w-4 h-4" />
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))
+                                );
+                            })}
+                        </div>
+                    </DragDropContext>
                 )}
             </div>
         </div>
