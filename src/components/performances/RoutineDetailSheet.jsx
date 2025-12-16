@@ -42,8 +42,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                 notes: data.notes,
                 performers: data.performers,
                 spotify_link: data.spotify_link,
-                apple_music_link: data.apple_music_link,
-                album_art_url: data.album_art_url
+                apple_music_link: data.apple_music_link
             });
         },
         onSuccess: () => {
@@ -80,14 +79,13 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                 artist: formData.artist
             });
             
-            if (data.spotify_link || data.apple_music_link || data.album_art_url) {
+            if (data.spotify_link || data.apple_music_link) {
                 setFormData(prev => ({
                     ...prev,
                     spotify_link: data.spotify_link || prev.spotify_link,
-                    apple_music_link: data.apple_music_link || prev.apple_music_link,
-                    album_art_url: data.album_art_url || prev.album_art_url
+                    apple_music_link: data.apple_music_link || prev.apple_music_link
                 }));
-                toast.success("Music details found!");
+                toast.success("Music links found!");
             } else {
                 toast.info("No links found automatically");
             }
@@ -143,36 +141,21 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                         </div>
 
                         {/* Premium Music Card Integration */}
-                        {formData.album_art_url || formData.spotify_link || formData.apple_music_link ? (
+                        {formData.spotify_link || formData.apple_music_link ? (
                           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden relative group">
                               <div className="absolute top-2 right-2 flex gap-1 z-10">
                                    <Button
                                       variant="ghost"
                                       size="icon"
                                       className="h-6 w-6 rounded-full bg-white/80 hover:bg-white text-gray-500 shadow-sm backdrop-blur-sm"
-                                      onClick={() => setFormData(prev => ({ ...prev, album_art_url: null, spotify_link: '', apple_music_link: '' }))}
+                                      onClick={() => setFormData(prev => ({ ...prev, spotify_link: '', apple_music_link: '' }))}
                                    >
                                       <X className="w-3 h-3" />
                                    </Button>
                               </div>
-                              <div className="flex">
-                                  {/* Album Art Section */}
-                                  <div className="w-32 h-32 bg-gray-100 shrink-0 relative">
-                                      {formData.album_art_url ? (
-                                          <img 
-                                              src={formData.album_art_url} 
-                                              alt="Album Art" 
-                                              className="w-full h-full object-cover"
-                                          />
-                                      ) : (
-                                          <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
-                                              <Music className="w-10 h-10" />
-                                          </div>
-                                      )}
-                                  </div>
-
+                              <div className="flex items-center p-4">
                                   {/* Content Section */}
-                                  <div className="flex-1 p-4 flex flex-col justify-center">
+                                  <div className="flex-1 flex flex-col justify-center">
                                       <div className="mb-3">
                                           <h4 className="font-bold text-[#333333] leading-tight text-lg line-clamp-1">{formData.song_title || "Unknown Track"}</h4>
                                           <p className="text-gray-500 text-sm line-clamp-1">{formData.artist || "Unknown Artist"}</p>
@@ -224,7 +207,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-gray-900">No music links yet</p>
-                                    <p className="text-xs text-gray-500 max-w-[200px] mx-auto">Connect Spotify or Apple Music to enable one-click playback for this routine.</p>
+                                    <p className="text-xs text-gray-500 max-w-[200px] mx-auto">Connect Spotify or Apple Music to enable one-click playback.</p>
                                 </div>
                                 <Button 
                                     variant="outline" 

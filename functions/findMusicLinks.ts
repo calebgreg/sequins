@@ -17,8 +17,7 @@ Deno.serve(async (req) => {
         }
 
         const prompt = `Find the official Spotify and Apple Music links for the song "${song_title}"${artist ? ` by "${artist}"` : ''}. 
-        Also find a high-resolution URL for the album artwork.
-        Return them in a JSON object with keys 'spotify_link', 'apple_music_link', and 'album_art_url'. 
+        Return them in a JSON object with keys 'spotify_link' and 'apple_music_link'. 
         If you can't find a specific item, return null for that key.`;
 
         const response = await base44.integrations.Core.InvokeLLM({
@@ -28,8 +27,7 @@ Deno.serve(async (req) => {
                 type: "object",
                 properties: {
                     spotify_link: { type: ["string", "null"] },
-                    apple_music_link: { type: ["string", "null"] },
-                    album_art_url: { type: ["string", "null"], description: "URL to the album artwork image" }
+                    apple_music_link: { type: ["string", "null"] }
                 }
             }
         });
