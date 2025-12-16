@@ -107,6 +107,7 @@ CRITICAL INSTRUCTIONS:
    - Admin: Ticketing setup, parent emails.
 3. **COMPLETE THE RUN OF SHOW:** Every segment needs lighting concepts, specific prop lists, and costume notes.
 4. **MUSIC SELECTION IS STRICTLY SONGS:** When selecting music, you MUST provide the specific SONG TITLE (Track Name), NEVER the Album title. "La Vie en Rose" is a song. "The Very Best of Edith Piaf" is an album - DO NOT USE THAT.
+5. **ALWAYS INCLUDE ARTISTS:** You MUST populate the 'artist' field for every single music track. If a specific mix is chosen (e.g. "Samba de Janeiro - Carnaval Mix"), you MUST list the actual artists associated with that track (e.g. "Liu, Plastik Funk, Toxic Joy, Bellini"). DO NOT leave the artist field empty if the song is known.
 
 Your output must be ready to be handed to a Stage Manager and a Project Manager to execute immediately.
 `;
