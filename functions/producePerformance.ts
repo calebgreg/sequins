@@ -348,6 +348,10 @@ Deno.serve(async (req) => {
                     add_context_from_internet: true
                 });
 
+                if (!aiResponse) {
+                    throw new Error("LLM returned empty response");
+                }
+
                 console.log(`[Producer] Plan generated in ${(Date.now() - startTime) / 1000}s`);
 
                 return Response.json(aiResponse);

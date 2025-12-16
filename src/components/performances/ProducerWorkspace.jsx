@@ -110,9 +110,15 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
             return response.data;
         },
         onSuccess: (data) => {
+            if (!data || !data.show_plan) {
+                console.error("Invalid plan data received:", data);
+                toast.error("Failed to generate a valid plan. Please try again.");
+                setIsFinalizing(false);
+                return;
+            }
             setGeneratedPlan(data);
             setIsFinalizing(false);
-            if (!eventDetails.title && data.extracted_intake.theme_or_story_seed) {
+            if (!eventDetails.title && data?.extracted_intake?.theme_or_story_seed) {
                 setEventDetails(prev => ({ ...prev, title: data.extracted_intake.theme_or_story_seed }));
             }
         },
