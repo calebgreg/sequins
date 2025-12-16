@@ -20,6 +20,7 @@ export default function GeneralSettings() {
     costume_vendors: []
   });
   const [isDirty, setIsDirty] = useState(false);
+  const [connectingService, setConnectingService] = useState(null);
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['studioSettings'],
@@ -58,6 +59,45 @@ export default function GeneralSettings() {
 
   const handleSave = () => {
     updateMutation.mutate(formData);
+  };
+
+  const handleConnect = async (service) => {
+    setConnectingService(service);
+    const newData = { ...formData, music_preference: service };
+    setFormData(newData);
+    
+    // Simulate a brief connection delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    updateMutation.mutate(newData, {
+      onSuccess: () => {
+        setConnectingService(null);
+        toast.success(`Connected to ${service === 'spotify' ? 'Spotify' : 'Apple Music'}`);
+      },
+      onError: () => {
+        setConnectingService(null);
+        toast.error("Failed to connect service");
+      }
+    });
+  };
+
+  const handleDisconnect = async () => {
+    setConnectingService('disconnecting');
+    const newData = { ...formData, music_preference: null };
+    setFormData(newData);
+
+    // Simulate a brief delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    updateMutation.mutate(newData, {
+      onSuccess: () => {
+        setConnectingService(null);
+        toast.success("Service disconnected");
+      },
+      onError: () => {
+        setConnectingService(null);
+      }
+    });
   };
 
   const addVendor = () => {
@@ -165,9 +205,24 @@ export default function GeneralSettings() {
                            </div>
                        </div>
                        {formData.music_preference === 'spotify' ? (
-                           <Button variant="outline" size="sm" onClick={() => { setFormData({...formData, music_preference: null}); setIsDirty(true); }} className="text-gray-500 hover:text-red-600 hover:bg-red-50 text-xs h-8 rounded-full border-gray-200">Disconnect</Button>
+                           <Button 
+                             variant="outline" 
+                             size="sm" 
+                             onClick={handleDisconnect}
+                             disabled={connectingService === 'disconnecting'}
+                             className="text-gray-500 hover:text-red-600 hover:bg-red-50 text-xs h-8 rounded-full border-gray-200"
+                           >
+                             {connectingService === 'disconnecting' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Disconnect'}
+                           </Button>
                        ) : (
-                           <Button size="sm" onClick={() => { setFormData({...formData, music_preference: 'spotify'}); setIsDirty(true); }} className="bg-[#1DB954] hover:bg-[#1ed760] text-white text-xs h-8 rounded-full px-4 shadow-sm">Connect</Button>
+                           <Button 
+                             size="sm" 
+                             onClick={() => handleConnect('spotify')}
+                             disabled={!!connectingService}
+                             className="bg-[#1DB954] hover:bg-[#1ed760] text-white text-xs h-8 rounded-full px-4 shadow-sm"
+                           >
+                             {connectingService === 'spotify' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Connect'}
+                           </Button>
                        )}
                    </div>
 
@@ -183,9 +238,24 @@ export default function GeneralSettings() {
                            </div>
                        </div>
                        {formData.music_preference === 'apple_music' ? (
-                           <Button variant="outline" size="sm" onClick={() => { setFormData({...formData, music_preference: null}); setIsDirty(true); }} className="text-gray-500 hover:text-red-600 hover:bg-red-50 text-xs h-8 rounded-full border-gray-200">Disconnect</Button>
+                           <Button 
+                             variant="outline" 
+                             size="sm" 
+                             onClick={handleDisconnect}
+                             disabled={connectingService === 'disconnecting'}
+                             className="text-gray-500 hover:text-red-600 hover:bg-red-50 text-xs h-8 rounded-full border-gray-200"
+                           >
+                             {connectingService === 'disconnecting' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Disconnect'}
+                           </Button>
                        ) : (
-                           <Button size="sm" onClick={() => { setFormData({...formData, music_preference: 'apple_music'}); setIsDirty(true); }} className="bg-[#FA243C] hover:bg-[#fd4a5d] text-white text-xs h-8 rounded-full px-4 shadow-sm">Connect</Button>
+                           <Button 
+                             size="sm" 
+                             onClick={() => handleConnect('apple_music')}
+                             disabled={!!connectingService}
+                             className="bg-[#FA243C] hover:bg-[#fd4a5d] text-white text-xs h-8 rounded-full px-4 shadow-sm"
+                           >
+                             {connectingService === 'apple_music' ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Connect'}
+                           </Button>
                        )}
                    </div>
                </div>
