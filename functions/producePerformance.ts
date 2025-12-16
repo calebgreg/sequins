@@ -6,6 +6,10 @@ const OUTPUT_SCHEMA = {
   "additionalProperties": false,
   "properties": {
     "producer_writeup": { "type": "string" },
+    "producer_notes": { 
+      "type": "string",
+      "description": "Brief note about any assumptions made or areas that need studio confirmation before execution"
+    },
     "questions": { "type": "array", "items": { "type": "string" }, "maxItems": 1 },
     "extracted_intake": {
       "type": "object",
@@ -86,7 +90,7 @@ const OUTPUT_SCHEMA = {
         "required": ["throughline", "run_of_show", "production_tasks"]
     }
   },
-  "required": ["producer_writeup", "questions", "extracted_intake", "show_plan"]
+  "required": ["producer_writeup", "producer_notes", "questions", "extracted_intake", "show_plan"]
 };
 
 // PHASE 1: Conversational Creative Producer
@@ -109,6 +113,25 @@ CRITICAL BEHAVIORS:
    - You are speaking to a Studio Owner. NEVER explain basic concepts.
    - NEVER cite websites or external sources for common industry knowledge.
    - **DO THE MATH, DON'T EXPLAIN IT:** Present calculated results directly.
+9. **BUDGET TRACKING:**
+   - If context includes a budget, reference it naturally: "That leaves us $800 for costumes across 6 routines - about $130 per piece."
+   - If no budget is set, ask early: "What's our total production budget?"
+   - Keep a running mental tally as they make decisions.
+10. **KNOW WHEN TO GENERATE:**
+    - Before suggesting "ready to generate the plan?", verify you have:
+      * Show concept locked
+      * Class assignments decided
+      * Rough runtime target
+      * Budget (or "no budget constraints")
+    - If ANY of these are missing, keep asking questions.
+
+CONVERSATION FLOW PRIORITIES (in order):
+1. Show concept (theme/story)
+2. Casting strategy (which classes perform what)
+3. Timing and run-of-show structure
+4. Music direction
+5. Budget allocation
+6. Visual concepts (lighting, staging, THEN costumes)
 
 Style: Concise. Directive. Efficient. Conversational. PEER-TO-PEER.
 `;
@@ -116,6 +139,12 @@ Style: Concise. Directive. Efficient. Conversational. PEER-TO-PEER.
 // PHASE 2: Structured Data Parser/Converter
 const PARSER_SYSTEM_PROMPT = `You are the "Sequins Architect" - A WORLD-CLASS Production Manager.
 Your job is to take a creative conversation and synthesize a HIGHLY ACTIONABLE, LOGISTICALLY SOUND PROJECT PLAN.
+
+CONTEXT STRUCTURE EXPECTED:
+- studio.preferred_costume_vendor: String (e.g. "weissmans.com", "revolutiondance.com")
+- classes: Array of class objects with student counts
+- show_date: ISO date string
+- venue: String
 
 Input: Conversation history + studio context.
 Output: A JSON object strictly adhering to the schema.
@@ -142,6 +171,10 @@ CRITICAL INSTRUCTIONS:
        - \`url\`: Actual deep link to the product page.
        - \`image_url\`: Actual source URL of the product image.
    - If the preferred vendor doesn't have suitable options for a specific style, note it in costume_concept but still try to find the closest match.
+7. **HANDLE INCOMPLETE INFO GRACEFULLY:**
+   - If the chat never discussed costumes in detail, use your expertise to suggest appropriate styles based on dance genre and age group.
+   - If music wasn't specified, DO NOT make up fake songs. Instead, describe the music style needed in edit_notes.
+   - If timing is vague, use industry standards: 3min for beginner routines, 4-5min for advanced.
 
 Your output must be ready to hand to a Stage Manager and Project Manager to execute immediately.
 `;
@@ -193,10 +226,10 @@ Deno.serve(async (req) => {
                 console.log("[Producer] Invoking LLM for chat...");
                 const startTime = Date.now();
 
-                // Use Base44 Integration (Internet Disabled for Chat to prevent premature sourcing)
+                // Use Base44 Integration
                 const aiResponse = await base44.integrations.Core.InvokeLLM({
                     prompt: prompt,
-                    add_context_from_internet: false
+                    add_context_from_internet: true
                 });
 
                 console.log(`[Producer] LLM responded in ${(Date.now() - startTime) / 1000}s`);
