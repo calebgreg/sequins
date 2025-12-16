@@ -147,7 +147,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                         </div>
 
                         {/* Premium Music Card Integration */}
-                        {formData.spotify_link || formData.apple_music_link ? (
+                        {hasValidMusic ? (
                           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden relative group">
                               <div className="absolute top-2 right-2 flex gap-1 z-10">
                                    <Button
@@ -168,7 +168,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                       </div>
 
                                       <div className="flex items-center gap-2">
-                                          {formData.spotify_link && (
+                                          {isValidSpotify(formData.spotify_link) && (
                                               <a 
                                                   href={formData.spotify_link} 
                                                   target="_blank" 
@@ -179,7 +179,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                                   Spotify
                                               </a>
                                           )}
-                                          {formData.apple_music_link && (
+                                          {isValidApple(formData.apple_music_link) && (
                                               <a 
                                                   href={formData.apple_music_link} 
                                                   target="_blank" 
