@@ -629,7 +629,7 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                                                         <Shirt className="w-3 h-3" /> Costumes
                                                                     </div>
                                                                     <p className="text-sm text-pink-900 leading-snug">{segment.costume_concept}</p>
-                                                                    {segment.costume_product_suggestions && segment.costume_product_suggestions.length > 0 && (
+                                                                    {segment.costume_product_suggestions && segment.costume_product_suggestions.length > 0 ? (
                                                                         <div className="mt-3 grid grid-cols-2 gap-2">
                                                                             {segment.costume_product_suggestions.map((item, itemIdx) => (
                                                                                 <a 
@@ -655,6 +655,12 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                                                                     </div>
                                                                                 </a>
                                                                             ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="mt-3 p-3 bg-pink-50/50 rounded-lg border border-pink-100 border-dashed text-center">
+                                                                             <Shirt className="w-5 h-5 text-pink-300 mx-auto mb-1" />
+                                                                             <p className="text-[10px] text-pink-500 font-medium">No specific matches found.</p>
+                                                                             <p className="text-[10px] text-pink-400">Try refining the costume description.</p>
                                                                         </div>
                                                                     )}
                                                                     </div>
