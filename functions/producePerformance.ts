@@ -324,7 +324,7 @@ Deno.serve(async (req) => {
             try {
                 // Flatten chat history into a transcript for the parser
                 // Truncate if extremely long to avoid context window issues
-                const recentHistory = (chatHistory || []).slice(-40); 
+                const recentHistory = (chatHistory || []).slice(-25); 
                 const transcript = recentHistory.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
 
                 const fullPrompt = `${PARSER_SYSTEM_PROMPT}
@@ -339,17 +339,31 @@ Deno.serve(async (req) => {
 
                 console.log("[Producer] Invoking LLM for plan generation...");
                 const startTime = Date.now();
+                let aiResponse;
 
-                // Use Base44 Integration for structured output
-                // CRITICAL: Enable internet access so it can actually search for real products
-                const aiResponse = await base44.integrations.Core.InvokeLLM({
-                    prompt: fullPrompt,
-                    response_json_schema: OUTPUT_SCHEMA,
-                    add_context_from_internet: true
-                });
+                try {
+                    // Attempt 1: With Internet (Rich)
+                    console.log("[Producer] Attempt 1: With Internet context");
+                    aiResponse = await base44.integrations.Core.InvokeLLM({
+                        prompt: fullPrompt,
+                        response_json_schema: OUTPUT_SCHEMA,
+                        add_context_from_internet: true
+                    });
+                } catch (e) {
+                    console.warn("[Producer] Attempt 1 failed. Retrying without internet...", e);
+                    // Attempt 2: Without Internet (Fast/Fallback)
+                    // Modify prompt to acknowledge limitation
+                    const fallbackPrompt = fullPrompt + "\n\nCRITICAL UPDATE: Internet search failed. Please generate the plan using your internal knowledge. For costumes, suggest generic styles and use placeholder URLs (e.g. 'https://example.com/tutu').";
+                    
+                    aiResponse = await base44.integrations.Core.InvokeLLM({
+                        prompt: fallbackPrompt,
+                        response_json_schema: OUTPUT_SCHEMA,
+                        add_context_from_internet: false
+                    });
+                }
 
                 if (!aiResponse) {
-                    throw new Error("LLM returned empty response");
+                    throw new Error("LLM returned empty response after retries");
                 }
 
                 console.log(`[Producer] Plan generated in ${(Date.now() - startTime) / 1000}s`);
