@@ -16,15 +16,21 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Song title is required' }, { status: 400 });
         }
 
-        const prompt = `Find the official Spotify and Apple Music links for the **specific single track** "${song_title}"${artist ? ` by "${artist}"` : ''}. 
-        
-        The goal is to get a link that plays the song immediately, not an album view.
-        - Spotify: Please return a link containing '/track/'.
-        - Apple Music: Please return a link that highlights or plays the specific song (often has '?i=' parameter, but not always). 
-        
-        If you find the song inside an album (e.g. "Best of"), that is okay, BUT the link must point to the specific track, not just the album overview.
-        
-        Return them in a JSON object with keys 'spotify_link' and 'apple_music_link'.`;
+        const prompt = `Find the official Spotify and Apple Music links for the song "${song_title}"${artist ? ` by "${artist}"` : ''}.
+
+        CRITICAL: The song title is likely the same as the album title. You MUST find the link to the *Individual Track/Song*, not the full album.
+
+        Search Strategy:
+        1. Search specifically for "${song_title} ${artist} spotify track" to find the /track/ URL.
+        2. Search specifically for "${song_title} ${artist} apple music song" to find the song deep link.
+
+        Validation:
+        - Spotify Link: MUST contain '/track/'. (e.g. https://open.spotify.com/track/...) - Do NOT return /album/ links.
+        - Apple Music Link: MUST point to the song (usually contains '?i=' parameter).
+
+        If you find an album page, you must look at the tracklist and extract the specific link for the song "${song_title}".
+
+        Return JSON: { "spotify_link": "...", "apple_music_link": "..." }`;
 
         const response = await base44.integrations.Core.InvokeLLM({
             prompt: prompt,
