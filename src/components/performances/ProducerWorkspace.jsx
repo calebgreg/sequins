@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
     Loader2, Sparkles, AlertTriangle, Music, ArrowRight, Save, Wand2, X, 
     ChevronLeft, Calendar, PenTool, MapPin, Trophy, Star, Users, LayoutTemplate, Clock,
-    CheckSquare, ShieldAlert, FileText, Shirt, Lightbulb, Speaker, Footprints, Plus
+    CheckSquare, ShieldAlert, FileText, Shirt, Lightbulb, Speaker, Footprints, Plus, ExternalLink
 } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
