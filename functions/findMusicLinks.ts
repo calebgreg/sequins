@@ -17,9 +17,12 @@ Deno.serve(async (req) => {
         }
 
         const prompt = `Find the official Spotify and Apple Music links for the **specific single track** "${song_title}"${artist ? ` by "${artist}"` : ''}. 
-        CRITICAL: Do NOT return links to the full album. Ensure the Spotify link is a 'track' link (contains /track/) and the Apple Music link is a 'song' link (often has ?i= parameter).
-        Return them in a JSON object with keys 'spotify_link' and 'apple_music_link'. 
-        If you can't find a specific item, return null for that key.`;
+        STRICT VALIDATION REQUIRED:
+        - Spotify: URL MUST contain '/track/'. REJECT '/album/' links.
+        - Apple Music: URL MUST be a deep link to the song (usually contains '?i=' parameter). REJECT generic album pages.
+        - If you only find an album, LOOK INSIDE for the specific track link.
+        - If no specific song link is found, return null. DO NOT fallback to an album link.
+        Return them in a JSON object with keys 'spotify_link' and 'apple_music_link'.`;
 
         const response = await base44.integrations.Core.InvokeLLM({
             prompt: prompt,
