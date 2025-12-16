@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2 } from "lucide-react";
+import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2, PlayCircle, ExternalLink, X } from "lucide-react";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -42,7 +42,8 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                 notes: data.notes,
                 performers: data.performers,
                 spotify_link: data.spotify_link,
-                apple_music_link: data.apple_music_link
+                apple_music_link: data.apple_music_link,
+                album_art_url: data.album_art_url
             });
         },
         onSuccess: () => {
@@ -79,13 +80,14 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                 artist: formData.artist
             });
             
-            if (data.spotify_link || data.apple_music_link) {
+            if (data.spotify_link || data.apple_music_link || data.album_art_url) {
                 setFormData(prev => ({
                     ...prev,
                     spotify_link: data.spotify_link || prev.spotify_link,
-                    apple_music_link: data.apple_music_link || prev.apple_music_link
+                    apple_music_link: data.apple_music_link || prev.apple_music_link,
+                    album_art_url: data.album_art_url || prev.album_art_url
                 }));
-                toast.success("Found music links!");
+                toast.success("Music details found!");
             } else {
                 toast.info("No links found automatically");
             }
@@ -140,52 +142,127 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                             </div>
                         </div>
 
-                        {/* Music Links Integration */}
-                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-100 space-y-3">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                                    <Link2 className="w-3 h-3" /> Streaming Links
-                                </Label>
+                        {/* Premium Music Card Integration */}
+                        {formData.album_art_url || formData.spotify_link || formData.apple_music_link ? (
+                          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden relative group">
+                              <div className="absolute top-2 right-2 flex gap-1 z-10">
+                                   <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-6 w-6 rounded-full bg-white/80 hover:bg-white text-gray-500 shadow-sm backdrop-blur-sm"
+                                      onClick={() => setFormData(prev => ({ ...prev, album_art_url: null, spotify_link: '', apple_music_link: '' }))}
+                                   >
+                                      <X className="w-3 h-3" />
+                                   </Button>
+                              </div>
+                              <div className="flex">
+                                  {/* Album Art Section */}
+                                  <div className="w-32 h-32 bg-gray-100 shrink-0 relative">
+                                      {formData.album_art_url ? (
+                                          <img 
+                                              src={formData.album_art_url} 
+                                              alt="Album Art" 
+                                              className="w-full h-full object-cover"
+                                          />
+                                      ) : (
+                                          <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
+                                              <Music className="w-10 h-10" />
+                                          </div>
+                                      )}
+                                  </div>
+
+                                  {/* Content Section */}
+                                  <div className="flex-1 p-4 flex flex-col justify-center">
+                                      <div className="mb-3">
+                                          <h4 className="font-bold text-[#333333] leading-tight text-lg line-clamp-1">{formData.song_title || "Unknown Track"}</h4>
+                                          <p className="text-gray-500 text-sm line-clamp-1">{formData.artist || "Unknown Artist"}</p>
+                                      </div>
+
+                                      <div className="flex items-center gap-2">
+                                          {formData.spotify_link && (
+                                              <a 
+                                                  href={formData.spotify_link} 
+                                                  target="_blank" 
+                                                  rel="noopener noreferrer"
+                                                  className="flex items-center gap-2 px-3 py-1.5 bg-[#1DB954]/10 hover:bg-[#1DB954]/20 text-[#1DB954] rounded-full text-xs font-bold transition-colors"
+                                              >
+                                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                                                  Spotify
+                                              </a>
+                                          )}
+                                          {formData.apple_music_link && (
+                                              <a 
+                                                  href={formData.apple_music_link} 
+                                                  target="_blank" 
+                                                  rel="noopener noreferrer"
+                                                  className="flex items-center gap-2 px-3 py-1.5 bg-[#FA243C]/10 hover:bg-[#FA243C]/20 text-[#FA243C] rounded-full text-xs font-bold transition-colors"
+                                              >
+                                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12.986 2.052c-4.148 0-6.666 2.37-6.666 5.925 0 3.332 2.37 5.777 5.777 5.777 4.148 0 6.666-2.37 6.666-5.925 0-3.333-2.37-5.777-5.777-5.777zm0 10.37c-2.814 0-4.444-1.925-4.444-4.592 0-2.814 1.777-4.592 4.444-4.592 2.815 0 4.444 1.926 4.444 4.592 0 2.815-1.777 4.592-4.444 4.592zM8.396 3.682c0 .666-.519 1.185-1.185 1.185-.667 0-1.185-.519-1.185-1.185 0-.667.518-1.185 1.185-1.185.666 0 1.185.518 1.185 1.185zm-2.37 13.925c0 .667-.519 1.185-1.185 1.185-.667 0-1.186-.518-1.186-1.185 0-.666.519-1.185 1.186-1.185.666 0 1.185.519 1.185 1.185zm12.592 0c0 .667-.519 1.185-1.185 1.185-.667 0-1.185-.518-1.185-1.185 0-.666.518-1.185 1.185-1.185.666 0 1.185.519 1.185 1.185zM6.915 20.297c0 1.185.889 2.074 2.074 2.074h5.925c1.186 0 2.074-.889 2.074-2.074v-5.926h-2.37v5.63H9.285v-5.63h-2.37v5.926z"/></svg>
+                                                  Apple Music
+                                              </a>
+                                          )}
+                                          {!formData.spotify_link && !formData.apple_music_link && (
+                                               <Button 
+                                                  variant="ghost" 
+                                                  size="sm" 
+                                                  onClick={handleFindLinks}
+                                                  disabled={isSearchingMusic}
+                                                  className="text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 h-auto rounded-full"
+                                              >
+                                                  {isSearchingMusic ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Search className="w-3 h-3 mr-1" />}
+                                                  Retry Auto-Search
+                                              </Button>
+                                          )}
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                        ) : (
+                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 flex flex-col items-center justify-center text-center space-y-3 group hover:border-indigo-100 hover:bg-indigo-50/10 transition-colors">
+                                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 group-hover:scale-110 transition-transform">
+                                    <Music className="w-6 h-6 text-gray-300 group-hover:text-indigo-400" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-900">No music links yet</p>
+                                    <p className="text-xs text-gray-500 max-w-[200px] mx-auto">Connect Spotify or Apple Music to enable one-click playback for this routine.</p>
+                                </div>
                                 <Button 
-                                    variant="ghost" 
-                                    size="sm" 
+                                    variant="outline" 
+                                    size="sm"
                                     onClick={handleFindLinks}
                                     disabled={isSearchingMusic || !formData.song_title}
-                                    className="h-6 text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                                    className="rounded-full text-xs font-bold bg-white hover:text-indigo-600 hover:border-indigo-200"
                                 >
-                                    {isSearchingMusic ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Search className="w-3 h-3 mr-1" />}
-                                    Auto-Find Links
+                                    {isSearchingMusic ? (
+                                        <>
+                                            <Loader2 className="w-3 h-3 animate-spin mr-2" /> Searching...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Search className="w-3 h-3 mr-2" /> Auto-Find from Title
+                                        </>
+                                    )}
                                 </Button>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                        <svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-                                        </svg>
-                                    </div>
-                                    <Input 
-                                        value={formData.spotify_link || ''}
-                                        onChange={(e) => setFormData({...formData, spotify_link: e.target.value})}
-                                        placeholder="Spotify Link"
-                                        className="pl-8 h-8 text-xs bg-white"
-                                    />
-                                </div>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                        <svg className="w-4 h-4 text-pink-500" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M12.986 2.052c-4.148 0-6.666 2.37-6.666 5.925 0 3.332 2.37 5.777 5.777 5.777 4.148 0 6.666-2.37 6.666-5.925 0-3.333-2.37-5.777-5.777-5.777zm0 10.37c-2.814 0-4.444-1.925-4.444-4.592 0-2.814 1.777-4.592 4.444-4.592 2.815 0 4.444 1.926 4.444 4.592 0 2.815-1.777 4.592-4.444 4.592zM8.396 3.682c0 .666-.519 1.185-1.185 1.185-.667 0-1.185-.519-1.185-1.185 0-.667.518-1.185 1.185-1.185.666 0 1.185.518 1.185 1.185zm-2.37 13.925c0 .667-.519 1.185-1.185 1.185-.667 0-1.186-.518-1.186-1.185 0-.666.519-1.185 1.186-1.185.666 0 1.185.519 1.185 1.185zm12.592 0c0 .667-.519 1.185-1.185 1.185-.667 0-1.185-.518-1.185-1.185 0-.666.518-1.185 1.185-1.185.666 0 1.185.519 1.185 1.185zM6.915 20.297c0 1.185.889 2.074 2.074 2.074h5.925c1.186 0 2.074-.889 2.074-2.074v-5.926h-2.37v5.63H9.285v-5.63h-2.37v5.926z"/>
-                                        </svg>
-                                    </div>
-                                    <Input 
-                                        value={formData.apple_music_link || ''}
-                                        onChange={(e) => setFormData({...formData, apple_music_link: e.target.value})}
-                                        placeholder="Apple Music Link"
-                                        className="pl-8 h-8 text-xs bg-white"
-                                    />
+
+                                <div className="pt-2 w-full max-w-sm">
+                                      <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Or paste links manually</div>
+                                      <div className="grid grid-cols-2 gap-2">
+                                          <Input 
+                                              value={formData.spotify_link || ''}
+                                              onChange={(e) => setFormData({...formData, spotify_link: e.target.value})}
+                                              placeholder="Spotify URL"
+                                              className="h-8 text-xs bg-white text-center"
+                                          />
+                                          <Input 
+                                              value={formData.apple_music_link || ''}
+                                              onChange={(e) => setFormData({...formData, apple_music_link: e.target.value})}
+                                              placeholder="Apple Music URL"
+                                              className="h-8 text-xs bg-white text-center"
+                                          />
+                                      </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label className="flex items-center gap-2"><Clock className="w-3 h-3" /> Duration</Label>
