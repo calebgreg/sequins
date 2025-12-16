@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Plus, X, Globe, Music, ShoppingBag } from 'lucide-react';
 import { toast } from "sonner";
 import LevelManager from './LevelManager';
 
@@ -15,7 +15,9 @@ export default function GeneralSettings() {
   const [formData, setFormData] = useState({
     name: '',
     type: 'mixed',
-    ai_assistant_name: 'Gene'
+    ai_assistant_name: 'Gene',
+    music_preference: 'spotify',
+    costume_vendors: []
   });
   const [isDirty, setIsDirty] = useState(false);
 
@@ -32,7 +34,9 @@ export default function GeneralSettings() {
       setFormData({
         name: settings.name || '',
         type: settings.type || 'mixed',
-        ai_assistant_name: settings.ai_assistant_name || 'Gene'
+        ai_assistant_name: settings.ai_assistant_name || 'Gene',
+        music_preference: settings.music_preference || 'spotify',
+        costume_vendors: settings.costume_vendors || []
       });
     }
   }, [settings]);
@@ -54,6 +58,28 @@ export default function GeneralSettings() {
 
   const handleSave = () => {
     updateMutation.mutate(formData);
+  };
+
+  const addVendor = () => {
+    setFormData(prev => ({
+      ...prev,
+      costume_vendors: [...(prev.costume_vendors || []), ""]
+    }));
+    setIsDirty(true);
+  };
+
+  const updateVendor = (index, value) => {
+    const newVendors = [...(formData.costume_vendors || [])];
+    newVendors[index] = value;
+    setFormData(prev => ({ ...prev, costume_vendors: newVendors }));
+    setIsDirty(true);
+  };
+
+  const removeVendor = (index) => {
+    const newVendors = [...(formData.costume_vendors || [])];
+    newVendors.splice(index, 1);
+    setFormData(prev => ({ ...prev, costume_vendors: newVendors }));
+    setIsDirty(true);
   };
 
   if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
@@ -112,8 +138,86 @@ export default function GeneralSettings() {
               </Select>
             </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-100">
+            {/* Music Preference */}
+            <div className="space-y-4">
+               <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <Music className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <Label className="text-base">Music Provider</Label>
+                    <p className="text-[10px] text-gray-500">Default service for playlist generation</p>
+                  </div>
+               </div>
+               
+               <Select 
+                 value={formData.music_preference} 
+                 onValueChange={(v) => {
+                   setFormData({...formData, music_preference: v});
+                   setIsDirty(true);
+                 }}
+               >
+                 <SelectTrigger className="h-11 rounded-xl">
+                   <SelectValue />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="spotify">Spotify</SelectItem>
+                   <SelectItem value="apple_music">Apple Music</SelectItem>
+                 </SelectContent>
+               </Select>
+            </div>
+
+            {/* Costume Vendors */}
+            <div className="space-y-4">
+               <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600">
+                      <ShoppingBag className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <Label className="text-base">Preferred Costume Shops</Label>
+                      <p className="text-[10px] text-gray-500">AI will prioritize these sites for sourcing</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={addVendor} className="h-8 w-8 p-0 rounded-full">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+               </div>
+
+               <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                 {(formData.costume_vendors || []).map((vendor, index) => (
+                   <div key={index} className="flex gap-2">
+                     <div className="relative flex-1">
+                       <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                       <Input 
+                         value={vendor}
+                         onChange={(e) => updateVendor(index, e.target.value)}
+                         placeholder="https://www.weissmans.com"
+                         className="h-10 pl-9 rounded-lg"
+                       />
+                     </div>
+                     <Button 
+                       variant="ghost" 
+                       size="icon"
+                       onClick={() => removeVendor(index)}
+                       className="h-10 w-10 text-gray-400 hover:text-red-500"
+                     >
+                       <X className="w-4 h-4" />
+                     </Button>
+                   </div>
+                 ))}
+                 {(formData.costume_vendors || []).length === 0 && (
+                   <div className="text-center py-4 border border-dashed border-gray-200 rounded-xl text-gray-400 text-sm">
+                     No preferred vendors added yet.
+                   </div>
+                 )}
+               </div>
+            </div>
+          </div>
           
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-4">
             <Button 
               onClick={handleSave} 
               disabled={!isDirty || updateMutation.isPending}

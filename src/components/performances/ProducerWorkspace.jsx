@@ -58,7 +58,11 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
     });
 
     const getContext = () => ({
-        studio: { studio_name: studioSettings?.name || "My Dance Studio" },
+        studio: { 
+            studio_name: studioSettings?.name || "My Dance Studio",
+            costume_vendors: studioSettings?.costume_vendors || [],
+            music_preference: studioSettings?.music_preference || 'spotify'
+        },
         event_details: eventDetails,
         classes: classes
             .filter(c => c.type !== 'admin')
