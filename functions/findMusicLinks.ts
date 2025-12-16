@@ -16,7 +16,8 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Song title is required' }, { status: 400 });
         }
 
-        const prompt = `Find the official Spotify and Apple Music links for the song "${song_title}"${artist ? ` by "${artist}"` : ''}. 
+        const prompt = `Find the official Spotify and Apple Music links for the **specific single track** "${song_title}"${artist ? ` by "${artist}"` : ''}. 
+        CRITICAL: Do NOT return links to the full album. Ensure the Spotify link is a 'track' link (contains /track/) and the Apple Music link is a 'song' link (often has ?i= parameter).
         Return them in a JSON object with keys 'spotify_link' and 'apple_music_link'. 
         If you can't find a specific item, return null for that key.`;
 
