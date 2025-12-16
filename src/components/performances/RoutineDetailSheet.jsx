@@ -71,14 +71,14 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
             toast.error("Please enter a song title first");
             return;
         }
-        
+
         setIsSearchingMusic(true);
         try {
             const { data } = await base44.functions.invoke('findMusicLinks', {
                 song_title: formData.song_title,
                 artist: formData.artist
             });
-            
+
             if (data.spotify_link || data.apple_music_link) {
                 const newLinks = {
                     spotify_link: data.spotify_link || formData.spotify_link,
@@ -98,6 +98,10 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
             setIsSearchingMusic(false);
         }
     };
+
+    const isValidSpotify = (url) => url && url.includes('spotify.com') && url.includes('/track/');
+    const isValidApple = (url) => url && url.includes('music.apple.com');
+    const hasValidMusic = isValidSpotify(formData.spotify_link) || isValidApple(formData.apple_music_link);
 
     if (!routine) return null;
 
