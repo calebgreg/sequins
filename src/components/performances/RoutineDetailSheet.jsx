@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2, PlayCircle, ExternalLink, X } from "lucide-react";
+import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2, PlayCircle, ExternalLink, X, Mic } from "lucide-react";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -48,7 +48,6 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
         onSuccess: () => {
             queryClient.invalidateQueries(['routines']);
             toast.success("Routine updated");
-            onOpenChange(false);
         },
         onError: () => toast.error("Failed to update routine")
     });
@@ -63,7 +62,9 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
     });
 
     const handleSave = () => {
-        updateRoutine.mutate(formData);
+        updateRoutine.mutate(formData, {
+            onSuccess: () => onOpenChange(false)
+        });
     };
 
     const handleFindLinks = async () => {
@@ -137,7 +138,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Artist</Label>
+                                <Label className="flex items-center gap-2"><Mic className="w-3 h-3" /> Artist</Label>
                                 <Input 
                                     value={formData.artist || ''} 
                                     onChange={(e) => setFormData({...formData, artist: e.target.value})}
