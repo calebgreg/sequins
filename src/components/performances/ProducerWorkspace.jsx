@@ -596,10 +596,10 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                                                 <div className="flex items-center gap-3">
                                                                     <h4 className="text-xl font-bold text-[#333333]">{segment.title}</h4>
                                                                     {segment.segment_type !== 'performance' && (
-                                                                        <Badge variant="outline" className="text-gray-500 font-normal">
-                                                                            {segment.segment_type}
-                                                                        </Badge>
-                                                                    )}
+                                                                              <Badge variant={segment.segment_type === 'quick_change' ? "destructive" : "outline"} className={segment.segment_type === 'quick_change' ? "bg-red-50 text-red-600 border-red-100" : "text-gray-500 font-normal"}>
+                                                                                  {segment.segment_type === 'quick_change' ? 'Quick Change' : segment.segment_type}
+                                                                              </Badge>
+                                                                          )}
                                                                 </div>
                                                                 <div className="text-right">
                                                                     <div className="font-mono font-bold text-[#333333]">{segment.estimated_minutes}m</div>
