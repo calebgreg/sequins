@@ -41,6 +41,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                 artist: data.artist,
                 duration_seconds: totalSeconds,
                 costume_details: data.costume_details,
+                costume_product_suggestions: data.costume_product_suggestions,
                 lighting_notes: data.lighting_notes,
                 notes: data.notes,
                 performers: data.performers,

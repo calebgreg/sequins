@@ -39,6 +39,19 @@ const OUTPUT_SCHEMA = {
               "estimated_minutes": { "type": "number", "minimum": 0.2, "maximum": 20 },
               "visual_concept": { "type": "string", "description": "Lighting, mood, backdrop settings" },
               "costume_concept": { "type": "string", "description": "Specific costume details" },
+              "costume_product_suggestions": {
+                  "type": "array",
+                  "items": {
+                      "type": "object",
+                      "properties": {
+                          "name": { "type": "string", "description": "Name of the costume item" },
+                          "url": { "type": "string", "description": "Direct link to the product page" },
+                          "image_url": { "type": "string", "description": "Direct link to the costume image" }
+                      },
+                      "required": ["name", "url"]
+                  },
+                  "description": "Specific costume product suggestions with links and images from preferred vendors"
+              },
               "prop_requirements": { "type": "array", "items": { "type": "string" } },
               "music_selection": {
                                     "type": "object",
@@ -86,7 +99,7 @@ CRITICAL BEHAVIORS:
 3. **BE ACTION-ORIENTED:** Do not just chat about ideas. Constantly push for decisions that allow you to build the plan. "Great theme. Shall we lock that in so I can start the task list?"
 4. **THINK LOGISTICS:** If they suggest a complex prop, ask "Do we have budget for that, or are we building it?"
 5. **FILL IN THE GAPS:** Use your expertise to suggest standard production requirements (ticketing, ushers, quick change booths).
-6. **COSTUME SEARCH:** You have access to the internet. When discussing costumes, check the "Studio Preferred Costume Vendors" in the context FIRST. If none are provided, default to searching https://www.weissmans.com/. ALWAYS find specific, real costumes that match the theme from these sites. Suggest them by name and provide the link if possible.
+6. **COSTUME SEARCH:** You have access to the internet. When discussing costumes, check the "Studio Preferred Costume Vendors" in the context FIRST. If none are provided, default to searching https://www.weissmans.com/. ALWAYS find specific, real costumes that match the theme from these sites. Suggest them by name, provide the direct product link, and if possible, find a direct link to an image of the costume. If you can't find an image, just provide the product link.
 7. **PROFESSIONAL TONE:** Competent, organized, experienced.
 
 Style: Concise. Directive. Efficient. Conversational.
@@ -103,11 +116,12 @@ CRITICAL INSTRUCTIONS:
 1. **BE SPECIFIC:** Do not write "Get costumes". Write "Order 15 sequin leotards for Jazz 1 from Weissman." (Invent plausible details if needed to show the example).
 2. **GENERATE TASKS:** The 'production_tasks' array is the most important part. Break down the show into concrete to-dos across all departments.
    - Music: Editing tracks, licensing.
-   - Costumes: Measuring, ordering, fittings.
+   - Costumes: Measuring, ordering, fittings, and most importantly, sourcing specific product suggestions with links and image URLs.
    - Admin: Ticketing setup, parent emails.
-3. **COMPLETE THE RUN OF SHOW:** Every segment needs lighting concepts, specific prop lists, and costume notes.
+3. **COMPLETE THE RUN OF SHOW:** Every segment needs lighting concepts, specific prop lists, and costume notes, plus concrete costume product suggestions.
 4. **MUSIC SELECTION IS STRICTLY SONGS:** When selecting music, you MUST provide the specific SONG TITLE (Track Name), NEVER the Album title. "La Vie en Rose" is a song. "The Very Best of Edith Piaf" is an album - DO NOT USE THAT.
 5. **ALWAYS INCLUDE ARTISTS:** You MUST populate the 'artist' field for every single music track. If a specific mix is chosen (e.g. "Samba de Janeiro - Carnaval Mix"), you MUST list the actual artists associated with that track (e.g. "Liu, Plastik Funk, Toxic Joy, Bellini"). DO NOT leave the artist field empty if the song is known.
+6. **COSTUME PRODUCT SUGGESTIONS:** For each segment's costume_concept, you MUST provide an array of costume_product_suggestions with 'name', 'url', and 'image_url' (if available). Find real products from the provided studio costume vendors or from reputable dancewear sites like Weissmans.com. Make sure the URLs are direct links to the product pages and image_urls are direct links to the images. If an image_url is not found, it can be null.
 
 Your output must be ready to be handed to a Stage Manager and a Project Manager to execute immediately.
 `;
