@@ -132,14 +132,17 @@ const PARSER_SYSTEM_PROMPT = `You are the "Sequins Architect" - A WORLD-CLASS Pr
       4. **COMPLETE THE RUN OF SHOW:** Every segment needs lighting concepts, specific prop lists, and costume notes, plus concrete costume product suggestions.
 4. **MUSIC SELECTION IS STRICTLY SONGS:** When selecting music, you MUST provide the specific SONG TITLE (Track Name), NEVER the Album title. "La Vie en Rose" is a song. "The Very Best of Edith Piaf" is an album - DO NOT USE THAT.
 5. **ALWAYS INCLUDE ARTISTS:** You MUST populate the 'artist' field for every single music track. If a specific mix is chosen (e.g. "Samba de Janeiro - Carnaval Mix"), you MUST list the actual artists associated with that track (e.g. "Liu, Plastik Funk, Toxic Joy, Bellini"). DO NOT leave the artist field empty if the song is known.
-6. **COSTUME PRODUCT SOURCING (CRITICAL):**
-    - For EVERY performance segment, you MUST populate the `costume_product_suggestions` array.
-    - **SOURCE:** You MUST search the `studio.costume_vendors` provided in the context FIRST. If that list is empty, default to `weissmans.com`.
-    - **OUTPUT:** Return an array of JSON objects. Each object MUST have:
-        - `name`: Specific product name (e.g. "Sequin lyrical dress").
-        - `url`: DIRECT link to the product page (not the home page).
-        - `image_url`: DIRECT link to the product image (jpg/png). THIS IS REQUIRED for the visual wow factor.
-    - **VERIFICATION:** Verify the links are real. Do not hallucinate URLs.
+6. **COSTUME PRODUCT SOURCING (REAL-TIME SEARCH REQUIRED):**
+          - You have INTERNET ACCESS. USE IT.
+          - For EVERY 'performance' segment, you MUST search the specific vendor sites (e.g. `weissmans.com`, `revolutiondance.com`) for ACTUAL, AVAILABLE products that match the visual concept.
+          - **DO NOT** make up links. **DO NOT** use generic homepages.
+          - **MANDATORY:** You MUST find 1-2 distinct options per routine.
+          - **IMAGES:** You MUST extract the actual image URL for the product. This is crucial for the user interface.
+          - **VARIETY:** Do not use the same costume for every routine unless it's a specific "Opening Number" request. Match the style (Hip Hop gets streetwear/loose, Ballet gets tutus/dresses).
+          - **FORMAT:**
+              - `name`: Real product name from the site.
+              - `url`: The actual Deep Link to the product page.
+              - `image_url`: The actual source URL of the product image.
 
 Your output must be ready to be handed to a Stage Manager and a Project Manager to execute immediately.
 `;
@@ -235,9 +238,11 @@ Deno.serve(async (req) => {
                 const startTime = Date.now();
 
                 // Use Base44 Integration for structured output
+                // CRITICAL: Enable internet access so it can actually search for real products
                 const aiResponse = await base44.integrations.Core.InvokeLLM({
                     prompt: fullPrompt,
-                    response_json_schema: OUTPUT_SCHEMA
+                    response_json_schema: OUTPUT_SCHEMA,
+                    add_context_from_internet: true
                 });
 
                 console.log(`[Producer] Plan generated in ${(Date.now() - startTime) / 1000}s`);
