@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import ProducerTaskItem from './ProducerTaskItem';
+import ProducerCostumeEnricher from './ProducerCostumeEnricher';
 
 export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
     const [chatHistory, setChatHistory] = useState([
@@ -579,40 +580,15 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                                                         <Shirt className="w-3 h-3" /> Costumes
                                                                     </div>
                                                                     <p className="text-sm text-pink-900 leading-snug">{segment.costume_concept}</p>
-                                                                    {segment.costume_product_suggestions && segment.costume_product_suggestions.length > 0 ? (
-                                                                        <div className="mt-3 grid grid-cols-2 gap-2">
-                                                                            {segment.costume_product_suggestions.map((item, itemIdx) => (
-                                                                                <a 
-                                                                                    key={itemIdx} 
-                                                                                    href={item.url} 
-                                                                                    target="_blank" 
-                                                                                    rel="noopener noreferrer" 
-                                                                                    className="flex flex-col items-center p-2 bg-white/50 rounded-lg border border-pink-100 hover:bg-white transition-all group/item"
-                                                                                >
-                                                                                    {item.image_url ? (
-                                                                                        <div className="w-full aspect-[3/4] mb-2 rounded overflow-hidden bg-gray-100 relative">
-                                                                                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-                                                                                            <div className="absolute inset-0 bg-black/0 group-hover/item:bg-black/5 transition-colors" />
-                                                                                        </div>
-                                                                                    ) : (
-                                                                                        <div className="w-full aspect-[3/4] mb-2 rounded bg-pink-100 flex items-center justify-center">
-                                                                                            <Shirt className="w-6 h-6 text-pink-300" />
-                                                                                        </div>
-                                                                                    )}
-                                                                                    <div className="w-full flex items-center justify-between gap-2">
-                                                                                        <span className="text-[10px] font-medium text-pink-900 line-clamp-1 flex-1">{item.name}</span>
-                                                                                        <ExternalLink className="w-3 h-3 text-pink-400" />
-                                                                                    </div>
-                                                                                </a>
-                                                                            ))}
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="mt-3 p-3 bg-pink-50/50 rounded-lg border border-pink-100 border-dashed text-center">
-                                                                             <Shirt className="w-5 h-5 text-pink-300 mx-auto mb-1" />
-                                                                             <p className="text-[10px] text-pink-500 font-medium">No specific matches found.</p>
-                                                                             <p className="text-[10px] text-pink-400">Try refining the costume description.</p>
-                                                                        </div>
-                                                                    )}
+                                                                    <ProducerCostumeEnricher 
+                                                                        segment={segment} 
+                                                                        onUpdate={(newSuggestions) => {
+                                                                            const newPlan = { ...generatedPlan };
+                                                                            newPlan.show_plan.run_of_show[idx].costume_product_suggestions = newSuggestions;
+                                                                            setGeneratedPlan(newPlan);
+                                                                        }}
+                                                                        context={getContext()}
+                                                                    />
                                                                     </div>
 
                                                                 {/* Music */}

@@ -319,17 +319,22 @@ Deno.serve(async (req) => {
 
         // --- PHASE 2: GENERATE PLAN (JSON) ---
         if (action === 'generate_plan') {
-            console.log("[Producer] Starting plan generation...");
+            console.log("[Producer] Starting plan generation (Fast Mode)...");
 
             try {
                 // Flatten chat history into a transcript for the parser
-                // Truncate if extremely long to avoid context window issues
-                const recentHistory = (chatHistory || []).slice(-25); 
+                const recentHistory = (chatHistory || []).slice(-40); 
                 const transcript = recentHistory.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
 
                 const fullPrompt = `${PARSER_SYSTEM_PROMPT}
 
         Based on the following creative discussion and studio context, generate the full production plan JSON.
+        
+        CRITICAL: THIS IS STAGE 1 (STRUCTURE ONLY).
+        - DO NOT search the internet for products yet. 
+        - Leave 'costume_product_suggestions' EMPTY array [].
+        - Focus purely on the 'costume_concept' text description.
+        - Focus on a solid 'run_of_show' structure and timings.
 
         CONTEXT:
         ${JSON.stringify(context)}
@@ -339,31 +344,16 @@ Deno.serve(async (req) => {
 
                 console.log("[Producer] Invoking LLM for plan generation...");
                 const startTime = Date.now();
-                let aiResponse;
 
-                try {
-                    // Attempt 1: With Internet (Rich)
-                    console.log("[Producer] Attempt 1: With Internet context");
-                    aiResponse = await base44.integrations.Core.InvokeLLM({
-                        prompt: fullPrompt,
-                        response_json_schema: OUTPUT_SCHEMA,
-                        add_context_from_internet: true
-                    });
-                } catch (e) {
-                    console.warn("[Producer] Attempt 1 failed. Retrying without internet...", e);
-                    // Attempt 2: Without Internet (Fast/Fallback)
-                    // Modify prompt to acknowledge limitation
-                    const fallbackPrompt = fullPrompt + "\n\nCRITICAL UPDATE: Internet search failed. Please generate the plan using your internal knowledge. For costumes, suggest generic styles and use placeholder URLs (e.g. 'https://example.com/tutu').";
-                    
-                    aiResponse = await base44.integrations.Core.InvokeLLM({
-                        prompt: fallbackPrompt,
-                        response_json_schema: OUTPUT_SCHEMA,
-                        add_context_from_internet: false
-                    });
-                }
+                // STAGE 1: Fast generation without internet context to avoid timeouts
+                const aiResponse = await base44.integrations.Core.InvokeLLM({
+                    prompt: fullPrompt,
+                    response_json_schema: OUTPUT_SCHEMA,
+                    add_context_from_internet: false
+                });
 
                 if (!aiResponse) {
-                    throw new Error("LLM returned empty response after retries");
+                    throw new Error("LLM returned empty response");
                 }
 
                 console.log(`[Producer] Plan generated in ${(Date.now() - startTime) / 1000}s`);
@@ -371,7 +361,57 @@ Deno.serve(async (req) => {
                 return Response.json(aiResponse);
             } catch (err) {
                 console.error("[Producer] Plan Generation Error:", err);
-                return Response.json({ error: "Failed to generate plan. Please try again or refine the details." }, { status: 500 });
+                return Response.json({ error: "Failed to generate plan structure. Please try again." }, { status: 500 });
+            }
+        }
+
+        // --- PHASE 3: ENRICH COSTUMES (Per Routine) ---
+        if (action === 'enrich_costume') {
+            const { segment, context } = body;
+            const COSTUME_SCHEMA = {
+                "type": "object",
+                "properties": {
+                    "costume_product_suggestions": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": { "type": "string" },
+                                "url": { "type": "string" },
+                                "image_url": { "type": "string" }
+                            },
+                            "required": ["name", "url"]
+                        }
+                    }
+                },
+                "required": ["costume_product_suggestions"]
+            };
+
+            const enrichPrompt = `You are a Costume Sourcing Specialist.
+            Task: Find 3 REAL costume products available for purchase online for this specific dance routine.
+            
+            Routine: "${segment.title}"
+            Style: ${segment.title} (Dance)
+            Visual/Costume Concept: ${segment.costume_concept}
+            
+            Studio Preferred Vendors: ${context?.studio?.costume_vendors?.join(', ') || "Any professional dance costume vendor (e.g. Weissman, Revolution, Discount Dance)"}
+
+            CRITICAL:
+            - SEARCH THE INTERNET.
+            - Return REAL product URLs and Image URLs.
+            - Ensure they match the concept.
+            `;
+
+            try {
+                const aiResponse = await base44.integrations.Core.InvokeLLM({
+                    prompt: enrichPrompt,
+                    response_json_schema: COSTUME_SCHEMA,
+                    add_context_from_internet: true
+                });
+                return Response.json(aiResponse);
+            } catch (err) {
+                console.error("[Producer] Enrichment Error:", err);
+                return Response.json({ error: "Failed to source costumes." }, { status: 500 });
             }
         }
 
