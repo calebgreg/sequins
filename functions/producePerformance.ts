@@ -137,8 +137,11 @@ Deno.serve(async (req) => {
 
         // --- PHASE 1: CHAT ---
         if (action === 'chat') {
-            // Flatten chat history for the InvokeLLM prompt
-            const conversation = (chatHistory || []).map(m => `${m.role === 'user' ? 'USER' : 'SEQUINS'}: ${m.content}`).join('\n\n');
+            console.log(`[Producer] Starting chat turn. History length: ${chatHistory?.length}`);
+
+            // Truncate history to avoid timeouts/limits (keep system + last 20 messages)
+            const recentHistory = (chatHistory || []).slice(-20);
+            const conversation = recentHistory.map(m => `${m.role === 'user' ? 'USER' : 'SEQUINS'}: ${m.content}`).join('\n\n');
 
             const prompt = `${CREATIVE_SYSTEM_PROMPT}
 
@@ -149,39 +152,68 @@ Deno.serve(async (req) => {
 
         (Note: Reply as Sequins. If costumes are mentioned, search Weissman's website)`;
 
-            // Use Base44 Integration to enable Internet Access
-            const aiResponse = await base44.integrations.Core.InvokeLLM({
-                prompt: prompt,
-                add_context_from_internet: true
-            });
+            try {
+                console.log("[Producer] Invoking LLM for chat...");
+                const startTime = Date.now();
 
-            return Response.json({ 
-                role: 'assistant', 
-                content: aiResponse 
-            });
+                // Use Base44 Integration to enable Internet Access
+                const aiResponse = await base44.integrations.Core.InvokeLLM({
+                    prompt: prompt,
+                    add_context_from_internet: true
+                });
+
+                console.log(`[Producer] LLM responded in ${(Date.now() - startTime) / 1000}s`);
+
+                return Response.json({ 
+                    role: 'assistant', 
+                    content: aiResponse 
+                });
+            } catch (err) {
+                console.error("[Producer] LLM Chat Error:", err);
+                // Return a graceful error message as a chat response so the UI doesn't crash
+                return Response.json({ 
+                    role: 'assistant', 
+                    content: "I'm having a little trouble connecting to my creative brain right now. Could you try asking that again?" 
+                });
+            }
         }
 
         // --- PHASE 2: GENERATE PLAN (JSON) ---
         if (action === 'generate_plan') {
-            // Flatten chat history into a transcript for the parser
-            const transcript = chatHistory.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
-            const fullPrompt = `${PARSER_SYSTEM_PROMPT}
+            console.log("[Producer] Starting plan generation...");
 
-Based on the following creative discussion and studio context, generate the full production plan JSON.
+            try {
+                // Flatten chat history into a transcript for the parser
+                // Truncate if extremely long to avoid context window issues
+                const recentHistory = (chatHistory || []).slice(-40); 
+                const transcript = recentHistory.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
 
-CONTEXT:
-${JSON.stringify(context)}
+                const fullPrompt = `${PARSER_SYSTEM_PROMPT}
 
-DISCUSSION TRANSCRIPT:
-${transcript}`;
+        Based on the following creative discussion and studio context, generate the full production plan JSON.
 
-            // Use Base44 Integration for structured output
-            const aiResponse = await base44.integrations.Core.InvokeLLM({
-                prompt: fullPrompt,
-                response_json_schema: OUTPUT_SCHEMA
-            });
+        CONTEXT:
+        ${JSON.stringify(context)}
 
-            return Response.json(aiResponse);
+        DISCUSSION TRANSCRIPT:
+        ${transcript}`;
+
+                console.log("[Producer] Invoking LLM for plan generation...");
+                const startTime = Date.now();
+
+                // Use Base44 Integration for structured output
+                const aiResponse = await base44.integrations.Core.InvokeLLM({
+                    prompt: fullPrompt,
+                    response_json_schema: OUTPUT_SCHEMA
+                });
+
+                console.log(`[Producer] Plan generated in ${(Date.now() - startTime) / 1000}s`);
+
+                return Response.json(aiResponse);
+            } catch (err) {
+                console.error("[Producer] Plan Generation Error:", err);
+                return Response.json({ error: "Failed to generate plan. Please try again or refine the details." }, { status: 500 });
+            }
         }
 
         return Response.json({ error: 'Invalid action' }, { status: 400 });
