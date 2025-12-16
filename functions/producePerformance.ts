@@ -370,12 +370,7 @@ Deno.serve(async (req) => {
         CONVERSATION HISTORY:
         ${conversation}
 
-        (Note: Reply as Sequins. CRITICAL: 
-        1. Ask ONLY ONE question. 
-        2. Do NOT list suggestions for multiple classes at once. 
-        3. Do NOT use fluff words like "Fantastic!", "Great!", "Wonderful!". Start directly with the content.
-        4. Do NOT bundle topics. 
-        5. Stop talking after the question. Wait for user input.)`;
+        (Note: Reply as Sequins. Maintain a balanced focus on all production elements.)`;
 
             try {
                 console.log("[Producer] Invoking LLM for chat...");
@@ -384,7 +379,7 @@ Deno.serve(async (req) => {
                 // Use Base44 Integration
                 const aiResponse = await base44.integrations.Core.InvokeLLM({
                     prompt: prompt,
-                    add_context_from_internet: false
+                    add_context_from_internet: true
                 });
 
                 console.log(`[Producer] LLM responded in ${(Date.now() - startTime) / 1000}s`);
