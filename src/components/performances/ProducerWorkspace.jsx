@@ -486,7 +486,7 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
 
                                 <div className="flex-1 overflow-y-auto p-4 space-y-8">
                                     {/* Tasks */}
-                                    {generatedPlan.show_plan.production_tasks?.length > 0 ? (
+                                    {generatedPlan.show_plan?.production_tasks?.length > 0 ? (
                                         <div>
                                             <h4 className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3 px-2">Suggested Action Items</h4>
                                             <div className="space-y-3">
@@ -516,12 +516,12 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                                             
                                             <div className="text-sm font-serif text-gray-500 italic flex items-center gap-2">
                                                 <Clock className="w-4 h-4" />
-                                                Est. Runtime: {generatedPlan.show_plan.run_of_show.reduce((acc, s) => acc + s.estimated_minutes, 0).toFixed(0)} mins
+                                                Est. Runtime: {(generatedPlan.show_plan?.run_of_show || []).reduce((acc, s) => acc + s.estimated_minutes, 0).toFixed(0)} mins
                                             </div>
                                         </div>
 
                                         <TabsContent value="tasks" className="mt-0 space-y-4 focus-visible:ring-0">
-                                            {generatedPlan.show_plan.run_of_show.map((segment, idx) => (
+                                            {(generatedPlan.show_plan?.run_of_show || []).map((segment, idx) => (
                                                 <motion.div 
                                                     key={idx}
                                                     initial={{ opacity: 0, y: 10 }}
