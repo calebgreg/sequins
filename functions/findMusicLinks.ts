@@ -28,7 +28,12 @@ Deno.serve(async (req) => {
 
         Search Strategy:
         1. Search for "spotify track ${song_title} ${artist || ''}"
-        2. Search for "apple music song ${song_title} ${artist || ''}"
+        2. Search for "apple music ${song_title} ${artist || ''}"
+
+        For Apple Music:
+        - Look for links containing "?i=". This indicates a specific song within an album.
+        - Example: https://music.apple.com/us/album/song-name/123456?i=789012
+        - If you find an album link that definitely contains the song, but cannot isolate the ?i= parameter, return the album link.
 
         Return JSON: { "spotify_link": "...", "apple_music_link": "..." }`;
 
