@@ -41,14 +41,14 @@ const OUTPUT_SCHEMA = {
               "costume_concept": { "type": "string", "description": "Specific costume details" },
               "prop_requirements": { "type": "array", "items": { "type": "string" } },
               "music_selection": {
-                "type": "object",
-                "properties": {
-                    "title": { "type": "string", "description": "The specific SONG TITLE (Single Track), NOT the Album name." },
-                    "artist": { "type": "string" },
-                    "edit_notes": { "type": "string" }
-                },
-                "required": ["title", "artist"]
-              },
+                                    "type": "object",
+                                    "properties": {
+                                        "title": { "type": "string", "description": "The specific SONG TITLE (Single Track). Include mix/version info here if applicable (e.g. 'Samba de Janeiro - Carnaval Mix')." },
+                                        "artist": { "type": "string", "description": "The actual performing artist(s). MUST BE INCLUDED. Do not infer from title, use explicit artist names. If multiple, separate with commas." },
+                                        "edit_notes": { "type": "string" }
+                                    },
+                                    "required": ["title", "artist"]
+                                  },
               "stage_action": { "type": "string", "description": "Blocking notes and movement" }
             },
             "required": ["order", "segment_type", "title", "estimated_minutes", "visual_concept", "costume_concept", "stage_action"]
