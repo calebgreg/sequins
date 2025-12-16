@@ -379,7 +379,7 @@ Deno.serve(async (req) => {
                 // Use Base44 Integration
                 const aiResponse = await base44.integrations.Core.InvokeLLM({
                     prompt: prompt,
-                    add_context_from_internet: true
+                    add_context_from_internet: false
                 });
 
                 console.log(`[Producer] LLM responded in ${(Date.now() - startTime) / 1000}s`);
