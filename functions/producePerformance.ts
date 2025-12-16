@@ -370,7 +370,7 @@ Deno.serve(async (req) => {
         CONVERSATION HISTORY:
         ${conversation}
 
-        (Note: Reply as Sequins. Maintain a balanced focus on all production elements.)`;
+        (Note: Reply as Sequins. CRITICAL: Ask ONLY ONE question. Do not bundle topics. Do not provide a list of next steps. Wait for user input.)`;
 
             try {
                 console.log("[Producer] Invoking LLM for chat...");
