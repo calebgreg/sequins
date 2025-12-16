@@ -8,13 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save } from "lucide-react";
+import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
 export default function RoutineDetailSheet({ routine, open, onOpenChange, allStudents }) {
     const [formData, setFormData] = useState({});
+    const [isSearchingMusic, setIsSearchingMusic] = useState(false);
     const queryClient = useQueryClient();
 
     useEffect(() => {
@@ -39,7 +40,9 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                 costume_details: data.costume_details,
                 lighting_notes: data.lighting_notes,
                 notes: data.notes,
-                performers: data.performers
+                performers: data.performers,
+                spotify_link: data.spotify_link,
+                apple_music_link: data.apple_music_link
             });
         },
         onSuccess: () => {
@@ -61,6 +64,37 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
 
     const handleSave = () => {
         updateRoutine.mutate(formData);
+    };
+
+    const handleFindLinks = async () => {
+        if (!formData.song_title) {
+            toast.error("Please enter a song title first");
+            return;
+        }
+        
+        setIsSearchingMusic(true);
+        try {
+            const { data } = await base44.functions.invoke('findMusicLinks', {
+                song_title: formData.song_title,
+                artist: formData.artist
+            });
+            
+            if (data.spotify_link || data.apple_music_link) {
+                setFormData(prev => ({
+                    ...prev,
+                    spotify_link: data.spotify_link || prev.spotify_link,
+                    apple_music_link: data.apple_music_link || prev.apple_music_link
+                }));
+                toast.success("Found music links!");
+            } else {
+                toast.info("No links found automatically");
+            }
+        } catch (error) {
+            toast.error("Failed to search for links");
+            console.error(error);
+        } finally {
+            setIsSearchingMusic(false);
+        }
     };
 
     if (!routine) return null;
@@ -103,6 +137,53 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                     onChange={(e) => setFormData({...formData, artist: e.target.value})}
                                     placeholder="Artist Name"
                                 />
+                            </div>
+                        </div>
+
+                        {/* Music Links Integration */}
+                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-100 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                    <Link2 className="w-3 h-3" /> Streaming Links
+                                </Label>
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={handleFindLinks}
+                                    disabled={isSearchingMusic || !formData.song_title}
+                                    className="h-6 text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                                >
+                                    {isSearchingMusic ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Search className="w-3 h-3 mr-1" />}
+                                    Auto-Find Links
+                                </Button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                        <svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                                        </svg>
+                                    </div>
+                                    <Input 
+                                        value={formData.spotify_link || ''}
+                                        onChange={(e) => setFormData({...formData, spotify_link: e.target.value})}
+                                        placeholder="Spotify Link"
+                                        className="pl-8 h-8 text-xs bg-white"
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                        <svg className="w-4 h-4 text-pink-500" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12.986 2.052c-4.148 0-6.666 2.37-6.666 5.925 0 3.332 2.37 5.777 5.777 5.777 4.148 0 6.666-2.37 6.666-5.925 0-3.333-2.37-5.777-5.777-5.777zm0 10.37c-2.814 0-4.444-1.925-4.444-4.592 0-2.814 1.777-4.592 4.444-4.592 2.815 0 4.444 1.926 4.444 4.592 0 2.815-1.777 4.592-4.444 4.592zM8.396 3.682c0 .666-.519 1.185-1.185 1.185-.667 0-1.185-.519-1.185-1.185 0-.667.518-1.185 1.185-1.185.666 0 1.185.518 1.185 1.185zm-2.37 13.925c0 .667-.519 1.185-1.185 1.185-.667 0-1.186-.518-1.186-1.185 0-.666.519-1.185 1.186-1.185.666 0 1.185.519 1.185 1.185zm12.592 0c0 .667-.519 1.185-1.185 1.185-.667 0-1.185-.518-1.185-1.185 0-.666.518-1.185 1.185-1.185.666 0 1.185.519 1.185 1.185zM6.915 20.297c0 1.185.889 2.074 2.074 2.074h5.925c1.186 0 2.074-.889 2.074-2.074v-5.926h-2.37v5.63H9.285v-5.63h-2.37v5.926z"/>
+                                        </svg>
+                                    </div>
+                                    <Input 
+                                        value={formData.apple_music_link || ''}
+                                        onChange={(e) => setFormData({...formData, apple_music_link: e.target.value})}
+                                        placeholder="Apple Music Link"
+                                        className="pl-8 h-8 text-xs bg-white"
+                                    />
+                                </div>
                             </div>
                         </div>
 
