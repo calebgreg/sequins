@@ -80,12 +80,14 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
             });
             
             if (data.spotify_link || data.apple_music_link) {
-                setFormData(prev => ({
-                    ...prev,
-                    spotify_link: data.spotify_link || prev.spotify_link,
-                    apple_music_link: data.apple_music_link || prev.apple_music_link
-                }));
-                toast.success("Music links found!");
+                const newLinks = {
+                    spotify_link: data.spotify_link || formData.spotify_link,
+                    apple_music_link: data.apple_music_link || formData.apple_music_link
+                };
+                const updatedData = { ...formData, ...newLinks };
+                setFormData(updatedData);
+                updateRoutine.mutate(updatedData);
+                toast.success("Music links found and saved!");
             } else {
                 toast.info("No links found automatically");
             }
@@ -180,7 +182,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                                   rel="noopener noreferrer"
                                                   className="flex items-center gap-2 px-3 py-1.5 bg-[#FA243C]/10 hover:bg-[#FA243C]/20 text-[#FA243C] rounded-full text-xs font-bold transition-colors"
                                               >
-                                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12.986 2.052c-4.148 0-6.666 2.37-6.666 5.925 0 3.332 2.37 5.777 5.777 5.777 4.148 0 6.666-2.37 6.666-5.925 0-3.333-2.37-5.777-5.777-5.777zm0 10.37c-2.814 0-4.444-1.925-4.444-4.592 0-2.814 1.777-4.592 4.444-4.592 2.815 0 4.444 1.926 4.444 4.592 0 2.815-1.777 4.592-4.444 4.592zM8.396 3.682c0 .666-.519 1.185-1.185 1.185-.667 0-1.185-.519-1.185-1.185 0-.667.518-1.185 1.185-1.185.666 0 1.185.518 1.185 1.185zm-2.37 13.925c0 .667-.519 1.185-1.185 1.185-.667 0-1.186-.518-1.186-1.185 0-.666.519-1.185 1.186-1.185.666 0 1.185.519 1.185 1.185zm12.592 0c0 .667-.519 1.185-1.185 1.185-.667 0-1.185-.518-1.185-1.185 0-.666.518-1.185 1.185-1.185.666 0 1.185.519 1.185 1.185zM6.915 20.297c0 1.185.889 2.074 2.074 2.074h5.925c1.186 0 2.074-.889 2.074-2.074v-5.926h-2.37v5.63H9.285v-5.63h-2.37v5.926z"/></svg>
+                                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.24-.87 3.56-.74c1.52.13 2.67.62 3.4 1.53-2.9 1.5-2.4 5.37.52 6.64-.67 1.83-1.6 3.63-2.56 4.8zm-5.4-15.16c.55-1.74 2.22-3 4.1-3.12.3 2-1.72 4.2-4.1 3.12z"/></svg>
                                                   Apple Music
                                               </a>
                                           )}
