@@ -386,12 +386,9 @@ Deno.serve(async (req) => {
 
         const { action = 'chat', chatHistory, context, existingPlan } = body;
 
-        if (!context) {
-            return Response.json({ error: 'Missing context' }, { status: 400 });
-        }
-
         // --- PHASE 1: CHAT ---
         if (action === 'chat') {
+            if (!context) return Response.json({ error: 'Missing context for chat' }, { status: 400 });
             console.log(`[Producer] Starting chat turn. History length: ${chatHistory?.length}`);
 
 
@@ -437,6 +434,7 @@ Deno.serve(async (req) => {
 
         // --- PHASE 2: GENERATE PLAN (JSON) ---
         if (action === 'generate_plan') {
+            if (!context) return Response.json({ error: 'Missing context for plan generation' }, { status: 400 });
             console.log("[Producer] Starting plan generation (Fast Mode)...");
 
             try {
