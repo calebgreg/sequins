@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import useAiAssistant from './useAiAssistant';
 import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
 
 // --- Components ---
 
@@ -42,7 +43,16 @@ const MessageItem = ({ message }) => {
                             ? 'bg-white/60 text-gray-900 rounded-2xl rounded-tl-sm border border-gray-200/50' 
                             : 'bg-black/90 text-white rounded-2xl rounded-tr-sm border border-black/10'}
                     `}>
-                        {message.content}
+                        <ReactMarkdown 
+                            components={{
+                                p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />,
+                                a: ({node, ...props}) => <a className="underline font-semibold hover:opacity-80" target="_blank" rel="noopener noreferrer" {...props} />,
+                                ul: ({node, ...props}) => <ul className="list-disc pl-4 space-y-1 my-2" {...props} />,
+                                ol: ({node, ...props}) => <ol className="list-decimal pl-4 space-y-1 my-2" {...props} />,
+                            }}
+                        >
+                            {message.content}
+                        </ReactMarkdown>
 
                         {/* Action Feedback */}
                         {message.action && message.action.type === 'action_executed' && (
