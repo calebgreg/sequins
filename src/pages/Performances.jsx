@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { base44 } from "@/api/base44Client";
 import { 
     Calendar, MapPin, Clock, Users, Music, MoveVertical, 
@@ -18,11 +19,11 @@ import ProducerWorkspace from '../components/performances/ProducerWorkspace';
 
 export default function PerformancesPage() {
     const [selectedPerformanceId, setSelectedPerformanceId] = useState(null);
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // URL Param Handling for Deep Links
-    const queryParams = new URLSearchParams(window.location.search);
-    const modeParam = queryParams.get('mode');
-    const idParam = queryParams.get('id');
+    const modeParam = searchParams.get('mode');
+    const idParam = searchParams.get('id');
 
     const [view, setView] = useState(modeParam === 'producer' ? 'producer' : 'list'); // 'list' | 'producer'
     const [searchQuery, setSearchQuery] = useState('');
@@ -30,14 +31,14 @@ export default function PerformancesPage() {
     // If URL has ID and we are in producer mode, pass it to the workspace
     // If URL has ID but NOT producer mode, select it for detail view
     React.useEffect(() => {
-        if (idParam) {
-            if (modeParam === 'producer') {
-                setView('producer');
-            } else {
-                setSelectedPerformanceId(idParam);
-            }
+        if (modeParam === 'producer') {
+            setView('producer');
+            setSelectedPerformanceId(null);
+        } else if (idParam) {
+            setSelectedPerformanceId(idParam);
+            setView('list');
         }
-    }, [idParam, modeParam]);
+    }, [modeParam, idParam]);
 
     const queryClient = useQueryClient();
 
@@ -111,11 +112,11 @@ export default function PerformancesPage() {
                 performanceId={modeParam === 'producer' ? idParam : null}
                 onCancel={() => {
                     // Clear URL params on cancel
-                    window.history.pushState({}, '', '/performances');
+                    setSearchParams({});
                     setView('list');
                 }}
                 onPlanCreated={(id) => {
-                    window.history.pushState({}, '', '/performances');
+                    setSearchParams({});
                     setView('list');
                     setSelectedPerformanceId(id);
                 }}
