@@ -231,9 +231,11 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                         status: 'pending',
                         category: 'event',
                         priority: task.priority === 'critical' ? 'high' : (task.priority === 'high' ? 'medium' : 'low'),
-                        is_shared: true
+                        is_shared: true,
+                        due_date: task.due_date || undefined,
+                        performance_id: newPerf.id
                     }));
-                    
+
                     if (tasksToCreate.length > 0) {
                          await base44.entities.FamilyTask.bulkCreate(tasksToCreate);
                     }
