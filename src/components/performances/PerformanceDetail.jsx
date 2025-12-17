@@ -313,8 +313,8 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                         </form>
                     </div>
 
-                    <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden p-2">
-                        <div className="px-6 py-3 grid grid-cols-12 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 mb-2">
+                    <div className="bg-transparent rounded-[32px] p-2">
+                        <div className="px-6 py-3 grid grid-cols-12 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">
                             <div className="col-span-1 text-center">#</div>
                             <div className="col-span-6">Routine Details</div>
                             <div className="col-span-3">Status</div>
@@ -327,7 +327,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                     <div 
                                         {...provided.droppableProps}
                                         ref={provided.innerRef}
-                                        className="space-y-2"
+                                        className="space-y-4"
                                     >
                                         {routines.map((routine, index) => {
                                             // Conflict Check: Look at previous routine
@@ -346,10 +346,15 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                 setSelectedSection('general');
                                                             }}
                                                             className={`
-                                                                relative rounded-2xl border transition-all duration-200 group cursor-pointer
-                                                                ${snapshot.isDragging ? 'bg-white shadow-2xl scale-105 z-50 border-indigo-200' : 'bg-white border-transparent hover:border-indigo-100 hover:bg-gray-50'}
+                                                                relative rounded-3xl border transition-all duration-300 group cursor-pointer overflow-hidden
+                                                                ${snapshot.isDragging 
+                                                                    ? 'bg-white/90 shadow-[0_20px_40px_-12px_rgba(244,63,94,0.3)] scale-105 z-50 border-rose-200 ring-1 ring-rose-100' 
+                                                                    : 'bg-gradient-to-br from-white/80 to-rose-50/30 backdrop-blur-xl border-white/50 shadow-[0_4px_20px_-4px_rgba(244,63,94,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(244,63,94,0.15)] hover:border-rose-100/50 hover:to-rose-50/60'
+                                                                }
                                                             `}
                                                         >
+                                                            {/* Glassmorphic Shine Effect */}
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                                                             {/* Conflict Alert Line */}
                                                             {hasConflict && (
                                                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 bg-red-100 text-red-600 px-3 py-1 rounded-full text-[10px] font-bold shadow-sm flex items-center gap-1 border border-red-200">
@@ -416,7 +421,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                     <div className="flex gap-2">
                                                                          {/* Music Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.song_title ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-300'}`}
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.song_title 
+                                                                                    ? 'bg-white/80 text-indigo-500 border-indigo-100 shadow-indigo-100/30' 
+                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
+                                                                             }`}
                                                                              title={routine.song_title ? "Music Set" : "No music"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('music'); }}
                                                                          >
@@ -425,7 +434,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                          
                                                                          {/* Costume Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.costume_details ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.costume_details 
+                                                                                    ? 'bg-white/80 text-rose-500 border-rose-100 shadow-rose-100/30' 
+                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
+                                                                             }`} 
                                                                              title={routine.costume_details ? "Costumes Detailed" : "No costume details"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('costumes'); }}
                                                                          >
@@ -434,7 +447,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                                                                          {/* Lighting Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.lighting_notes ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.lighting_notes 
+                                                                                    ? 'bg-white/80 text-amber-500 border-amber-100 shadow-amber-100/30' 
+                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
+                                                                             }`} 
                                                                              title={routine.lighting_notes ? "Lighting Notes" : "No lighting details"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('lighting'); }}
                                                                          >
@@ -443,7 +460,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                                                                          {/* Choreography/Notes Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.notes ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.notes 
+                                                                                    ? 'bg-white/80 text-purple-500 border-purple-100 shadow-purple-100/30' 
+                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
+                                                                             }`} 
                                                                              title={routine.notes ? "Choreography Notes" : "No notes"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('choreography'); }}
                                                                          >
