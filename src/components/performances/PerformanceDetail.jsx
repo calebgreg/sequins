@@ -176,7 +176,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     return (
         <div className="space-y-6">
             {/* --- Quarterback Header --- */}
-            <div className="relative max-w-3xl rounded-[32px] shadow-2xl group overflow-hidden text-white">
+            <div className="relative max-w-2xl rounded-[32px] shadow-2xl group overflow-hidden text-white">
                 {/* Background Image */}
                 <div 
                     className="absolute inset-0 z-0 bg-cover bg-center"
