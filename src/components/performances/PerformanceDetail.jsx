@@ -349,19 +349,15 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                 relative rounded-3xl border transition-all duration-300 group cursor-pointer overflow-hidden
                                                                 ${snapshot.isDragging 
                                                                     ? 'bg-white/90 shadow-[0_20px_40px_-12px_rgba(244,63,94,0.3)] scale-105 z-50 border-rose-200 ring-1 ring-rose-100' 
-                                                                    : 'bg-gradient-to-br from-white/80 to-rose-50/30 backdrop-blur-xl border-white/50 shadow-[0_4px_20px_-4px_rgba(244,63,94,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(244,63,94,0.15)] hover:border-rose-100/50 hover:to-rose-50/60'
+                                                                    : hasConflict 
+                                                                        ? 'bg-gradient-to-br from-rose-50/90 to-red-50/50 backdrop-blur-xl border-rose-200 shadow-[0_4px_20px_-4px_rgba(244,63,94,0.1)]' 
+                                                                        : 'bg-gradient-to-br from-white/80 to-rose-50/30 backdrop-blur-xl border-white/50 shadow-[0_4px_20px_-4px_rgba(244,63,94,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(244,63,94,0.15)] hover:border-rose-100/50 hover:to-rose-50/60'
                                                                 }
                                                             `}
                                                         >
                                                             {/* Glassmorphic Shine Effect */}
                                                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                                                            {/* Conflict Alert Line */}
-                                                            {hasConflict && (
-                                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 bg-red-100 text-red-600 px-3 py-1 rounded-full text-[10px] font-bold shadow-sm flex items-center gap-1 border border-red-200">
-                                                                    <AlertTriangle className="w-3 h-3" />
-                                                                    Quick Change: {conflicts.length} Dancers
-                                                                </div>
-                                                            )}
+                                                            {/* Conflict Alert Line - Removed to avoid clipping, moved to status column */}
 
                                                             <div className="grid grid-cols-12 items-center p-3">
                                                                 {/* Handle & Number */}
@@ -472,10 +468,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                          </div>
                                                                     </div>
                                                                     {hasConflict && (
-                                                                        <div className="text-[10px] text-red-500 mt-2 leading-tight flex items-center gap-1 font-medium">
-                                                                            <AlertTriangle className="w-3 h-3" /> Quick Change
-                                                                        </div>
-                                                                    )}
+                                                                         <div className="mt-2 flex items-center gap-1.5 text-[10px] font-bold text-rose-600 bg-rose-100/50 px-2 py-1 rounded-lg border border-rose-200/50 w-fit backdrop-blur-sm">
+                                                                             <AlertTriangle className="w-3 h-3" />
+                                                                             <span>Quick Change ({conflicts.length})</span>
+                                                                         </div>
+                                                                     )}
                                                                 </div>
 
                                                                 {/* Actions & Time */}
