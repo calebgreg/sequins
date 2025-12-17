@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
-// Force deploy v2
+// Force deploy v2 (fixed syntax)
 
 const OUTPUT_SCHEMA = {
   "type": "object",
@@ -467,11 +467,12 @@ Deno.serve(async (req) => {
                     - Otherwise, treat this as a modification request.`;
                 }
         
+                fullPrompt += `
         CRITICAL: THIS IS STAGE 1 (STRUCTURE ONLY).
         - DO NOT search the internet for products yet. 
         - Leave 'costume_product_suggestions' EMPTY array [].
         - Focus purely on the 'costume_concept' text description.
-        - Focus on a solid 'run_of_show' structure and timings.
+        - Focus on a solid 'run_of_show' structure and timings.`;
 
                 console.log("[Producer] Invoking LLM for plan generation...");
                 const startTime = Date.now();
