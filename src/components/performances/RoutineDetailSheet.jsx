@@ -15,11 +15,23 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function RoutineDetailSheet({ routine, open, onOpenChange, allStudents = [] }) {
+export default function RoutineDetailSheet({ routine, open, onOpenChange, allStudents = [], selectedSection = 'general' }) {
     const [formData, setFormData] = useState({});
     const [isSearchingMusic, setIsSearchingMusic] = useState(false);
     const [searchStudent, setSearchStudent] = useState("");
     const queryClient = useQueryClient();
+
+    // Auto-scroll effect
+    useEffect(() => {
+        if (open && selectedSection) {
+            setTimeout(() => {
+                const element = document.getElementById(`section-${selectedSection}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100); // Small delay to ensure sheet is rendered
+        }
+    }, [open, selectedSection]);
 
     useEffect(() => {
         if (routine) {
@@ -137,7 +149,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
 
                 <div className="p-6 space-y-8">
                     {/* Basic Info */}
-                    <div className="space-y-5 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                    <div id="section-general" className="space-y-5 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                         <div className="space-y-2">
                             <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Routine Title</Label>
                             <Input 
@@ -147,7 +159,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div id="section-music" className="grid grid-cols-2 gap-4 scroll-mt-20">
                             <div className="space-y-2">
                                 <Label className="flex items-center gap-2"><Music className="w-3 h-3" /> Song</Label>
                                 <Input 
@@ -304,7 +316,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                         </h3>
                         
                         <div className="grid grid-cols-1 gap-6">
-                            <div className="space-y-2">
+                            <div id="section-costumes" className="space-y-2 scroll-mt-20">
                                 <Label className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
                                     <Shirt className="w-3 h-3" /> Costumes
                                 </Label>
@@ -352,7 +364,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                 )}
                             </div>
 
-                            <div className="space-y-2">
+                            <div id="section-lighting" className="space-y-2 scroll-mt-20">
                                 <Label className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
                                     <Lightbulb className="w-3 h-3" /> Lighting & Tech
                                 </Label>
@@ -364,7 +376,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                 />
                             </div>
 
-                            <div className="space-y-2">
+                            <div id="section-choreography" className="space-y-2 scroll-mt-20">
                                 <Label className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
                                     <StickyNote className="w-3 h-3" /> Notes
                                 </Label>
@@ -379,7 +391,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                     </div>
 
                     {/* Performers */}
-                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                    <div id="section-performers" className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                          <div className="flex items-center justify-between">
                             <h3 className="font-serif text-xl text-[#333333] flex items-center gap-2">
                                 <Users className="w-5 h-5 text-gray-400" />

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { 
     ArrowLeft, Calendar, MapPin, Plus, GripVertical, 
-    Music, Users, AlertTriangle, Mic2,
+    Music, Users, AlertTriangle, Mic2, Footprints,
     PlayCircle, Timer, Trash2, Shirt, Lightbulb
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     const [newRoutineTitle, setNewRoutineTitle] = useState('');
     const [formData, setFormData] = useState({});
     const [selectedRoutine, setSelectedRoutine] = useState(null);
+    const [selectedSection, setSelectedSection] = useState('general');
     const queryClient = useQueryClient();
 
     // 1. Fetch Performance Data
@@ -316,7 +317,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                         <div className="px-6 py-3 grid grid-cols-12 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 mb-2">
                             <div className="col-span-1 text-center">#</div>
                             <div className="col-span-6">Routine Details</div>
-                            <div className="col-span-3">Tech/Music</div>
+                            <div className="col-span-3">Status</div>
                             <div className="col-span-2 text-right">Duration</div>
                         </div>
 
@@ -340,7 +341,10 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                         <div
                                                             ref={provided.innerRef}
                                                             {...provided.draggableProps}
-                                                            onClick={() => setSelectedRoutine(routine)}
+                                                            onClick={() => {
+                                                                setSelectedRoutine(routine);
+                                                                setSelectedSection('general');
+                                                            }}
                                                             className={`
                                                                 relative rounded-2xl border transition-all duration-200 group cursor-pointer
                                                                 ${snapshot.isDragging ? 'bg-white shadow-2xl scale-105 z-50 border-indigo-200' : 'bg-white border-transparent hover:border-indigo-100 hover:bg-gray-50'}
@@ -365,30 +369,85 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                                                                 {/* Details */}
                                                                 <div className="col-span-6 pr-4 border-r border-gray-100/50">
-                                                                    <div className="font-bold text-[#333333] text-base">{routine.title}</div>
+                                                                    <div 
+                                                                        className="font-bold text-[#333333] text-base group-hover:text-indigo-600 transition-colors"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setSelectedRoutine(routine);
+                                                                            setSelectedSection('general');
+                                                                        }}
+                                                                    >
+                                                                        {routine.title}
+                                                                    </div>
                                                                     <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
-                                                                        {routine.song_title ? (
-                                                                            <span className="flex items-center gap-1 text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-md">
-                                                                                <Music className="w-3 h-3" /> {routine.song_title}
-                                                                            </span>
-                                                                        ) : (
-                                                                            <span className="italic text-gray-300">No music set</span>
-                                                                        )}
+                                                                        <div 
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setSelectedRoutine(routine);
+                                                                                setSelectedSection('music');
+                                                                            }}
+                                                                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md cursor-pointer transition-colors ${
+                                                                                routine.song_title 
+                                                                                    ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' 
+                                                                                    : 'text-gray-300 hover:text-gray-400 hover:bg-gray-100'
+                                                                            }`}
+                                                                        >
+                                                                            <Music className="w-3 h-3" /> 
+                                                                            {routine.song_title ? routine.song_title : <span className="italic">No music set</span>}
+                                                                        </div>
+                                                                        
                                                                         <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                                                                        <span className="flex items-center gap-1">
+                                                                        
+                                                                        <div 
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setSelectedRoutine(routine);
+                                                                                setSelectedSection('performers');
+                                                                            }}
+                                                                            className="flex items-center gap-1 cursor-pointer hover:text-indigo-600 transition-colors"
+                                                                        >
                                                                             <Users className="w-3 h-3" /> {routine.performers?.length || 0}
-                                                                        </span>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
 
-                                                                {/* Tech Info */}
+                                                                {/* Status */}
                                                                 <div className="col-span-3 px-4">
                                                                     <div className="flex gap-2">
-                                                                         <div className={`p-1.5 rounded-md ${routine.costume_details ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-300'}`} title={routine.costume_details || "No costume details"}>
+                                                                         {/* Music Icon */}
+                                                                         <div 
+                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.song_title ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-300'}`}
+                                                                             title={routine.song_title ? "Music Set" : "No music"}
+                                                                             onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('music'); }}
+                                                                         >
+                                                                             <Music className="w-3.5 h-3.5" />
+                                                                         </div>
+                                                                         
+                                                                         {/* Costume Icon */}
+                                                                         <div 
+                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.costume_details ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             title={routine.costume_details ? "Costumes Detailed" : "No costume details"}
+                                                                             onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('costumes'); }}
+                                                                         >
                                                                              <Shirt className="w-3.5 h-3.5" />
                                                                          </div>
-                                                                         <div className={`p-1.5 rounded-md ${routine.lighting_notes ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-300'}`} title={routine.lighting_notes || "No lighting details"}>
+
+                                                                         {/* Lighting Icon */}
+                                                                         <div 
+                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.lighting_notes ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             title={routine.lighting_notes ? "Lighting Notes" : "No lighting details"}
+                                                                             onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('lighting'); }}
+                                                                         >
                                                                              <Lightbulb className="w-3.5 h-3.5" />
+                                                                         </div>
+
+                                                                         {/* Choreography/Notes Icon */}
+                                                                         <div 
+                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.notes ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             title={routine.notes ? "Choreography Notes" : "No notes"}
+                                                                             onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('choreography'); }}
+                                                                         >
+                                                                             <Footprints className="w-3.5 h-3.5" />
                                                                          </div>
                                                                     </div>
                                                                     {hasConflict && (
@@ -440,6 +499,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                     open={!!selectedRoutine} 
                     onOpenChange={(open) => !open && setSelectedRoutine(null)}
                     allStudents={students}
+                    selectedSection={selectedSection}
                     />
 
                     </div>
