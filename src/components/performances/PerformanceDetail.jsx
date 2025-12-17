@@ -25,7 +25,6 @@ const findConflicts = (routineA, routineB) => {
 };
 
 export default function PerformanceDetail({ performanceId, onBack }) {
-    const [isEditing, setIsEditing] = useState(false);
     const [newRoutineTitle, setNewRoutineTitle] = useState('');
     const [formData, setFormData] = useState({});
     const [selectedRoutine, setSelectedRoutine] = useState(null);
@@ -144,6 +143,18 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
     // --- Handlers ---
 
+    const handleTitleBlur = () => {
+        if (performance && formData.title !== performance.title) {
+            updatePerformance.mutate({ ...performance, title: formData.title });
+        }
+    };
+
+    const handleDateChange = (e) => {
+        const newDate = e.target.value;
+        setFormData({ ...formData, date: newDate });
+        updatePerformance.mutate({ ...performance, date: newDate });
+    };
+
     const handleDragEnd = (result) => {
         if (!result.destination) return;
         
@@ -176,7 +187,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     return (
         <div className="space-y-6">
             {/* --- Quarterback Header --- */}
-            <div className="relative max-w-2xl rounded-[32px] shadow-2xl group overflow-hidden text-white">
+            <div className="relative max-w-xl rounded-[32px] shadow-2xl group overflow-hidden text-white">
                 {/* Background Image */}
                 <div 
                     className="absolute inset-0 z-0 bg-cover bg-center"
@@ -184,7 +195,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                         backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692b7ce31c9c985decfff75a/4500517ed_Gemini_Generated_Image_2u5n1l2u5n1l2u5n.png)',
                     }}
                 />
-                <div className="absolute inset-0 bg-black/20 z-0" /> {/* Slight overlay for text readability if needed */}
+                <div className="absolute inset-0 bg-black/20 z-0" />
                 
                 <div className="relative z-10 p-8">
                     <button 
@@ -194,101 +205,59 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Events
                     </button>
 
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                        <div className="space-y-4 max-w-2xl">
-                            {isEditing ? (
-                                <Input 
-                                    value={formData.title || ''}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="text-4xl font-serif bg-white/10 border-white/20 text-white h-16 px-4 rounded-xl"
+                    <div className="flex flex-col gap-4">
+                        <Input 
+                            value={formData.title || ''}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                            onBlur={handleTitleBlur}
+                            className="text-4xl md:text-5xl font-serif bg-transparent border-none text-white px-0 focus-visible:ring-0 placeholder:text-white/50 h-auto p-0 shadow-none"
+                            placeholder="Event Title"
+                        />
+                        
+                        <div className="flex flex-wrap gap-4 text-sm text-white/70">
+                            <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/20 transition-colors">
+                                <Calendar className="w-4 h-4 text-indigo-300" />
+                                <input 
+                                    type="date" 
+                                    value={formData.date || ''} 
+                                    onChange={handleDateChange}
+                                    className="bg-transparent border-none text-white focus:outline-none p-0 cursor-pointer font-medium uppercase tracking-wide text-xs"
                                 />
-                            ) : (
-                                <h1 className="text-4xl md:text-5xl font-serif leading-tight">
-                                    {performance.title}
-                                </h1>
-                            )}
-                            
-                            <div className="flex flex-wrap gap-6 text-sm text-white/70">
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                                    <Calendar className="w-4 h-4 text-indigo-300" />
-                                    {isEditing ? (
-                                        <input 
-                                            type="date" 
-                                            value={formData.date || ''} 
-                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                            className="bg-transparent border-none text-white focus:outline-none"
-                                        />
-                                    ) : format(new Date(performance.date), 'MMMM d, yyyy')}
-                                </div>
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                                    <MapPin className="w-4 h-4 text-pink-300" />
-                                    {isEditing ? (
-                                        <div className="relative">
-                                            <input 
-                                                value={venueSearch} 
-                                                placeholder="Search Venue..."
-                                                onChange={(e) => {
-                                                    setVenueSearch(e.target.value);
-                                                    setShowSuggestions(true);
-                                                }}
-                                                onFocus={() => setShowSuggestions(true)}
-                                                className="bg-transparent border-none text-white focus:outline-none w-64 placeholder:text-white/50"
-                                            />
-                                            {showSuggestions && (suggestions.length > 0 || isFetchingSuggestions) && (
-                                                <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-lg shadow-xl text-gray-800 z-50 overflow-hidden text-sm">
-                                                    {isFetchingSuggestions && <div className="p-3 text-gray-400 text-xs">Loading...</div>}
-                                                    {suggestions.map((s) => (
-                                                        <div 
-                                                            key={s.place_id}
-                                                            onClick={() => handleVenueSelect(s.place_id, s.description)}
-                                                            className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
-                                                        >
-                                                            <div className="font-bold text-[#333333]">{s.main_text}</div>
-                                                            <div className="text-xs text-gray-500 truncate">{s.secondary_text}</div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col">
-                                            <span className="font-bold">
-                                                {performance.venue?.venue_name || (typeof performance.venue === 'string' ? performance.venue : 'TBD')}
-                                            </span>
-                                            {performance.venue?.formatted_address && (
-                                                <span className="text-[10px] opacity-80 max-w-[200px] truncate">
-                                                    {performance.venue.formatted_address}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                                    <Timer className="w-4 h-4 text-amber-300" />
-                                    <span>Run Time: {totalDurationFormatted}</span>
-                                </div>
                             </div>
-                        </div>
+                            
+                            <div className="relative flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/20 transition-colors">
+                                <MapPin className="w-4 h-4 text-pink-300" />
+                                <input 
+                                    value={venueSearch} 
+                                    placeholder="Set Venue"
+                                    onChange={(e) => {
+                                        setVenueSearch(e.target.value);
+                                        setShowSuggestions(true);
+                                    }}
+                                    onFocus={() => setShowSuggestions(true)}
+                                    className="bg-transparent border-none text-white focus:outline-none w-32 placeholder:text-white/50 font-medium uppercase tracking-wide text-xs"
+                                />
+                                {showSuggestions && (suggestions.length > 0 || isFetchingSuggestions) && (
+                                    <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-lg shadow-xl text-gray-800 z-50 overflow-hidden text-sm">
+                                        {isFetchingSuggestions && <div className="p-3 text-gray-400 text-xs">Loading...</div>}
+                                        {suggestions.map((s) => (
+                                            <div 
+                                                key={s.place_id}
+                                                onClick={() => handleVenueSelect(s.place_id, s.description)}
+                                                className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
+                                            >
+                                                <div className="font-bold text-[#333333]">{s.main_text}</div>
+                                                <div className="text-xs text-gray-500 truncate">{s.secondary_text}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
 
-                        <div className="flex gap-3">
-                            <Button 
-                                onClick={() => {
-                                    if (isEditing) {
-                                        updatePerformance.mutate({ ...performance, ...formData });
-                                    }
-                                    setIsEditing(!isEditing);
-                                }}
-                                variant="outline" 
-                                className="bg-transparent text-white border-white/20 hover:bg-white/10"
-                            >
-                                {isEditing ? 'Save' : 'Edit Details'}
-                            </Button>
-                            <Button 
-                                onClick={() => toast.info("Show Mode is coming soon!", { description: "This feature will allow you to run the show in real-time." })}
-                                className="bg-white text-[#333333] hover:bg-gray-100 font-bold shadow-lg shadow-black/20"
-                            >
-                                <PlayCircle className="w-4 h-4 mr-2" /> Start Show Mode
-                            </Button>
+                            <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+                                <Timer className="w-4 h-4 text-amber-300" />
+                                <span className="font-medium uppercase tracking-wide text-xs">Run Time: {totalDurationFormatted}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
