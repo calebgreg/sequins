@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -51,10 +51,10 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
             localStorage.removeItem('sequins_draft_plan');
         }
     }, [generatedPlan]);
-            const scrollRef = React.useRef(null);
+            const scrollRef = useRef(null);
 
     // Auto-scroll to bottom of chat
-    React.useEffect(() => {
+    useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
