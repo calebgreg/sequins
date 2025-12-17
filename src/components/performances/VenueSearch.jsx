@@ -11,8 +11,12 @@ export default function VenueSearch({ value, onChange, onSelect }) {
     const [isLoading, setIsLoading] = useState(false);
     const wrapperRef = useRef(null);
 
-    // Sync with external value only if query is empty (initial load)
-    // useEffect removed to prevent render loop as per user request
+    // Sync with external value
+    useEffect(() => {
+        if (value !== query) { // Only update if external value changes and is different from internal query
+            setQuery(value || '');
+        }
+    }, [value]);
 
     // Click outside to close
     useEffect(() => {

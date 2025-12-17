@@ -75,19 +75,10 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
             if (dbChatHistory && dbChatHistory.length > 0) {
                 // Sort by timestamp
                 const sorted = [...dbChatHistory].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                // Add system intro if empty? Or just use DB.
-                // If it's the very first load and only 1 user msg exists (from Gene), we might want to append the assistant intro locally if not in DB.
-                // But let's just map DB to chat format
                 const mapped = sorted.map(c => ({ role: c.role, content: c.content }));
-                // If the last message is from user, we might want to trigger a reply? 
-                // But Gene coordinator creates the draft AND the user message. 
-                // The assistant reply "I've opened the drafting table" is in the main chat, not here.
-                // So here we should probably start with an intro if only user msg exists.
-                // Let's just set it.
-                
-                // If the chat history from DB doesn't have a welcome message, add one visually?
-                // Actually, let's just use what's in DB.
                 setChatHistory(mapped);
+            } else {
+                setChatHistory([{ role: 'assistant', content: "I'm ready. What are we working on?" }]);
             }
         } else {
             // LocalStorage Mode (Legacy/Manual)
