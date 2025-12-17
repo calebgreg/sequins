@@ -123,7 +123,10 @@ export default function GlobalAiChat() {
 
         try {
             // Call the backend Coordinator "Agent"
-            const { data } = await base44.functions.invoke('geneCoordinator', { prompt: userText });
+            const { data } = await base44.functions.invoke('geneCoordinator', { 
+                prompt: userText, 
+                chatHistory: messages.map(({ role, content }) => ({ role, content }))
+            });
             
             if (data.action_result) {
                 if (data.action_result.type === 'success') {
