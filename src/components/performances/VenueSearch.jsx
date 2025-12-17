@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MapPin, Loader2, X } from "lucide-react";
@@ -11,9 +11,9 @@ export default function VenueSearch({ value, onChange, onSelect }) {
     const [isLoading, setIsLoading] = useState(false);
     const wrapperRef = useRef(null);
 
-    // Update query if value prop changes externally (and matches what we have)
+    // Sync with external value only if query is empty (initial load)
     useEffect(() => {
-        if (value && value !== query) {
+        if (value && !query) {
             setQuery(value);
         }
     }, [value]);
@@ -29,7 +29,7 @@ export default function VenueSearch({ value, onChange, onSelect }) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [wrapperRef]);
 
-    const fetchSuggestions = async (input) => {
+    const fetchSuggestions = useCallback(async (input) => {
         if (!input || input.length < 3) {
             setSuggestions([]);
             return;
@@ -47,18 +47,19 @@ export default function VenueSearch({ value, onChange, onSelect }) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     // Debounce manual implementation
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (query && query !== value) { // Only search if query changed from initial value
+            // Only search if user typed something new
+            if (query && query !== value) { 
                  fetchSuggestions(query);
             }
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [query]);
+    }, [query, fetchSuggestions]);
 
     const handleSelect = async (suggestion) => {
         setQuery(suggestion.main_text);

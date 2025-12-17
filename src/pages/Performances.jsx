@@ -28,6 +28,9 @@ export default function PerformancesPage() {
     const { data: performances = [], isLoading } = useQuery({
         queryKey: ['performances'],
         queryFn: () => base44.entities.Performance.list('-date'),
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
     });
 
     const updateStatusMutation = useMutation({
