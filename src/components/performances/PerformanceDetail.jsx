@@ -349,7 +349,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                 relative rounded-3xl border transition-all duration-300 group cursor-pointer overflow-hidden
                                                                 ${snapshot.isDragging 
                                                                     ? 'bg-white/90 shadow-[0_20px_40px_-12px_rgba(244,63,94,0.3)] scale-105 z-50 border-rose-200 ring-1 ring-rose-100' 
-                                                                    : 'bg-gradient-to-br from-white/80 to-rose-50/30 backdrop-blur-xl border-white/50 shadow-[0_4px_20px_-4px_rgba(244,63,94,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(244,63,94,0.15)] hover:border-rose-100/50 hover:to-rose-50/60'
+                                                                    : 'bg-gradient-to-br from-white/90 via-rose-50/50 to-rose-100/40 backdrop-blur-xl border-white/60 shadow-[0_4px_20px_-4px_rgba(244,63,94,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(244,63,94,0.15)] hover:border-rose-200/50 hover:to-rose-100/60'
                                                                 }
                                                             `}
                                                         >
