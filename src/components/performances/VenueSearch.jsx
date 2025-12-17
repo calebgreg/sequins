@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MapPin, Loader2, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useDebounce } from "@/utils/useDebounce"; // Assuming we might need to debounce, or just implement it locally
 
 export default function VenueSearch({ value, onChange, onSelect }) {
     const [query, setQuery] = useState(value || '');
