@@ -104,15 +104,28 @@ const MessageItem = ({ message }) => {
                         <ReactMarkdown 
                             components={{
                                 p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />,
-                                a: ({node, ...props}) => (
-                                    <a 
-                                        {...props} 
-                                        onClick={(e) => handleLinkClick(e, props.href)}
-                                        className="underline font-semibold hover:opacity-80 cursor-pointer" 
-                                        target={props.href?.startsWith('/') ? undefined : "_blank"}
-                                        rel={props.href?.startsWith('/') ? undefined : "noopener noreferrer"}
-                                    />
-                                ),
+                                a: ({node, ...props}) => {
+                                    const href = props.href;
+                                    if (href && href.startsWith('/')) {
+                                        return (
+                                            <span
+                                                onClick={(e) => handleLinkClick(e, href)}
+                                                className="underline font-semibold hover:opacity-80 cursor-pointer text-indigo-600"
+                                                role="link"
+                                            >
+                                                {props.children}
+                                            </span>
+                                        );
+                                    }
+                                    return (
+                                        <a 
+                                            {...props} 
+                                            className="underline font-semibold hover:opacity-80" 
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        />
+                                    );
+                                },
                                 ul: ({node, ...props}) => <ul className="list-disc pl-4 space-y-1 my-2" {...props} />,
                                 ol: ({node, ...props}) => <ol className="list-decimal pl-4 space-y-1 my-2" {...props} />,
                             }}
