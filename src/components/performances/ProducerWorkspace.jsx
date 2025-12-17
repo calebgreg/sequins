@@ -59,6 +59,18 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                     venue: dbPerformance.venue?.venue_name || (typeof dbPerformance.venue === 'string' ? dbPerformance.venue : ''),
                     venueData: typeof dbPerformance.venue === 'object' ? dbPerformance.venue : null
                 }));
+
+                // Load existing plan if available
+                if (dbPerformance.description) {
+                    try {
+                        const parsedPlan = JSON.parse(dbPerformance.description);
+                        if (parsedPlan && parsedPlan.show_plan) {
+                            setGeneratedPlan(parsedPlan);
+                        }
+                    } catch (e) {
+                        // Not a JSON plan, likely just text description
+                    }
+                }
             }
             if (dbChatHistory && dbChatHistory.length > 0) {
                 // Sort by timestamp

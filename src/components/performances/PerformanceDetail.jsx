@@ -4,9 +4,10 @@ import { base44 } from "@/api/base44Client";
 import { 
     ArrowLeft, Calendar, MapPin, Plus, GripVertical, 
     Music, Users, AlertTriangle, Mic2, Footprints,
-    PlayCircle, Timer, Trash2, Shirt, Lightbulb
+    PlayCircle, Timer, Trash2, Shirt, Lightbulb, PenTool
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ const findConflicts = (routineA, routineB) => {
 };
 
 export default function PerformanceDetail({ performanceId, onBack }) {
+    const navigate = useNavigate();
     const [newRoutineTitle, setNewRoutineTitle] = useState('');
     const [formData, setFormData] = useState({});
     const [selectedRoutine, setSelectedRoutine] = useState(null);
@@ -232,12 +234,20 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                 <div className="absolute inset-0 bg-black/20 z-0" />
                 
                 <div className="relative z-10 p-8">
-                    <button 
-                        onClick={onBack}
-                        className="flex items-center text-white/60 hover:text-white transition-colors mb-6 text-sm font-medium uppercase tracking-wider"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Events
-                    </button>
+                    <div className="flex items-center justify-between mb-6">
+                        <button 
+                            onClick={onBack}
+                            className="flex items-center text-white/60 hover:text-white transition-colors text-sm font-medium uppercase tracking-wider"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Events
+                        </button>
+                        <Button
+                            onClick={() => navigate(`/performances?mode=producer&id=${performanceId}`)}
+                            className="bg-white/10 hover:bg-white/20 text-white rounded-full h-9 shadow-lg shadow-white/5 transition-all text-xs flex items-center gap-2 border border-white/10"
+                        >
+                            <PenTool className="w-3 h-3" /> Open Drafting Table
+                        </Button>
+                    </div>
 
                     <div className="flex flex-col gap-4">
                         <Input 
