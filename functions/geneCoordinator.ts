@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
         }
 
         // Parse Request
-        const { prompt } = await req.json();
+        const { prompt, chatHistory = [] } = await req.json();
 
         if (!prompt) {
             return Response.json({ error: 'Prompt is required' }, { status: 400 });
@@ -53,7 +53,8 @@ Deno.serve(async (req) => {
 
             YOUR CAPABILITIES:
             You can answer questions and DIRECTLY EXECUTE actions on the database.
-            
+            You can also route complex performance planning requests to the "PerformanceProducer" (Sequins) agent.
+
             AVAILABLE DATA CONTEXT:
             - Students: ${activeStudents.length} active students
             - Teachers: ${teacherContext}
@@ -80,6 +81,11 @@ Deno.serve(async (req) => {
             - StudentNote: create (student_name, content, category, sentiment)
             - Student: update (id, status, notes, etc) - *Use with caution*
             - Student: read (payload: { name: "student name" }) - Use this to look up details like phone, email, address, etc.
+            - PerformanceProducer: invoke (action: "chat" | "generate_plan", chatHistory: array)
+                - Use action: "chat" for planning discussions (themes, music, costumes).
+                - Use action: "generate_plan" ONLY when user explicitly asks to finalize/create the plan.
+                - payload MUST include 'chatHistory' array: combine the PREVIOUS CHAT CONTEXT with the current USER PROMPT.
+                - payload MUST include 'context' object (studio settings, classes, etc).
 
             IMPORTANT:
             - If the user asks for personal info (phone, email, etc.) that isn't in the context, use the 'read' action to look it up.
@@ -92,6 +98,9 @@ Deno.serve(async (req) => {
         const llmResponse = await base44.integrations.Core.InvokeLLM({
             prompt: `
                 ${systemContext}
+
+                PREVIOUS CHAT CONTEXT:
+                ${JSON.stringify(chatHistory)}
 
                 USER PROMPT: "${prompt}"
             `,
@@ -108,11 +117,11 @@ Deno.serve(async (req) => {
                         properties: {
                             entity: { 
                                 type: "string", 
-                                enum: ["FamilyTask", "FamilyNote", "StudentNote", "Student"] 
+                                enum: ["FamilyTask", "FamilyNote", "StudentNote", "Student", "PerformanceProducer"] 
                             },
                             action: { 
                                 type: "string", 
-                                enum: ["create", "update", "read"] 
+                                enum: ["create", "update", "read", "invoke"] 
                             },
                             payload: {
                                 type: "object",
@@ -146,7 +155,43 @@ Deno.serve(async (req) => {
                 
                 let result;
 
-                if (action === 'read') {
+                if (entity === 'PerformanceProducer') {
+                    // Performance Producer Routing
+                    const produceContext = {
+                        studio: { 
+                            studio_name: settings.name || "My Dance Studio",
+                            costume_vendors: settings.costume_vendors || []
+                        },
+                        classes: classes.filter(c => c.type !== 'admin').map(c => ({
+                            class_id: c.id,
+                            name: c.title,
+                            style: c.style || c.title,
+                            dancer_count: c.student_names?.length || 5,
+                            approx_length_minutes: (c.duration || 1) * 60,
+                            notes: `Taught by ${c.teacher || 'Staff'}`
+                        })),
+                        event_details: {} // Extracted by producer from chat
+                    };
+
+                    // Call the sub-agent
+                    const producerResponse = await base44.functions.invoke('producePerformance', {
+                        action: payload.action || 'chat',
+                        chatHistory: payload.chatHistory || [{ role: 'user', content: prompt }],
+                        context: produceContext
+                    });
+
+                    const data = producerResponse.data;
+                    
+                    if (data.generated_plan) {
+                        responseText = data.response_text || "Plan generated successfully.";
+                        actionResult = { type: 'success', entity, action, result: data.generated_plan, message: "Performance Plan Created" };
+                    } else {
+                        responseText = data.response_text || "I've consulted the producer.";
+                        // We don't necessarily need an actionResult for pure chat, but helpful for debugging
+                        actionResult = { type: 'success', entity, action, result: "Chat continued" };
+                    }
+
+                } else if (action === 'read') {
                     // Handle Read/Lookup Action
                     if (entity === 'Student') {
                         const searchName = (payload.name || '').toLowerCase();
