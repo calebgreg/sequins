@@ -20,16 +20,37 @@ import ProducerCostumeEnricher from './ProducerCostumeEnricher';
 import VenueSearch from './VenueSearch';
 
 export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
-    const [chatHistory, setChatHistory] = useState([
-        { 
-            role: 'assistant', 
-            content: "I'm ready. What are we working on?" 
-            }
-    ]);
+    // Load state from localStorage if available to prevent data loss
+    const [chatHistory, setChatHistory] = useState(() => {
+        try {
+            const saved = localStorage.getItem('sequins_draft_chat');
+            return saved ? JSON.parse(saved) : [{ role: 'assistant', content: "I'm ready. What are we working on?" }];
+        } catch (e) {
+            return [{ role: 'assistant', content: "I'm ready. What are we working on?" }];
+        }
+    });
     const [currentInput, setCurrentInput] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [isFinalizing, setIsFinalizing] = useState(false);
-            const [generatedPlan, setGeneratedPlan] = useState(null);
+    const [generatedPlan, setGeneratedPlan] = useState(() => {
+        try {
+            const saved = localStorage.getItem('sequins_draft_plan');
+            return saved ? JSON.parse(saved) : null;
+        } catch (e) { return null; }
+    });
+
+    // Auto-save effects
+    useEffect(() => {
+        localStorage.setItem('sequins_draft_chat', JSON.stringify(chatHistory));
+    }, [chatHistory]);
+
+    useEffect(() => {
+        if (generatedPlan) {
+            localStorage.setItem('sequins_draft_plan', JSON.stringify(generatedPlan));
+        } else {
+            localStorage.removeItem('sequins_draft_plan');
+        }
+    }, [generatedPlan]);
             const scrollRef = React.useRef(null);
 
     // Auto-scroll to bottom of chat
@@ -42,13 +63,30 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
     const queryClient = useQueryClient();
 
     // Manual Event Details State
-    const [eventDetails, setEventDetails] = useState({
-        title: '',
-        date: new Date().toISOString().split('T')[0],
-        type: 'recital',
-        venue: '',
-        venueData: null // Store full google place object
+    const [eventDetails, setEventDetails] = useState(() => {
+        try {
+            const saved = localStorage.getItem('sequins_draft_details');
+            return saved ? JSON.parse(saved) : {
+                title: '',
+                date: new Date().toISOString().split('T')[0],
+                type: 'recital',
+                venue: '',
+                venueData: null
+            };
+        } catch (e) {
+            return {
+                title: '',
+                date: new Date().toISOString().split('T')[0],
+                type: 'recital',
+                venue: '',
+                venueData: null
+            };
+        }
     });
+
+    useEffect(() => {
+        localStorage.setItem('sequins_draft_details', JSON.stringify(eventDetails));
+    }, [eventDetails]);
 
     // Fetch context data
     const { data: studioSettings } = useQuery({
@@ -202,10 +240,13 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
             queryClient.invalidateQueries(['performances']);
             toast.success("Event created successfully!");
             onPlanCreated(newPerf.id);
-            // Reset state
+            // Reset state and clear storage
             setGeneratedPlan(null);
             setCurrentInput('');
             setEventDetails({ title: '', date: '', type: 'recital', venue: '', venueData: null });
+            localStorage.removeItem('sequins_draft_chat');
+            localStorage.removeItem('sequins_draft_plan');
+            localStorage.removeItem('sequins_draft_details');
         },
         onError: (err) => {
             toast.error("Failed to save event.");
@@ -256,11 +297,29 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                         </div>
                     </div>
                 </div>
-                {generatedPlan && (
-                    <Button variant="ghost" onClick={() => setGeneratedPlan(null)} className="text-gray-400 hover:text-[#333333]">
-                        Back to Brief
-                    </Button>
-                )}
+                <div className="flex items-center gap-2">
+                    {chatHistory.length > 1 && !generatedPlan && (
+                        <Button 
+                            variant="ghost" 
+                            onClick={() => {
+                                if(confirm("Start fresh? This will clear your current draft.")) {
+                                    setChatHistory([{ role: 'assistant', content: "I'm ready. What are we working on?" }]);
+                                    setEventDetails({ title: '', date: new Date().toISOString().split('T')[0], type: 'recital', venue: '', venueData: null });
+                                    localStorage.removeItem('sequins_draft_chat');
+                                    localStorage.removeItem('sequins_draft_details');
+                                }
+                            }} 
+                            className="text-gray-400 hover:text-red-500 text-xs"
+                        >
+                            Clear Draft
+                        </Button>
+                    )}
+                    {generatedPlan && (
+                        <Button variant="ghost" onClick={() => setGeneratedPlan(null)} className="text-gray-400 hover:text-[#333333]">
+                            Back to Brief
+                        </Button>
+                    )}
+                </div>
             </div>
 
             <div className="flex-1 overflow-hidden relative bg-[#FDFBF7]">
