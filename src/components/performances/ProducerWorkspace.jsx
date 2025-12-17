@@ -339,7 +339,8 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                             const { data: timelineData } = await base44.functions.invoke('producePerformance', {
                                 action: 'generate_timeline_milestones',
                                 show_date: eventDetails.date,
-                                performance_id: targetPerformanceId
+                                performance_id: targetPerformanceId,
+                                context: getContext()
                             });
 
                             if (timelineData?.timeline_milestones) {
