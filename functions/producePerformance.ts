@@ -81,9 +81,12 @@ const OUTPUT_SCHEMA = {
                     "task": { "type": "string" },
                     "detail": { "type": "string" },
                     "priority": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
-                    "due_milestone": { "type": "string", "enum": ["concept_lock", "1_month_out", "tech_week", "show_day", "post_show"] }
+                    "due_milestone": { "type": "string", "enum": ["concept_lock", "8_weeks_before", "6_weeks_before", "3_weeks_before", "1_week_before", "tech_week", "show_day", "post_show"] },
+                    "due_date": { "type": "string", "format": "date" },
+                    "days_from_now": { "type": "integer" },
+                    "days_before_show": { "type": "integer" }
                 },
-                "required": ["department", "task", "priority", "due_milestone"]
+                "required": ["department", "task", "priority", "due_milestone", "due_date", "days_from_now", "days_before_show"]
             }
         },
         },
@@ -410,21 +413,27 @@ Deno.serve(async (req) => {
                 const recentHistory = (chatHistory || []).slice(-40); 
                 const transcript = recentHistory.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
 
+                // Add today's date to context for timeline calculation
+                const enhancedContext = {
+                    ...context,
+                    today: new Date().toISOString().split('T')[0]
+                };
+
                 const fullPrompt = `${PARSER_SYSTEM_PROMPT}
 
         Based on the following creative discussion and studio context, generate the full production plan JSON.
+
+        CONTEXT:
+        ${JSON.stringify(enhancedContext)}
+
+        DISCUSSION TRANSCRIPT:
+        ${transcript}`;
         
         CRITICAL: THIS IS STAGE 1 (STRUCTURE ONLY).
         - DO NOT search the internet for products yet. 
         - Leave 'costume_product_suggestions' EMPTY array [].
         - Focus purely on the 'costume_concept' text description.
         - Focus on a solid 'run_of_show' structure and timings.
-
-        CONTEXT:
-        ${JSON.stringify(context)}
-
-        DISCUSSION TRANSCRIPT:
-        ${transcript}`;
 
                 console.log("[Producer] Invoking LLM for plan generation...");
                 const startTime = Date.now();
