@@ -580,7 +580,16 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                                                                     </div>
                                                                     <div className="bg-pink-50/50 p-2 rounded border border-pink-100 text-xs">
                                                                         <div className="font-bold text-pink-800 uppercase mb-1">Costume</div>
-                                                                        <div className="text-pink-900 leading-snug">{segment.costume_concept}</div>
+                                                                        <div className="text-pink-900 leading-snug mb-2">{segment.costume_concept}</div>
+                                                                        <ProducerCostumeEnricher 
+                                                                            segment={segment} 
+                                                                            onUpdate={(newSuggestions) => {
+                                                                                const newPlan = { ...generatedPlan };
+                                                                                newPlan.show_plan.run_of_show[idx].costume_product_suggestions = newSuggestions;
+                                                                                setGeneratedPlan(newPlan);
+                                                                            }}
+                                                                            context={getContext()}
+                                                                        />
                                                                     </div>
                                                                 </div>
                                                             </div>
