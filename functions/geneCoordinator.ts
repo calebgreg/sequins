@@ -37,6 +37,7 @@ Deno.serve(async (req) => {
                 
                 SPECIAL CASES:
                 - If the user talks about "planning a show", "production", "costumes", "run sheet", or "the producer", you NEED: 'Performance', 'DanceClass', 'StudioSettings'.
+                - If the intent is clearly "performance planning" (e.g. "plan a recital", "create a show"), the Pass 2 logic will handle it by creating a draft Performance and routing the user to the UI.
                 - If the user asks a general question unrelated to data (e.g. "write a poem"), request NO entities.
                 - Always request 'StudioSettings' if you need the studio name or AI persona details (default to requesting it if unsure).
             `,
@@ -46,7 +47,7 @@ Deno.serve(async (req) => {
                     intent: { type: "string", description: "Brief description of intent" },
                     entities_needed: { 
                         type: "array", 
-                        items: { type: "string", enum: ["Student", "DanceClass", "StudioSettings", "TuitionPlan", "Teacher", "Performance", "FamilyTask", "FamilyNote"] }
+                        items: { type: "string", enum: ["Student", "DanceClass", "StudioSettings", "TuitionPlan", "Teacher", "Performance", "FamilyTask", "FamilyNote", "PerformanceChat"] }
                     }
                 },
                 required: ["entities_needed"]
@@ -136,6 +137,7 @@ Deno.serve(async (req) => {
             - FamilyNote: create (parent_email, content, is_pinned)
             - StudentNote: create (student_name, content, category, sentiment)
             - Student: read (payload: { name: "student name" }) - Use this to look up detailed info if not in roster snapshot.
+            - Performance: create_draft (payload: { title: "string" }) - Use this when the user wants to PLAN/CREATE a new performance. This will create a draft and generate a link to the drafting table UI.
             - PerformanceProducer: invoke (action: "chat" | "generate_plan", chatHistory: array)
         `;
 
@@ -149,6 +151,10 @@ Deno.serve(async (req) => {
                 ${JSON.stringify(chatHistory.slice(-10))}
 
                 USER PROMPT: "${prompt}"
+
+                IMPORTANT: If the user wants to plan a new performance/recital/show, DO NOT chat with them here. 
+                Instead, use the 'Performance' -> 'create_draft' action. This will open the specialized drafting UI.
+                Example prompt: "Let's plan the spring recital" -> Action: Performance.create_draft { title: "Spring Recital" }
             `,
             response_json_schema: {
                 type: "object",
@@ -163,11 +169,11 @@ Deno.serve(async (req) => {
                         properties: {
                             entity: { 
                                 type: "string", 
-                                enum: ["FamilyTask", "FamilyNote", "StudentNote", "Student", "PerformanceProducer"] 
+                                enum: ["FamilyTask", "FamilyNote", "StudentNote", "Student", "PerformanceProducer", "Performance"] 
                             },
                             action: { 
                                 type: "string", 
-                                enum: ["create", "update", "read", "invoke"] 
+                                enum: ["create", "update", "read", "invoke", "create_draft"] 
                             },
                             payload: {
                                 type: "object",
@@ -268,6 +274,31 @@ Deno.serve(async (req) => {
                     if (!entity_id) throw new Error("Missing entity_id");
                     result = await base44.entities[entity].update(entity_id, payload);
                     actionResult = { type: 'success', entity, action, result };
+                } else if (action === 'create_draft' && entity === 'Performance') {
+                    // Create draft performance
+                    const newPerf = await base44.entities.Performance.create({
+                        title: payload.title || "New Draft Event",
+                        status: 'planning',
+                        date: new Date().toISOString().split('T')[0], // Default to today, user changes later
+                        description: "Draft created via Gene"
+                    });
+
+                    // Save the user's prompt as the first message to maintain context
+                    await base44.entities.PerformanceChat.create({
+                        performance_id: newPerf.id,
+                        role: 'user',
+                        content: prompt,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    // Generate Link
+                    // Assuming frontend is hosting at root. The UI will construct the full URL.
+                    // We'll return a relative path or an action result that the frontend chat component can interpret as a link.
+                    // Actually, let's just return a markdown link in the response text.
+                    
+                    const link = `/performances?mode=producer&id=${newPerf.id}`;
+                    responseText = `I've opened the Drafting Table for "${newPerf.title}". [Click here to start planning](${link})`;
+                    actionResult = { type: 'success', entity, action, result: newPerf, message: "Drafting Table Opened" };
                 }
 
             } catch (err) {
