@@ -14,6 +14,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import RoutineDetailSheet from './RoutineDetailSheet';
+import PerformanceTimeline from './PerformanceTimeline';
 
 // --- Conflict Helper ---
 // Checks if any student in routine A is also in routine B
@@ -133,6 +134,12 @@ export default function PerformanceDetail({ performanceId, onBack }) {
         queryFn: () => base44.entities.Student.list()
     });
 
+    // 4. Fetch Tasks
+    const { data: tasks = [] } = useQuery({
+        queryKey: ['tasks', performanceId],
+        queryFn: () => base44.entities.FamilyTask.list().then(list => list.filter(t => t.performance_id === performanceId))
+    });
+
     // --- Mutations ---
 
     const updatePerformance = useMutation({
@@ -211,9 +218,10 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     if (!performance) return <div className="p-8 text-center">Loading Quarterback View...</div>;
 
     return (
-        <div className="space-y-6">
-            {/* --- Quarterback Header --- */}
-            <div className="relative max-w-xl rounded-[32px] shadow-2xl group overflow-hidden text-white">
+    <div className="space-y-6">
+        {/* --- Quarterback Header & Timeline --- */}
+        <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+            <div className="relative max-w-xl w-full rounded-[32px] shadow-2xl group overflow-hidden text-white shrink-0">
                 {/* Background Image */}
                 <div 
                     className="absolute inset-0 z-0 bg-cover bg-center"
@@ -287,6 +295,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Timeline Section */}
+                <div className="flex-1 min-w-0">
+                    <PerformanceTimeline tasks={tasks} />
                 </div>
             </div>
 
