@@ -91,12 +91,18 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
     // Fetch context data
     const { data: studioSettings } = useQuery({
         queryKey: ['studioSettings'],
-        queryFn: () => base44.entities.StudioSettings.list().then(res => res[0])
+        queryFn: () => base44.entities.StudioSettings.list().then(res => res[0]),
+        enabled: !generatedPlan,
+        refetchOnWindowFocus: false,
+        refetchInterval: false
     });
 
     const { data: classes = [] } = useQuery({
         queryKey: ['allClasses'],
-        queryFn: () => base44.entities.DanceClass.list()
+        queryFn: () => base44.entities.DanceClass.list(),
+        enabled: !generatedPlan,
+        refetchOnWindowFocus: false,
+        refetchInterval: false
     });
 
     const getContext = () => ({

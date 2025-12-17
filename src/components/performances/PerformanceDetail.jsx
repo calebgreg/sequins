@@ -171,20 +171,18 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     const totalDurationSeconds = routines.reduce((acc, r) => acc + (r.duration_seconds || 0), 0);
     const totalDurationFormatted = `${Math.floor(totalDurationSeconds / 60)}m ${totalDurationSeconds % 60}s`;
 
-    if (!performance) return <div className="p-8 text-center">Loading Quarterback View...</div>;
+    if (!performance) return <div className="p-8 text-center text-pink-400">Loading Quarterback View...</div>;
 
     return (
-        <div className="space-y-6">
-            {/* --- Quarterback Header --- */}
-            <div className="bg-[#333333] text-white rounded-[32px] shadow-2xl relative group">
-                <div className="absolute inset-0 overflow-hidden rounded-[32px]">
-                    <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
-                </div>
+        <div className="space-y-6 p-6 min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 rounded-[32px]">
+            {/* --- Glassmorphic Header --- */}
+            <div className="bg-white/40 backdrop-blur-xl border border-white/50 shadow-xl rounded-[32px] p-8 relative overflow-hidden group transition-all hover:shadow-2xl hover:bg-white/50">
+                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-br from-pink-200/20 to-purple-200/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                 
-                <div className="relative z-10 p-8">
+                <div className="relative z-10">
                     <button 
                         onClick={onBack}
-                        className="flex items-center text-white/60 hover:text-white transition-colors mb-6 text-sm font-medium uppercase tracking-wider"
+                        className="flex items-center text-gray-500 hover:text-pink-600 transition-colors mb-6 text-sm font-medium uppercase tracking-wider"
                     >
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Events
                     </button>
@@ -195,28 +193,28 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                 <Input 
                                     value={formData.title || ''}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="text-4xl font-serif bg-white/10 border-white/20 text-white h-16 px-4 rounded-xl"
+                                    className="text-4xl font-serif bg-white/50 border-white/40 text-gray-800 h-16 px-4 rounded-xl shadow-inner focus:ring-pink-200"
                                 />
                             ) : (
-                                <h1 className="text-4xl md:text-5xl font-serif leading-tight">
+                                <h1 className="text-4xl md:text-5xl font-serif leading-tight text-gray-800 drop-shadow-sm">
                                     {performance.title}
                                 </h1>
                             )}
                             
-                            <div className="flex flex-wrap gap-6 text-sm text-white/70">
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                                    <Calendar className="w-4 h-4 text-indigo-300" />
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-2 bg-white/60 px-4 py-2 rounded-full border border-white/60 shadow-sm backdrop-blur-sm">
+                                    <Calendar className="w-4 h-4 text-pink-500" />
                                     {isEditing ? (
                                         <input 
                                             type="date" 
                                             value={formData.date || ''} 
                                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                            className="bg-transparent border-none text-white focus:outline-none"
+                                            className="bg-transparent border-none text-gray-700 focus:outline-none"
                                         />
                                     ) : format(new Date(performance.date), 'MMMM d, yyyy')}
                                 </div>
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                                    <MapPin className="w-4 h-4 text-pink-300" />
+                                <div className="flex items-center gap-2 bg-white/60 px-4 py-2 rounded-full border border-white/60 shadow-sm backdrop-blur-sm">
+                                    <MapPin className="w-4 h-4 text-purple-500" />
                                     {isEditing ? (
                                         <div className="relative">
                                             <input 
@@ -227,18 +225,18 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                     setShowSuggestions(true);
                                                 }}
                                                 onFocus={() => setShowSuggestions(true)}
-                                                className="bg-transparent border-none text-white focus:outline-none w-64 placeholder:text-white/50"
+                                                className="bg-transparent border-none text-gray-700 focus:outline-none w-64 placeholder:text-gray-400"
                                             />
                                             {showSuggestions && (suggestions.length > 0 || isFetchingSuggestions) && (
-                                                <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-lg shadow-xl text-gray-800 z-50 overflow-hidden text-sm">
+                                                <div className="absolute top-full left-0 mt-2 w-72 bg-white/90 backdrop-blur-xl rounded-lg shadow-xl text-gray-800 z-50 overflow-hidden text-sm border border-pink-100">
                                                     {isFetchingSuggestions && <div className="p-3 text-gray-400 text-xs">Loading...</div>}
                                                     {suggestions.map((s) => (
                                                         <div 
                                                             key={s.place_id}
                                                             onClick={() => handleVenueSelect(s.place_id, s.description)}
-                                                            className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
+                                                            className="p-3 hover:bg-pink-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
                                                         >
-                                                            <div className="font-bold text-[#333333]">{s.main_text}</div>
+                                                            <div className="font-bold text-gray-800">{s.main_text}</div>
                                                             <div className="text-xs text-gray-500 truncate">{s.secondary_text}</div>
                                                         </div>
                                                     ))}
@@ -258,8 +256,8 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                                    <Timer className="w-4 h-4 text-amber-300" />
+                                <div className="flex items-center gap-2 bg-white/60 px-4 py-2 rounded-full border border-white/60 shadow-sm backdrop-blur-sm">
+                                    <Timer className="w-4 h-4 text-amber-500" />
                                     <span>Run Time: {totalDurationFormatted}</span>
                                 </div>
                             </div>
@@ -274,13 +272,13 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                     setIsEditing(!isEditing);
                                 }}
                                 variant="outline" 
-                                className="bg-transparent text-white border-white/20 hover:bg-white/10"
+                                className="bg-white/40 text-gray-700 border-white/60 hover:bg-white/60 hover:text-pink-600 rounded-full shadow-sm backdrop-blur-sm transition-all"
                             >
                                 {isEditing ? 'Save' : 'Edit Details'}
                             </Button>
                             <Button 
                                 onClick={() => toast.info("Show Mode is coming soon!", { description: "This feature will allow you to run the show in real-time." })}
-                                className="bg-white text-[#333333] hover:bg-gray-100 font-bold shadow-lg shadow-black/20"
+                                className="bg-white/80 text-pink-600 hover:bg-white hover:text-pink-700 font-bold shadow-lg shadow-pink-100/50 rounded-full border border-pink-100 transition-all"
                             >
                                 <PlayCircle className="w-4 h-4 mr-2" /> Start Show Mode
                             </Button>
@@ -290,13 +288,13 @@ export default function PerformanceDetail({ performanceId, onBack }) {
             </div>
 
             {/* --- Main Workspace --- */}
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-6xl mx-auto pt-4">
 
-                {/* Run Sheet (The Quarterback View) */}
+                {/* Run Sheet (Glassmorphic Table) */}
                 <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-serif text-[#333333] flex items-center gap-2">
-                            Run Sheet <Badge className="bg-gray-100 text-gray-500">{routines.length} Acts</Badge>
+                    <div className="flex items-center justify-between px-2">
+                        <h2 className="text-2xl font-serif text-gray-800 flex items-center gap-2">
+                            Run Sheet <Badge className="bg-pink-100 text-pink-600 border-pink-200 hover:bg-pink-200">{routines.length} Acts</Badge>
                         </h2>
                         
                         {/* Quick Add Routine */}
@@ -305,16 +303,17 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                 value={newRoutineTitle}
                                 onChange={(e) => setNewRoutineTitle(e.target.value)}
                                 placeholder="Add new routine..."
-                                className="bg-white border-gray-200 w-64 rounded-xl"
+                                className="bg-white/60 border-white/60 w-64 rounded-xl shadow-sm focus:ring-pink-200 backdrop-blur-sm"
                             />
-                            <Button type="submit" disabled={!newRoutineTitle.trim()} className="rounded-xl">
+                            <Button type="submit" disabled={!newRoutineTitle.trim()} className="rounded-xl bg-pink-500 hover:bg-pink-600 text-white shadow-md shadow-pink-200">
                                 <Plus className="w-4 h-4" />
                             </Button>
                         </form>
                     </div>
 
-                    <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden p-2">
-                        <div className="px-6 py-3 grid grid-cols-12 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 mb-2">
+                    <div className="bg-white/30 backdrop-blur-xl border border-white/50 rounded-[32px] shadow-xl overflow-hidden p-4 relative">
+                        {/* Header Row */}
+                        <div className="px-6 py-4 grid grid-cols-12 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-white/40 mb-2">
                             <div className="col-span-1 text-center">#</div>
                             <div className="col-span-6">Routine Details</div>
                             <div className="col-span-3">Status</div>
@@ -327,10 +326,10 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                     <div 
                                         {...provided.droppableProps}
                                         ref={provided.innerRef}
-                                        className="space-y-2"
+                                        className="space-y-3"
                                     >
                                         {routines.map((routine, index) => {
-                                            // Conflict Check: Look at previous routine
+                                            // Conflict Check
                                             const prevRoutine = index > 0 ? routines[index - 1] : null;
                                             const conflicts = prevRoutine ? findConflicts(prevRoutine, routine) : [];
                                             const hasConflict = conflicts.length > 0;
@@ -346,31 +345,34 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                 setSelectedSection('general');
                                                             }}
                                                             className={`
-                                                                relative rounded-2xl border transition-all duration-200 group cursor-pointer
-                                                                ${snapshot.isDragging ? 'bg-white shadow-2xl scale-105 z-50 border-indigo-200' : 'bg-white border-transparent hover:border-indigo-100 hover:bg-gray-50'}
+                                                                relative rounded-2xl border transition-all duration-300 group cursor-pointer backdrop-blur-md
+                                                                ${snapshot.isDragging 
+                                                                    ? 'bg-white/90 shadow-2xl scale-105 z-50 border-pink-200 ring-2 ring-pink-100' 
+                                                                    : 'bg-white/50 border-white/40 hover:bg-white/70 hover:border-pink-100 hover:shadow-lg hover:shadow-pink-50/50'
+                                                                }
                                                             `}
                                                         >
                                                             {/* Conflict Alert Line */}
                                                             {hasConflict && (
-                                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 bg-red-100 text-red-600 px-3 py-1 rounded-full text-[10px] font-bold shadow-sm flex items-center gap-1 border border-red-200">
+                                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 bg-red-50/90 backdrop-blur-sm text-red-500 px-3 py-1 rounded-full text-[10px] font-bold shadow-sm flex items-center gap-1 border border-red-100">
                                                                     <AlertTriangle className="w-3 h-3" />
                                                                     Quick Change: {conflicts.length} Dancers
                                                                 </div>
                                                             )}
 
-                                                            <div className="grid grid-cols-12 items-center p-3">
+                                                            <div className="grid grid-cols-12 items-center p-4">
                                                                 {/* Handle & Number */}
                                                                 <div className="col-span-1 flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                                                    <div {...provided.dragHandleProps} className="text-gray-300 cursor-grab active:cursor-grabbing hover:text-gray-500">
+                                                                    <div {...provided.dragHandleProps} className="text-gray-300 cursor-grab active:cursor-grabbing hover:text-pink-400 transition-colors">
                                                                         <GripVertical className="w-4 h-4" />
                                                                     </div>
-                                                                    <span className="font-mono font-bold text-gray-400 text-lg">{index + 1}</span>
+                                                                    <span className="font-mono font-bold text-gray-300 text-lg group-hover:text-pink-300 transition-colors">{index + 1}</span>
                                                                 </div>
 
                                                                 {/* Details */}
-                                                                <div className="col-span-6 pr-4 border-r border-gray-100/50">
+                                                                <div className="col-span-6 pr-4 border-r border-white/30">
                                                                     <div 
-                                                                        className="font-bold text-[#333333] text-base group-hover:text-indigo-600 transition-colors"
+                                                                        className="font-bold text-gray-800 text-lg group-hover:text-pink-600 transition-colors"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             setSelectedRoutine(routine);
@@ -379,17 +381,17 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                     >
                                                                         {routine.title}
                                                                     </div>
-                                                                    <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
+                                                                    <div className="text-xs text-gray-500 flex items-center gap-2 mt-1">
                                                                         <div 
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
                                                                                 setSelectedRoutine(routine);
                                                                                 setSelectedSection('music');
                                                                             }}
-                                                                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md cursor-pointer transition-colors ${
+                                                                            className={`flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer transition-all border ${
                                                                                 routine.song_title 
-                                                                                    ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' 
-                                                                                    : 'text-gray-300 hover:text-gray-400 hover:bg-gray-100'
+                                                                                    ? 'text-indigo-600 bg-indigo-50/50 border-indigo-100 hover:bg-indigo-100 hover:border-indigo-200' 
+                                                                                    : 'text-gray-400 bg-gray-50/50 border-transparent hover:bg-gray-100'
                                                                             }`}
                                                                         >
                                                                             <Music className="w-3 h-3" /> 
@@ -404,19 +406,23 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                                 setSelectedRoutine(routine);
                                                                                 setSelectedSection('performers');
                                                                             }}
-                                                                            className="flex items-center gap-1 cursor-pointer hover:text-indigo-600 transition-colors"
+                                                                            className="flex items-center gap-1 cursor-pointer hover:text-pink-600 transition-colors px-1 py-0.5 rounded hover:bg-pink-50"
                                                                         >
                                                                             <Users className="w-3 h-3" /> {routine.performers?.length || 0}
                                                                         </div>
                                                                     </div>
                                                                 </div>
 
-                                                                {/* Status */}
-                                                                <div className="col-span-3 px-4">
+                                                                {/* Status Icons */}
+                                                                <div className="col-span-3 px-6">
                                                                     <div className="flex gap-2">
                                                                          {/* Music Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.song_title ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-300'}`}
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.song_title 
+                                                                                    ? 'bg-blue-50/80 text-blue-500 border-blue-100' 
+                                                                                    : 'bg-gray-50/50 text-gray-300 border-transparent'
+                                                                             }`}
                                                                              title={routine.song_title ? "Music Set" : "No music"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('music'); }}
                                                                          >
@@ -425,7 +431,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                          
                                                                          {/* Costume Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.costume_details ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.costume_details 
+                                                                                    ? 'bg-pink-50/80 text-pink-500 border-pink-100' 
+                                                                                    : 'bg-gray-50/50 text-gray-300 border-transparent'
+                                                                             }`} 
                                                                              title={routine.costume_details ? "Costumes Detailed" : "No costume details"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('costumes'); }}
                                                                          >
@@ -434,7 +444,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                                                                          {/* Lighting Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.lighting_notes ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.lighting_notes 
+                                                                                    ? 'bg-amber-50/80 text-amber-500 border-amber-100' 
+                                                                                    : 'bg-gray-50/50 text-gray-300 border-transparent'
+                                                                             }`} 
                                                                              title={routine.lighting_notes ? "Lighting Notes" : "No lighting details"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('lighting'); }}
                                                                          >
@@ -443,7 +457,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                                                                          {/* Choreography/Notes Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.notes ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.notes 
+                                                                                    ? 'bg-purple-50/80 text-purple-500 border-purple-100' 
+                                                                                    : 'bg-gray-50/50 text-gray-300 border-transparent'
+                                                                             }`} 
                                                                              title={routine.notes ? "Choreography Notes" : "No notes"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('choreography'); }}
                                                                          >
@@ -451,7 +469,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                          </div>
                                                                     </div>
                                                                     {hasConflict && (
-                                                                        <div className="text-[10px] text-red-500 mt-2 leading-tight flex items-center gap-1 font-medium">
+                                                                        <div className="text-[10px] text-red-400 mt-2 leading-tight flex items-center gap-1 font-medium pl-1">
                                                                             <AlertTriangle className="w-3 h-3" /> Quick Change
                                                                         </div>
                                                                     )}
@@ -459,13 +477,13 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                                                                 {/* Actions & Time */}
                                                                 <div className="col-span-2 text-right flex items-center justify-end gap-3">
-                                                                    <span className="font-mono text-sm text-gray-500">
+                                                                    <span className="font-mono text-sm text-gray-500 font-medium">
                                                                         {Math.floor(routine.duration_seconds / 60)}:{(routine.duration_seconds % 60).toString().padStart(2, '0')}
                                                                     </span>
                                                                     <Button 
                                                                         variant="ghost" 
                                                                         size="icon" 
-                                                                        className="h-8 w-8 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                        className="h-8 w-8 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full opacity-0 group-hover:opacity-100 transition-all"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             if (confirm("Delete this routine?")) deleteRoutine.mutate(routine.id);
@@ -487,22 +505,25 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                         </DragDropContext>
                         
                         {routines.length === 0 && (
-                            <div className="py-12 text-center text-gray-400 text-sm">
-                                Drag and drop routines here to build your show.
+                            <div className="py-16 text-center text-gray-400 text-sm flex flex-col items-center">
+                                <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                                    <Plus className="w-6 h-6 text-pink-300" />
+                                </div>
+                                <p>Drag and drop routines here to build your show.</p>
                             </div>
                         )}
                     </div>
-                    </div>
+                </div>
 
-                    <RoutineDetailSheet 
+                <RoutineDetailSheet 
                     routine={selectedRoutine} 
                     open={!!selectedRoutine} 
                     onOpenChange={(open) => !open && setSelectedRoutine(null)}
                     allStudents={students}
                     selectedSection={selectedSection}
-                    />
+                />
 
-                    </div>
+            </div>
         </div>
     );
 }
