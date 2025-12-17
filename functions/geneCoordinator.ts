@@ -297,8 +297,8 @@ Deno.serve(async (req) => {
                     // Actually, let's just return a markdown link in the response text.
                     
                     const link = `/performances?mode=producer&id=${newPerf.id}`;
-                    responseText = `I've opened the Drafting Table for "${newPerf.title}". [Click here to start planning](${link})`;
-                    actionResult = { type: 'success', entity, action, result: newPerf, message: "Drafting Table Opened" };
+                    responseText = `I've opened Backstage for "${newPerf.title}". [Click here to start planning](${link})`;
+                    actionResult = { type: 'success', entity, action, result: newPerf, message: "Backstage Opened" };
                 }
 
             } catch (err) {

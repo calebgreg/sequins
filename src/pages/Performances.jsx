@@ -141,7 +141,7 @@ export default function PerformancesPage() {
                         className="bg-[#333333] hover:bg-black text-white rounded-full px-8 h-12 shadow-lg shadow-gray-200 transition-all hover:scale-105 group"
                     >
                         <PenTool className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" /> 
-                        Open Drafting Table
+                        Enter Backstage
                     </Button>
                 </div>
             </div>

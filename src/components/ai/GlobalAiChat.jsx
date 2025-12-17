@@ -61,7 +61,7 @@ const MessageItem = ({ message }) => {
                         onClick={() => navigate(`/performances?mode=producer&id=${result?.id}`)}
                         className="w-full mt-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 h-8 text-xs font-semibold shadow-none justify-between group"
                     >
-                        Open Drafting Table
+                        Enter Backstage
                         <ArrowRightCircle className="w-4 h-4 text-indigo-400 group-hover:text-indigo-600" />
                     </Button>
                 </div>

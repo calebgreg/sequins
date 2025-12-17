@@ -245,7 +245,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                             onClick={() => navigate(`/performances?mode=producer&id=${performanceId}`)}
                             className="bg-white/10 hover:bg-white/20 text-white rounded-full h-9 shadow-lg shadow-white/5 transition-all text-xs flex items-center gap-2 border border-white/10"
                         >
-                            <PenTool className="w-3 h-3" /> Open Drafting Table
+                            <PenTool className="w-3 h-3" /> Enter Backstage
                         </Button>
                     </div>
 
