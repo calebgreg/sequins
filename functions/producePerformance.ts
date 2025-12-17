@@ -385,6 +385,7 @@ Deno.serve(async (req) => {
         }
 
         const { action = 'chat', chatHistory, context, existingPlan } = body;
+        console.log(`[Producer] Action: ${action}`);
 
         // --- PHASE 1: CHAT ---
         if (action === 'chat') {
