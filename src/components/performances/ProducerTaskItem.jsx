@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckSquare, Plus } from 'lucide-react';
+import { CheckSquare, Plus, Calendar, Clock, AlertCircle } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { toast } from 'sonner';
+import { format, parseISO } from 'date-fns';
 
 export default function ProducerTaskItem({ task }) {
     const [isAdded, setIsAdded] = useState(false);
@@ -18,7 +19,8 @@ export default function ProducerTaskItem({ task }) {
                 status: 'pending',
                 category: 'event',
                 priority: task.priority === 'critical' ? 'high' : (task.priority === 'high' ? 'medium' : 'low'),
-                is_shared: true
+                is_shared: true,
+                due_date: task.due_date || undefined
             });
             setIsAdded(true);
             toast.success("Task added to project board");
@@ -56,6 +58,27 @@ export default function ProducerTaskItem({ task }) {
                 <div className="font-medium text-sm text-[#333333] leading-snug group-hover:text-indigo-700 transition-colors">
                     {task.task}
                 </div>
+                
+                {/* Timeline Info */}
+                {task.due_date && (
+                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                        <div className={`flex items-center gap-1 font-medium ${task.days_from_now < 7 ? 'text-orange-600' : ''}`}>
+                            <Calendar className="w-3 h-3" />
+                            {format(parseISO(task.due_date), 'MMM d')}
+                        </div>
+                        {task.days_from_now !== undefined && (
+                            <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {task.days_from_now < 0 ? (
+                                    <span className="text-red-500 font-bold">Overdue</span>
+                                ) : (
+                                    <span>In {task.days_from_now} days</span>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="flex items-center gap-2 mt-2">
                     <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal bg-gray-100 text-gray-500 border border-gray-200 group-hover:border-indigo-100 group-hover:bg-indigo-50 group-hover:text-indigo-600">
                         {task.department}

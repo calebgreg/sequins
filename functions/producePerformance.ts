@@ -319,6 +319,37 @@ Each task needs:
 - Priority (critical/high/medium/low)
 - Due milestone (concept_lock / 1_month_out / tech_week / show_day / post_show)
 
+**PRODUCTION TIMELINE GENERATION:**
+If show_date exists in context, calculate a reverse-engineered production timeline.
+Work BACKWARDS from show_date to establish these key milestones:
+- Show Day: [show_date]
+- Tech Week Start: show_date minus 7 days
+- Final Dress Rehearsal: show_date minus 10 days
+- Last Costume Fitting: show_date minus 21 days (3 weeks)
+- Costume Orders Due: show_date minus 42 days (6 weeks)
+- Music Finalized: show_date minus 56 days (8 weeks)
+- Choreography Complete: show_date minus 56 days (8 weeks)
+- Concept Lock/Kickoff: show_date minus 84 days (12 weeks)
+
+For EVERY task in production_tasks array, add these additional fields:
+{
+  "department": "costume",
+  "task": "Order all costumes from Weissman",
+  "detail": "15 sequined jazz pants, 12 tutus, etc",
+  "priority": "critical",
+  "due_milestone": "6_weeks_before",
+  "due_date": "2025-03-15",        // NEW: Actual ISO date (YYYY-MM-DD)
+  "days_from_now": 42,             // NEW: Number of days from today to due_date
+  "days_before_show": 42           // NEW: Number of days from due_date to show_date
+}
+Calculate dates using standard date math:
+- due_date = show_date - (milestone offset in days)
+- days_from_now = due_date - today's date
+- days_before_show = show_date - due_date
+
+Use today's date as the reference point for calculating "days_from_now".
+All dates should be in ISO format (YYYY-MM-DD).
+
 **7. STRUCTURE FOLLOWS CONVERSATION**
 If they discussed a traditional recital → each class gets one segment
 If they discussed a story show → segments follow narrative flow
