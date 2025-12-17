@@ -58,7 +58,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     // Debounce logic for venue search
     useEffect(() => {
         const timer = setTimeout(async () => {
-            if (isEditing && venueSearch.length > 2 && showSuggestions) {
+            if (venueSearch.length > 2 && showSuggestions) {
                 setIsFetchingSuggestions(true);
                 try {
                     const { data } = await base44.functions.invoke('googlePlacesAutocomplete', { query: venueSearch });
@@ -74,7 +74,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [venueSearch, isEditing, showSuggestions]);
+    }, [venueSearch, showSuggestions]);
 
     const handleVenueSelect = async (placeId, description) => {
         setVenueSearch(description);
