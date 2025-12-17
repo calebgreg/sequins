@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
                         responseText = data.response_text || "Plan generated successfully.";
                         actionResult = { type: 'success', entity, action, result: data.generated_plan, message: "Performance Plan Created" };
                     } else {
-                        responseText = data.response_text || "I've consulted the producer.";
+                        responseText = data.content || data.response_text || "I've consulted the producer.";
                         // We don't necessarily need an actionResult for pure chat, but helpful for debugging
                         actionResult = { type: 'success', entity, action, result: "Chat continued" };
                     }
