@@ -19,8 +19,25 @@ import ProducerWorkspace from '../components/performances/ProducerWorkspace';
 export default function PerformancesPage() {
     const [selectedPerformanceId, setSelectedPerformanceId] = useState(null);
 
-    const [view, setView] = useState('list'); // 'list' | 'producer'
+    // URL Param Handling for Deep Links
+    const queryParams = new URLSearchParams(window.location.search);
+    const modeParam = queryParams.get('mode');
+    const idParam = queryParams.get('id');
+
+    const [view, setView] = useState(modeParam === 'producer' ? 'producer' : 'list'); // 'list' | 'producer'
     const [searchQuery, setSearchQuery] = useState('');
+    
+    // If URL has ID and we are in producer mode, pass it to the workspace
+    // If URL has ID but NOT producer mode, select it for detail view
+    React.useEffect(() => {
+        if (idParam) {
+            if (modeParam === 'producer') {
+                setView('producer');
+            } else {
+                setSelectedPerformanceId(idParam);
+            }
+        }
+    }, [idParam, modeParam]);
 
     const queryClient = useQueryClient();
 
@@ -91,8 +108,14 @@ export default function PerformancesPage() {
     if (view === 'producer') {
         return (
             <ProducerWorkspace 
-                onCancel={() => setView('list')}
+                performanceId={modeParam === 'producer' ? idParam : null}
+                onCancel={() => {
+                    // Clear URL params on cancel
+                    window.history.pushState({}, '', '/performances');
+                    setView('list');
+                }}
                 onPlanCreated={(id) => {
+                    window.history.pushState({}, '', '/performances');
                     setView('list');
                     setSelectedPerformanceId(id);
                 }}
