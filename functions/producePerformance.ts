@@ -299,7 +299,10 @@ If vendor doesn't have good options for a style, note it in costume_concept.
 - If timing is vague → use industry standards (3-4 min for younger classes, 4-5 min for advanced)
 
 **6. GENERATE COMPREHENSIVE TASKS**
-Break the show into concrete to-dos across departments:
+Break the show into concrete to-dos across departments.
+CRITICAL: ALWAYS generate at least 5-10 standard tasks even if specific details weren't discussed. Infer standard requirements for this type of show.
+
+Departments:
 - **Music**: Editing tracks, licensing, creating playlist
 - **Costumes**: Measuring, ordering, fittings, alterations
 - **Admin**: Ticketing, parent communications, programs
@@ -370,7 +373,7 @@ Deno.serve(async (req) => {
         CONVERSATION HISTORY:
         ${conversation}
 
-        (Note: Reply as Sequins. Maintain a balanced focus on all production elements.)`;
+        (Note: Reply as Sequins. DO NOT use the prefix "SEQUINS:" in your response. Maintain a balanced focus on all production elements.)`;
 
             try {
                 console.log("[Producer] Invoking LLM for chat...");

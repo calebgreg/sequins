@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import ProducerTaskItem from './ProducerTaskItem';
 import ProducerCostumeEnricher from './ProducerCostumeEnricher';
+import VenueSearch from './VenueSearch';
 
 export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
     const [chatHistory, setChatHistory] = useState([
@@ -45,7 +46,8 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
         title: '',
         date: new Date().toISOString().split('T')[0],
         type: 'recital',
-        venue: ''
+        venue: '',
+        venueData: null // Store full google place object
     });
 
     // Fetch context data
@@ -136,12 +138,20 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
             // Determine final data sources
             const finalTitle = eventDetails.title || (plan?.extracted_intake?.theme_or_story_seed) || "New Production";
             
+            // Use full venue data if available, otherwise fallback to just the name string
+            let venueObj = null;
+            if (eventDetails.venueData) {
+                venueObj = eventDetails.venueData;
+            } else if (eventDetails.venue) {
+                venueObj = { venue_name: eventDetails.venue };
+            }
+
             const performanceData = {
                 title: finalTitle,
                 date: eventDetails.date,
                 status: 'planning',
                 type: eventDetails.type,
-                venue: eventDetails.venue ? { venue_name: eventDetails.venue } : null,
+                venue: venueObj,
                 description: plan?.producer_writeup || "Manually created event."
             };
             
@@ -195,7 +205,7 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
             // Reset state
             setGeneratedPlan(null);
             setCurrentInput('');
-            setEventDetails({ title: '', date: '', type: 'recital', venue: '' });
+            setEventDetails({ title: '', date: '', type: 'recital', venue: '', venueData: null });
         },
         onError: (err) => {
             toast.error("Failed to save event.");
@@ -342,15 +352,15 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
 
                                             <div className="space-y-2">
                                                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Venue</label>
-                                                <div className="relative">
-                                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                                    <Input 
-                                                        value={eventDetails.venue}
-                                                        onChange={(e) => setEventDetails({...eventDetails, venue: e.target.value})}
-                                                        placeholder="Venue Name"
-                                                        className="h-10 pl-9 bg-[#F9F9FB] border-gray-100"
-                                                    />
-                                                </div>
+                                                <VenueSearch 
+                                                    value={eventDetails.venue}
+                                                    onChange={(val) => setEventDetails(prev => ({...prev, venue: val}))}
+                                                    onSelect={(data) => setEventDetails(prev => ({
+                                                        ...prev, 
+                                                        venue: data?.venue_name || prev.venue,
+                                                        venueData: data 
+                                                    }))}
+                                                />
                                             </div>
                                         </div>
 
