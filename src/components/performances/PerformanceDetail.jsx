@@ -413,8 +413,8 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                         {hasConflict && (
                                                                             <>
                                                                                 <span className="w-1 h-1 bg-rose-300/50 rounded-full" />
-                                                                                <div className="flex items-center gap-1 text-rose-600 font-bold bg-rose-100/50 px-2 py-0.5 rounded-full border border-rose-200/50 shadow-sm text-[10px] animate-pulse">
-                                                                                    <AlertTriangle className="w-3 h-3" />
+                                                                                <div className="flex items-center gap-1 text-rose-600 font-medium bg-rose-50/80 px-2 py-0.5 rounded-full border border-rose-100 shadow-sm text-[10px]">
+                                                                                    <Timer className="w-3 h-3" />
                                                                                     <span>Quick Change ({conflicts.length})</span>
                                                                                 </div>
                                                                             </>
