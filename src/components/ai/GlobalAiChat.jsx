@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { 
     Sparkles, ArrowUp, X, Globe, Calendar, ExternalLink, 
-    Command, Bot, Search, CornerDownLeft, CheckCircle2
+    Command, Bot, Search, CornerDownLeft, CheckCircle2,
+    ArrowRightCircle, LayoutTemplate
 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import useAiAssistant from './useAiAssistant';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
@@ -26,6 +29,61 @@ const LinkPreview = ({ data }) => (
 
 const MessageItem = ({ message }) => {
     const isAi = message.role === 'assistant';
+    const navigate = useNavigate();
+
+    const handleLinkClick = (e, href) => {
+        if (href && href.startsWith('/')) {
+            e.preventDefault();
+            navigate(href);
+        }
+    };
+
+    // Special rendering for specific actions
+    const renderActionFeedback = () => {
+        if (!message.action || message.action.type !== 'action_executed') return null;
+        
+        const { entity, action, result } = message.action.details;
+
+        // Custom UI for Performance Drafts
+        if (entity === 'Performance' && action === 'create_draft') {
+            return (
+                <div className="mt-3 bg-white border border-indigo-100 rounded-xl p-3 shadow-sm">
+                    <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-[#333333] flex items-center justify-center text-white shrink-0">
+                            <LayoutTemplate className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Draft Started</div>
+                            <h4 className="font-serif text-gray-900 font-medium truncate">{result?.title || 'New Performance'}</h4>
+                        </div>
+                    </div>
+                    <Button 
+                        onClick={() => navigate(`/performances?mode=producer&id=${result?.id}`)}
+                        className="w-full mt-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 h-8 text-xs font-semibold shadow-none justify-between group"
+                    >
+                        Open Drafting Table
+                        <ArrowRightCircle className="w-4 h-4 text-indigo-400 group-hover:text-indigo-600" />
+                    </Button>
+                </div>
+            );
+        }
+
+        // Generic friendly feedback
+        let userFriendlyText = `${action} ${entity}`;
+        if (action === 'create') userFriendlyText = `Created new ${entity.replace(/([A-Z])/g, ' $1').trim().toLowerCase()}`;
+        if (action === 'update') userFriendlyText = `Updated ${entity.replace(/([A-Z])/g, ' $1').trim().toLowerCase()}`;
+        if (action === 'read') userFriendlyText = `Checked ${entity.replace(/([A-Z])/g, ' $1').trim().toLowerCase()} records`;
+
+        return (
+            <div className="mt-3 flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50/80 p-2 rounded-lg border border-emerald-100/50">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>
+                    {userFriendlyText}
+                    {result?.title && <span className="text-emerald-600/80 font-normal"> — "{result.title}"</span>}
+                </span>
+            </div>
+        );
+    };
 
     return (
         <div className={`flex flex-col mb-4 w-full ${isAi ? 'items-start' : 'items-end'}`}>
@@ -46,7 +104,15 @@ const MessageItem = ({ message }) => {
                         <ReactMarkdown 
                             components={{
                                 p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />,
-                                a: ({node, ...props}) => <a className="underline font-semibold hover:opacity-80" target="_blank" rel="noopener noreferrer" {...props} />,
+                                a: ({node, ...props}) => (
+                                    <a 
+                                        {...props} 
+                                        onClick={(e) => handleLinkClick(e, props.href)}
+                                        className="underline font-semibold hover:opacity-80 cursor-pointer" 
+                                        target={props.href?.startsWith('/') ? undefined : "_blank"}
+                                        rel={props.href?.startsWith('/') ? undefined : "noopener noreferrer"}
+                                    />
+                                ),
                                 ul: ({node, ...props}) => <ul className="list-disc pl-4 space-y-1 my-2" {...props} />,
                                 ol: ({node, ...props}) => <ol className="list-decimal pl-4 space-y-1 my-2" {...props} />,
                             }}
@@ -55,15 +121,7 @@ const MessageItem = ({ message }) => {
                         </ReactMarkdown>
 
                         {/* Action Feedback */}
-                        {message.action && message.action.type === 'action_executed' && (
-                            <div className="mt-3 flex items-center gap-2 text-xs font-medium text-green-600 bg-green-50/50 p-2 rounded-lg border border-green-100">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                <span>
-                                    {message.action.details.action} {message.action.details.entity}
-                                    {message.action.details.result?.title && `: "${message.action.details.result.title}"`}
-                                </span>
-                            </div>
-                        )}
+                        {renderActionFeedback()}
                     </div>
                 )}
 
