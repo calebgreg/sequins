@@ -16,91 +16,137 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Prompt is required' }, { status: 400 });
         }
 
-        // 1. Fetch Context Data (Omnipotent View)
-        // We fetch key entities to help the LLM understand names, schedules, and existing data.
-        const [students, classes, settingsList, plans, teachers, performances] = await Promise.all([
-            base44.entities.Student.list(),
-            base44.entities.DanceClass.list(),
-            base44.entities.StudioSettings.list(),
-            base44.entities.TuitionPlan.list(),
-            base44.entities.Teacher.list(),
-            base44.entities.Performance.list(),
-        ]);
+        // --- PASS 1: INTENT DETECTION (Fast, Low Context) ---
+        console.log(`[Gene] Pass 1: analyzing intent for "${prompt.substring(0, 50)}..."`);
+        
+        const intentResponse = await base44.integrations.Core.InvokeLLM({
+            prompt: `
+                SYSTEM: You are the routing layer for Gene, a dance studio AI.
+                TASK: Analyze the user prompt to determine which database entities are needed to answer.
+                
+                USER PROMPT: "${prompt}"
+                
+                AVAILABLE DATA CATEGORIES:
+                - Student: Roster info, finding a person, checking enrollment, ages, parents.
+                - DanceClass: Schedule, time, class details, day of week.
+                - Performance: Upcoming events, recitals, shows, dates.
+                - Teacher: Staff info, bios.
+                - TuitionPlan: Pricing plans, billing info.
+                - FamilyTask: Tasks, to-dos.
+                - FamilyNote: Notes on families.
+                
+                SPECIAL CASES:
+                - If the user talks about "planning a show", "production", "costumes", "run sheet", or "the producer", you NEED: 'Performance', 'DanceClass', 'StudioSettings'.
+                - If the user asks a general question unrelated to data (e.g. "write a poem"), request NO entities.
+                - Always request 'StudioSettings' if you need the studio name or AI persona details (default to requesting it if unsure).
+            `,
+            response_json_schema: {
+                type: "object",
+                properties: {
+                    intent: { type: "string", description: "Brief description of intent" },
+                    entities_needed: { 
+                        type: "array", 
+                        items: { type: "string", enum: ["Student", "DanceClass", "StudioSettings", "TuitionPlan", "Teacher", "Performance", "FamilyTask", "FamilyNote"] }
+                    }
+                },
+                required: ["entities_needed"]
+            }
+        });
 
-        const settings = settingsList[0] || {};
+        const entitiesToFetch = new Set(intentResponse.entities_needed || []);
+        // Always ensure Settings is fetched for AI persona consistency, unless explicitly empty (though safe to always add)
+        entitiesToFetch.add("StudioSettings");
+
+        console.log(`[Gene] Intent: ${intentResponse.intent}. Fetching: [${Array.from(entitiesToFetch).join(', ')}]`);
+
+        // --- FETCH DATA (Parallel) ---
+        const dataMap = {};
+        const fetchPromises = [];
+
+        const fetchEntity = async (name) => {
+            try {
+                // Using standard list for now. Could be optimized with filters later.
+                const list = await base44.entities[name].list();
+                dataMap[name] = list;
+            } catch (err) {
+                console.warn(`[Gene] Failed to fetch ${name}`, err);
+                dataMap[name] = [];
+            }
+        };
+
+        for (const entity of entitiesToFetch) {
+            fetchPromises.push(fetchEntity(entity));
+        }
+
+        await Promise.all(fetchPromises);
+
+        // --- CONSTRUCT CONTEXT (Pass 2 Prep) ---
+        const settings = (dataMap["StudioSettings"] || [])[0] || {};
         const aiName = settings.ai_assistant_name || 'Gene';
+        
+        // Build efficient context string based ONLY on what was fetched
+        let dynamicContext = "";
 
-        // Filter and format context for the LLM to save tokens while providing utility
-        const activeStudents = students.filter(s => s.status === 'active');
-        const rosterContext = activeStudents.map(s => 
-            `Name: ${s.name}, ID: ${s.id}, ParentEmail: ${s.parent_email || 'N/A'}, Age: ${s.age}`
-        ).join('\n');
+        if (dataMap["Student"]) {
+            const activeStudents = dataMap["Student"].filter(s => s.status === 'active');
+            dynamicContext += `\nROSTER (${activeStudents.length} active students):\n` + 
+                activeStudents.map(s => `Name: ${s.name}, ID: ${s.id}, ParentEmail: ${s.parent_email || 'N/A'}, Age: ${s.age}`).join('\n');
+        }
 
-        const classContext = classes.map(c => 
-            `${c.title} (${c.style}) on ${c.day} @ ${c.start_time}:00`
-        ).join('\n');
+        if (dataMap["DanceClass"]) {
+            dynamicContext += `\nSCHEDULE:\n` + 
+                dataMap["DanceClass"].map(c => `${c.title} (${c.style}) on ${c.day} @ ${c.start_time}:00`).join('\n');
+        }
 
-        const performanceContext = performances.map(p => {
-            const venueName = typeof p.venue === 'object' ? (p.venue?.venue_name || 'TBD') : (p.venue || 'TBD');
-            return `Event: ${p.title} | Date: ${p.date} | Status: ${p.status} | Venue: ${venueName} | Description: ${p.description || 'N/A'}`;
-        }).join('\n');
+        if (dataMap["Performance"]) {
+            dynamicContext += `\nUPCOMING EVENTS:\n` + 
+                dataMap["Performance"].map(p => {
+                    const venueName = typeof p.venue === 'object' ? (p.venue?.venue_name || 'TBD') : (p.venue || 'TBD');
+                    return `Event: ${p.title} | Date: ${p.date} | Status: ${p.status} | Venue: ${venueName}`;
+                }).join('\n');
+        }
 
-        const teacherContext = teachers.map(t => t.name).join(', ');
+        if (dataMap["Teacher"]) {
+            dynamicContext += `\nSTAFF: ` + dataMap["Teacher"].map(t => t.name).join(', ') + `\n`;
+        }
+
+        if (dataMap["TuitionPlan"]) {
+            dynamicContext += `\nPRICING PLANS: ` + dataMap["TuitionPlan"].map(p => `${p.name} ($${p.amount})`).join(', ') + `\n`;
+        }
 
         const systemContext = `
-            You are ${aiName}, the intelligent coordinator and operating system for ${settings.name || 'the dance studio'}.
-            You are assisting ${user.full_name || 'a staff member'}.
+            You are ${aiName}, the intelligent coordinator for ${settings.name || 'the dance studio'}.
+            Assisting user: ${user.full_name || 'Staff'}.
 
             YOUR CAPABILITIES:
-            You can answer questions and DIRECTLY EXECUTE actions on the database.
-            You can also route complex performance planning requests to the "PerformanceProducer" (Sequins) agent.
+            1. Answer questions using the retrieved data context.
+            2. Execute ACTIONS on the database (create tasks, notes, etc).
+            3. Route complex planning requests to the "PerformanceProducer" (Sequins).
 
-            AVAILABLE DATA CONTEXT:
-            - Students: ${activeStudents.length} active students
-            - Teachers: ${teacherContext}
-            - Classes: ${classes.length} scheduled classes
-            - Performances: ${performances.length} upcoming events
+            RETRIEVED DATA CONTEXT:
+            ${dynamicContext || "(No specific database data retrieved for this query)"}
             
-            ROSTER SNAPSHOT (Use for resolving names to emails/IDs):
-            ${rosterContext}
-
-            SCHEDULE SNAPSHOT:
-            ${classContext}
-
-            UPCOMING PERFORMANCES / EVENTS:
-            ${performanceContext}
-
             INSTRUCTIONS:
-            1. Analyze the user's request.
-            2. If it's a question, answer it based on the context.
-            3. If it's an ACTION (create, update, delete), you MUST output the 'tool_call' JSON.
-            
+            - If the user asks for personal info not in context, use the 'read' action (e.g. Student lookup).
+            - If data is missing, say so.
+            - Default 'due_date' for tasks is today (${new Date().toISOString().split('T')[0]}).
+
             SUPPORTED ENTITIES & ACTIONS:
             - FamilyTask: create (title, due_date, parent_email, priority, category)
             - FamilyNote: create (parent_email, content, is_pinned)
             - StudentNote: create (student_name, content, category, sentiment)
-            - Student: update (id, status, notes, etc) - *Use with caution*
-            - Student: read (payload: { name: "student name" }) - Use this to look up details like phone, email, address, etc.
+            - Student: read (payload: { name: "student name" }) - Use this to look up detailed info if not in roster snapshot.
             - PerformanceProducer: invoke (action: "chat" | "generate_plan", chatHistory: array)
-                - Use action: "chat" for planning discussions (themes, music, costumes).
-                - Use action: "generate_plan" ONLY when user explicitly asks to finalize/create the plan.
-                - payload MUST include 'chatHistory' array: combine the PREVIOUS CHAT CONTEXT with the current USER PROMPT.
-                - payload MUST include 'context' object (studio settings, classes, etc).
-
-            IMPORTANT:
-            - If the user asks for personal info (phone, email, etc.) that isn't in the context, use the 'read' action to look it up.
-            - When creating FamilyTask or FamilyNote, you MUST resolve a name to a 'parent_email' from the Roster.
-            - If you cannot resolve a name to a specific entity, ask for clarification instead of guessing.
-            - Default 'due_date' for tasks is today (${new Date().toISOString().split('T')[0]}).
         `;
 
-        // 2. Invoke LLM with flexible tool schema
+        // --- PASS 2: EXECUTION & RESPONSE ---
+        // Full context call to generate answer or tool call
         const llmResponse = await base44.integrations.Core.InvokeLLM({
             prompt: `
                 ${systemContext}
 
                 PREVIOUS CHAT CONTEXT:
-                ${JSON.stringify(chatHistory)}
+                ${JSON.stringify(chatHistory.slice(-10))}
 
                 USER PROMPT: "${prompt}"
             `,
@@ -109,11 +155,11 @@ Deno.serve(async (req) => {
                 properties: {
                     response_text: { 
                         type: "string", 
-                        description: "The conversational response to the user. If an action was taken, confirm it here." 
+                        description: "Conversational response to the user." 
                     },
                     tool_call: {
                         type: "object",
-                        description: "The action to execute, if any",
+                        description: "Action to execute if needed",
                         properties: {
                             entity: { 
                                 type: "string", 
@@ -125,12 +171,9 @@ Deno.serve(async (req) => {
                             },
                             payload: {
                                 type: "object",
-                                description: "The data for the entity. MUST match the entity schema."
+                                description: "Data for the action"
                             },
-                            entity_id: {
-                                type: "string",
-                                description: "Required only for 'update' actions"
-                            }
+                            entity_id: { type: "string" }
                         },
                         required: ["entity", "action", "payload"]
                     }
@@ -142,27 +185,25 @@ Deno.serve(async (req) => {
         let responseText = llmResponse.response_text;
         let actionResult = null;
 
-        // 3. Coordinator Logic: Execute the Tool Call
+        // --- EXECUTE TOOL CALL ---
         if (llmResponse.tool_call) {
             const { entity, action, payload, entity_id } = llmResponse.tool_call;
-            
-            console.log(`[GeneCoordinator] Executing ${action} on ${entity}`, payload);
+            console.log(`[Gene] Executing ${action} on ${entity}`);
 
             try {
-                // Dynamic execution based on entity and action
-                // Security check: We are running as the user (base44 initialized with req), 
-                // so standard RLS (Row Level Security) applies automatically.
-                
                 let result;
 
                 if (entity === 'PerformanceProducer') {
-                    // Performance Producer Routing
+                    // Lazy Fetch Fallback: Ensure we have classes/settings if Pass 1 missed them
+                    let producerClasses = dataMap["DanceClass"];
+                    if (!producerClasses) producerClasses = await base44.entities.DanceClass.list();
+                    
                     const produceContext = {
                         studio: { 
                             studio_name: settings.name || "My Dance Studio",
                             costume_vendors: settings.costume_vendors || []
                         },
-                        classes: classes.filter(c => c.type !== 'admin').map(c => ({
+                        classes: producerClasses.filter(c => c.type !== 'admin').map(c => ({
                             class_id: c.id,
                             name: c.title,
                             style: c.style || c.title,
@@ -170,10 +211,9 @@ Deno.serve(async (req) => {
                             approx_length_minutes: (c.duration || 1) * 60,
                             notes: `Taught by ${c.teacher || 'Staff'}`
                         })),
-                        event_details: {} // Extracted by producer from chat
+                        event_details: {} 
                     };
 
-                    // Call the sub-agent
                     const producerResponse = await base44.functions.invoke('producePerformance', {
                         action: payload.action || 'chat',
                         chatHistory: payload.chatHistory || [{ role: 'user', content: prompt }],
@@ -181,74 +221,59 @@ Deno.serve(async (req) => {
                     });
 
                     const data = producerResponse.data;
-                    
                     if (data.generated_plan) {
-                        responseText = data.response_text || "Plan generated successfully.";
-                        actionResult = { type: 'success', entity, action, result: data.generated_plan, message: "Performance Plan Created" };
+                        responseText = data.response_text || "Plan generated.";
+                        actionResult = { type: 'success', entity, action, result: data.generated_plan, message: "Plan Created" };
                     } else {
+                        // FIX: Correctly reading content from producer response
                         responseText = data.content || data.response_text || "I've consulted the producer.";
-                        // We don't necessarily need an actionResult for pure chat, but helpful for debugging
                         actionResult = { type: 'success', entity, action, result: "Chat continued" };
                     }
 
-                } else if (action === 'read') {
-                    // Handle Read/Lookup Action
-                    if (entity === 'Student') {
-                        const searchName = (payload.name || '').toLowerCase();
-                        // Search in the already fetched students list (memory cache) for efficiency
-                        const foundStudent = students.find(s => s.name.toLowerCase().includes(searchName));
+                } else if (action === 'read' && entity === 'Student') {
+                    const searchName = (payload.name || '').toLowerCase();
+                    // Lazy Fetch Fallback
+                    let searchPool = dataMap["Student"];
+                    if (!searchPool) searchPool = await base44.entities.Student.list();
+                    
+                    const foundStudent = searchPool.find(s => s.name.toLowerCase().includes(searchName));
 
-                        if (foundStudent) {
-                            // Re-invoke LLM with the found data to generate the natural language answer
-                            const answer = await base44.integrations.Core.InvokeLLM({
-                                prompt: `
-                                    SYSTEM: You are Gene.
-                                    CONTEXT: The user asked a question about ${foundStudent.name}.
-                                    RETRIEVED DATA: ${JSON.stringify(foundStudent)}
-
-                                    USER ORIGINAL QUESTION: "${prompt}"
-
-                                    INSTRUCTION: Answer the user's question directly using the RETRIEVED DATA. Be concise and professional.
-                                `
-                            });
-
-                            // Update the response text to the user
-                            responseText = typeof answer === 'string' ? answer : answer.response_text || "Found the information.";
-
-                            // We successfully answered, no need for a generic "Action Executed" toast for a simple question
-                            actionResult = null; 
-                        } else {
-                            responseText = `I couldn't find a student named "${payload.name}".`;
-                            actionResult = { type: 'error', message: 'Student not found' };
-                        }
+                    if (foundStudent) {
+                        // Pass 3 (Mini): Answer specific question about student
+                        const answer = await base44.integrations.Core.InvokeLLM({
+                            prompt: `
+                                SYSTEM: You are Gene.
+                                CONTEXT: User asked about ${foundStudent.name}.
+                                DATA: ${JSON.stringify(foundStudent)}
+                                QUESTION: "${prompt}"
+                                ANSWER:
+                            `
+                        });
+                        responseText = typeof answer === 'string' ? answer : answer.response_text || "Found info.";
+                        actionResult = null;
+                    } else {
+                        responseText = `I couldn't find a student named "${payload.name}".`;
+                        actionResult = { type: 'error', message: 'Student not found' };
                     }
+
                 } else if (action === 'create') {
-                    // Enrich payload with metadata if needed
-                    if (entity === 'FamilyNote') {
-                        payload.author_name = user.full_name || 'Gene AI';
-                    }
-                    if (entity === 'FamilyTask') {
-                        if (!payload.assigned_to) payload.assigned_to = user.full_name;
-                    }
-                    if (entity === 'StudentNote') {
-                        if (!payload.date) payload.date = new Date().toISOString().split('T')[0];
-                    }
+                    // Enrich payload defaults
+                    if (entity === 'FamilyNote') payload.author_name = user.full_name || 'Gene AI';
+                    if (entity === 'FamilyTask' && !payload.assigned_to) payload.assigned_to = user.full_name;
+                    if (entity === 'StudentNote' && !payload.date) payload.date = new Date().toISOString().split('T')[0];
 
                     result = await base44.entities[entity].create(payload);
                     actionResult = { type: 'success', entity, action, result };
                 } else if (action === 'update') {
-                    if (!entity_id) throw new Error("Missing entity_id for update action");
+                    if (!entity_id) throw new Error("Missing entity_id");
                     result = await base44.entities[entity].update(entity_id, payload);
                     actionResult = { type: 'success', entity, action, result };
                 }
-                
-                // Append confirmation to text if not present (optional, LLM usually handles this in response_text)
-                // but we can add a system flag for the frontend to show a nice checkmark
-                
+
             } catch (err) {
-                console.error(`[GeneCoordinator] Action Failed:`, err);
+                console.error(`[Gene] Action Error:`, err);
                 actionResult = { type: 'error', message: err.message };
-                responseText += `\n\n(System Note: I tried to perform the action, but encountered an error: ${err.message})`;
+                responseText += `\n(Error executing action: ${err.message})`;
             }
         }
 
