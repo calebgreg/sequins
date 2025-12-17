@@ -409,6 +409,16 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                         >
                                                                             <Users className="w-3 h-3" /> {routine.performers?.length || 0}
                                                                         </div>
+
+                                                                        {hasConflict && (
+                                                                            <>
+                                                                                <span className="w-1 h-1 bg-rose-300/50 rounded-full" />
+                                                                                <div className="flex items-center gap-1 text-rose-600 font-bold bg-rose-100/50 px-2 py-0.5 rounded-full border border-rose-200/50 shadow-sm text-[10px] animate-pulse">
+                                                                                    <AlertTriangle className="w-3 h-3" />
+                                                                                    <span>Quick Change ({conflicts.length})</span>
+                                                                                </div>
+                                                                            </>
+                                                                        )}
                                                                     </div>
                                                                 </div>
 
@@ -467,12 +477,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                              <Footprints className="w-3.5 h-3.5" />
                                                                          </div>
                                                                     </div>
-                                                                    {hasConflict && (
-                                                                         <div className="mt-2 flex items-center gap-1.5 text-[10px] font-bold text-rose-600 bg-rose-100/50 px-2 py-1 rounded-lg border border-rose-200/50 w-fit backdrop-blur-sm">
-                                                                             <AlertTriangle className="w-3 h-3" />
-                                                                             <span>Quick Change ({conflicts.length})</span>
-                                                                         </div>
-                                                                     )}
+
                                                                 </div>
 
                                                                 {/* Actions & Time */}
