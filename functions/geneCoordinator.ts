@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
                         event_details: {} 
                     };
 
-                    const producerResponse = await base44.functions.invoke('producePerformance', {
+                    const producerResponse = await base44.functions.invoke('producePerformanceV2', {
                         action: payload.action || 'chat',
                         chatHistory: payload.chatHistory || [{ role: 'user', content: prompt }],
                         context: produceContext

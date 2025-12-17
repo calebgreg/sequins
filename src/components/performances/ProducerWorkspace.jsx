@@ -189,7 +189,7 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
             }
             
             // 3. Invoke AI
-            const response = await base44.functions.invoke('producePerformance', {
+            const response = await base44.functions.invoke('producePerformanceV2', {
                 action: 'chat',
                 chatHistory: optimisticHistory,
                 context: getContext()
@@ -221,7 +221,7 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
     // Phase 2: Finalize/Update Plan (JSON)
     const finalizePlanMutation = useMutation({
         mutationFn: async () => {
-            const response = await base44.functions.invoke('producePerformance', {
+            const response = await base44.functions.invoke('producePerformanceV2', {
                 action: 'generate_plan',
                 chatHistory: chatHistory,
                 context: getContext(),
@@ -336,7 +336,7 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                     if (eventDetails.date) {
                         try {
                             toast.info("Generating production timeline...");
-                            const { data: timelineData } = await base44.functions.invoke('producePerformance', {
+                            const { data: timelineData } = await base44.functions.invoke('producePerformanceV2', {
                                 action: 'generate_timeline_milestones',
                                 show_date: eventDetails.date,
                                 performance_id: targetPerformanceId,
@@ -361,6 +361,7 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                     onSuccess: (data) => {
                     queryClient.invalidateQueries({ queryKey: ['performances'] });
                     queryClient.invalidateQueries({ queryKey: ['performance'] });
+                    queryClient.invalidateQueries({ queryKey: ['tasks'] });
                     toast.success(performanceId ? "Event saved successfully!" : "Event created successfully!");
                     onPlanCreated(data.id);
                     },
