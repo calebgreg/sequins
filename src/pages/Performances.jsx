@@ -170,29 +170,40 @@ export default function PerformancesPage() {
                                                                     {...provided.dragHandleProps}
                                                                     onClick={() => setSelectedPerformanceId(perf.id)}
                                                                     className={`
-                                                                        bg-white mb-4 rounded-2xl border p-5 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing group
-                                                                        ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-xl ring-2 ring-indigo-500 z-50' : 'border-gray-100'}
+                                                                        relative mb-4 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all cursor-grab active:cursor-grabbing group overflow-hidden
+                                                                        ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-2xl ring-2 ring-white/50 z-50' : ''}
                                                                     `}
                                                                     style={provided.draggableProps.style}
                                                                 >
-                                                                    <div className="flex justify-between items-start mb-3">
-                                                                        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                                                                            {format(new Date(perf.date), 'MMM d, yyyy')}
-                                                                        </div>
-                                                                        <div className="p-1.5 bg-gray-50 rounded-full text-gray-400">
-                                                                            {perf.type === 'competition' ? <Trophy className="w-3 h-3" /> : <Star className="w-3 h-3" />}
-                                                                        </div>
-                                                                    </div>
-                                                                    
-                                                                    <h3 className="font-serif text-lg text-[#333333] mb-3 leading-snug group-hover:text-indigo-600 transition-colors h-14 line-clamp-2">
-                                                                        {perf.title}
-                                                                    </h3>
+                                                                    {/* Background Image */}
+                                                                    <div 
+                                                                        className="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                                                                        style={{ 
+                                                                            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692b7ce31c9c985decfff75a/4500517ed_Gemini_Generated_Image_2u5n1l2u5n1l2u5n.png)',
+                                                                        }}
+                                                                    />
+                                                                    <div className="absolute inset-0 bg-black/10 z-0 group-hover:bg-black/0 transition-colors" />
 
-                                                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                                        <MapPin className="w-3 h-3 text-gray-300" />
-                                                                        <span className="truncate">
-                                                                            {perf.venue?.venue_name || (typeof perf.venue === 'string' ? perf.venue : 'No venue set')}
-                                                                        </span>
+                                                                    <div className="relative z-10">
+                                                                        <div className="flex justify-between items-start mb-3">
+                                                                            <div className="text-[10px] font-bold uppercase tracking-wider text-white/70">
+                                                                                {format(new Date(perf.date), 'MMM d, yyyy')}
+                                                                            </div>
+                                                                            <div className="p-1.5 bg-white/10 backdrop-blur-md rounded-full text-white border border-white/20">
+                                                                                {perf.type === 'competition' ? <Trophy className="w-3 h-3" /> : <Star className="w-3 h-3" />}
+                                                                            </div>
+                                                                        </div>
+                                                                        
+                                                                        <h3 className="font-serif text-lg text-white mb-3 leading-snug group-hover:text-white/90 transition-colors h-14 line-clamp-2 drop-shadow-md">
+                                                                            {perf.title}
+                                                                        </h3>
+
+                                                                        <div className="flex items-center gap-2 text-xs text-white/70">
+                                                                            <MapPin className="w-3 h-3 text-white/50" />
+                                                                            <span className="truncate">
+                                                                                {perf.venue?.venue_name || (typeof perf.venue === 'string' ? perf.venue : 'No venue set')}
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             )}
