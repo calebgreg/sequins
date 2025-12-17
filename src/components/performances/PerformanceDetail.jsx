@@ -310,9 +310,9 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
             {/* Timeline Section */}
             <div className="flex-1 min-w-0">
-                <PerformanceTimeline tasks={tasks} />
+                <PerformanceTimeline tasks={tasks} milestones={performance?.timeline_milestones} />
             </div>
-        </div>
+            </div>
 
             {/* --- Main Workspace --- */}
             <div className="max-w-6xl mx-auto">

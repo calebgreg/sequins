@@ -326,18 +326,42 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                     }));
 
                     if (tasksToCreate.length > 0) {
-                         await base44.entities.FamilyTask.bulkCreate(tasksToCreate);
+                                 await base44.entities.FamilyTask.bulkCreate(tasksToCreate);
+                            }
+                        }
                     }
-                }
-            }
 
-            return { id: targetPerformanceId };
-        },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries(['performances']);
-            toast.success(performanceId ? "Event saved successfully!" : "Event created successfully!");
-            onPlanCreated(data.id);
-        },
+                    // --- TRIGGER AUTOMATIC TIMELINE GENERATION ---
+                    // If we have a date and it's a new or updated event, generate the milestones
+                    if (eventDetails.date) {
+                        try {
+                            toast.info("Generating production timeline...");
+                            const { data: timelineData } = await base44.functions.invoke('producePerformance', {
+                                action: 'generate_timeline_milestones',
+                                show_date: eventDetails.date,
+                                performance_id: targetPerformanceId
+                            });
+
+                            if (timelineData?.timeline_milestones) {
+                                // Update the performance with the new milestones
+                                await base44.entities.Performance.update(targetPerformanceId, {
+                                    timeline_milestones: timelineData.timeline_milestones
+                                });
+                                toast.success("Timeline created and tasks assigned!");
+                            }
+                        } catch (err) {
+                            console.error("Failed to generate timeline", err);
+                            toast.error("Event saved, but timeline generation failed.");
+                        }
+                    }
+
+                    return { id: targetPerformanceId };
+                    },
+                    onSuccess: (data) => {
+                    queryClient.invalidateQueries(['performances']);
+                    toast.success(performanceId ? "Event saved successfully!" : "Event created successfully!");
+                    onPlanCreated(data.id);
+                    },
         onError: (err) => {
             toast.error("Failed to save event.");
             console.error(err);

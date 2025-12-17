@@ -500,6 +500,146 @@ Deno.serve(async (req) => {
             }
         }
 
+        // --- PHASE 3: GENERATE TIMELINE MILESTONES (With Task Creation) ---
+        if (action === 'generate_timeline_milestones') {
+            const { show_date, performance_id } = body;
+            
+            if (!show_date || !performance_id) {
+                 return Response.json({ error: "Missing show_date or performance_id" }, { status: 400 });
+            }
+
+            const TIMELINE_SCHEMA = {
+                "type": "object",
+                "properties": {
+                    "timeline_milestones": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": { "type": "string" },
+                                "name": { "type": "string" },
+                                "due_date": { "type": "string", "format": "date" },
+                                "days_from_now": { "type": "integer" },
+                                "days_before_show": { "type": "integer" },
+                                "tasks": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "task": { "type": "string" },
+                                            "priority": { "type": "string", "enum": ["critical", "high", "medium", "low"] }
+                                        },
+                                        "required": ["task", "priority"]
+                                    }
+                                }
+                            },
+                            "required": ["id", "name", "due_date", "days_from_now", "days_before_show", "tasks"]
+                        }
+                    }
+                },
+                "required": ["timeline_milestones"]
+            };
+
+            const timelinePrompt = `
+            You are a Production Manager creating a master timeline for a dance show.
+            
+            Show Date: ${show_date}
+            Today: ${new Date().toISOString().split('T')[0]}
+
+            Generate a backward-planned timeline with these exact milestones (if dates are in the past, still include them but note they are overdue):
+            1. Show Day (Day 0)
+            2. Tech Week Start (1 week out)
+            3. Final Costume Fitting (3 weeks out)
+            4. Music & Choreography Lock (8 weeks out)
+            5. Ticket Sales Live (8 weeks out)
+            6. Costume Ordering Deadline (12 weeks out)
+            7. Concept & Budget Lock (16 weeks out)
+
+            For each milestone, include 2-3 critical actionable tasks.
+            `;
+
+            try {
+                // 1. Generate Timeline Structure
+                const aiResponse = await base44.integrations.Core.InvokeLLM({
+                    prompt: timelinePrompt,
+                    response_json_schema: TIMELINE_SCHEMA,
+                    add_context_from_internet: false
+                });
+
+                const milestones = aiResponse.timeline_milestones;
+
+                // 2. Create FamilyTasks for each item
+                // We'll mutate the milestones array to include the created family_task_ids
+                const tasksToCreate = [];
+
+                for (const milestone of milestones) {
+                    if (milestone.tasks) {
+                        milestone.tasks.forEach(t => {
+                            tasksToCreate.push({
+                                title: t.task,
+                                description: `Generated Milestone Task: ${milestone.name}\nDue Date: ${milestone.due_date}`,
+                                status: 'pending',
+                                category: 'event',
+                                priority: t.priority,
+                                due_date: milestone.due_date,
+                                performance_id: performance_id,
+                                is_shared: true
+                            });
+                        });
+                    }
+                }
+
+                if (tasksToCreate.length > 0) {
+                     // Bulk create tasks
+                     // Note: We can't easily map the IDs back to the specific milestone task object in one go without more complex logic 
+                     // because bulkCreate doesn't guarantee order or return mapped objects in a way we can easily zip back 1:1 if we don't have unique keys.
+                     // However, for this requirement, we just need to CREATE them. 
+                     // The requirement "each item on the timeline needs to have a corresponding project made" is satisfied by creating them.
+                     // The UI can query FamilyTasks by performance_id to show them generally, 
+                     // OR we can just save them.
+                     
+                     // To strictly link them in the JSON (so the timeline UI knows which task ID belongs to which bullet point), 
+                     // we would need to create them one by one or batch carefully.
+                     // Let's create them and just store them. 
+                     // For the UI to show "view task" link, we ideally want the ID.
+                     // Let's do a simple loop for now to be safe and get IDs, or just fire and forget if volume is low.
+                     // Given it's ~15-20 tasks total, parallel creation is fine.
+                     
+                     const createdTasks = await Promise.all(tasksToCreate.map(async (taskData) => {
+                         try {
+                             return await base44.entities.FamilyTask.create(taskData);
+                         } catch (e) {
+                             console.error("Failed to create task", e);
+                             return null;
+                         }
+                     }));
+
+                     // 3. (Optional) Map back IDs? 
+                     // Since we flattened the list, mapping back is tricky without a pointer.
+                     // Let's actually iterate milestone-by-milestone to keep structure intact if we want to store IDs.
+                     
+                     let taskIndex = 0;
+                     for (const milestone of milestones) {
+                         if (milestone.tasks) {
+                             for (const t of milestone.tasks) {
+                                 const createdTask = createdTasks[taskIndex];
+                                 if (createdTask) {
+                                     t.family_task_id = createdTask.id;
+                                 }
+                                 taskIndex++;
+                             }
+                         }
+                     }
+                }
+
+                return Response.json({ timeline_milestones: milestones });
+
+            } catch (err) {
+                console.error("[Producer] Timeline Generation Error:", err);
+                return Response.json({ error: "Failed to generate timeline." }, { status: 500 });
+            }
+        }
+
         // --- PHASE 3: ENRICH COSTUMES (Per Routine) ---
         if (action === 'enrich_costume') {
             const { segment, context } = body;
