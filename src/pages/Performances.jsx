@@ -123,13 +123,13 @@ export default function PerformancesPage() {
             </div>
 
             {/* Filter/Search Bar */}
-            <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 w-full md:w-auto self-start">
-                <Search className="w-5 h-5 text-gray-400 ml-2" />
+            <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 w-full max-w-xs self-start">
+                <Search className="w-4 h-4 text-gray-400 ml-2" />
                 <Input 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search events..."
-                    className="border-none shadow-none focus-visible:ring-0 w-full md:w-64"
+                    className="border-none shadow-none focus-visible:ring-0 flex-1 min-w-0 h-9"
                 />
             </div>
 
