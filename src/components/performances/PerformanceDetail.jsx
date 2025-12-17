@@ -176,19 +176,15 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     return (
         <div className="space-y-6">
             {/* --- Quarterback Header --- */}
-            <div className="bg-[#333333] text-white rounded-[32px] shadow-2xl relative group overflow-hidden">
-                {/* Sequin Shimmer Effect */}
-                <div className="absolute inset-0 z-0 opacity-20 pointer-events-none mix-blend-overlay"
-                     style={{ 
-                         backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)',
-                         backgroundSize: '20px 20px' 
-                     }}
+            <div className="relative rounded-[32px] shadow-2xl group overflow-hidden">
+                {/* Background Image */}
+                <div 
+                    className="absolute inset-0 z-0 bg-cover bg-center"
+                    style={{ 
+                        backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692b7ce31c9c985decfff75a/4500517ed_Gemini_Generated_Image_2u5n1l2u5n1l2u5n.png)',
+                    }}
                 />
-                <div className="absolute inset-0 z-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-60" />
-
-                <div className="absolute inset-0 overflow-hidden rounded-[32px] pointer-events-none">
-                    <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
-                </div>
+                <div className="absolute inset-0 bg-black/20 z-0" /> {/* Slight overlay for text readability if needed */}
                 
                 <div className="relative z-10 p-8">
                     <button 
