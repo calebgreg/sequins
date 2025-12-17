@@ -296,12 +296,13 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                         </div>
                     </div>
                 </div>
-
-                {/* Timeline Section */}
-                <div className="flex-1 min-w-0">
-                    <PerformanceTimeline tasks={tasks} />
-                </div>
             </div>
+
+            {/* Timeline Section */}
+            <div className="flex-1 min-w-0">
+                <PerformanceTimeline tasks={tasks} />
+            </div>
+        </div>
 
             {/* --- Main Workspace --- */}
             <div className="max-w-6xl mx-auto">
