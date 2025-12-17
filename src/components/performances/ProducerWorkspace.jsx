@@ -19,38 +19,92 @@ import ProducerTaskItem from './ProducerTaskItem';
 import ProducerCostumeEnricher from './ProducerCostumeEnricher';
 import VenueSearch from './VenueSearch';
 
-export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
-    // Load state from localStorage if available to prevent data loss
-    const [chatHistory, setChatHistory] = useState(() => {
-        try {
-            const saved = localStorage.getItem('sequins_draft_chat');
-            return saved ? JSON.parse(saved) : [{ role: 'assistant', content: "I'm ready. What are we working on?" }];
-        } catch (e) {
-            return [{ role: 'assistant', content: "I'm ready. What are we working on?" }];
-        }
-    });
+export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreated }) {
+    // State
+    const [chatHistory, setChatHistory] = useState([{ role: 'assistant', content: "I'm ready. What are we working on?" }]);
     const [currentInput, setCurrentInput] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [isFinalizing, setIsFinalizing] = useState(false);
-    const [generatedPlan, setGeneratedPlan] = useState(() => {
-        try {
-            const saved = localStorage.getItem('sequins_draft_plan');
-            return saved ? JSON.parse(saved) : null;
-        } catch (e) { return null; }
+    const [generatedPlan, setGeneratedPlan] = useState(null);
+
+    // --- DB SYNC MODE (If performanceId provided) ---
+    const { data: dbPerformance } = useQuery({
+        queryKey: ['performance', performanceId],
+        queryFn: () => base44.entities.Performance.list().then(list => list.find(p => p.id === performanceId)),
+        enabled: !!performanceId
     });
 
-    // Auto-save effects
+    const { data: dbChatHistory } = useQuery({
+        queryKey: ['performance_chat', performanceId],
+        queryFn: async () => {
+             const chats = await base44.entities.PerformanceChat.list(); // Should filter by performance_id if possible, doing client side for now as list() fetches all? Or use filter()
+             // Assuming filter is supported or we filter client side. 
+             // Ideally: base44.entities.PerformanceChat.filter({ performance_id: performanceId })
+             // Checking context, SDK supports filter.
+             return base44.entities.PerformanceChat.filter({ performance_id: performanceId });
+        },
+        enabled: !!performanceId
+    });
+
+    // Initialize/Sync State
     useEffect(() => {
-        localStorage.setItem('sequins_draft_chat', JSON.stringify(chatHistory));
-    }, [chatHistory]);
+        if (performanceId) {
+            // DB Mode: Sync from DB
+            if (dbPerformance) {
+                setEventDetails(prev => ({
+                    ...prev,
+                    title: dbPerformance.title,
+                    date: dbPerformance.date,
+                    type: dbPerformance.type || 'recital',
+                    venue: dbPerformance.venue?.venue_name || (typeof dbPerformance.venue === 'string' ? dbPerformance.venue : ''),
+                    venueData: typeof dbPerformance.venue === 'object' ? dbPerformance.venue : null
+                }));
+            }
+            if (dbChatHistory && dbChatHistory.length > 0) {
+                // Sort by timestamp
+                const sorted = [...dbChatHistory].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                // Add system intro if empty? Or just use DB.
+                // If it's the very first load and only 1 user msg exists (from Gene), we might want to append the assistant intro locally if not in DB.
+                // But let's just map DB to chat format
+                const mapped = sorted.map(c => ({ role: c.role, content: c.content }));
+                // If the last message is from user, we might want to trigger a reply? 
+                // But Gene coordinator creates the draft AND the user message. 
+                // The assistant reply "I've opened the drafting table" is in the main chat, not here.
+                // So here we should probably start with an intro if only user msg exists.
+                // Let's just set it.
+                
+                // If the chat history from DB doesn't have a welcome message, add one visually?
+                // Actually, let's just use what's in DB.
+                setChatHistory(mapped);
+            }
+        } else {
+            // LocalStorage Mode (Legacy/Manual)
+            try {
+                const savedChat = localStorage.getItem('sequins_draft_chat');
+                if (savedChat) setChatHistory(JSON.parse(savedChat));
+                
+                const savedPlan = localStorage.getItem('sequins_draft_plan');
+                if (savedPlan) setGeneratedPlan(JSON.parse(savedPlan));
+
+                const savedDetails = localStorage.getItem('sequins_draft_details');
+                if (savedDetails) setEventDetails(JSON.parse(savedDetails));
+            } catch (e) { }
+        }
+    }, [performanceId, dbPerformance, dbChatHistory]);
+
+    // Auto-save (Local Mode Only)
+    useEffect(() => {
+        if (!performanceId) {
+            localStorage.setItem('sequins_draft_chat', JSON.stringify(chatHistory));
+        }
+    }, [chatHistory, performanceId]);
 
     useEffect(() => {
-        if (generatedPlan) {
-            localStorage.setItem('sequins_draft_plan', JSON.stringify(generatedPlan));
-        } else {
-            localStorage.removeItem('sequins_draft_plan');
+        if (!performanceId) {
+            if (generatedPlan) localStorage.setItem('sequins_draft_plan', JSON.stringify(generatedPlan));
+            else localStorage.removeItem('sequins_draft_plan');
         }
-    }, [generatedPlan]);
+    }, [generatedPlan, performanceId]);
             const scrollRef = useRef(null);
 
     // Auto-scroll to bottom of chat
@@ -62,31 +116,21 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
     const [activeTab, setActiveTab] = useState('tasks');
     const queryClient = useQueryClient();
 
-    // Manual Event Details State
-    const [eventDetails, setEventDetails] = useState(() => {
-        try {
-            const saved = localStorage.getItem('sequins_draft_details');
-            return saved ? JSON.parse(saved) : {
-                title: '',
-                date: new Date().toISOString().split('T')[0],
-                type: 'recital',
-                venue: '',
-                venueData: null
-            };
-        } catch (e) {
-            return {
-                title: '',
-                date: new Date().toISOString().split('T')[0],
-                type: 'recital',
-                venue: '',
-                venueData: null
-            };
-        }
+    // Event Details State
+    const [eventDetails, setEventDetails] = useState({
+        title: '',
+        date: new Date().toISOString().split('T')[0],
+        type: 'recital',
+        venue: '',
+        venueData: null
     });
 
+    // Auto-save details locally only if no performanceId
     useEffect(() => {
-        localStorage.setItem('sequins_draft_details', JSON.stringify(eventDetails));
-    }, [eventDetails]);
+        if (!performanceId) {
+            localStorage.setItem('sequins_draft_details', JSON.stringify(eventDetails));
+        }
+    }, [eventDetails, performanceId]);
 
     // Fetch context data
     const { data: studioSettings } = useQuery({
@@ -126,17 +170,41 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
     // Phase 1: Chat Interaction
     const chatMutation = useMutation({
         mutationFn: async (newMessage) => {
-            const newHistory = [...chatHistory, { role: 'user', content: newMessage }];
-            setChatHistory(newHistory); // Optimistic update
+            // 1. Optimistic Update
+            const optimisticHistory = [...chatHistory, { role: 'user', content: newMessage }];
+            setChatHistory(optimisticHistory); 
+
+            // 2. Persist User Message if DB Mode
+            if (performanceId) {
+                await base44.entities.PerformanceChat.create({
+                    performance_id: performanceId,
+                    role: 'user',
+                    content: newMessage,
+                    timestamp: new Date().toISOString()
+                });
+            }
             
+            // 3. Invoke AI
             const response = await base44.functions.invoke('producePerformance', {
                 action: 'chat',
-                chatHistory: newHistory,
+                chatHistory: optimisticHistory,
                 context: getContext()
             });
+            
+            // 4. Persist AI Response if DB Mode
+            if (performanceId && response.data) {
+                await base44.entities.PerformanceChat.create({
+                    performance_id: performanceId,
+                    role: 'assistant',
+                    content: response.data.content, // ensure content is extracted
+                    timestamp: new Date().toISOString()
+                });
+            }
+
             return response.data;
         },
         onSuccess: (aiMessage) => {
+            // Update state with the returned AI message
             setChatHistory(prev => [...prev, aiMessage]);
             setIsGenerating(false);
         },
@@ -196,12 +264,83 @@ export default function ProducerWorkspace({ onCancel, onPlanCreated }) {
                 status: 'planning',
                 type: eventDetails.type,
                 venue: venueObj,
-                description: plan?.producer_writeup || "Manually created event."
+                description: plan?.producer_writeup || "Event plan updated."
             };
             
-            const newPerf = await base44.entities.Performance.create(performanceData);
+            let targetPerformanceId = performanceId;
+
+            if (performanceId) {
+                // UPDATE existing
+                await base44.entities.Performance.update(performanceId, performanceData);
+            } else {
+                // CREATE new
+                const newPerf = await base44.entities.Performance.create(performanceData);
+                targetPerformanceId = newPerf.id;
+            }
 
             // Create routines only if we have a generated plan
+            // Note: If updating, we might duplicate routines if we run this multiple times. 
+            // For now, assuming this is a "Save/Finalize" action.
+            // Ideally should clear old routines if re-generating, but that's risky.
+            // Let's assume this is a one-time "Publish Plan" action for now or append.
+            // Since this runs when clicking "Save", checking if routines exist is smart.
+            
+            if (plan && plan.show_plan && plan.show_plan.run_of_show) {
+                const routines = plan.show_plan.run_of_show
+                    .filter(segment => segment.segment_type === 'performance')
+                    .map((segment) => ({
+                        performance_id: targetPerformanceId,
+                        title: segment.title,
+                        order_index: segment.order,
+                        duration_seconds: Math.round(segment.estimated_minutes * 60),
+                        class_id: segment.class_id,
+                        notes: segment.stage_action, // Mapped from stage_action
+                        costume_details: segment.costume_concept,
+                        costume_product_suggestions: segment.costume_product_suggestions,
+                        lighting_notes: segment.visual_concept,
+                        song_title: segment.music_selection?.title,
+                        artist: segment.music_selection?.artist
+                    }));
+
+                if (routines.length > 0) {
+                    await base44.entities.PerformanceRoutine.bulkCreate(routines);
+                }
+                
+                // Automatically create tasks
+                if (plan && plan.show_plan && plan.show_plan.production_tasks?.length > 0) {
+                    const tasksToCreate = plan.show_plan.production_tasks.map(task => ({
+                        title: task.task,
+                        description: `${task.detail || ''}\n\nGenerated by Sequins Producer.\nDepartment: ${task.department}\nDue Milestone: ${task.due_milestone}`,
+                        status: 'pending',
+                        category: 'event',
+                        priority: task.priority === 'critical' ? 'high' : (task.priority === 'high' ? 'medium' : 'low'),
+                        is_shared: true,
+                        due_date: task.due_date || undefined,
+                        performance_id: targetPerformanceId
+                    }));
+
+                    if (tasksToCreate.length > 0) {
+                         await base44.entities.FamilyTask.bulkCreate(tasksToCreate);
+                    }
+                }
+            }
+
+            return { id: targetPerformanceId };
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries(['performances']);
+            toast.success(performanceId ? "Event updated successfully!" : "Event created successfully!");
+            onPlanCreated(data.id);
+            // Reset state and clear storage
+            setGeneratedPlan(null);
+            setCurrentInput('');
+            if (!performanceId) {
+                setEventDetails({ title: '', date: '', type: 'recital', venue: '', venueData: null });
+                localStorage.removeItem('sequins_draft_chat');
+                localStorage.removeItem('sequins_draft_plan');
+                localStorage.removeItem('sequins_draft_details');
+            }
+        },
             if (plan && plan.show_plan && plan.show_plan.run_of_show) {
                 const routines = plan.show_plan.run_of_show
                     .filter(segment => segment.segment_type === 'performance')
