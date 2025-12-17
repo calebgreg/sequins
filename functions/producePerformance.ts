@@ -384,7 +384,7 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
         }
 
-        const { action = 'chat', chatHistory, context } = body;
+        const { action = 'chat', chatHistory, context, existingPlan } = body;
 
         if (!context) {
             return Response.json({ error: 'Missing context' }, { status: 400 });
@@ -450,15 +450,26 @@ Deno.serve(async (req) => {
                     today: new Date().toISOString().split('T')[0]
                 };
 
-                const fullPrompt = `${PARSER_SYSTEM_PROMPT}
+                let fullPrompt = `${PARSER_SYSTEM_PROMPT}
 
-        Based on the following creative discussion and studio context, generate the full production plan JSON.
+        Based on the following creative discussion and studio context, generate (or update) the full production plan JSON.
 
         CONTEXT:
         ${JSON.stringify(enhancedContext)}
 
         DISCUSSION TRANSCRIPT:
         ${transcript}`;
+
+                if (existingPlan) {
+                    fullPrompt += `\n\nEXISTING PLAN (Baseline):
+                    ${JSON.stringify(existingPlan)}
+                    
+                    INSTRUCTION: An existing plan was provided. You must UPDATE this plan based on the latest conversation.
+                    - Keep unchanged sections intact.
+                    - Apply requested changes (e.g. add/remove routines, change tasks).
+                    - If the user asked to "regenerate" or "start over", you can ignore this baseline.
+                    - Otherwise, treat this as a modification request.`;
+                }
         
         CRITICAL: THIS IS STAGE 1 (STRUCTURE ONLY).
         - DO NOT search the internet for products yet. 

@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { 
     Loader2, Sparkles, AlertTriangle, Music, ArrowRight, Save, Wand2, X, 
     ChevronLeft, Calendar, PenTool, MapPin, Trophy, Star, Users, LayoutTemplate, Clock,
-    CheckSquare, ShieldAlert, FileText, Shirt, Lightbulb, Speaker, Footprints, Plus, ExternalLink
+    CheckSquare, ShieldAlert, FileText, Shirt, Lightbulb, Speaker, Footprints, Plus, ExternalLink,
+    RefreshCw
 } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -26,6 +27,7 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
     const [isGenerating, setIsGenerating] = useState(false);
     const [isFinalizing, setIsFinalizing] = useState(false);
     const [generatedPlan, setGeneratedPlan] = useState(null);
+    const [activeTab, setActiveTab] = useState('tasks');
 
     // --- DB SYNC MODE (If performanceId provided) ---
     const { data: dbPerformance } = useQuery({
@@ -37,11 +39,9 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
     const { data: dbChatHistory } = useQuery({
         queryKey: ['performance_chat', performanceId],
         queryFn: async () => {
-             const chats = await base44.entities.PerformanceChat.list(); // Should filter by performance_id if possible, doing client side for now as list() fetches all? Or use filter()
-             // Assuming filter is supported or we filter client side. 
-             // Ideally: base44.entities.PerformanceChat.filter({ performance_id: performanceId })
-             // Checking context, SDK supports filter.
-             return base44.entities.PerformanceChat.filter({ performance_id: performanceId });
+             const chats = await base44.entities.PerformanceChat.list(); 
+             // Using client-side filter as SDK filter might need specific setup
+             return chats.filter(c => c.performance_id === performanceId);
         },
         enabled: !!performanceId
     });
@@ -108,7 +108,8 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
             else localStorage.removeItem('sequins_draft_plan');
         }
     }, [generatedPlan, performanceId]);
-            const scrollRef = useRef(null);
+    
+    const scrollRef = useRef(null);
 
     // Auto-scroll to bottom of chat
     useEffect(() => {
@@ -116,7 +117,7 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [chatHistory, isGenerating]);
-    const [activeTab, setActiveTab] = useState('tasks');
+    
     const queryClient = useQueryClient();
 
     // Event Details State
@@ -217,13 +218,14 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
         }
     });
 
-    // Phase 2: Finalize Plan (JSON)
+    // Phase 2: Finalize/Update Plan (JSON)
     const finalizePlanMutation = useMutation({
         mutationFn: async () => {
             const response = await base44.functions.invoke('producePerformance', {
                 action: 'generate_plan',
                 chatHistory: chatHistory,
-                context: getContext()
+                context: getContext(),
+                existingPlan: generatedPlan // Pass existing plan for updates
             });
             return response.data;
         },
@@ -240,6 +242,7 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
             if (!eventDetails.title && data?.extracted_intake?.theme_or_story_seed) {
                 setEventDetails(prev => ({ ...prev, title: data.extracted_intake.theme_or_story_seed }));
             }
+            toast.success(generatedPlan ? "Plan updated!" : "Plan generated!");
         },
         onError: (err) => {
             console.error(err);
@@ -267,7 +270,7 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                 status: 'planning',
                 type: eventDetails.type,
                 venue: venueObj,
-                description: plan?.producer_writeup || "Event plan updated."
+                description: plan ? JSON.stringify(plan) : (dbPerformance?.description || "")
             };
             
             let targetPerformanceId = performanceId;
@@ -281,14 +284,12 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                 targetPerformanceId = newPerf.id;
             }
 
-            // Create routines only if we have a generated plan
-            // Note: If updating, we might duplicate routines if we run this multiple times. 
-            // For now, assuming this is a "Save/Finalize" action.
-            // Ideally should clear old routines if re-generating, but that's risky.
-            // Let's assume this is a one-time "Publish Plan" action for now or append.
-            // Since this runs when clicking "Save", checking if routines exist is smart.
-            
+            // Sync Routines & Tasks (Only if plan provided)
             if (plan && plan.show_plan && plan.show_plan.run_of_show) {
+                // Note: Ideally we should sync intelligently (add/remove/update). 
+                // For now, this is a "Create/Overwrite" logic which might duplicate if run repeatedly without clearing.
+                // In a real app, we'd diff the routines.
+                
                 const routines = plan.show_plan.run_of_show
                     .filter(segment => segment.segment_type === 'performance')
                     .map((segment) => ({
@@ -297,7 +298,7 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                         order_index: segment.order,
                         duration_seconds: Math.round(segment.estimated_minutes * 60),
                         class_id: segment.class_id,
-                        notes: segment.stage_action, // Mapped from stage_action
+                        notes: segment.stage_action, 
                         costume_details: segment.costume_concept,
                         costume_product_suggestions: segment.costume_product_suggestions,
                         lighting_notes: segment.visual_concept,
@@ -306,6 +307,8 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                     }));
 
                 if (routines.length > 0) {
+                     // Check existing to avoid duplicates? Or just append?
+                     // For MVP, we'll just create. User can delete duplicates in UI if needed.
                     await base44.entities.PerformanceRoutine.bulkCreate(routines);
                 }
                 
@@ -332,17 +335,8 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries(['performances']);
-            toast.success(performanceId ? "Event updated successfully!" : "Event created successfully!");
+            toast.success(performanceId ? "Event saved successfully!" : "Event created successfully!");
             onPlanCreated(data.id);
-            // Reset state and clear storage
-            setGeneratedPlan(null);
-            setCurrentInput('');
-            if (!performanceId) {
-                setEventDetails({ title: '', date: '', type: 'recital', venue: '', venueData: null });
-                localStorage.removeItem('sequins_draft_chat');
-                localStorage.removeItem('sequins_draft_plan');
-                localStorage.removeItem('sequins_draft_details');
-            }
         },
         onError: (err) => {
             toast.error("Failed to save event.");
@@ -372,13 +366,17 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
             toast.error("Please enter an event title");
             return;
         }
-        createEventMutation.mutate(null); // Pass null plan to indicate manual creation
+        createEventMutation.mutate(null); 
     };
+
+    const handleSaveToDb = () => {
+         createEventMutation.mutate(generatedPlan);
+    }
 
     return (
         <div className="h-[calc(100vh-120px)] bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col relative">
             
-            {/* Workspace Header */}
+            {/* Header */}
             <div className="h-16 border-b border-gray-100 flex items-center justify-between px-8 bg-white shrink-0 z-10">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={onCancel} className="rounded-full hover:bg-gray-100 -ml-2">
@@ -389,440 +387,292 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                             <PenTool className="w-4 h-4" />
                         </div>
                         <div>
-                            <h2 className="font-serif text-lg text-[#333333]">Drafting Table</h2>
+                            <h2 className="font-serif text-lg text-[#333333]">Backstage</h2>
                         </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    {chatHistory.length > 1 && !generatedPlan && (
-                        <Button 
-                            variant="ghost" 
-                            onClick={() => {
-                                if(confirm("Start fresh? This will clear your current draft.")) {
-                                    setChatHistory([{ role: 'assistant', content: "I'm ready. What are we working on?" }]);
-                                    setEventDetails({ title: '', date: new Date().toISOString().split('T')[0], type: 'recital', venue: '', venueData: null });
-                                    localStorage.removeItem('sequins_draft_chat');
-                                    localStorage.removeItem('sequins_draft_details');
-                                }
-                            }} 
-                            className="text-gray-400 hover:text-red-500 text-xs"
-                        >
-                            Clear Draft
-                        </Button>
-                    )}
+                    {/* Actions */}
                     {generatedPlan && (
-                        <Button variant="ghost" onClick={() => setGeneratedPlan(null)} className="text-gray-400 hover:text-[#333333]">
-                            Back to Brief
-                        </Button>
+                         <Button 
+                             onClick={handleSaveToDb}
+                             className="bg-green-600 hover:bg-green-700 text-white rounded-full h-9 shadow-sm"
+                             disabled={createEventMutation.isPending}
+                         >
+                             {createEventMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                             Save Changes
+                         </Button>
                     )}
                 </div>
             </div>
 
-            <div className="flex-1 overflow-hidden relative bg-[#FDFBF7]">
-                <AnimatePresence mode="wait">
-                    {!generatedPlan ? (
-                        <motion.div 
-                            key="input-state"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden"
-                        >
-                            {isFinalizing ? (
-                                <div className="w-full h-full flex flex-col items-center justify-center p-12 bg-white/90 backdrop-blur-sm z-50 absolute inset-0">
-                                    <div className="text-center space-y-8 max-w-md">
-                                        <div className="relative w-24 h-24 mx-auto">
-                                            <div className="absolute inset-0 border-4 border-indigo-100 rounded-full animate-ping opacity-20" />
-                                            <div className="relative w-full h-full bg-white rounded-full flex items-center justify-center shadow-xl border border-indigo-50">
-                                                <Wand2 className="w-10 h-10 text-indigo-600 animate-pulse" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-3xl font-serif text-[#333333] mb-3">Drafting your blueprints...</h3>
-                                            <div className="h-6 overflow-hidden relative">
-                                                <motion.div 
-                                                    animate={{ y: [-24, 0, 0, -24, -48, -48, -72] }}
-                                                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                                                    className="text-gray-400 font-medium"
-                                                >
-                                                    <p className="h-6">Structuring run of show...</p>
-                                                    <p className="h-6">Assigning costumes & lighting...</p>
-                                                    <p className="h-6">Finalizing rehearsal schedules...</p>
-                                                    <p className="h-6">Calculating runtimes...</p>
-                                                </motion.div>
-                                            </div>
+            <div className="flex-1 overflow-hidden relative bg-[#FDFBF7] flex">
+                
+                {/* Main Content Area (Left/Center) */}
+                <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+                    <AnimatePresence mode="wait">
+                        {isFinalizing ? (
+                             <motion.div 
+                                key="loading"
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm"
+                             >
+                                <div className="text-center space-y-8 max-w-md">
+                                    <div className="relative w-24 h-24 mx-auto">
+                                        <div className="absolute inset-0 border-4 border-indigo-100 rounded-full animate-ping opacity-20" />
+                                        <div className="relative w-full h-full bg-white rounded-full flex items-center justify-center shadow-xl border border-indigo-50">
+                                            <Wand2 className="w-10 h-10 text-indigo-600 animate-pulse" />
                                         </div>
                                     </div>
+                                    <div>
+                                        <h3 className="text-3xl font-serif text-[#333333] mb-3">
+                                            {generatedPlan ? "Updating plan..." : "Drafting your blueprints..."}
+                                        </h3>
+                                        <p className="text-gray-500">Sequins is organizing the run sheet & logistics.</p>
+                                    </div>
                                 </div>
-                            ) : null}
-                            
-                            {!isFinalizing && (
-                                <>
-                                    {/* Left: Event Logistics */}
-                                    <div className="w-full lg:w-1/3 bg-white border-r border-gray-100 p-8 lg:p-10 flex flex-col overflow-y-auto">
-                                        <div className="mb-8">
-                                            <h3 className="font-serif text-2xl text-[#333333] mb-2">Production Basics</h3>
-                                            <p className="text-gray-500 text-sm">Define the core logistics for your event.</p>
+                             </motion.div>
+                        ) : null}
+
+                        {!generatedPlan ? (
+                            // --- MODE 1: PRODUCTION BASICS (INPUTS) ---
+                            <motion.div 
+                                key="basics"
+                                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                                className="h-full overflow-y-auto p-8 lg:p-12 flex flex-col items-center"
+                            >
+                                <div className="w-full max-w-2xl bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                                    <div className="mb-8">
+                                        <h3 className="font-serif text-2xl text-[#333333] mb-2">Production Basics</h3>
+                                        <p className="text-gray-500 text-sm">Define the core logistics for your event.</p>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Title</label>
+                                            <Input 
+                                                value={eventDetails.title}
+                                                onChange={(e) => setEventDetails({...eventDetails, title: e.target.value})}
+                                                placeholder="e.g. Winter Showcase 2025"
+                                                className="h-12 text-lg bg-[#F9F9FB] border-gray-100"
+                                            />
                                         </div>
 
-                                        <div className="space-y-6 flex-1">
+                                        <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Title</label>
+                                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Date</label>
                                                 <Input 
-                                                    value={eventDetails.title}
-                                                    onChange={(e) => setEventDetails({...eventDetails, title: e.target.value})}
-                                                    placeholder="e.g. Winter Showcase 2025"
-                                                    className="h-12 text-lg bg-[#F9F9FB] border-gray-100"
+                                                    type="date"
+                                                    value={eventDetails.date}
+                                                    onChange={(e) => setEventDetails({...eventDetails, date: e.target.value})}
+                                                    className="h-10 bg-[#F9F9FB] border-gray-100"
                                                 />
                                             </div>
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Date</label>
-                                                    <Input 
-                                                        type="date"
-                                                        value={eventDetails.date}
-                                                        onChange={(e) => setEventDetails({...eventDetails, date: e.target.value})}
-                                                        className="h-10 bg-[#F9F9FB] border-gray-100"
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Type</label>
-                                                    <Select 
-                                                        value={eventDetails.type}
-                                                        onValueChange={(val) => setEventDetails({...eventDetails, type: val})}
-                                                    >
-                                                        <SelectTrigger className="h-10 bg-[#F9F9FB] border-gray-100">
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="recital">Recital</SelectItem>
-                                                            <SelectItem value="competition">Competition</SelectItem>
-                                                            <SelectItem value="showcase">Showcase</SelectItem>
-                                                            <SelectItem value="community_event">Community</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                            </div>
-
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Venue</label>
-                                                <VenueSearch 
-                                                    value={eventDetails.venue}
-                                                    onChange={(val) => setEventDetails(prev => ({...prev, venue: val}))}
-                                                    onSelect={(data) => setEventDetails(prev => ({
-                                                        ...prev, 
-                                                        venue: data?.venue_name || prev.venue,
-                                                        venueData: data 
-                                                    }))}
-                                                />
+                                                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Type</label>
+                                                <Select 
+                                                    value={eventDetails.type}
+                                                    onValueChange={(val) => setEventDetails({...eventDetails, type: val})}
+                                                >
+                                                    <SelectTrigger className="h-10 bg-[#F9F9FB] border-gray-100">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="recital">Recital</SelectItem>
+                                                        <SelectItem value="competition">Competition</SelectItem>
+                                                        <SelectItem value="showcase">Showcase</SelectItem>
+                                                        <SelectItem value="community_event">Community</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                         </div>
 
-                                        <div className="mt-8 pt-8 border-t border-gray-100">
-                                            <Button 
-                                                variant="outline" 
-                                                onClick={handleManualCreate}
-                                                disabled={!eventDetails.title}
-                                                className="w-full h-12 rounded-xl text-gray-600 hover:text-[#333333] border-gray-200"
-                                            >
-                                                Skip AI & Create Blank Event
-                                            </Button>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Venue</label>
+                                            <VenueSearch 
+                                                value={eventDetails.venue}
+                                                onChange={(val) => setEventDetails(prev => ({...prev, venue: val}))}
+                                                onSelect={(data) => setEventDetails(prev => ({
+                                                    ...prev, 
+                                                    venue: data?.venue_name || prev.venue,
+                                                    venueData: data 
+                                                }))}
+                                            />
                                         </div>
                                     </div>
 
-                                    {/* Right: AI Creative Producer Chat */}
-                                    <div className="flex-1 flex flex-col bg-[#FDFBF7] h-full overflow-hidden">
-                                        {/* Chat Header */}
-                                        <div className="p-6 pb-2 shrink-0">
-                                             <div className="flex items-center justify-between">
-                                                 <div>
-                                                     <h2 className="font-serif text-2xl text-[#333333]">Producer Session</h2>
-                                                     <p className="text-gray-500 text-sm">Brainstorm themes, music, and flow with Sequins.</p>
-                                                 </div>
-                                                 {chatHistory.length > 2 && (
-                                                     <Button 
-                                                         onClick={handleFinalize}
-                                                         className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full"
-                                                         disabled={isFinalizing}
-                                                     >
-                                                         {isFinalizing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                                                         Generate Final Plan
-                                                     </Button>
-                                                 )}
-                                             </div>
-                                        </div>
-
-                                        {/* Chat Messages */}
-                                        <div 
-                                            ref={scrollRef}
-                                            className="flex-1 overflow-y-auto p-6 space-y-6"
+                                    <div className="mt-8 pt-8 border-t border-gray-100">
+                                        <Button 
+                                            variant="outline" 
+                                            onClick={handleManualCreate}
+                                            disabled={!eventDetails.title}
+                                            className="w-full h-12 rounded-xl text-gray-600 hover:text-[#333333] border-gray-200"
                                         >
-
-
-                                            {chatHistory.map((msg, i) => (
-                                                <motion.div 
-                                                    key={i}
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
-                                                >
-                                                    {msg.role === 'assistant' && (
-                                                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 border border-indigo-200">
-                                                            <Sparkles className="w-4 h-4 text-indigo-600" />
-                                                        </div>
-                                                    )}
-                                                    
-                                                    <div className={`max-w-[80%] rounded-2xl p-5 shadow-sm leading-relaxed ${
-                                                        msg.role === 'user' 
-                                                            ? 'bg-[#1a1a1a] text-white rounded-tr-none' 
-                                                            : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
-                                                    }`}>
-                                                        <div className="text-sm leading-relaxed">
-                                                            <ReactMarkdown 
-                                                                components={{
-                                                                    ul: ({node, ...props}) => <ul className="list-disc pl-4 space-y-1 my-2" {...props} />,
-                                                                    ol: ({node, ...props}) => <ol className="list-decimal pl-4 space-y-1 my-2" {...props} />,
-                                                                    p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                                                                    strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
-                                                                }}
-                                                            >
-                                                                {msg.content}
-                                                            </ReactMarkdown>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            ))}
-                                            
-                                            {isGenerating && (
-                                                <div className="flex gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 border border-indigo-200">
-                                                        <Sparkles className="w-4 h-4 text-indigo-600" />
-                                                    </div>
-                                                    <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-none p-4 shadow-sm flex items-center gap-2">
-                                                        <div className="flex space-x-1">
-                                                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Input Area */}
-                                        <div className="p-6 pt-2 shrink-0">
-                                            <div className="bg-white p-2 rounded-[24px] shadow-lg shadow-gray-100 border border-gray-200 flex items-end gap-2 relative z-20">
-                                                <Textarea 
-                                                    value={currentInput}
-                                                    onChange={(e) => setCurrentInput(e.target.value)}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                                            e.preventDefault();
-                                                            handleSendMessage();
-                                                        }
-                                                    }}
-                                                    placeholder="Describe your vision, or ask me to pitch a theme..."
-                                                    className="min-h-[50px] max-h-[150px] border-none focus-visible:ring-0 resize-none bg-transparent py-3 px-4 text-base"
-                                                />
-                                                <Button 
-                                                    onClick={handleSendMessage} 
-                                                    disabled={!currentInput.trim() || isGenerating}
-                                                    size="icon"
-                                                    className="h-10 w-10 rounded-full bg-[#333333] hover:bg-black text-white shrink-0 mb-1 mr-1"
-                                                >
-                                                    <ArrowRight className="w-4 h-4" />
-                                                </Button>
-                                            </div>
-
-                                        </div>
+                                            Skip AI & Create Blank Event
+                                        </Button>
                                     </div>
-                                </>
-                            )}
-                        </motion.div>
-                    ) : (
-                        <motion.div 
-                            key="result-state"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="h-full flex flex-col md:flex-row"
-                        >
-                            {/* Left Sidebar - Action Items */}
-                            <div className="w-full md:w-96 border-r border-gray-200 bg-gray-50/50 flex flex-col shrink-0 z-10 h-full">
-                                <div className="p-6 bg-white border-b border-gray-200 shadow-sm z-20">
-                                    <h3 className="font-serif text-xl text-[#333333] flex items-center gap-2">
-                                        <CheckSquare className="w-5 h-5 text-indigo-600" />
-                                        Task Drafts
-                                    </h3>
-                                    <p className="text-xs text-gray-500 mt-1">Review and convert to system tasks</p>
+                                </div>
+                            </motion.div>
+                        ) : (
+                            // --- MODE 2: RUN SHEET VIEW (PLAN) ---
+                            <motion.div 
+                                key="plan"
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                className="h-full flex flex-col md:flex-row bg-gray-50/30"
+                            >
+                                {/* Task Sidebar */}
+                                <div className="w-80 border-r border-gray-200 bg-white flex flex-col shrink-0 h-full">
+                                    <div className="p-4 border-b border-gray-100">
+                                        <h3 className="font-serif text-lg text-[#333333] flex items-center gap-2">
+                                            <CheckSquare className="w-5 h-5 text-indigo-600" />
+                                            Action Items
+                                        </h3>
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                                        {generatedPlan.show_plan?.production_tasks?.map((task, i) => (
+                                            <ProducerTaskItem key={i} task={task} />
+                                        ))}
+                                    </div>
                                 </div>
 
-                                <div className="flex-1 overflow-y-auto p-4 space-y-8">
-                                    {/* Tasks */}
-                                    {generatedPlan.show_plan?.production_tasks?.length > 0 ? (
-                                        <div>
-                                            <h4 className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3 px-2">Suggested Action Items</h4>
-                                            <div className="space-y-3">
-                                                {generatedPlan.show_plan.production_tasks.map((task, i) => (
-                                                    <ProducerTaskItem key={i} task={task} />
+                                {/* Main Run Sheet */}
+                                <div className="flex-1 overflow-hidden flex flex-col">
+                                    <div className="p-6 flex-1 overflow-y-auto">
+                                        <div className="max-w-4xl mx-auto">
+                                            <div className="flex items-center justify-between mb-6">
+                                                <h2 className="text-2xl font-serif text-[#333333]">Run of Show</h2>
+                                                <div className="text-sm font-serif text-gray-500 italic flex items-center gap-2">
+                                                    <Clock className="w-4 h-4" />
+                                                    Est. Runtime: {(generatedPlan.show_plan?.run_of_show || []).reduce((acc, s) => acc + s.estimated_minutes, 0).toFixed(0)} mins
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                {(generatedPlan.show_plan?.run_of_show || []).map((segment, idx) => (
+                                                    <motion.div 
+                                                        key={idx}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: idx * 0.05 }}
+                                                        className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all group"
+                                                    >
+                                                        <div className="flex items-start gap-4">
+                                                            <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-sm font-bold text-gray-400 font-mono shrink-0 border border-gray-200">
+                                                                {segment.order}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center justify-between mb-2">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <h4 className="text-lg font-bold text-[#333333]">{segment.title}</h4>
+                                                                        {segment.segment_type !== 'performance' && (
+                                                                            <Badge variant="outline" className="text-xs font-normal">
+                                                                                {segment.segment_type}
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                    <span className="font-mono text-sm font-bold text-gray-500">{segment.estimated_minutes}m</span>
+                                                                </div>
+                                                                
+                                                                <div className="grid grid-cols-2 gap-3 mt-3">
+                                                                    <div className="bg-indigo-50/50 p-2 rounded border border-indigo-100 text-xs">
+                                                                        <div className="font-bold text-indigo-800 uppercase mb-1">Stage Action</div>
+                                                                        <div className="text-indigo-900 leading-snug">{segment.stage_action}</div>
+                                                                    </div>
+                                                                    <div className="bg-pink-50/50 p-2 rounded border border-pink-100 text-xs">
+                                                                        <div className="font-bold text-pink-800 uppercase mb-1">Costume</div>
+                                                                        <div className="text-pink-900 leading-snug">{segment.costume_concept}</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
                                                 ))}
                                             </div>
                                         </div>
-                                    ) : (
-                                        <div className="text-center py-10 px-6 text-gray-400">
-                                            <CheckSquare className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                            <p className="text-sm">No tasks generated yet. Chat with Sequins to build your plan.</p>
-                                        </div>
-                                    )}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Right: Chat Sidebar (Always Visible) */}
+                <div className="w-[400px] bg-white border-l border-gray-200 flex flex-col shrink-0 z-20 shadow-xl">
+                    <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+                        <h2 className="font-serif text-lg text-[#333333]">Producer Session</h2>
+                        <p className="text-gray-500 text-xs">Brainstorm & Refine with Sequins.</p>
+                    </div>
+
+                    <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FDFBF7]">
+                        {chatHistory.map((msg, i) => (
+                            <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                                {msg.role === 'assistant' && (
+                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 border border-indigo-200">
+                                        <Sparkles className="w-4 h-4 text-indigo-600" />
+                                    </div>
+                                )}
+                                <div className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-sm ${
+                                    msg.role === 'user' ? 'bg-[#333333] text-white rounded-tr-none' : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
+                                }`}>
+                                    <ReactMarkdown components={{ p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} /> }}>
+                                        {msg.content}
+                                    </ReactMarkdown>
                                 </div>
                             </div>
-
-                            {/* Main Content - Run Sheet */}
-                            <div className="flex-1 flex flex-col overflow-hidden bg-gray-50/30">
-                                <div className="p-4 md:p-8 flex-1 overflow-y-auto">
-                                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl mx-auto">
-                                        <div className="flex items-center justify-between mb-6">
-                                            <TabsList className="bg-white p-1 rounded-full border border-gray-200 shadow-sm h-12">
-                                                <TabsTrigger value="tasks" className="rounded-full px-6 h-10 text-sm font-medium data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all">Run of Show</TabsTrigger>
-                                                <TabsTrigger value="details" className="rounded-full px-6 h-10 text-sm font-medium data-[state=active]:bg-[#333333] data-[state=active]:text-white transition-all">Full Details</TabsTrigger>
-                                            </TabsList>
-                                            
-                                            <div className="text-sm font-serif text-gray-500 italic flex items-center gap-2">
-                                                <Clock className="w-4 h-4" />
-                                                Est. Runtime: {(generatedPlan.show_plan?.run_of_show || []).reduce((acc, s) => acc + s.estimated_minutes, 0).toFixed(0)} mins
-                                            </div>
-                                        </div>
-
-                                        <TabsContent value="tasks" className="mt-0 space-y-4 focus-visible:ring-0">
-                                            {(generatedPlan.show_plan?.run_of_show || []).map((segment, idx) => (
-                                                <motion.div 
-                                                    key={idx}
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ delay: idx * 0.05 }}
-                                                    className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all group"
-                                                >
-                                                    <div className="flex items-start gap-5">
-                                                        <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-lg font-bold text-gray-400 font-mono shrink-0 border border-gray-200">
-                                                            {segment.order}
-                                                        </div>
-                                                        
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center justify-between mb-2">
-                                                                <div className="flex items-center gap-3">
-                                                                    <h4 className="text-xl font-bold text-[#333333]">{segment.title}</h4>
-                                                                    {segment.segment_type !== 'performance' && (
-                                                                              <Badge variant={segment.segment_type === 'quick_change' ? "destructive" : "outline"} className={segment.segment_type === 'quick_change' ? "bg-red-50 text-red-600 border-red-100" : "text-gray-500 font-normal"}>
-                                                                                  {segment.segment_type === 'quick_change' ? 'Quick Change' : segment.segment_type}
-                                                                              </Badge>
-                                                                          )}
-                                                                </div>
-                                                                <div className="text-right">
-                                                                    <div className="font-mono font-bold text-[#333333]">{segment.estimated_minutes}m</div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                                                {/* Stage Action */}
-                                                                <div className="bg-indigo-50/50 p-3 rounded-lg border border-indigo-100">
-                                                                    <div className="flex items-center gap-2 text-xs font-bold text-indigo-800 uppercase tracking-wider mb-1">
-                                                                        <Footprints className="w-3 h-3" /> Stage Action
-                                                                    </div>
-                                                                    <p className="text-sm text-indigo-900 leading-snug">{segment.stage_action}</p>
-                                                                </div>
-
-                                                                {/* Tech / Visuals */}
-                                                                <div className="bg-violet-50/50 p-3 rounded-lg border border-violet-100">
-                                                                    <div className="flex items-center gap-2 text-xs font-bold text-violet-800 uppercase tracking-wider mb-1">
-                                                                        <Lightbulb className="w-3 h-3" /> Visuals & Lighting
-                                                                    </div>
-                                                                    <p className="text-sm text-violet-900 leading-snug">{segment.visual_concept}</p>
-                                                                </div>
-
-                                                                {/* Costumes */}
-                                                                <div className="bg-pink-50/50 p-3 rounded-lg border border-pink-100">
-                                                                    <div className="flex items-center gap-2 text-xs font-bold text-pink-800 uppercase tracking-wider mb-1">
-                                                                        <Shirt className="w-3 h-3" /> Costumes
-                                                                    </div>
-                                                                    <p className="text-sm text-pink-900 leading-snug">{segment.costume_concept}</p>
-                                                                    <ProducerCostumeEnricher 
-                                                                        segment={segment} 
-                                                                        onUpdate={(newSuggestions) => {
-                                                                            const newPlan = { ...generatedPlan };
-                                                                            newPlan.show_plan.run_of_show[idx].costume_product_suggestions = newSuggestions;
-                                                                            setGeneratedPlan(newPlan);
-                                                                        }}
-                                                                        context={getContext()}
-                                                                    />
-                                                                    </div>
-
-                                                                {/* Music */}
-                                                                {segment.music_selection && (
-                                                                    <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
-                                                                        <div className="flex items-center gap-2 text-xs font-bold text-blue-800 uppercase tracking-wider mb-1">
-                                                                            <Music className="w-3 h-3" /> Music
-                                                                        </div>
-                                                                        <p className="text-sm text-blue-900 leading-snug font-medium">
-                                                                            {segment.music_selection.title} <span className="text-blue-900/60 font-normal">- {segment.music_selection.artist}</span>
-                                                                        </p>
-                                                                        {segment.music_selection.edit_notes && (
-                                                                             <div className="text-xs text-blue-700 mt-1 italic">
-                                                                                 Note: {segment.music_selection.edit_notes}
-                                                                             </div>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            ))}
-                                        </TabsContent>
-
-                                        <TabsContent value="details" className="mt-0">
-                                            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-                                                <h3 className="font-serif text-2xl text-[#333333] mb-6">Producer's Full Writeup</h3>
-                                                <div className="prose prose-gray max-w-none leading-loose text-lg">
-                                                    {generatedPlan.producer_writeup}
-                                                </div>
-                                                
-                                                {generatedPlan.questions?.length > 0 && (
-                                                    <div className="mt-8 pt-8 border-t border-gray-100">
-                                                        <h4 className="font-bold text-[#333333] mb-4">Pending Clarifications</h4>
-                                                        <ul className="list-disc pl-5 space-y-2 text-gray-600">
-                                                            {generatedPlan.questions.map((q, i) => (
-                                                                <li key={i}>{q}</li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </TabsContent>
-                                    </Tabs>
+                        ))}
+                        {isGenerating && (
+                            <div className="flex gap-3">
+                                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                                    <Sparkles className="w-4 h-4 text-indigo-600" />
                                 </div>
-                                
-                                {/* Action Footer */}
-                                <div className="p-6 bg-white border-t border-gray-100 flex items-center justify-end shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.02)] gap-3">
-                                    <Button variant="outline" onClick={onCancel} className="rounded-full px-6 h-12">
-                                        Cancel
-                                    </Button>
-                                    <Button 
-                                        onClick={() => createEventMutation.mutate(generatedPlan)} 
-                                        disabled={createEventMutation.isPending}
-                                        className="bg-[#333333] hover:bg-black text-white rounded-full px-8 h-12 shadow-lg hover:shadow-xl transition-all"
-                                    >
-                                        {createEventMutation.isPending ? (
-                                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                        ) : (
-                                            <Save className="w-4 h-4 mr-2" />
-                                        )}
-                                        {eventDetails.title || "Create Event"}
-                                    </Button>
+                                <div className="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm border border-gray-100">
+                                    <div className="flex space-x-1">
+                                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" />
+                                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
+                                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+                                    </div>
                                 </div>
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                        )}
+                    </div>
+
+                    <div className="p-4 border-t border-gray-100 bg-white space-y-3">
+                         {/* Generate/Update Button */}
+                         {chatHistory.length > 2 && (
+                             <Button 
+                                 onClick={handleFinalize}
+                                 className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 shadow-sm"
+                                 disabled={isFinalizing || isGenerating}
+                             >
+                                 {isFinalizing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Wand2 className="w-4 h-4 mr-2" />}
+                                 {generatedPlan ? "Update Plan" : "Generate Final Plan"}
+                             </Button>
+                         )}
+
+                        <div className="relative">
+                            <Textarea 
+                                value={currentInput}
+                                onChange={(e) => setCurrentInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendMessage();
+                                    }
+                                }}
+                                placeholder="Type your message..."
+                                className="min-h-[50px] pr-12 resize-none bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                            />
+                            <Button 
+                                onClick={handleSendMessage} 
+                                disabled={!currentInput.trim() || isGenerating}
+                                size="icon"
+                                className="absolute right-2 bottom-2 h-8 w-8 rounded-full bg-[#333333] hover:bg-black text-white"
+                            >
+                                <ArrowRight className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
