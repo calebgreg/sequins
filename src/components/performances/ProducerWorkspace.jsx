@@ -359,7 +359,8 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                     return { id: targetPerformanceId };
                     },
                     onSuccess: (data) => {
-                    queryClient.invalidateQueries(['performances']);
+                    queryClient.invalidateQueries({ queryKey: ['performances'] });
+                    queryClient.invalidateQueries({ queryKey: ['performance'] });
                     toast.success(performanceId ? "Event saved successfully!" : "Event created successfully!");
                     onPlanCreated(data.id);
                     },
