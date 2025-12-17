@@ -174,17 +174,18 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     if (!performance) return <div className="p-8 text-center">Loading Quarterback View...</div>;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-6 min-h-screen bg-gradient-to-br from-rose-50/50 via-slate-50 to-indigo-50/50 rounded-[32px]">
             {/* --- Quarterback Header --- */}
-            <div className="bg-[#333333] text-white rounded-[32px] shadow-2xl relative group">
+            <div className="bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] relative overflow-hidden group">
                 <div className="absolute inset-0 overflow-hidden rounded-[32px]">
-                    <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+                    <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-rose-200/20 via-pink-200/10 to-indigo-200/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-blue-100/20 to-transparent rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4 pointer-events-none" />
                 </div>
                 
                 <div className="relative z-10 p-8">
                     <button 
                         onClick={onBack}
-                        className="flex items-center text-white/60 hover:text-white transition-colors mb-6 text-sm font-medium uppercase tracking-wider"
+                        className="flex items-center text-gray-500 hover:text-gray-900 transition-colors mb-6 text-sm font-medium uppercase tracking-wider"
                     >
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Events
                     </button>
@@ -195,28 +196,28 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                 <Input 
                                     value={formData.title || ''}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="text-4xl font-serif bg-white/10 border-white/20 text-white h-16 px-4 rounded-xl"
+                                    className="text-4xl font-serif bg-white/50 border-white/40 text-gray-900 h-16 px-4 rounded-xl shadow-inner"
                                 />
                             ) : (
-                                <h1 className="text-4xl md:text-5xl font-serif leading-tight">
+                                <h1 className="text-4xl md:text-5xl font-serif leading-tight text-gray-900">
                                     {performance.title}
                                 </h1>
                             )}
                             
-                            <div className="flex flex-wrap gap-6 text-sm text-white/70">
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                                    <Calendar className="w-4 h-4 text-indigo-300" />
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-2 bg-white/60 px-4 py-2 rounded-full border border-white/40 shadow-sm backdrop-blur-md">
+                                    <Calendar className="w-4 h-4 text-rose-400" />
                                     {isEditing ? (
                                         <input 
                                             type="date" 
                                             value={formData.date || ''} 
                                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                            className="bg-transparent border-none text-white focus:outline-none"
+                                            className="bg-transparent border-none text-gray-900 focus:outline-none"
                                         />
                                     ) : format(new Date(performance.date), 'MMMM d, yyyy')}
                                 </div>
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                                    <MapPin className="w-4 h-4 text-pink-300" />
+                                <div className="flex items-center gap-2 bg-white/60 px-4 py-2 rounded-full border border-white/40 shadow-sm backdrop-blur-md">
+                                    <MapPin className="w-4 h-4 text-indigo-400" />
                                     {isEditing ? (
                                         <div className="relative">
                                             <input 
@@ -227,18 +228,18 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                     setShowSuggestions(true);
                                                 }}
                                                 onFocus={() => setShowSuggestions(true)}
-                                                className="bg-transparent border-none text-white focus:outline-none w-64 placeholder:text-white/50"
+                                                className="bg-transparent border-none text-gray-900 focus:outline-none w-64 placeholder:text-gray-400"
                                             />
                                             {showSuggestions && (suggestions.length > 0 || isFetchingSuggestions) && (
-                                                <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-lg shadow-xl text-gray-800 z-50 overflow-hidden text-sm">
+                                                <div className="absolute top-full left-0 mt-2 w-72 bg-white/90 backdrop-blur-xl rounded-lg shadow-xl text-gray-800 z-50 overflow-hidden text-sm border border-white/50">
                                                     {isFetchingSuggestions && <div className="p-3 text-gray-400 text-xs">Loading...</div>}
                                                     {suggestions.map((s) => (
                                                         <div 
                                                             key={s.place_id}
                                                             onClick={() => handleVenueSelect(s.place_id, s.description)}
-                                                            className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
+                                                            className="p-3 hover:bg-rose-50/50 cursor-pointer border-b border-gray-100 last:border-0"
                                                         >
-                                                            <div className="font-bold text-[#333333]">{s.main_text}</div>
+                                                            <div className="font-bold text-gray-900">{s.main_text}</div>
                                                             <div className="text-xs text-gray-500 truncate">{s.secondary_text}</div>
                                                         </div>
                                                     ))}
@@ -258,8 +259,8 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                                    <Timer className="w-4 h-4 text-amber-300" />
+                                <div className="flex items-center gap-2 bg-white/60 px-4 py-2 rounded-full border border-white/40 shadow-sm backdrop-blur-md">
+                                    <Timer className="w-4 h-4 text-amber-400" />
                                     <span>Run Time: {totalDurationFormatted}</span>
                                 </div>
                             </div>
@@ -274,13 +275,13 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                     setIsEditing(!isEditing);
                                 }}
                                 variant="outline" 
-                                className="bg-transparent text-white border-white/20 hover:bg-white/10"
+                                className="bg-white/40 text-gray-700 border-white/40 hover:bg-white/60 hover:text-gray-900 transition-all shadow-sm backdrop-blur-sm"
                             >
                                 {isEditing ? 'Save' : 'Edit Details'}
                             </Button>
                             <Button 
                                 onClick={() => toast.info("Show Mode is coming soon!", { description: "This feature will allow you to run the show in real-time." })}
-                                className="bg-white text-[#333333] hover:bg-gray-100 font-bold shadow-lg shadow-black/20"
+                                className="bg-white/80 text-rose-900 hover:bg-white border border-white/50 shadow-[0_4px_20px_0_rgba(244,63,94,0.15)] hover:shadow-[0_4px_25px_0_rgba(244,63,94,0.25)] transition-all rounded-full"
                             >
                                 <PlayCircle className="w-4 h-4 mr-2" /> Start Show Mode
                             </Button>
@@ -294,9 +295,9 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                 {/* Run Sheet (The Quarterback View) */}
                 <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-serif text-[#333333] flex items-center gap-2">
-                            Run Sheet <Badge className="bg-gray-100 text-gray-500">{routines.length} Acts</Badge>
+                    <div className="flex items-center justify-between px-4">
+                        <h2 className="text-2xl font-serif text-gray-800 flex items-center gap-3">
+                            Run Sheet <Badge className="bg-white/50 text-rose-900 border border-white/40 shadow-sm backdrop-blur-md">{routines.length} Acts</Badge>
                         </h2>
                         
                         {/* Quick Add Routine */}
@@ -305,16 +306,19 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                 value={newRoutineTitle}
                                 onChange={(e) => setNewRoutineTitle(e.target.value)}
                                 placeholder="Add new routine..."
-                                className="bg-white border-gray-200 w-64 rounded-xl"
+                                className="bg-white/40 border-white/40 w-64 rounded-xl backdrop-blur-md focus:bg-white/60 transition-all shadow-sm placeholder:text-gray-400"
                             />
-                            <Button type="submit" disabled={!newRoutineTitle.trim()} className="rounded-xl">
+                            <Button type="submit" disabled={!newRoutineTitle.trim()} className="rounded-xl bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-200">
                                 <Plus className="w-4 h-4" />
                             </Button>
                         </form>
                     </div>
 
-                    <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden p-2">
-                        <div className="px-6 py-3 grid grid-cols-12 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 mb-2">
+                    <div className="bg-white/30 backdrop-blur-xl border border-white/40 rounded-[32px] shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] overflow-hidden p-4 relative">
+                        {/* Subtle inner glow/gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+                        
+                        <div className="px-6 py-4 grid grid-cols-12 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-white/30 mb-2 relative z-10">
                             <div className="col-span-1 text-center">#</div>
                             <div className="col-span-6">Routine Details</div>
                             <div className="col-span-3">Status</div>
@@ -327,7 +331,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                     <div 
                                         {...provided.droppableProps}
                                         ref={provided.innerRef}
-                                        className="space-y-2"
+                                        className="space-y-3 relative z-10"
                                     >
                                         {routines.map((routine, index) => {
                                             // Conflict Check: Look at previous routine
@@ -346,8 +350,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                 setSelectedSection('general');
                                                             }}
                                                             className={`
-                                                                relative rounded-2xl border transition-all duration-200 group cursor-pointer
-                                                                ${snapshot.isDragging ? 'bg-white shadow-2xl scale-105 z-50 border-indigo-200' : 'bg-white border-transparent hover:border-indigo-100 hover:bg-gray-50'}
+                                                                relative rounded-2xl border transition-all duration-300 group cursor-pointer backdrop-blur-md
+                                                                ${snapshot.isDragging 
+                                                                    ? 'bg-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.12)] scale-105 z-50 border-white ring-1 ring-rose-100' 
+                                                                    : 'bg-white/40 border-white/30 hover:bg-white/60 hover:border-white/50 hover:shadow-lg hover:shadow-rose-100/20'
+                                                                }
                                                             `}
                                                         >
                                                             {/* Conflict Alert Line */}
@@ -358,19 +365,19 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                 </div>
                                                             )}
 
-                                                            <div className="grid grid-cols-12 items-center p-3">
+                                                            <div className="grid grid-cols-12 items-center p-4">
                                                                 {/* Handle & Number */}
-                                                                <div className="col-span-1 flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                                                    <div {...provided.dragHandleProps} className="text-gray-300 cursor-grab active:cursor-grabbing hover:text-gray-500">
+                                                                <div className="col-span-1 flex items-center justify-center gap-3" onClick={(e) => e.stopPropagation()}>
+                                                                    <div {...provided.dragHandleProps} className="text-gray-300 cursor-grab active:cursor-grabbing hover:text-rose-400 transition-colors">
                                                                         <GripVertical className="w-4 h-4" />
                                                                     </div>
-                                                                    <span className="font-mono font-bold text-gray-400 text-lg">{index + 1}</span>
+                                                                    <span className="font-mono font-bold text-gray-300 text-lg group-hover:text-rose-300 transition-colors">{index + 1}</span>
                                                                 </div>
 
                                                                 {/* Details */}
-                                                                <div className="col-span-6 pr-4 border-r border-gray-100/50">
+                                                                <div className="col-span-6 pr-4 border-r border-white/30">
                                                                     <div 
-                                                                        className="font-bold text-[#333333] text-base group-hover:text-indigo-600 transition-colors"
+                                                                        className="font-bold text-gray-800 text-lg group-hover:text-rose-600 transition-colors"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             setSelectedRoutine(routine);
@@ -379,24 +386,24 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                     >
                                                                         {routine.title}
                                                                     </div>
-                                                                    <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
+                                                                    <div className="text-xs text-gray-500 flex items-center gap-2 mt-1">
                                                                         <div 
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
                                                                                 setSelectedRoutine(routine);
                                                                                 setSelectedSection('music');
                                                                             }}
-                                                                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md cursor-pointer transition-colors ${
+                                                                            className={`flex items-center gap-1 px-2 py-1 rounded-lg cursor-pointer transition-all border ${
                                                                                 routine.song_title 
-                                                                                    ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' 
-                                                                                    : 'text-gray-300 hover:text-gray-400 hover:bg-gray-100'
+                                                                                    ? 'text-indigo-600 bg-indigo-50/50 border-indigo-100/50 hover:bg-indigo-100 hover:border-indigo-200' 
+                                                                                    : 'text-gray-400 bg-gray-50/50 border-transparent hover:bg-gray-100'
                                                                             }`}
                                                                         >
                                                                             <Music className="w-3 h-3" /> 
                                                                             {routine.song_title ? routine.song_title : <span className="italic">No music set</span>}
                                                                         </div>
                                                                         
-                                                                        <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                                                                        <span className="w-1 h-1 bg-gray-200 rounded-full" />
                                                                         
                                                                         <div 
                                                                             onClick={(e) => {
@@ -404,7 +411,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                                 setSelectedRoutine(routine);
                                                                                 setSelectedSection('performers');
                                                                             }}
-                                                                            className="flex items-center gap-1 cursor-pointer hover:text-indigo-600 transition-colors"
+                                                                            className="flex items-center gap-1 cursor-pointer hover:text-rose-500 transition-colors px-1.5 py-0.5 rounded-md hover:bg-rose-50"
                                                                         >
                                                                             <Users className="w-3 h-3" /> {routine.performers?.length || 0}
                                                                         </div>
@@ -412,11 +419,15 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                 </div>
 
                                                                 {/* Status */}
-                                                                <div className="col-span-3 px-4">
+                                                                <div className="col-span-3 px-6">
                                                                     <div className="flex gap-2">
                                                                          {/* Music Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.song_title ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-300'}`}
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.song_title 
+                                                                                    ? 'bg-white text-indigo-500 border-indigo-100 shadow-indigo-100/50' 
+                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
+                                                                             }`}
                                                                              title={routine.song_title ? "Music Set" : "No music"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('music'); }}
                                                                          >
@@ -425,7 +436,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                          
                                                                          {/* Costume Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.costume_details ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.costume_details 
+                                                                                    ? 'bg-white text-rose-500 border-rose-100 shadow-rose-100/50' 
+                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
+                                                                             }`} 
                                                                              title={routine.costume_details ? "Costumes Detailed" : "No costume details"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('costumes'); }}
                                                                          >
@@ -434,7 +449,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                                                                          {/* Lighting Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.lighting_notes ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.lighting_notes 
+                                                                                    ? 'bg-white text-amber-500 border-amber-100 shadow-amber-100/50' 
+                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
+                                                                             }`} 
                                                                              title={routine.lighting_notes ? "Lighting Notes" : "No lighting details"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('lighting'); }}
                                                                          >
@@ -443,7 +462,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
                                                                          {/* Choreography/Notes Icon */}
                                                                          <div 
-                                                                             className={`p-1.5 rounded-md cursor-pointer hover:scale-110 transition-transform ${routine.notes ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-300'}`} 
+                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
+                                                                                routine.notes 
+                                                                                    ? 'bg-white text-purple-500 border-purple-100 shadow-purple-100/50' 
+                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
+                                                                             }`} 
                                                                              title={routine.notes ? "Choreography Notes" : "No notes"}
                                                                              onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('choreography'); }}
                                                                          >
