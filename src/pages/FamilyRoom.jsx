@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import EventDetailCard from '@/components/portal/EventDetailCard';
+import PerformanceHub from '@/components/portal/PerformanceHub';
 
 export default function FamilyRoom({ previewConfig = null, isMobilePreview = false }) {
     const [searchParams] = useSearchParams();
