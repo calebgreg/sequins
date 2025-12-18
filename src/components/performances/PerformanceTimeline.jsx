@@ -18,81 +18,73 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
     const totalDays = showDay ? differenceInDays(showDay, today) : 0;
     
     // Calculate progress percentage for the main track
-    // Find the first milestone date or today, whichever is earlier
     const startDate = sortedMilestones.length > 0 
         ? startOfDay(parseISO(sortedMilestones[0].due_date)) 
         : today;
     
-    // If start date is after today, we start from today
     const effectiveStart = startDate < today ? startDate : today;
     const totalSpan = showDay ? differenceInDays(showDay, effectiveStart) : 1;
     const daysPassed = differenceInDays(today, effectiveStart);
     const progressPercent = Math.max(0, Math.min(100, (daysPassed / totalSpan) * 100));
 
-    // --- EMPTY STATE ---
+    // --- COMPACT EMPTY STATE ---
     if (!showDay || sortedMilestones.length === 0) {
         return (
-            <div className="h-[300px] w-full rounded-[32px] overflow-hidden relative group">
+            <div className="h-[180px] w-full rounded-[24px] overflow-hidden relative group border border-rose-100">
                 {/* Glassmorphic Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-100 via-pink-50 to-white">
-                    <div className="absolute inset-0 bg-white/40 backdrop-blur-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-white to-rose-50/50">
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md"></div>
                 </div>
 
-                {/* Decorative Orbs */}
-                <div className="absolute top-[-20%] left-[-10%] w-[300px] h-[300px] rounded-full bg-rose-300/20 blur-[80px]" />
-                <div className="absolute bottom-[-10%] right-[-5%] w-[250px] h-[250px] rounded-full bg-pink-400/20 blur-[80px]" />
-
                 {/* Content */}
-                <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-8">
+                <div className="relative z-10 h-full flex items-center justify-center text-center px-6 gap-6">
                     <motion.div 
                         initial={{ scale: 0.95, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="w-20 h-20 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center mb-6 border border-white/60 shadow-[0_8px_32px_0_rgba(244,63,94,0.1)]"
+                        className="w-16 h-16 bg-white/60 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/60 shadow-sm shrink-0"
                     >
-                        <Sparkles className="w-8 h-8 text-rose-400" strokeWidth={1.5} />
+                        <Sparkles className="w-8 h-8 text-rose-300" strokeWidth={1.5} />
                     </motion.div>
                     
-                    <h3 className="font-serif text-2xl mb-2 text-rose-950 font-medium">Your Production Journey</h3>
-                    <p className="text-rose-800/60 max-w-sm mb-6 text-base font-light leading-relaxed">
-                        Every great show starts with a plan. Set your show date to begin the adventure.
-                    </p>
+                    <div className="text-left">
+                        <h3 className="font-serif text-lg mb-1 text-rose-950 font-medium">Your Production Journey</h3>
+                        <p className="text-rose-800/60 max-w-sm text-sm font-light leading-snug">
+                            Set your show date to begin the adventure.
+                        </p>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="w-full bg-white/40 backdrop-blur-xl rounded-[32px] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col relative">
+        <div className="w-full bg-white/40 backdrop-blur-xl rounded-[24px] border border-white/60 shadow-sm overflow-hidden flex flex-col relative">
             {/* Header */}
-            <div className="px-8 py-6 flex justify-between items-center border-b border-rose-100/30 bg-white/30">
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-rose-400 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-rose-200">
-                        <Flag className="w-4 h-4" />
+            <div className="px-6 py-3 flex justify-between items-center border-b border-rose-100/30 bg-white/30 h-14">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-400 to-pink-500 flex items-center justify-center text-white shadow-md shadow-rose-200/50">
+                        <Flag className="w-3.5 h-3.5" />
                     </div>
-                    <div>
-                        <h3 className="font-serif text-rose-950 text-lg">Road to Opening Night</h3>
-                        <div className="flex items-center gap-2 text-xs font-medium text-rose-500/80">
-                            <span>{format(today, 'MMM d')}</span>
-                            <ArrowRight className="w-3 h-3" />
-                            <span>{format(showDay, 'MMM d, yyyy')}</span>
-                        </div>
+                    <div className="flex items-baseline gap-2">
+                        <h3 className="font-serif text-rose-950 text-sm font-semibold">Road to Opening Night</h3>
+                        <span className="text-[10px] text-rose-400 font-medium bg-rose-50 px-1.5 py-0.5 rounded-md">
+                            {format(showDay, 'MMM d, yyyy')}
+                        </span>
                     </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                    <div className="text-right hidden sm:block">
-                        <div className="text-xs font-bold text-rose-400 uppercase tracking-widest">Countdown</div>
-                        <div className="font-mono text-lg font-bold text-rose-600">{totalDays} <span className="text-xs font-sans font-medium text-rose-400">days left</span></div>
+                <div className="flex items-center">
+                    <div className="text-xs font-medium text-rose-600 bg-white/50 px-2 py-1 rounded-full border border-rose-100">
+                        {totalDays} days left
                     </div>
                 </div>
             </div>
 
             {/* Scrollable Timeline Area */}
-            <div className="relative p-8 overflow-x-auto min-h-[320px] flex items-center custom-scrollbar">
+            <div className="relative px-6 py-6 overflow-x-auto min-h-[180px] flex items-center custom-scrollbar">
                 
                 {/* Connecting Line Container */}
-                <div className="absolute left-8 right-8 top-1/2 -translate-y-1/2 h-1 bg-rose-100 rounded-full z-0 min-w-[800px]">
+                <div className="absolute left-6 right-6 top-[60%] -translate-y-1/2 h-0.5 bg-rose-100 rounded-full z-0 min-w-[600px]">
                     {/* Progress Fill */}
                     <motion.div 
                         initial={{ width: 0 }}
@@ -101,15 +93,12 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                         className="h-full bg-gradient-to-r from-rose-300 to-pink-500 rounded-full relative"
                     >
                         {/* Current Day Indicator */}
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 bg-white border-4 border-pink-500 rounded-full shadow-lg z-10" />
-                        <div className="absolute right-0 bottom-full mb-3 translate-x-1/2 text-[10px] font-bold text-pink-500 uppercase tracking-wider bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow-sm">
-                            Today
-                        </div>
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-white border-[3px] border-pink-500 rounded-full shadow-md z-10" />
                     </motion.div>
                 </div>
 
                 {/* Milestones Container */}
-                <div className="relative z-10 flex gap-12 min-w-[800px] px-4 w-full justify-between items-start pt-12">
+                <div className="relative z-10 flex gap-4 min-w-[600px] w-full justify-between items-start">
                     {sortedMilestones.map((milestone, idx) => (
                         <MilestoneCard
                             key={milestone.id}
@@ -126,16 +115,12 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                     ))}
 
                     {/* Show Day Flag */}
-                    <div className="flex flex-col items-center justify-start group min-w-[120px]">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-xl shadow-rose-200 rotate-3 group-hover:rotate-6 transition-transform duration-300 border-4 border-white">
-                            <Sparkles className="w-6 h-6" />
+                    <div className="flex flex-col items-center justify-start group min-w-[80px] pt-1">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-lg shadow-rose-200 rotate-3 group-hover:rotate-6 transition-transform duration-300 border-2 border-white mb-2">
+                            <Sparkles className="w-4 h-4" />
                         </div>
-                        <div className="h-12 w-0.5 border-l-2 border-dashed border-rose-200 my-2"></div>
                         <div className="text-center">
-                            <div className="font-serif text-lg font-bold text-rose-600">Show Day</div>
-                            <div className="text-xs font-medium text-rose-400 bg-rose-50 px-2 py-1 rounded-md mt-1 inline-block">
-                                {format(showDay, 'MMM d')}
-                            </div>
+                            <div className="font-serif text-xs font-bold text-rose-600 leading-tight">Show<br/>Day</div>
                         </div>
                     </div>
                 </div>
@@ -150,13 +135,10 @@ function MilestoneCard({ milestone, today, onUpdate, index }) {
     const isTodayDate = isToday(dueDate);
     
     // Status Logic
-    const isCompleted = isPastDate; // Simplified logic: past = done for this visual
-    const statusColor = isCompleted ? "bg-green-100 text-green-600 border-green-200" : 
-                       isTodayDate ? "bg-amber-100 text-amber-600 border-amber-200" : 
-                       "bg-white text-rose-900 border-white/60";
+    const isCompleted = isPastDate; 
 
-    const nodeColor = isCompleted ? "bg-green-500 border-green-200" : 
-                     isTodayDate ? "bg-amber-500 border-amber-200" : 
+    const nodeColor = isCompleted ? "bg-green-400 border-green-100" : 
+                     isTodayDate ? "bg-amber-400 border-amber-100" : 
                      "bg-white border-rose-200";
 
     const [isEditing, setIsEditing] = useState(false);
@@ -169,57 +151,52 @@ function MilestoneCard({ milestone, today, onUpdate, index }) {
 
     return (
         <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="flex flex-col items-center min-w-[140px] group"
+            transition={{ delay: index * 0.05 }}
+            className="flex flex-col items-center min-w-[100px] group relative"
         >
             {/* Top Card (Details) */}
             <div className={`
-                relative p-4 rounded-2xl border backdrop-blur-md shadow-sm transition-all duration-300 w-full mb-4
-                ${isCompleted ? 'bg-green-50/50 border-green-100/50' : 'bg-white/60 border-white/60 hover:shadow-lg hover:-translate-y-1 hover:bg-white/80'}
+                relative p-2.5 rounded-xl border backdrop-blur-md shadow-sm transition-all duration-300 w-full mb-3
+                ${isCompleted ? 'bg-green-50/50 border-green-100/50' : 'bg-white/70 border-white/60 hover:shadow-md hover:-translate-y-0.5 hover:bg-white/90'}
             `}>
-                <div className="flex justify-between items-start mb-2">
-                    <div className={`p-1.5 rounded-lg ${isCompleted ? 'bg-green-100 text-green-600' : 'bg-rose-50 text-rose-500'}`}>
-                        {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                <div className="flex justify-between items-start mb-1 gap-2">
+                    <div className={`text-[10px] font-mono font-medium px-1.5 py-0.5 rounded ${isCompleted ? 'bg-green-100/80 text-green-700' : 'bg-rose-50 text-rose-600'}`}>
+                        {format(dueDate, 'MMM d')}
                     </div>
                     
                     <Popover open={isEditing} onOpenChange={setIsEditing}>
                         <PopoverTrigger asChild>
-                            <button className="text-gray-300 hover:text-rose-400 transition-colors">
-                                <Edit2 className="w-3 h-3" />
+                            <button className="text-gray-300 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100">
+                                <Edit2 className="w-2.5 h-2.5" />
                             </button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-4 bg-white/90 backdrop-blur-xl border-rose-100 shadow-xl rounded-2xl">
-                            <div className="space-y-3">
-                                <h4 className="font-medium text-sm text-rose-900">Reschedule Milestone</h4>
+                        <PopoverContent className="w-auto p-3 bg-white/95 backdrop-blur-xl border-rose-100 shadow-xl rounded-xl">
+                            <div className="space-y-2">
+                                <h4 className="font-medium text-xs text-rose-900">Reschedule</h4>
                                 <input 
                                     type="date" 
                                     value={tempDate}
                                     onChange={(e) => setTempDate(e.target.value)}
-                                    className="w-full bg-rose-50 border border-rose-100 rounded-lg px-3 py-2 text-sm text-rose-900 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                                    className="w-full bg-rose-50 border border-rose-100 rounded px-2 py-1 text-xs text-rose-900 focus:outline-none focus:ring-1 focus:ring-rose-200"
                                 />
-                                <Button size="sm" onClick={handleSave} className="w-full bg-rose-500 hover:bg-rose-600 text-white rounded-lg">
-                                    Update Date
+                                <Button size="sm" onClick={handleSave} className="w-full h-7 text-xs bg-rose-500 hover:bg-rose-600 text-white rounded">
+                                    Update
                                 </Button>
                             </div>
                         </PopoverContent>
                     </Popover>
                 </div>
                 
-                <div className="font-bold text-sm text-gray-800 leading-tight mb-1">{milestone.name}</div>
-                <div className={`text-xs font-mono font-medium ${isCompleted ? 'text-green-600/70' : 'text-gray-400'}`}>
-                    {format(dueDate, 'MMM d')}
+                <div className="font-bold text-xs text-gray-700 leading-tight line-clamp-2" title={milestone.name}>
+                    {milestone.name}
                 </div>
             </div>
 
             {/* Connector Node */}
-            <div className={`w-4 h-4 rounded-full border-4 z-20 transition-all duration-500 ${nodeColor} shadow-sm group-hover:scale-125`} />
+            <div className={`w-3 h-3 rounded-full border-[3px] z-20 transition-all duration-500 ${nodeColor} shadow-sm group-hover:scale-125`} />
             
-            {/* Dashed Line to card */}
-            <div className="h-6 w-px border-l-2 border-dashed border-gray-200 -mt-2 mb-2 absolute top-[calc(100%-20px)] opacity-0"></div> 
-            {/* (Hiding vertical lines for cleaner look, letting cards float above) */}
-
         </motion.div>
     );
 }
