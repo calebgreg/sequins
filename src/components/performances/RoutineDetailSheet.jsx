@@ -15,6 +15,54 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
+function GroomingInput({ label, value, image, onChange, onImageUpload, onImageRemove, placeholder }) {
+    return (
+        <div className="space-y-3">
+            <Label className="text-sm font-medium text-gray-700">{label}</Label>
+            
+            {/* Image Drop Area */}
+            <div className="relative group">
+                {image ? (
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50 group-hover:shadow-md transition-all">
+                        <img src={image} alt={label} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <label className="cursor-pointer p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm transition-colors">
+                                <UploadCloud className="w-4 h-4" />
+                                <input type="file" className="hidden" accept="image/*" onChange={(e) => onImageUpload(e.target.files[0])} />
+                            </label>
+                            <button 
+                                onClick={onImageRemove}
+                                className="p-2 bg-white/20 hover:bg-red-500/80 rounded-full text-white backdrop-blur-sm transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <label className="flex flex-col items-center justify-center w-full aspect-video rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 hover:bg-indigo-50/50 hover:border-indigo-200 cursor-pointer transition-all group-hover:scale-[1.01]">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <div className="w-10 h-10 mb-3 rounded-full bg-white flex items-center justify-center shadow-sm text-gray-400 group-hover:text-indigo-500 transition-colors">
+                                <ImageIcon className="w-5 h-5" />
+                            </div>
+                            <p className="mb-1 text-xs text-gray-500 font-medium">Click to upload photo</p>
+                            <p className="text-[10px] text-gray-400">or drag and drop</p>
+                        </div>
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => onImageUpload(e.target.files[0])} />
+                    </label>
+                )}
+            </div>
+
+            {/* Text Input */}
+            <Input 
+                value={value || ''}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                className="bg-white"
+            />
+        </div>
+    );
+}
+
 export default function RoutineDetailSheet({ routine, open, onOpenChange, allStudents = [], selectedSection = 'general' }) {
     const [formData, setFormData] = useState({});
     const [isSearchingMusic, setIsSearchingMusic] = useState(false);
@@ -191,54 +239,6 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
     };
 
     if (!routine) return null;
-
-function GroomingInput({ label, value, image, onChange, onImageUpload, onImageRemove, placeholder }) {
-    return (
-        <div className="space-y-3">
-            <Label className="text-sm font-medium text-gray-700">{label}</Label>
-            
-            {/* Image Drop Area */}
-            <div className="relative group">
-                {image ? (
-                    <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50 group-hover:shadow-md transition-all">
-                        <img src={image} alt={label} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                            <label className="cursor-pointer p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm transition-colors">
-                                <UploadCloud className="w-4 h-4" />
-                                <input type="file" className="hidden" accept="image/*" onChange={(e) => onImageUpload(e.target.files[0])} />
-                            </label>
-                            <button 
-                                onClick={onImageRemove}
-                                className="p-2 bg-white/20 hover:bg-red-500/80 rounded-full text-white backdrop-blur-sm transition-colors"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <label className="flex flex-col items-center justify-center w-full aspect-video rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 hover:bg-indigo-50/50 hover:border-indigo-200 cursor-pointer transition-all group-hover:scale-[1.01]">
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <div className="w-10 h-10 mb-3 rounded-full bg-white flex items-center justify-center shadow-sm text-gray-400 group-hover:text-indigo-500 transition-colors">
-                                <ImageIcon className="w-5 h-5" />
-                            </div>
-                            <p className="mb-1 text-xs text-gray-500 font-medium">Click to upload photo</p>
-                            <p className="text-[10px] text-gray-400">or drag and drop</p>
-                        </div>
-                        <input type="file" className="hidden" accept="image/*" onChange={(e) => onImageUpload(e.target.files[0])} />
-                    </label>
-                )}
-            </div>
-
-            {/* Text Input */}
-            <Input 
-                value={value || ''}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder={placeholder}
-                className="bg-white"
-            />
-        </div>
-    );
-}
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
