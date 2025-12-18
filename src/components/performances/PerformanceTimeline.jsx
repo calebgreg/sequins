@@ -152,10 +152,10 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
         progressTrackClass = "bg-rose-500"; 
         dotColorClass = "bg-rose-500";
     } else if (isDueSoon) {
-        // Subtle urgency - Indigo (cool tone) instead of yellow
-        knobBorderClass = "border-indigo-400";
-        progressTrackClass = "bg-indigo-300";
-        dotColorClass = "bg-indigo-500";
+        // Subtle urgency - Dark Gray / Slate (Professional)
+        knobBorderClass = "border-slate-500";
+        progressTrackClass = "bg-slate-500";
+        dotColorClass = "bg-slate-700";
     }
 
     // Dynamic date label while dragging
@@ -210,12 +210,12 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                     dragConstraints={{ left: 0, right: containerWidth }}
                     dragElastic={0}
                     dragMomentum={false}
-                    style={{ x }}
+                    style={{ x, y: "-50%" }}
                     onDragStart={() => setIsDragging(true)}
                     onDrag={handleDrag}
                     onDragEnd={handleDragEnd}
                     className={`
-                        absolute top-1/2 -translate-y-1/2 -ml-[10px]
+                        absolute top-1/2 -ml-[10px]
                         w-5 h-5 rounded-full bg-white border-2 cursor-grab active:cursor-grabbing
                         flex items-center justify-center z-20 transition-all
                         ${isDragging ? 'scale-110 border-gray-900 shadow-md' : `hover:scale-105 ${knobBorderClass}`}
