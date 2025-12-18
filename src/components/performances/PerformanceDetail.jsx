@@ -310,7 +310,17 @@ export default function PerformanceDetail({ performanceId, onBack }) {
 
             {/* Timeline Section */}
             <div className="flex-1 min-w-0">
-                <PerformanceTimeline tasks={tasks} milestones={performance?.timeline_milestones} />
+                <PerformanceTimeline 
+                    milestones={performance?.timeline_milestones} 
+                    showDate={performance?.date}
+                    onMilestoneUpdate={(updatedMilestones) => {
+                        // Optimistic / Real update
+                        updatePerformance.mutate({ 
+                            ...performance, 
+                            timeline_milestones: updatedMilestones 
+                        });
+                    }}
+                />
             </div>
             </div>
 
