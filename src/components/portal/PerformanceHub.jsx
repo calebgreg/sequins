@@ -120,9 +120,9 @@ export default function PerformanceHub({ studentId }) {
                                 </div>
                                 
                                 {routine.costume_product_suggestions?.[0] && (
-                                    <div className="aspect-[3/4] w-full max-w-[240px] rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-sm mx-auto md:mx-0 relative group">
-                                        <img src={routine.costume_product_suggestions[0].image_url} alt="Costume" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
+                                    <div className="aspect-[3/4] w-full max-w-[240px] rounded-2xl overflow-hidden bg-white border-[6px] border-white shadow-lg mx-auto md:mx-0 relative group rotate-2 hover:rotate-0 transition-all duration-500">
+                                        <img src={routine.costume_product_suggestions[0].image_url} alt="Costume" className="w-full h-full object-cover rounded-lg" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 rounded-lg" />
                                         <div className="absolute bottom-4 left-4 text-white text-xs font-medium tracking-wide">
                                             Costume Reference
                                         </div>
@@ -132,29 +132,55 @@ export default function PerformanceHub({ studentId }) {
 
                             {/* Right Column: The "Spoon-fed" Details Grid */}
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                                {/* Grooming Card */}
-                                <div className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
+                                {/* Grooming Board - Pinterest Style */}
+                                <div className="mb-8">
                                     <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
+                                        <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
                                             <Scissors className="w-5 h-5" />
                                         </div>
-                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Look & Feel</h4>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Look & Feel Board</h4>
                                     </div>
-                                    
-                                    <div className="space-y-5">
-                                        <DetailRow label="Hair" value={routine.grooming?.hair} />
-                                        <DetailRow label="Makeup" value={routine.grooming?.makeup} />
-                                        <DetailRow label="Tights" value={routine.grooming?.tights} />
-                                        <DetailRow label="Shoes" value={routine.grooming?.shoes} />
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <PinterestCard 
+                                            label="Hair" 
+                                            value={routine.grooming?.hair} 
+                                            rotate="rotate-1"
+                                            delay={0.1}
+                                        />
+                                        <PinterestCard 
+                                            label="Makeup" 
+                                            value={routine.grooming?.makeup} 
+                                            rotate="-rotate-1"
+                                            delay={0.2}
+                                        />
+                                        <PinterestCard 
+                                            label="Tights" 
+                                            value={routine.grooming?.tights} 
+                                            rotate="-rotate-2"
+                                            delay={0.3}
+                                        />
+                                        <PinterestCard 
+                                            label="Shoes" 
+                                            value={routine.grooming?.shoes} 
+                                            rotate="rotate-2"
+                                            delay={0.4}
+                                        />
                                     </div>
-                                    
+
                                     {routine.grooming?.notes && (
-                                        <div className="mt-8 pt-6 border-t border-stone-100">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Director's Note</p>
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            viewport={{ once: true }}
+                                            className="mt-6 bg-[#fffbf0] p-6 rounded-xl shadow-md border border-stone-100 -rotate-1 mx-2 relative"
+                                        >
+                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-4 bg-yellow-100/50 blur-sm rounded-full" />
+                                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Director's Note</p>
                                             <p className="text-sm text-[#333333] font-serif italic leading-relaxed">
                                                 "{routine.grooming.notes}"
                                             </p>
-                                        </div>
+                                        </motion.div>
                                     )}
                                 </div>
 
@@ -217,12 +243,18 @@ export default function PerformanceHub({ studentId }) {
     );
 }
 
-function DetailRow({ label, value }) {
+function PinterestCard({ label, value, rotate = "rotate-0", delay = 0 }) {
     if (!value) return null;
     return (
-        <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{label}</span>
-            <span className="text-base font-medium text-[#1c1c1c] border-b border-stone-100 pb-2">{value}</span>
-        </div>
+        <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay, duration: 0.5 }}
+            className={`bg-white p-5 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-stone-50 ${rotate} hover:rotate-0 hover:scale-[1.02] hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:z-10 transition-all duration-300`}
+        >
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">{label}</span>
+            <span className="text-base font-medium text-[#1c1c1c] font-serif leading-tight block">{value}</span>
+        </motion.div>
     );
 }
