@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2, PlayCircle, ExternalLink, X, Mic, Plus, Check } from "lucide-react";
+import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2, PlayCircle, ExternalLink, X, Mic, Plus, Check, Scissors, CalendarDays } from "lucide-react";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -39,7 +39,9 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                 ...routine,
                 performers: routine.performers || [],
                 duration_minutes: Math.floor((routine.duration_seconds || 180) / 60),
-                duration_seconds_part: (routine.duration_seconds || 180) % 60
+                duration_seconds_part: (routine.duration_seconds || 180) % 60,
+                grooming: routine.grooming || { hair: '', makeup: '', tights: '', shoes: '', notes: '' },
+                rehearsals: routine.rehearsals || []
             });
         }
     }, [routine]);
@@ -58,7 +60,9 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                 notes: data.notes,
                 performers: data.performers,
                 spotify_link: data.spotify_link,
-                apple_music_link: data.apple_music_link
+                apple_music_link: data.apple_music_link,
+                grooming: data.grooming,
+                rehearsals: data.rehearsals
             });
         },
         onSuccess: () => {
@@ -131,6 +135,42 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
             ? currentPerformers.filter(id => id !== studentId)
             : [...currentPerformers, studentId];
         setFormData({ ...formData, performers: newPerformers });
+    };
+
+    const handleGroomingChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            grooming: { ...prev.grooming, [field]: value }
+        }));
+    };
+
+    const addRehearsal = () => {
+        setFormData(prev => ({
+            ...prev,
+            rehearsals: [...(prev.rehearsals || []), {
+                id: crypto.randomUUID(),
+                title: 'New Rehearsal',
+                date: '',
+                start_time: '',
+                end_time: '',
+                location: '',
+                notes: ''
+            }]
+        }));
+    };
+
+    const updateRehearsal = (id, field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            rehearsals: prev.rehearsals.map(r => r.id === id ? { ...r, [field]: value } : r)
+        }));
+    };
+
+    const removeRehearsal = (id) => {
+        setFormData(prev => ({
+            ...prev,
+            rehearsals: prev.rehearsals.filter(r => r.id !== id)
+        }));
     };
 
     if (!routine) return null;
@@ -305,6 +345,138 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                 />
                                 <span className="text-sm text-gray-500">sec</span>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Grooming & Schedule */}
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                        <h3 className="font-serif text-xl text-[#333333] flex items-center gap-2">
+                            <Scissors className="w-5 h-5 text-gray-400" />
+                            Grooming & Attire
+                        </h3>
+                        <div id="section-grooming" className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Hair</Label>
+                                <Input 
+                                    value={formData.grooming?.hair || ''}
+                                    onChange={(e) => handleGroomingChange('hair', e.target.value)}
+                                    placeholder="e.g. Low bun, middle part"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Makeup</Label>
+                                <Input 
+                                    value={formData.grooming?.makeup || ''}
+                                    onChange={(e) => handleGroomingChange('makeup', e.target.value)}
+                                    placeholder="e.g. Standard Stage Face"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Tights</Label>
+                                <Input 
+                                    value={formData.grooming?.tights || ''}
+                                    onChange={(e) => handleGroomingChange('tights', e.target.value)}
+                                    placeholder="e.g. Tan Footed"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Shoes</Label>
+                                <Input 
+                                    value={formData.grooming?.shoes || ''}
+                                    onChange={(e) => handleGroomingChange('shoes', e.target.value)}
+                                    placeholder="e.g. Black Jazz"
+                                />
+                            </div>
+                            <div className="col-span-2 space-y-2">
+                                <Label>Notes</Label>
+                                <Input 
+                                    value={formData.grooming?.notes || ''}
+                                    onChange={(e) => handleGroomingChange('notes', e.target.value)}
+                                    placeholder="Additional grooming notes..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                        <div className="flex justify-between items-center">
+                            <h3 className="font-serif text-xl text-[#333333] flex items-center gap-2">
+                                <CalendarDays className="w-5 h-5 text-gray-400" />
+                                Class Schedule
+                            </h3>
+                            <Button size="sm" variant="outline" onClick={addRehearsal}>
+                                <Plus className="w-3 h-3 mr-1" /> Add Event
+                            </Button>
+                        </div>
+                        
+                        <div id="section-schedule" className="space-y-3">
+                            {formData.rehearsals?.map((rehearsal) => (
+                                <div key={rehearsal.id} className="bg-gray-50 p-4 rounded-xl border border-gray-100 relative group">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="absolute top-2 right-2 h-6 w-6 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
+                                        onClick={() => removeRehearsal(rehearsal.id)}
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </Button>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                                        <Input 
+                                            value={rehearsal.title}
+                                            onChange={(e) => updateRehearsal(rehearsal.id, 'title', e.target.value)}
+                                            placeholder="Event Name (e.g. Dress Rehearsal)"
+                                            className="font-medium bg-white"
+                                        />
+                                        <Input 
+                                            type="date"
+                                            value={rehearsal.date}
+                                            onChange={(e) => updateRehearsal(rehearsal.id, 'date', e.target.value)}
+                                            className="bg-white"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-3 mb-2">
+                                        <div className="space-y-1">
+                                            <Label className="text-[10px] text-gray-400 uppercase">Start</Label>
+                                            <Input 
+                                                type="time"
+                                                value={rehearsal.start_time}
+                                                onChange={(e) => updateRehearsal(rehearsal.id, 'start_time', e.target.value)}
+                                                className="bg-white text-xs h-8"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-[10px] text-gray-400 uppercase">End</Label>
+                                            <Input 
+                                                type="time"
+                                                value={rehearsal.end_time}
+                                                onChange={(e) => updateRehearsal(rehearsal.id, 'end_time', e.target.value)}
+                                                className="bg-white text-xs h-8"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-[10px] text-gray-400 uppercase">Location</Label>
+                                            <Input 
+                                                value={rehearsal.location}
+                                                onChange={(e) => updateRehearsal(rehearsal.id, 'location', e.target.value)}
+                                                placeholder="Venue"
+                                                className="bg-white text-xs h-8"
+                                            />
+                                        </div>
+                                    </div>
+                                    <Input 
+                                        value={rehearsal.notes}
+                                        onChange={(e) => updateRehearsal(rehearsal.id, 'notes', e.target.value)}
+                                        placeholder="Notes (e.g. Arrive in costume, no parents allowed)"
+                                        className="bg-white text-xs"
+                                    />
+                                </div>
+                            ))}
+                            {(!formData.rehearsals || formData.rehearsals.length === 0) && (
+                                <div className="text-center text-sm text-gray-400 py-6 border-2 border-dashed border-gray-100 rounded-xl">
+                                    No specific rehearsals or call times added for this group.
+                                </div>
+                            )}
                         </div>
                     </div>
 
