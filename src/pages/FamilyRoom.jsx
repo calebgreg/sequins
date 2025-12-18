@@ -20,6 +20,7 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     const isPreview = urlPreview || !!previewConfig;
     const [previewData, setPreviewData] = useState(null);
     const [previewError, setPreviewError] = useState(false);
+    const [primaryStudentId, setPrimaryStudentId] = useState(null);
 
     // Load preview data from URL hash (robust against domain/storage issues)
     useEffect(() => {
@@ -100,6 +101,23 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
 
     // Mock for preview if no real data
     const displayInvoices = isPreview ? [{ balance_due: 450, stripe_payment_link: '#' }] : (familyInvoices || []);
+
+    // Fetch students to identify the primary student for this family
+    const { data: familyStudents = [] } = useQuery({
+        queryKey: ['familyStudents', config?.parent_email],
+        queryFn: async () => {
+            if (!config?.parent_email) return [];
+            const allStudents = await base44.entities.Student.list();
+            return allStudents.filter(s => s.parent_email === config.parent_email);
+        },
+        enabled: !!config?.parent_email && !isPreview
+    });
+
+    useEffect(() => {
+        if (familyStudents.length > 0 && !primaryStudentId) {
+            setPrimaryStudentId(familyStudents[0].id);
+        }
+    }, [familyStudents, primaryStudentId]);
 
     // Fetch classes for recommendations
         const { data: allClasses = [] } = useQuery({
