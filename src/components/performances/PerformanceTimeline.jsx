@@ -136,29 +136,10 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
         }
     }, [initialProgress, containerWidth, isDragging, x]);
 
-    // Derived values for visual feedback
-    const daysUntil = differenceInDays(dueDate, today);
-    const isOverdue = daysUntil < 0;
-    const isDueSoon = daysUntil >= 0 && daysUntil <= 14;
-    
-    // Minimal aesthetic updates
-    let colorClass = "bg-white border-gray-300 shadow-sm";
-    let trackClass = "bg-gray-200";
-    let dotClass = "bg-gray-400";
-    
-    if (isOverdue) {
-        colorClass = "bg-white border-rose-300 shadow-sm ring-1 ring-rose-50";
-        trackClass = "bg-rose-100";
-        dotClass = "bg-rose-400";
-    } else if (isDueSoon) {
-        colorClass = "bg-white border-amber-300 shadow-sm ring-1 ring-amber-50";
-        trackClass = "bg-amber-100";
-        dotClass = "bg-amber-400";
-    } else {
-        colorClass = "bg-white border-gray-300 shadow-sm";
-        trackClass = "bg-gray-100";
-        dotClass = "bg-gray-400";
-    }
+    // Minimal aesthetic updates - sleek & professional (monochrome)
+    const colorClass = "bg-white border-gray-300 shadow-sm hover:border-gray-400";
+    const trackClass = "bg-gray-200";
+    const dotClass = "bg-gray-300";
 
     // Dynamic date label while dragging
     const [dragDate, setDragDate] = useState(dueDate);
@@ -186,21 +167,20 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
 
     return (
         <div className="relative group">
-            <div className="flex justify-between items-end mb-2 px-1">
-                <span className={`text-sm font-semibold ${isOverdue ? 'text-rose-600' : 'text-gray-700'}`}>
+            {/* Title Row */}
+            <div className="flex justify-between items-end mb-3 px-1">
+                <span className="text-sm font-medium text-gray-900">
                     {milestone.name}
                 </span>
-                <span className={`text-xs font-mono font-medium ${isDragging ? 'text-indigo-600 scale-110' : 'text-gray-400'} transition-all`}>
+                <span className={`text-xs font-mono font-medium ${isDragging ? 'text-gray-900' : 'text-gray-400'} transition-colors`}>
                     {format(isDragging ? dragDate : dueDate, 'MMM d')}
                 </span>
             </div>
 
-            <div className="h-3 w-full rounded-full bg-gray-50 border border-gray-100 relative flex items-center overflow-visible">
-                {/* Active Track Portion (Optional - from start to point) */}
-                <motion.div 
-                    className={`absolute left-0 h-full rounded-full opacity-30 ${trackClass}`}
-                    style={{ width: x }}
-                />
+            {/* Track Container */}
+            <div className="h-6 relative flex items-center w-full">
+                {/* The Line */}
+                <div className="h-px w-full bg-gray-200 absolute left-0 right-0 top-1/2 -translate-y-1/2" />
 
                 {/* Draggable Knob */}
                 <motion.div
@@ -213,15 +193,14 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                     onDrag={handleDrag}
                     onDragEnd={handleDragEnd}
                     className={`
-                        absolute top-1/2 -translate-y-1/2 -ml-3
-                        w-6 h-6 rounded-full border-2 cursor-grab active:cursor-grabbing
-                        flex items-center justify-center z-20 shadow-lg transition-all
-                        ${isDragging ? 'scale-110 ring-4 ring-indigo-500/10' : 'hover:scale-105'}
-                        ${colorClass}
+                        absolute top-1/2 -translate-y-1/2 -ml-2.5
+                        w-5 h-5 rounded-full border bg-white cursor-grab active:cursor-grabbing
+                        flex items-center justify-center z-20 shadow-sm transition-transform
+                        ${isDragging ? 'scale-110 border-gray-400' : 'border-gray-300 hover:border-gray-400'}
                     `}
                 >
-                    {/* Inner Dot */}
-                    <div className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
+                    {/* Inner Dot (Minimal) */}
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
                     
                     {/* Tooltip Label (Visible on Hover/Drag) */}
                     <div className={`
