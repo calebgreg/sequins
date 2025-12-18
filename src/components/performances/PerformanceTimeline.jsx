@@ -120,7 +120,6 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
 
 function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUpdate, allMilestones }) {
     const [isDragging, setIsDragging] = useState(false);
-    const constraintsRef = useRef(null);
     
     // Calculate initial position
     const dueDate = parseISO(milestone.due_date);
@@ -128,15 +127,18 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
     const initialProgress = Math.max(0, Math.min(1, daysFromStart / spanDays));
     
     // Motion value for smooth dragging
-    const initialX = initialProgress * containerWidth;
-    const x = useMotionValue(initialX);
+    const x = useMotionValue(initialProgress * containerWidth);
     
     // Sync x with props when not dragging
     useEffect(() => {
         if (!isDragging && containerWidth > 0) {
-            x.set(initialProgress * containerWidth);
+            const targetX = initialProgress * containerWidth;
+            // Only update if significantly different to avoid rounding jitter snaps
+            if (Math.abs(x.get() - targetX) > 2) {
+                x.set(targetX);
+            }
         }
-    }, [initialProgress, containerWidth, isDragging]);
+    }, [initialProgress, containerWidth, isDragging, x]);
 
     // Derived values for visual feedback
     const daysUntil = differenceInDays(dueDate, today);
