@@ -34,6 +34,9 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     const [selectedSection, setSelectedSection] = useState('general');
     const queryClient = useQueryClient();
 
+    // Optimistic milestones state to prevent "glitchy" snapping
+    const [optimisticMilestones, setOptimisticMilestones] = useState(null);
+
     // 1. Fetch Performance Data
     const { data: performance } = useQuery({
         queryKey: ['performance', performanceId],
@@ -49,6 +52,11 @@ export default function PerformanceDetail({ performanceId, onBack }) {
             });
             // Initial display value for venue input
             setVenueSearch(performance.venue?.venue_name || performance.venue || ''); 
+            
+            // Sync milestones only if we don't have pending optimistic updates or if server data changed meaningfully
+            // Actually, we should always sync from server, but our optimistic update will override locally first.
+            // When server responds, it should match.
+            setOptimisticMilestones(performance.timeline_milestones);
         }
     }, [performance]);
 
@@ -311,9 +319,12 @@ export default function PerformanceDetail({ performanceId, onBack }) {
             {/* Timeline Section */}
             <div className="flex-1 min-w-0">
                 <PerformanceTimeline 
-                    milestones={performance?.timeline_milestones} 
+                    milestones={optimisticMilestones || performance?.timeline_milestones} 
                     showDate={performance?.date}
                     onMilestoneUpdate={async (updatedMilestones) => {
+                        // 0. Optimistic Update (Immediate Feedback)
+                        setOptimisticMilestones(updatedMilestones);
+
                         // 1. Update Performance Entity
                         updatePerformance.mutate({ 
                             ...performance, 
