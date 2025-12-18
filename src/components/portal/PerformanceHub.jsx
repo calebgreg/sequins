@@ -6,7 +6,6 @@ import {
     CalendarDays, Clock, MapPin, Shirt, Sparkles, Scissors, 
     ChevronRight, ArrowRight, CheckCircle2, Music 
 } from 'lucide-react';
-
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -147,7 +146,7 @@ export default function PerformanceHub({ studentId }) {
                                             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Look & Feel Board</h4>
                                         </div>
 
-                                        {(!routine.grooming?.hair && !routine.grooming?.makeup && !routine.grooming?.tights && !routine.grooming?.shoes) ? (
+                                        {(!routine.grooming?.hair && !routine.grooming?.makeup && !routine.grooming?.tights && !routine.grooming?.shoes && !routine.grooming?.hair_image && !routine.grooming?.makeup_image && !routine.grooming?.tights_image && !routine.grooming?.shoes_image) ? (
                                             <div className="text-center py-12 border-2 border-dashed border-stone-100 rounded-2xl bg-white/50">
                                                 <div className="mb-3 opacity-20">
                                                     <Scissors className="w-12 h-12 mx-auto" />
@@ -159,30 +158,34 @@ export default function PerformanceHub({ studentId }) {
                                                 <PinterestCard 
                                                     label="Hair" 
                                                     value={routine.grooming?.hair} 
+                                                    image={routine.grooming?.hair_image}
                                                     rotate="rotate-1"
                                                     delay={0.1}
                                                 />
                                                 <PinterestCard 
                                                     label="Makeup" 
                                                     value={routine.grooming?.makeup} 
+                                                    image={routine.grooming?.makeup_image}
                                                     rotate="-rotate-1"
                                                     delay={0.2}
                                                 />
                                                 <PinterestCard 
                                                     label="Tights" 
                                                     value={routine.grooming?.tights} 
+                                                    image={routine.grooming?.tights_image}
                                                     rotate="-rotate-2"
                                                     delay={0.3}
                                                 />
                                                 <PinterestCard 
                                                     label="Shoes" 
                                                     value={routine.grooming?.shoes} 
+                                                    image={routine.grooming?.shoes_image}
                                                     rotate="rotate-2"
                                                     delay={0.4}
                                                 />
                                             </div>
                                         )}
-
+                                        
                                         {routine.grooming?.notes && (
                                             <motion.div 
                                                 initial={{ opacity: 0, y: 10 }}
@@ -192,8 +195,8 @@ export default function PerformanceHub({ studentId }) {
                                             >
                                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-4 bg-yellow-100/50 blur-sm rounded-full" />
                                                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Director's Note</p>
-                                                <p className="text-sm text-[#333333] font-serif italic leading-relaxed">
-                                                    "{routine.grooming.notes}"
+                                                <p className="text-xl text-[#2c2c2c] leading-relaxed" style={{ fontFamily: '"Caveat", "Brush Script MT", cursive', transform: 'rotate(-0.5deg)' }}>
+                                                    {routine.grooming.notes}
                                                 </p>
                                             </motion.div>
                                         )}
