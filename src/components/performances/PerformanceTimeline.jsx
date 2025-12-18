@@ -199,9 +199,6 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
             </div>
 
             <div className="h-3 w-full rounded-full bg-gray-50 border border-gray-100 relative flex items-center overflow-visible">
-                {/* Constraint Container: Width + 20px (knob size) to allow full travel */}
-                <div ref={constraintsRef} className="absolute top-0 bottom-0 -left-[10px] -right-[10px] pointer-events-none" />
-
                 {/* Active Track Portion (Progress Indicator) */}
                 <motion.div 
                     className={`absolute left-0 h-full rounded-full ${progressTrackClass}`}
@@ -211,10 +208,10 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                 {/* Draggable Knob */}
                 <motion.div
                     drag="x"
-                    dragConstraints={constraintsRef}
+                    dragConstraints={{ left: 0, right: containerWidth }}
                     dragElastic={0}
                     dragMomentum={false}
-                    style={{ x, y: "-50%" }}
+                    style={{ x, y: "-50%", left: 0 }} // Explicit left: 0 is crucial for absolute positioning
                     onDragStart={() => setIsDragging(true)}
                     onDrag={handleDrag}
                     onDragEnd={handleDragEnd}
