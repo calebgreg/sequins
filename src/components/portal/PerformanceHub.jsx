@@ -19,34 +19,37 @@ export default function PerformanceHub({ studentId }) {
         queryFn: async () => {
             if (!studentId) return null;
 
-            // Fetch all performances
+            // 1. Fetch routines directly where student is a performer
+            // This uses backend filtering which is more reliable than client-side filtering of limited lists
+            const studentRoutines = await base44.entities.PerformanceRoutine.filter({
+                performers: studentId
+            });
+
+            if (!studentRoutines || studentRoutines.length === 0) return null;
+
+            // 2. Identify relevant performance IDs
+            const performanceIds = [...new Set(studentRoutines.map(r => r.performance_id))];
+
+            // 3. Fetch all performances (usually a small list)
             const allPerformances = await base44.entities.Performance.list();
-            const futurePerformances = allPerformances.filter(p => 
-                p.date && new Date(p.date) >= new Date(new Date().setHours(0,0,0,0))
+
+            // 4. Filter for future performances that contain our student's routines
+            const relevantPerformances = allPerformances.filter(p => 
+                p.date && 
+                new Date(p.date) >= new Date(new Date().setHours(0,0,0,0)) &&
+                performanceIds.includes(p.id)
             );
 
-            if (futurePerformances.length === 0) return null;
+            if (relevantPerformances.length === 0) return null;
 
-            // Fetch routines for these performances
-            const allRoutines = await base44.entities.PerformanceRoutine.list();
-            
-            // Find performances where this student is a performer
-            const relevantData = futurePerformances.map(perf => {
-                const studentRoutines = allRoutines.filter(r => 
-                    r.performance_id === perf.id && 
-                    r.performers?.includes(studentId)
-                );
+            // 5. Pick the soonest one
+            const nextPerformance = relevantPerformances.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
 
-                if (studentRoutines.length === 0) return null;
-
-                return {
-                    performance: perf,
-                    routines: studentRoutines
-                };
-            }).filter(Boolean);
-
-            // Return the soonest one
-            return relevantData.sort((a, b) => new Date(a.performance.date) - new Date(b.performance.date))[0];
+            // 6. Return data
+            return {
+                performance: nextPerformance,
+                routines: studentRoutines.filter(r => r.performance_id === nextPerformance.id)
+            };
         },
         enabled: !!studentId
     });

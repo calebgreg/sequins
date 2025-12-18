@@ -107,8 +107,8 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
         queryKey: ['familyStudents', config?.parent_email],
         queryFn: async () => {
             if (!config?.parent_email) return [];
-            const allStudents = await base44.entities.Student.list();
-            return allStudents.filter(s => s.parent_email === config.parent_email);
+            // Use backend filtering to ensure we find the student even if the list is large
+            return await base44.entities.Student.filter({ parent_email: config.parent_email });
         },
         enabled: !!config?.parent_email && !isPreview
     });
