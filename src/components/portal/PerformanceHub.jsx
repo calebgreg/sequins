@@ -6,7 +6,7 @@ import {
     CalendarDays, Clock, MapPin, Shirt, Sparkles, Scissors, 
     ChevronRight, ArrowRight, CheckCircle2, Music 
 } from 'lucide-react';
-import { Helmet } from "react-helmet";
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,9 +63,9 @@ export default function PerformanceHub({ studentId }) {
 
     return (
         <div className="w-full">
-            <Helmet>
-                <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet" />
-            </Helmet>
+            <style>
+                {`@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap');`}
+            </style>
             {/* Countdown Header - Integrated into flow */}
             <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6">
