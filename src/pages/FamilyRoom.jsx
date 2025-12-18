@@ -167,6 +167,13 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                  {isPreview && !previewConfig && <Badge variant="destructive" className="animate-pulse shadow-xl">Live Preview Mode</Badge>}
             </div>
 
+            {/* Performance Hub - Auto-injected if relevant */}
+            {!isPreview && primaryStudentId && (
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
+                     <PerformanceHub studentId={primaryStudentId} />
+                </div>
+            )}
+
             {visibleModules.map((module, idx) => {
                 
                 // HERO MODULE
