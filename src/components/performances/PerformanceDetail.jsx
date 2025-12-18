@@ -308,7 +308,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                             </div>
 
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                                <Timer className="w-4 h-4 text-amber-300" />
+                                <Timer className="w-4 h-4 text-pink-300" />
                                 <span className="font-medium uppercase tracking-wide text-xs">Run Time: {totalDurationFormatted}</span>
                             </div>
                         </div>
@@ -525,7 +525,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                          <div 
                                                                              className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
                                                                                 routine.lighting_notes 
-                                                                                    ? 'bg-white/80 text-amber-500 border-amber-100 shadow-amber-100/30' 
+                                                                                    ? 'bg-white/80 text-yellow-500 border-yellow-100 shadow-yellow-100/30' 
                                                                                     : 'bg-white/40 text-gray-300 border-transparent'
                                                                              }`} 
                                                                              title={routine.lighting_notes ? "Lighting Notes" : "No lighting details"}

@@ -116,25 +116,21 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                         />
                     ))}
 
-                    {/* Show Day Finale - Distinct & Celebratory */}
+                    {/* Show Day Finale - Elegant */}
                     <div className="relative h-[220px] w-[100px] flex items-center justify-center group ml-8">
                          {/* Glow Effect behind */}
-                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-gradient-to-tr from-amber-200 to-rose-300 rounded-full blur-xl opacity-40 group-hover:opacity-60 transition-opacity" />
+                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-rose-200 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
                          
                          {/* Main Badge */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-400 to-rose-500 flex items-center justify-center text-white shadow-[0_8px_16px_-4px_rgba(251,146,60,0.5)] rotate-6 group-hover:rotate-12 transition-transform duration-500 border-[3px] border-white z-20">
-                            <PartyPopper className="w-7 h-7" strokeWidth={2} />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-gradient-to-b from-white to-rose-50 flex items-center justify-center text-rose-500 shadow-[0_8px_30px_-6px_rgba(244,63,94,0.2)] border border-rose-100 z-20 group-hover:scale-105 transition-transform duration-500">
+                            <Sparkles className="w-6 h-6" strokeWidth={1.5} />
                         </div>
-                        
-                        {/* Confetti Decos */}
-                        <div className="absolute top-[35%] right-[20%] w-2 h-2 rounded-full bg-blue-400 animate-pulse delay-75" />
-                        <div className="absolute bottom-[35%] left-[20%] w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse delay-150" />
                         
                         {/* Label */}
                          <div className="absolute top-[68%] text-center w-full">
-                            <div className="font-serif text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-rose-600 leading-tight uppercase tracking-wide">Opening<br/>Night</div>
+                            <div className="font-serif text-sm font-bold text-rose-900 leading-tight">Opening<br/>Night</div>
                             {showDay && (
-                                <div className="text-[10px] font-bold text-amber-500/80 mt-1">{format(showDay, 'MMM d')}</div>
+                                <div className="text-[10px] font-medium text-rose-400 mt-1">{format(showDay, 'MMM d')}</div>
                             )}
                         </div>
                     </div>
@@ -155,8 +151,8 @@ function MilestoneCard({ milestone, today, onUpdate, index }) {
     // Status Logic
     const isCompleted = isPastDate; 
 
-    const nodeColor = isCompleted ? "bg-green-400 border-green-100" : 
-                     isTodayDate ? "bg-amber-400 border-amber-100" : 
+    const nodeColor = isCompleted ? "bg-rose-200 border-rose-100" : 
+                     isTodayDate ? "bg-rose-500 border-rose-200" : 
                      "bg-white border-rose-200";
 
     const [isEditing, setIsEditing] = useState(false);
@@ -184,10 +180,10 @@ function MilestoneCard({ milestone, today, onUpdate, index }) {
             <div className={`absolute left-2 right-2 flex flex-col items-center ${isTop ? 'bottom-[58%]' : 'top-[58%]'}`}>
                 <div className={`
                     relative p-2.5 rounded-xl border backdrop-blur-md shadow-sm transition-all duration-300 w-full
-                    ${isCompleted ? 'bg-green-50/50 border-green-100/50' : 'bg-white/70 border-white/60 hover:shadow-md hover:scale-105 hover:bg-white/90'}
-                `}>
+                    ${isCompleted ? 'bg-rose-50/40 border-rose-100/40 opacity-80' : 'bg-white/70 border-white/60 hover:shadow-md hover:scale-105 hover:bg-white/90'}
+                    `}>
                     <div className="flex justify-between items-start mb-1 gap-1">
-                        <div className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${isCompleted ? 'bg-green-100/80 text-green-700' : 'bg-rose-50 text-rose-500'}`}>
+                        <div className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${isCompleted ? 'bg-rose-100/50 text-rose-400 line-through decoration-rose-300' : 'bg-rose-50 text-rose-500'}`}>
                             {format(dueDate, 'MMM d')}
                         </div>
                         
