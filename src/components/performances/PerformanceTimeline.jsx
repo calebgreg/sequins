@@ -127,36 +127,39 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
     const initialProgress = Math.max(0, Math.min(1, daysFromStart / spanDays));
     
     // Motion value for smooth dragging
-    const x = useMotionValue(0);
+    // Motion value for smooth dragging - initialized to correct pixel position
+    const x = useMotionValue(initialProgress * containerWidth);
     
     // Sync x with props when not dragging
     useEffect(() => {
         if (!isDragging && containerWidth > 0) {
             x.set(initialProgress * containerWidth);
         }
-    }, [initialProgress, containerWidth, isDragging, x]);
+    }, [initialProgress, containerWidth, isDragging]);
 
     // Derived values for visual feedback
     const daysUntil = differenceInDays(dueDate, today);
     const isOverdue = daysUntil < 0;
     const isDueSoon = daysUntil >= 0 && daysUntil <= 14;
     
-    let colorClass = "bg-indigo-500 border-indigo-600 shadow-indigo-200";
-    let trackClass = "bg-indigo-100";
+    // Refined color logic for subtle visual cues
+    let knobBorderClass = "border-gray-300";
+    let progressTrackClass = "bg-gray-300"; // The part of the track filled up to the knob
+    let dotColorClass = "bg-gray-400";
     
     if (isOverdue) {
-        colorClass = "bg-rose-500 border-rose-600 shadow-rose-200";
-        trackClass = "bg-rose-100";
+        knobBorderClass = "border-rose-400";
+        progressTrackClass = "bg-rose-300";
+        dotColorClass = "bg-rose-500";
     } else if (isDueSoon) {
-        colorClass = "bg-amber-500 border-amber-600 shadow-amber-200";
-        trackClass = "bg-amber-100";
-    } else {
-        colorClass = "bg-white border-gray-200 shadow-sm text-gray-700";
-        trackClass = "bg-gray-100";
+        knobBorderClass = "border-amber-400";
+        progressTrackClass = "bg-amber-300";
+        dotColorClass = "bg-amber-500";
     }
 
     // Dynamic date label while dragging
-    const [dragDate, setDragDate] = useState(dueDate);
+    // Dynamic date label while dragging - using a ref for performance
+    const currentDragDateRef = useRef(dueDate);
 
     const handleDrag = (event, info) => {
         if (containerWidth > 0) {
@@ -164,7 +167,7 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
             const progress = Math.max(0, Math.min(1, currentX / containerWidth));
             const newDays = Math.round(progress * spanDays);
             const newDate = addDays(today, newDays);
-            setDragDate(newDate);
+            currentDragDateRef.current = newDate; // Update ref, no state re-render during drag
         }
     };
 
@@ -182,18 +185,18 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
     return (
         <div className="relative group">
             <div className="flex justify-between items-end mb-2 px-1">
-                <span className={`text-sm font-semibold ${isOverdue ? 'text-rose-600' : 'text-gray-700'}`}>
+                <span className="text-sm font-medium text-gray-900">
                     {milestone.name}
                 </span>
                 <span className={`text-xs font-mono font-medium ${isDragging ? 'text-indigo-600 scale-110' : 'text-gray-400'} transition-all`}>
-                    {format(isDragging ? dragDate : dueDate, 'MMM d')}
+                    {format(isDragging ? currentDragDateRef.current : dueDate, 'MMM d')}
                 </span>
             </div>
 
             <div className="h-3 w-full rounded-full bg-gray-50 border border-gray-100 relative flex items-center overflow-visible">
-                {/* Active Track Portion (Optional - from start to point) */}
+                {/* Active Track Portion (Progress Indicator) */}
                 <motion.div 
-                    className={`absolute left-0 h-full rounded-full opacity-30 ${trackClass}`}
+                    className={`absolute left-0 h-full rounded-full ${progressTrackClass}`}
                     style={{ width: x }}
                 />
 
@@ -208,15 +211,14 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                     onDrag={handleDrag}
                     onDragEnd={handleDragEnd}
                     className={`
-                        absolute top-1/2 -translate-y-1/2 -ml-3
-                        w-6 h-6 rounded-full border-2 cursor-grab active:cursor-grabbing
-                        flex items-center justify-center z-20 shadow-lg transition-all
-                        ${isDragging ? 'scale-110 ring-4 ring-indigo-500/10' : 'hover:scale-105'}
-                        ${colorClass}
+                        absolute top-1/2 -translate-y-1/2 -ml-[10px]
+                        w-5 h-5 rounded-full bg-white border cursor-grab active:cursor-grabbing
+                        flex items-center justify-center z-20 transition-all
+                        ${isDragging ? 'scale-110 border-indigo-400 shadow-md' : `hover:scale-105 shadow-sm ${knobBorderClass}`}
                     `}
                 >
                     {/* Inner Dot */}
-                    <div className={`w-1.5 h-1.5 rounded-full ${isOverdue || isDueSoon ? 'bg-white' : 'bg-gray-400'}`} />
+                    <div className={`w-1.5 h-1.5 rounded-full ${dotColorClass}`} />
                     
                     {/* Tooltip Label (Visible on Hover/Drag) */}
                     <div className={`
@@ -225,7 +227,7 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                         whitespace-nowrap shadow-xl pointer-events-none transition-all
                         ${isDragging || 'group-hover:opacity-100 opacity-0'}
                     `}>
-                        {format(isDragging ? dragDate : dueDate, 'EEE, MMM d')}
+                        {format(isDragging ? currentDragDateRef.current : dueDate, 'EEE, MMM d')}
                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
                     </div>
                 </motion.div>
