@@ -458,13 +458,12 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                             />
                             
                             <div className="col-span-1 md:col-span-2 space-y-2">
-                                <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Director's Notes (Handwritten Style)</Label>
+                                <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Director's Notes</Label>
                                 <Textarea 
                                     value={formData.grooming?.notes || ''}
                                     onChange={(e) => handleGroomingChange('notes', e.target.value)}
-                                    placeholder="Add notes that will appear as handwritten instructions..."
-                                    className="font-handwriting text-lg bg-[#fffbf0] border-stone-200 focus:bg-white min-h-[100px]"
-                                    style={{ fontFamily: '"Caveat", "Brush Script MT", cursive' }}
+                                    placeholder="Add notes that will appear as handwritten instructions for parents..."
+                                    className="bg-white border-gray-200 focus:bg-white min-h-[100px]"
                                 />
                             </div>
                         </div>
