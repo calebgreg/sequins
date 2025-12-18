@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2, PlayCircle, ExternalLink, X, Mic, Plus, Check, Scissors, CalendarDays } from "lucide-react";
+import { Music, Clock, Users, Shirt, Lightbulb, StickyNote, Trash2, Save, Link2, Search, Loader2, PlayCircle, ExternalLink, X, Mic, Plus, Check, Scissors, CalendarDays, UploadCloud, Image as ImageIcon } from "lucide-react";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -144,6 +144,23 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
         }));
     };
 
+    const handleImageUpload = async (file, field) => {
+        if (!file) return;
+        
+        const toastId = toast.loading("Uploading image...");
+        try {
+            // Upload to base44 storage
+            const { file_url } = await base44.integrations.Core.UploadFile({ file });
+            
+            // Update form data
+            handleGroomingChange(field, file_url);
+            toast.success("Image uploaded", { id: toastId });
+        } catch (error) {
+            console.error("Upload failed", error);
+            toast.error("Failed to upload image", { id: toastId });
+        }
+    };
+
     const addRehearsal = () => {
         setFormData(prev => ({
             ...prev,
@@ -174,6 +191,54 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
     };
 
     if (!routine) return null;
+
+function GroomingInput({ label, value, image, onChange, onImageUpload, onImageRemove, placeholder }) {
+    return (
+        <div className="space-y-3">
+            <Label className="text-sm font-medium text-gray-700">{label}</Label>
+            
+            {/* Image Drop Area */}
+            <div className="relative group">
+                {image ? (
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-50 group-hover:shadow-md transition-all">
+                        <img src={image} alt={label} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <label className="cursor-pointer p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm transition-colors">
+                                <UploadCloud className="w-4 h-4" />
+                                <input type="file" className="hidden" accept="image/*" onChange={(e) => onImageUpload(e.target.files[0])} />
+                            </label>
+                            <button 
+                                onClick={onImageRemove}
+                                className="p-2 bg-white/20 hover:bg-red-500/80 rounded-full text-white backdrop-blur-sm transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <label className="flex flex-col items-center justify-center w-full aspect-video rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 hover:bg-indigo-50/50 hover:border-indigo-200 cursor-pointer transition-all group-hover:scale-[1.01]">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <div className="w-10 h-10 mb-3 rounded-full bg-white flex items-center justify-center shadow-sm text-gray-400 group-hover:text-indigo-500 transition-colors">
+                                <ImageIcon className="w-5 h-5" />
+                            </div>
+                            <p className="mb-1 text-xs text-gray-500 font-medium">Click to upload photo</p>
+                            <p className="text-[10px] text-gray-400">or drag and drop</p>
+                        </div>
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => onImageUpload(e.target.files[0])} />
+                    </label>
+                )}
+            </div>
+
+            {/* Text Input */}
+            <Input 
+                value={value || ''}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                className="bg-white"
+            />
+        </div>
+    );
+}
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -354,45 +419,52 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                             <Scissors className="w-5 h-5 text-gray-400" />
                             Grooming & Attire
                         </h3>
-                        <div id="section-grooming" className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Hair</Label>
-                                <Input 
-                                    value={formData.grooming?.hair || ''}
-                                    onChange={(e) => handleGroomingChange('hair', e.target.value)}
-                                    placeholder="e.g. Low bun, middle part"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Makeup</Label>
-                                <Input 
-                                    value={formData.grooming?.makeup || ''}
-                                    onChange={(e) => handleGroomingChange('makeup', e.target.value)}
-                                    placeholder="e.g. Standard Stage Face"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Tights</Label>
-                                <Input 
-                                    value={formData.grooming?.tights || ''}
-                                    onChange={(e) => handleGroomingChange('tights', e.target.value)}
-                                    placeholder="e.g. Tan Footed"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Shoes</Label>
-                                <Input 
-                                    value={formData.grooming?.shoes || ''}
-                                    onChange={(e) => handleGroomingChange('shoes', e.target.value)}
-                                    placeholder="e.g. Black Jazz"
-                                />
-                            </div>
-                            <div className="col-span-2 space-y-2">
-                                <Label>Notes</Label>
-                                <Input 
+                        <div id="section-grooming" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <GroomingInput 
+                                label="Hair" 
+                                value={formData.grooming?.hair} 
+                                image={formData.grooming?.hair_image}
+                                onChange={(val) => handleGroomingChange('hair', val)}
+                                onImageUpload={(file) => handleImageUpload(file, 'hair_image')}
+                                onImageRemove={() => handleGroomingChange('hair_image', '')}
+                                placeholder="e.g. Low bun, middle part"
+                            />
+                            <GroomingInput 
+                                label="Makeup" 
+                                value={formData.grooming?.makeup} 
+                                image={formData.grooming?.makeup_image}
+                                onChange={(val) => handleGroomingChange('makeup', val)}
+                                onImageUpload={(file) => handleImageUpload(file, 'makeup_image')}
+                                onImageRemove={() => handleGroomingChange('makeup_image', '')}
+                                placeholder="e.g. Standard Stage Face"
+                            />
+                            <GroomingInput 
+                                label="Tights" 
+                                value={formData.grooming?.tights} 
+                                image={formData.grooming?.tights_image}
+                                onChange={(val) => handleGroomingChange('tights', val)}
+                                onImageUpload={(file) => handleImageUpload(file, 'tights_image')}
+                                onImageRemove={() => handleGroomingChange('tights_image', '')}
+                                placeholder="e.g. Tan Footed"
+                            />
+                            <GroomingInput 
+                                label="Shoes" 
+                                value={formData.grooming?.shoes} 
+                                image={formData.grooming?.shoes_image}
+                                onChange={(val) => handleGroomingChange('shoes', val)}
+                                onImageUpload={(file) => handleImageUpload(file, 'shoes_image')}
+                                onImageRemove={() => handleGroomingChange('shoes_image', '')}
+                                placeholder="e.g. Black Jazz"
+                            />
+                            
+                            <div className="col-span-1 md:col-span-2 space-y-2">
+                                <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Director's Notes (Handwritten Style)</Label>
+                                <Textarea 
                                     value={formData.grooming?.notes || ''}
                                     onChange={(e) => handleGroomingChange('notes', e.target.value)}
-                                    placeholder="Additional grooming notes..."
+                                    placeholder="Add notes that will appear as handwritten instructions..."
+                                    className="font-handwriting text-lg bg-[#fffbf0] border-stone-200 focus:bg-white min-h-[100px]"
+                                    style={{ fontFamily: '"Caveat", "Brush Script MT", cursive' }}
                                 />
                             </div>
                         </div>

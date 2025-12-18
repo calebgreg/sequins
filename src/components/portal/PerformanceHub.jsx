@@ -6,6 +6,7 @@ import {
     CalendarDays, Clock, MapPin, Shirt, Sparkles, Scissors, 
     ChevronRight, ArrowRight, CheckCircle2, Music 
 } from 'lucide-react';
+import { Helmet } from "react-helmet";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +63,9 @@ export default function PerformanceHub({ studentId }) {
 
     return (
         <div className="w-full">
+            <Helmet>
+                <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet" />
+            </Helmet>
             {/* Countdown Header - Integrated into flow */}
             <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6">
@@ -255,18 +259,25 @@ export default function PerformanceHub({ studentId }) {
     );
 }
 
-function PinterestCard({ label, value, rotate = "rotate-0", delay = 0 }) {
-    if (!value) return null;
+function PinterestCard({ label, value, image, rotate = "rotate-0", delay = 0 }) {
+    if (!value && !image) return null;
     return (
         <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay, duration: 0.5 }}
-            className={`bg-white p-5 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-stone-50 ${rotate} hover:rotate-0 hover:scale-[1.02] hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:z-10 transition-all duration-300`}
+            className={`bg-white p-0 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-stone-50 ${rotate} hover:rotate-0 hover:scale-[1.02] hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:z-10 transition-all duration-300 overflow-hidden flex flex-col`}
         >
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">{label}</span>
-            <span className="text-base font-medium text-[#1c1c1c] font-serif leading-tight block">{value}</span>
+            {image && (
+                <div className="w-full aspect-square bg-stone-50">
+                    <img src={image} alt={label} className="w-full h-full object-cover" />
+                </div>
+            )}
+            <div className="p-4 flex-1 flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">{label}</span>
+                {value && <span className="text-base font-medium text-[#1c1c1c] font-serif leading-tight block">{value}</span>}
+            </div>
         </motion.div>
     );
 }
