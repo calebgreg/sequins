@@ -141,18 +141,23 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
     const isOverdue = daysUntil < 0;
     const isDueSoon = daysUntil >= 0 && daysUntil <= 14;
     
-    let colorClass = "bg-indigo-500 border-indigo-600 shadow-indigo-200";
-    let trackClass = "bg-indigo-100";
+    // Minimal aesthetic updates
+    let colorClass = "bg-white border-gray-300 shadow-sm";
+    let trackClass = "bg-gray-200";
+    let dotClass = "bg-gray-400";
     
     if (isOverdue) {
-        colorClass = "bg-rose-500 border-rose-600 shadow-rose-200";
+        colorClass = "bg-white border-rose-300 shadow-sm ring-1 ring-rose-50";
         trackClass = "bg-rose-100";
+        dotClass = "bg-rose-400";
     } else if (isDueSoon) {
-        colorClass = "bg-amber-500 border-amber-600 shadow-amber-200";
+        colorClass = "bg-white border-amber-300 shadow-sm ring-1 ring-amber-50";
         trackClass = "bg-amber-100";
+        dotClass = "bg-amber-400";
     } else {
-        colorClass = "bg-white border-gray-200 shadow-sm text-gray-700";
+        colorClass = "bg-white border-gray-300 shadow-sm";
         trackClass = "bg-gray-100";
+        dotClass = "bg-gray-400";
     }
 
     // Dynamic date label while dragging
@@ -216,7 +221,7 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                     `}
                 >
                     {/* Inner Dot */}
-                    <div className={`w-1.5 h-1.5 rounded-full ${isOverdue || isDueSoon ? 'bg-white' : 'bg-gray-400'}`} />
+                    <div className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
                     
                     {/* Tooltip Label (Visible on Hover/Drag) */}
                     <div className={`
