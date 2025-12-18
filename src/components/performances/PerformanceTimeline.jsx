@@ -192,7 +192,7 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                     {milestone.name}
                 </span>
                 <span className={`text-xs font-mono font-medium ${isDragging ? 'text-indigo-600 scale-110' : 'text-gray-400'} transition-all`}>
-                    {format(isDragging ? currentDragDateRef.current : dueDate, 'MMM d')}
+                    {format(isDragging ? dragDate : dueDate, 'MMM d')}
                 </span>
             </div>
 
@@ -230,7 +230,7 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                         whitespace-nowrap shadow-xl pointer-events-none transition-all
                         ${isDragging || 'group-hover:opacity-100 opacity-0'}
                     `}>
-                        {format(isDragging ? currentDragDateRef.current : dueDate, 'EEE, MMM d')}
+                        {format(isDragging ? dragDate : dueDate, 'EEE, MMM d')}
                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
                     </div>
                 </motion.div>
