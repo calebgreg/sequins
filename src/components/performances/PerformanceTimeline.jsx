@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { format, differenceInDays, addDays, startOfDay, parseISO, isSameDay } from 'date-fns';
 import { motion, useMotionValue } from "framer-motion";
-import { CalendarDays, Clock, Sparkles, Flag } from 'lucide-react';
+import { CalendarDays, Sparkles, Flag, Clock } from 'lucide-react';
 
 export default function PerformanceTimeline({ milestones = [], showDate, onMilestoneUpdate }) {
     const containerRef = useRef(null);
@@ -27,48 +27,34 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
         return new Date(a.due_date) - new Date(b.due_date);
     });
 
-    // --- FUN EMPTY STATE ---
+    // --- ELEGANT EMPTY STATE (PINK GLASS) ---
     if (!showDay || sortedMilestones.length === 0) {
         return (
             <div className="h-[400px] w-full rounded-[32px] overflow-hidden relative group">
-                {/* Animated Purple Gradient Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800">
-                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
+                {/* Glassmorphic Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-100 via-pink-50 to-white">
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-3xl"></div>
                 </div>
 
+                {/* Decorative Orbs */}
+                <div className="absolute top-[-20%] left-[-10%] w-[300px] h-[300px] rounded-full bg-rose-300/20 blur-[80px]" />
+                <div className="absolute bottom-[-10%] right-[-5%] w-[250px] h-[250px] rounded-full bg-pink-400/20 blur-[80px]" />
+
                 {/* Content */}
-                <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-8 text-white">
+                <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-8">
                     <motion.div 
-                        initial={{ scale: 0.9, opacity: 0 }}
+                        initial={{ scale: 0.95, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center mb-6 border border-white/20 shadow-xl shadow-purple-900/20"
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className="w-24 h-24 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center mb-6 border border-white/60 shadow-[0_8px_32px_0_rgba(244,63,94,0.1)]"
                     >
-                        <motion.div
-                            animate={{ 
-                                rotate: [0, 10, -10, 0],
-                                scale: [1, 1.1, 1]
-                            }}
-                            transition={{ 
-                                duration: 4,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            }}
-                        >
-                            <Sparkles className="w-10 h-10 text-amber-300" />
-                        </motion.div>
+                        <Sparkles className="w-10 h-10 text-rose-400" strokeWidth={1.5} />
                     </motion.div>
                     
-                    <h3 className="font-serif text-3xl mb-3 font-medium tracking-tight">Production Roadmap</h3>
-                    <p className="text-indigo-100 max-w-sm mb-8 text-lg leading-relaxed font-light">
-                        The stage is dark... for now. Set a show date to ignite your interactive production timeline.
+                    <h3 className="font-serif text-3xl mb-3 text-rose-950 font-medium">Production Timeline</h3>
+                    <p className="text-rose-800/60 max-w-sm mb-8 text-lg font-light leading-relaxed">
+                        A blank canvas awaits. Set your show date to unveil the production roadmap.
                     </p>
-
-                    <div className="flex gap-2">
-                        <div className="h-2 w-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '0s' }} />
-                        <div className="h-2 w-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '0.2s' }} />
-                        <div className="h-2 w-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '0.4s' }} />
-                    </div>
                 </div>
             </div>
         );
@@ -94,38 +80,41 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
     }
 
     return (
-        <div className="bg-white rounded-[32px] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-hidden flex flex-col h-full">
+        <div className="bg-white/60 backdrop-blur-xl rounded-[32px] border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col h-full relative">
+            {/* Soft pink gradient underlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-rose-50/30 to-transparent pointer-events-none" />
+
             {/* Header */}
-            <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-white">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
-                        <CalendarDays className="w-6 h-6" />
+            <div className="relative z-10 px-8 py-6 border-b border-rose-100/50 flex justify-between items-center">
+                <div className="flex items-center gap-5">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-white to-rose-50 flex items-center justify-center text-rose-400 shadow-[0_2px_10px_-2px_rgba(244,63,94,0.1)] border border-white">
+                        <CalendarDays className="w-5 h-5" />
                     </div>
                     <div>
-                        <h3 className="font-serif text-[#333333] text-xl">Production Schedule</h3>
+                        <h3 className="font-serif text-rose-950 text-xl tracking-tight">Production Schedule</h3>
                         <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            <span className="text-xs font-bold text-rose-300 uppercase tracking-widest">
                                 {format(today, 'MMM d')} — {format(showDay, 'MMM d, yyyy')}
                             </span>
-                            <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                            <span className="text-xs font-medium text-gray-500">{totalDays} Days to Curtain</span>
+                            <span className="w-1 h-1 bg-rose-200 rounded-full" />
+                            <span className="text-xs font-medium text-rose-700/60 font-serif italic">{totalDays} Days until curtain</span>
                         </div>
                     </div>
                 </div>
-                <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Interactive Timeline</span>
+                <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-rose-500 bg-rose-50/50 px-4 py-2 rounded-full border border-rose-100/50 backdrop-blur-sm">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Interactive</span>
                 </div>
             </div>
 
             {/* Timeline Body */}
-            <div className="p-8 relative min-h-[400px] bg-[#FAFAFA]" ref={containerRef}>
+            <div className="p-8 relative min-h-[400px]" ref={containerRef}>
                 {/* Background Grid */}
                 <div className="absolute inset-x-8 top-8 bottom-8 pointer-events-none">
                      {markers.map((marker, idx) => (
                          <div key={idx} className="h-full flex flex-col items-center relative group" style={{ left: `${(marker.day / spanDays) * 100}%`, position: 'absolute' }}>
-                             <div className="h-full w-px bg-gray-200/60 border-r border-dashed border-gray-300/50 group-last:bg-indigo-200 group-last:border-indigo-200" />
-                             <div className={`absolute bottom-0 translate-y-full pt-3 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${marker.label === 'Show Day' ? 'text-indigo-600' : 'text-gray-400'}`}>
+                             <div className="h-full w-px bg-rose-200/20 border-r border-dashed border-rose-300/20 group-last:bg-rose-300/40 group-last:border-rose-300/40" />
+                             <div className={`absolute bottom-0 translate-y-full pt-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${marker.label === 'Show Day' ? 'text-rose-500' : 'text-rose-300/60'}`}>
                                  {marker.label || format(marker.date, 'MMM d')}
                              </div>
                          </div>
@@ -173,24 +162,18 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
 
     const daysUntil = differenceInDays(dueDate, today);
     const isOverdue = daysUntil < 0;
-    const isDueSoon = daysUntil >= 0 && daysUntil <= 14;
     
-    // Dynamic styling based on status
-    let trackGradient = "from-indigo-400 to-purple-500";
-    let knobRing = "ring-indigo-100 group-hover:ring-indigo-200";
-    let knobBorder = "border-indigo-500";
-    let textColor = "text-gray-600";
+    // Glassmorphic Colors
+    let trackGradient = "from-rose-300/80 to-pink-400/80";
+    let knobRing = "ring-white/50 shadow-[0_4px_14px_0_rgba(244,63,94,0.3)]";
+    let textColor = "text-rose-900/80";
+    let flagColor = "bg-white/60 text-rose-400 border-rose-100";
     
     if (isOverdue) {
-        trackGradient = "from-rose-400 to-pink-500";
-        knobRing = "ring-rose-100 group-hover:ring-rose-200";
-        knobBorder = "border-rose-500";
-        textColor = "text-rose-600";
-    } else if (isDueSoon) {
-        trackGradient = "from-amber-400 to-orange-500";
-        knobRing = "ring-amber-100 group-hover:ring-amber-200";
-        knobBorder = "border-amber-500";
-        textColor = "text-amber-700";
+        trackGradient = "from-red-300/80 to-red-400/80";
+        knobRing = "ring-red-100/50 shadow-[0_4px_14px_0_rgba(239,68,68,0.3)]";
+        textColor = "text-red-900/80";
+        flagColor = "bg-red-50/60 text-red-500 border-red-100";
     }
 
     const [dragDate, setDragDate] = useState(dueDate);
@@ -219,33 +202,35 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
 
     return (
         <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.05 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.08, ease: "easeOut" }}
             className="relative group"
         >
             <div className="flex justify-between items-end mb-3 px-1">
-                <div className="flex items-center gap-2">
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${isOverdue ? 'bg-rose-50 text-rose-500' : 'bg-white border border-gray-100 text-gray-400'}`}>
-                        {isOverdue ? <Flag className="w-3 h-3" /> : <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />}
+                <div className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center backdrop-blur-sm border transition-colors ${flagColor}`}>
+                        {isOverdue ? <Flag className="w-3 h-3" /> : <div className="w-1.5 h-1.5 rounded-full bg-rose-300/50" />}
                     </div>
-                    <span className={`text-sm font-bold ${textColor}`}>
+                    <span className={`text-sm font-medium tracking-wide ${textColor}`}>
                         {milestone.name}
                     </span>
                 </div>
-                <span className={`text-xs font-mono font-medium px-2 py-1 rounded-md transition-all ${isDragging ? 'bg-indigo-600 text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-500'}`}>
-                    {format(isDragging ? dragDate : dueDate, 'MMM d')}
+                <span className={`text-xs font-serif italic px-3 py-1 rounded-full transition-all border ${isDragging ? 'bg-rose-500 text-white shadow-lg scale-105 border-rose-400' : 'bg-white/40 text-rose-800/60 border-rose-100/50'}`}>
+                    {format(isDragging ? dragDate : dueDate, 'MMM do')}
                 </span>
             </div>
 
-            <div className="h-2.5 w-full rounded-full bg-white border border-gray-100 relative flex items-center shadow-inner">
-                {/* Active Gradient Track */}
+            <div className="h-2 w-full rounded-full bg-rose-100/30 border border-rose-100/20 relative flex items-center">
+                {/* Active Gradient Track with Shine */}
                 <motion.div 
-                    className={`absolute left-0 h-full rounded-full bg-gradient-to-r ${trackGradient} opacity-80`}
+                    className={`absolute left-0 h-full rounded-full bg-gradient-to-r ${trackGradient} shadow-[0_0_10px_rgba(244,63,94,0.2)]`}
                     style={{ width: x }}
-                />
+                >
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full" />
+                </motion.div>
 
-                {/* Draggable Knob */}
+                {/* Draggable Glass Knob */}
                 <motion.div
                     drag="x"
                     dragConstraints={{ left: 0, right: containerWidth }}
@@ -257,25 +242,25 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                     onDragEnd={handleDragEnd}
                     className={`
                         absolute top-1/2 -ml-[12px]
-                        w-6 h-6 rounded-full bg-white border-2 cursor-grab active:cursor-grabbing
-                        flex items-center justify-center z-20 transition-all shadow-md
-                        ring-4 ${knobRing} ${knobBorder}
-                        ${isDragging ? 'scale-110 shadow-lg ring-opacity-50' : 'hover:scale-110'}
+                        w-6 h-6 rounded-full bg-white/80 backdrop-blur-md border border-white cursor-grab active:cursor-grabbing
+                        flex items-center justify-center z-20 transition-all
+                        ring-4 ${knobRing}
+                        ${isDragging ? 'scale-110' : 'hover:scale-110'}
                     `}
                 >
-                    <div className={`w-1.5 h-1.5 rounded-full ${isOverdue ? 'bg-rose-500' : 'bg-indigo-500'}`} />
+                    <div className={`w-2 h-2 rounded-full ${isOverdue ? 'bg-red-400' : 'bg-rose-400'}`} />
                     
-                    {/* Floating Tooltip */}
+                    {/* Elegant Tooltip */}
                     <div className={`
-                        absolute bottom-full mb-3 left-1/2 -translate-x-1/2 
-                        bg-[#333333] text-white text-[10px] font-bold py-1.5 px-3 rounded-lg 
-                        whitespace-nowrap shadow-xl pointer-events-none transition-all
+                        absolute bottom-full mb-4 left-1/2 -translate-x-1/2 
+                        bg-white/90 backdrop-blur-xl text-rose-900 text-[10px] font-medium py-2 px-4 rounded-xl 
+                        whitespace-nowrap shadow-[0_10px_30px_-5px_rgba(244,63,94,0.3)] pointer-events-none transition-all border border-rose-100/50
                         flex flex-col items-center
                         ${isDragging || 'group-hover:opacity-100 opacity-0 translate-y-2 group-hover:translate-y-0'}
                     `}>
-                        <span className="uppercase tracking-wider opacity-60 text-[9px] mb-0.5">Due Date</span>
-                        {format(isDragging ? dragDate : dueDate, 'EEE, MMM d')}
-                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#333333] rotate-45"></div>
+                        <span className="uppercase tracking-widest opacity-50 text-[8px] mb-0.5">Deadline</span>
+                        {format(isDragging ? dragDate : dueDate, 'EEEE, MMM do')}
+                        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white/90 rotate-45 border-r border-b border-rose-100/50"></div>
                     </div>
                 </motion.div>
             </div>
