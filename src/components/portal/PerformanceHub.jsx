@@ -77,10 +77,20 @@ export default function PerformanceHub({ studentId }) {
                     {performance.venue && (
                         <>
                             <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-300" />
-                            <span className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4" /> 
-                                {performance.venue.venue_name || performance.venue}
-                            </span>
+                            <a 
+                                href={performance.venue.lat && performance.venue.lng 
+                                    ? `https://www.google.com/maps/dir/?api=1&destination=${performance.venue.lat},${performance.venue.lng}`
+                                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(performance.venue.formatted_address || performance.venue.venue_name || performance.venue)}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 hover:text-rose-600 transition-colors cursor-pointer group"
+                            >
+                                <MapPin className="w-4 h-4 group-hover:scale-110 transition-transform" /> 
+                                <span className="underline decoration-transparent group-hover:decoration-rose-300 underline-offset-4 transition-all">
+                                    {performance.venue.venue_name || performance.venue}
+                                </span>
+                            </a>
                         </>
                     )}
                 </div>
@@ -175,9 +185,14 @@ export default function PerformanceHub({ studentId }) {
                                                             <Clock className="w-3 h-3 text-gray-300" /> {event.start_time} - {event.end_time}
                                                         </div>
                                                         {event.location && (
-                                                            <div className="text-xs text-gray-400 mt-1 pl-4.5">
+                                                            <a 
+                                                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-xs text-gray-400 mt-1 pl-4.5 block hover:text-rose-500 transition-colors"
+                                                            >
                                                                 @ {event.location}
-                                                            </div>
+                                                            </a>
                                                         )}
                                                     </div>
                                                 </div>
