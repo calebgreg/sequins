@@ -73,21 +73,6 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     const config = previewConfig || (urlPreview ? previewData : dbConfig);
     const isLoading = previewConfig ? false : (urlPreview ? (!previewData && !previewError) : isDbLoading);
 
-    if (urlPreview && previewError && !previewConfig) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] p-8 text-center">
-                <div className="bg-white p-8 rounded-3xl shadow-sm border border-red-100 max-w-md">
-                    <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
-                        <ExternalLink className="w-6 h-6" />
-                    </div>
-                    <h2 className="font-serif text-2xl text-[#333333] mb-2">Preview Not Found</h2>
-                    <p className="text-gray-500 mb-6">We couldn't find the preview data. This usually happens if the preview window was opened directly or the data expired.</p>
-                    <Button onClick={() => window.close()} variant="outline">Close Tab</Button>
-                </div>
-            </div>
-        );
-    }
-
     // Mock family data fetch (would need secure token in real app)
     const { data: familyInvoices } = useQuery({
         queryKey: ['roomInvoices', config?.parent_email],
@@ -120,28 +105,43 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     }, [familyStudents, primaryStudentId]);
 
     // Fetch classes for recommendations
-        const { data: allClasses = [] } = useQuery({
-            queryKey: ['publicClasses'],
-            queryFn: async () => base44.entities.DanceClass.list(),
-            enabled: !isLoading
-        });
+    const { data: allClasses = [] } = useQuery({
+        queryKey: ['publicClasses'],
+        queryFn: async () => base44.entities.DanceClass.list(),
+        enabled: !isLoading
+    });
 
-        // Fetch Shared Tasks
-        const { data: sharedTasks = [] } = useQuery({
-            queryKey: ['roomTasks', config?.parent_email],
-            queryFn: async () => {
-                 const all = await base44.entities.FamilyTask.list();
-                 return all.filter(t => t.parent_email === config?.parent_email && t.is_shared && t.status !== 'archived');
-            },
-            enabled: !!config?.parent_email && !isPreview,
-            retry: false
-        });
+    // Fetch Shared Tasks
+    const { data: sharedTasks = [] } = useQuery({
+        queryKey: ['roomTasks', config?.parent_email],
+        queryFn: async () => {
+             const all = await base44.entities.FamilyTask.list();
+             return all.filter(t => t.parent_email === config?.parent_email && t.is_shared && t.status !== 'archived');
+        },
+        enabled: !!config?.parent_email && !isPreview,
+        retry: false
+    });
 
-        const displayTasks = isPreview ? [
-            { id: 1, title: 'Complete Enrollment Form', status: 'completed', due_date: '2025-09-01' },
-            { id: 2, title: 'Sign Liability Waiver', status: 'pending', due_date: '2025-09-05' },
-            { id: 3, title: 'Upload Immunization Records', status: 'pending', due_date: '2025-09-10' }
-        ] : sharedTasks;
+    const displayTasks = isPreview ? [
+        { id: 1, title: 'Complete Enrollment Form', status: 'completed', due_date: '2025-09-01' },
+        { id: 2, title: 'Sign Liability Waiver', status: 'pending', due_date: '2025-09-05' },
+        { id: 3, title: 'Upload Immunization Records', status: 'pending', due_date: '2025-09-10' }
+    ] : sharedTasks;
+
+    if (urlPreview && previewError && !previewConfig) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] p-8 text-center">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-red-100 max-w-md">
+                    <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                        <ExternalLink className="w-6 h-6" />
+                    </div>
+                    <h2 className="font-serif text-2xl text-[#333333] mb-2">Preview Not Found</h2>
+                    <p className="text-gray-500 mb-6">We couldn't find the preview data. This usually happens if the preview window was opened directly or the data expired.</p>
+                    <Button onClick={() => window.close()} variant="outline">Close Tab</Button>
+                </div>
+            </div>
+        );
+    }
 
     if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] font-serif text-xl animate-pulse">Loading space...</div>;
     
