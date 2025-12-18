@@ -86,8 +86,8 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
 
             {/* Timeline Body */}
             <div className="p-8 relative min-h-[400px]" ref={containerRef}>
-                {/* Background Grid */}
-                <div className="absolute inset-0 px-8 pt-8 pb-4 pointer-events-none flex justify-between">
+                {/* Background Grid - aligned to content box (inset-x-8 matches p-8) */}
+                <div className="absolute inset-x-8 top-8 bottom-4 pointer-events-none">
                      {markers.map((marker, idx) => (
                          <div key={idx} className="h-full flex flex-col items-center relative" style={{ left: `${(marker.day / spanDays) * 100}%`, position: 'absolute' }}>
                              <div className="h-full w-px bg-gray-100 border-r border-dashed border-gray-200" />
@@ -142,19 +142,20 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
     const isOverdue = daysUntil < 0;
     const isDueSoon = daysUntil >= 0 && daysUntil <= 14;
     
-    // Refined color logic for subtle visual cues
-    let knobBorderClass = "border-gray-300";
-    let progressTrackClass = "bg-gray-300"; // The part of the track filled up to the knob
-    let dotColorClass = "bg-gray-400";
+    // Professional monochrome palette with minimal status colors
+    let knobBorderClass = "border-gray-200 shadow-sm";
+    let progressTrackClass = "bg-gray-800"; // High contrast dark track for visibility
+    let dotColorClass = "bg-gray-800";
     
     if (isOverdue) {
-        knobBorderClass = "border-rose-400";
-        progressTrackClass = "bg-rose-300";
+        knobBorderClass = "border-rose-200";
+        progressTrackClass = "bg-rose-500"; 
         dotColorClass = "bg-rose-500";
     } else if (isDueSoon) {
-        knobBorderClass = "border-amber-400";
-        progressTrackClass = "bg-amber-300";
-        dotColorClass = "bg-amber-500";
+        // Subtle urgency - dark gray/black instead of yellow
+        knobBorderClass = "border-gray-400";
+        progressTrackClass = "bg-gray-600";
+        dotColorClass = "bg-gray-600";
     }
 
     // Dynamic date label while dragging
@@ -209,15 +210,16 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                     dragConstraints={{ left: 0, right: containerWidth }}
                     dragElastic={0}
                     dragMomentum={false}
-                    style={{ x }}
+                    // Use y: "-50%" in style to ensure vertical centering persists with framer transforms
+                    style={{ x, y: "-50%" }}
                     onDragStart={() => setIsDragging(true)}
                     onDrag={handleDrag}
                     onDragEnd={handleDragEnd}
                     className={`
-                        absolute top-1/2 -translate-y-1/2 -ml-[10px]
-                        w-5 h-5 rounded-full bg-white border cursor-grab active:cursor-grabbing
+                        absolute top-1/2 -ml-[10px]
+                        w-5 h-5 rounded-full bg-white border-2 cursor-grab active:cursor-grabbing
                         flex items-center justify-center z-20 transition-all
-                        ${isDragging ? 'scale-110 border-indigo-400 shadow-md' : `hover:scale-105 shadow-sm ${knobBorderClass}`}
+                        ${isDragging ? 'scale-110 border-gray-900 shadow-md' : `hover:scale-105 ${knobBorderClass}`}
                     `}
                 >
                     {/* Inner Dot */}
