@@ -230,8 +230,8 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     return (
     <div className="space-y-6">
         {/* --- Quarterback Header & Timeline --- */}
-        <div className="flex flex-col lg:flex-row gap-6 items-stretch">
-            <div className="relative max-w-xl w-full rounded-[32px] shadow-2xl group overflow-hidden text-white shrink-0">
+        <div className="flex flex-col gap-6">
+            <div className="relative w-full rounded-[32px] shadow-2xl group overflow-hidden text-white">
                 {/* Background Image */}
                 <div 
                     className="absolute inset-0 z-0 bg-cover bg-center"
@@ -317,7 +317,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
             </div>
 
             {/* Timeline Section */}
-            <div className="flex-1 min-w-0">
+            <div className="w-full">
                 <PerformanceTimeline 
                     milestones={optimisticMilestones || performance?.timeline_milestones} 
                     showDate={performance?.date}
