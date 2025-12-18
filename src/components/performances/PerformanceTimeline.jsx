@@ -127,8 +127,8 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
     const initialProgress = Math.max(0, Math.min(1, daysFromStart / spanDays));
     
     // Motion value for smooth dragging
-    // Motion value for smooth dragging - initialized to correct pixel position
-    const x = useMotionValue(initialProgress * containerWidth);
+    const initialX = initialProgress * containerWidth;
+    const x = useMotionValue(initialX);
     
     // Sync x with props when not dragging
     useEffect(() => {
@@ -207,7 +207,14 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                 {/* Draggable Knob */}
                 <motion.div
                     drag="x"
-                    dragConstraints={{ left: 0, right: containerWidth }}
+                    // Constraints are relative to the STARTING position of the drag (which is initialX)
+                    // We want the knob to travel from 0 to containerWidth absolute.
+                    // So left delta limit = 0 - initialX
+                    // Right delta limit = containerWidth - initialX
+                    dragConstraints={{ 
+                        left: -initialX, 
+                        right: containerWidth - initialX 
+                    }}
                     dragElastic={0}
                     dragMomentum={false}
                     style={{ x, y: "-50%" }}
