@@ -81,10 +81,10 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
             </div>
 
             {/* Scrollable Timeline Area */}
-            <div className="relative px-6 py-6 overflow-x-auto min-h-[180px] flex items-center custom-scrollbar">
+            <div className="relative px-6 overflow-x-auto min-h-[260px] flex items-center custom-scrollbar">
                 
-                {/* Connecting Line Container */}
-                <div className="absolute left-6 right-6 top-[60%] -translate-y-1/2 h-0.5 bg-rose-100 rounded-full z-0 min-w-[600px]">
+                {/* Connecting Line Container - CENTERED */}
+                <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-0.5 bg-rose-100 rounded-full z-0 min-w-[700px]">
                     {/* Progress Fill */}
                     <motion.div 
                         initial={{ width: 0 }}
@@ -98,7 +98,7 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                 </div>
 
                 {/* Milestones Container */}
-                <div className="relative z-10 flex gap-4 min-w-[600px] w-full justify-between items-start">
+                <div className="relative z-10 flex gap-0 min-w-[700px] w-full items-center">
                     {sortedMilestones.map((milestone, idx) => (
                         <MilestoneCard
                             key={milestone.id}
@@ -114,12 +114,13 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                         />
                     ))}
 
-                    {/* Show Day Flag */}
-                    <div className="flex flex-col items-center justify-start group min-w-[80px] pt-1">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-lg shadow-rose-200 rotate-3 group-hover:rotate-6 transition-transform duration-300 border-2 border-white mb-2">
+                    {/* Show Day Flag - Always at end, centered */}
+                    <div className="relative h-[220px] w-[80px] flex items-center justify-center group ml-6">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-lg shadow-rose-200 rotate-3 group-hover:rotate-6 transition-transform duration-300 border-2 border-white z-20">
                             <Sparkles className="w-4 h-4" />
                         </div>
-                        <div className="text-center">
+                        {/* Label always below */}
+                         <div className="absolute top-[65%] text-center">
                             <div className="font-serif text-xs font-bold text-rose-600 leading-tight">Show<br/>Day</div>
                         </div>
                     </div>
@@ -134,6 +135,9 @@ function MilestoneCard({ milestone, today, onUpdate, index }) {
     const isPastDate = isPast(dueDate) && !isToday(dueDate);
     const isTodayDate = isToday(dueDate);
     
+    // Alternating Logic
+    const isTop = index % 2 === 0;
+
     // Status Logic
     const isCompleted = isPastDate; 
 
@@ -151,51 +155,56 @@ function MilestoneCard({ milestone, today, onUpdate, index }) {
 
     return (
         <motion.div 
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: isTop ? 10 : -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="flex flex-col items-center min-w-[100px] group relative"
+            className="relative h-[220px] w-[130px] shrink-0 group"
         >
-            {/* Top Card (Details) */}
-            <div className={`
-                relative p-2.5 rounded-xl border backdrop-blur-md shadow-sm transition-all duration-300 w-full mb-3
-                ${isCompleted ? 'bg-green-50/50 border-green-100/50' : 'bg-white/70 border-white/60 hover:shadow-md hover:-translate-y-0.5 hover:bg-white/90'}
-            `}>
-                <div className="flex justify-between items-start mb-1 gap-2">
-                    <div className={`text-[10px] font-mono font-medium px-1.5 py-0.5 rounded ${isCompleted ? 'bg-green-100/80 text-green-700' : 'bg-rose-50 text-rose-600'}`}>
-                        {format(dueDate, 'MMM d')}
+            {/* CENTRAL NODE - Always vertically centered */}
+            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-[3px] z-20 transition-all duration-500 ${nodeColor} shadow-sm group-hover:scale-125 bg-white`} />
+            
+            {/* VERTICAL CONNECTOR LINE */}
+            <div className={`absolute left-1/2 -translate-x-px w-0.5 bg-rose-100/80 z-0 ${isTop ? 'bottom-1/2 mb-1.5 h-6' : 'top-1/2 mt-1.5 h-6'}`} />
+
+            {/* CARD CONTENT - Alternates Top/Bottom */}
+            <div className={`absolute left-2 right-2 flex flex-col items-center ${isTop ? 'bottom-[58%]' : 'top-[58%]'}`}>
+                <div className={`
+                    relative p-2.5 rounded-xl border backdrop-blur-md shadow-sm transition-all duration-300 w-full
+                    ${isCompleted ? 'bg-green-50/50 border-green-100/50' : 'bg-white/70 border-white/60 hover:shadow-md hover:scale-105 hover:bg-white/90'}
+                `}>
+                    <div className="flex justify-between items-start mb-1 gap-1">
+                        <div className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${isCompleted ? 'bg-green-100/80 text-green-700' : 'bg-rose-50 text-rose-500'}`}>
+                            {format(dueDate, 'MMM d')}
+                        </div>
+                        
+                        <Popover open={isEditing} onOpenChange={setIsEditing}>
+                            <PopoverTrigger asChild>
+                                <button className="text-gray-300 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100">
+                                    <Edit2 className="w-2.5 h-2.5" />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-3 bg-white/95 backdrop-blur-xl border-rose-100 shadow-xl rounded-xl z-50">
+                                <div className="space-y-2">
+                                    <h4 className="font-medium text-xs text-rose-900">Reschedule</h4>
+                                    <input 
+                                        type="date" 
+                                        value={tempDate}
+                                        onChange={(e) => setTempDate(e.target.value)}
+                                        className="w-full bg-rose-50 border border-rose-100 rounded px-2 py-1 text-xs text-rose-900 focus:outline-none focus:ring-1 focus:ring-rose-200"
+                                    />
+                                    <Button size="sm" onClick={handleSave} className="w-full h-7 text-xs bg-rose-500 hover:bg-rose-600 text-white rounded">
+                                        Update
+                                    </Button>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
                     </div>
                     
-                    <Popover open={isEditing} onOpenChange={setIsEditing}>
-                        <PopoverTrigger asChild>
-                            <button className="text-gray-300 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100">
-                                <Edit2 className="w-2.5 h-2.5" />
-                            </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-3 bg-white/95 backdrop-blur-xl border-rose-100 shadow-xl rounded-xl">
-                            <div className="space-y-2">
-                                <h4 className="font-medium text-xs text-rose-900">Reschedule</h4>
-                                <input 
-                                    type="date" 
-                                    value={tempDate}
-                                    onChange={(e) => setTempDate(e.target.value)}
-                                    className="w-full bg-rose-50 border border-rose-100 rounded px-2 py-1 text-xs text-rose-900 focus:outline-none focus:ring-1 focus:ring-rose-200"
-                                />
-                                <Button size="sm" onClick={handleSave} className="w-full h-7 text-xs bg-rose-500 hover:bg-rose-600 text-white rounded">
-                                    Update
-                                </Button>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                </div>
-                
-                <div className="font-bold text-xs text-gray-700 leading-tight line-clamp-2" title={milestone.name}>
-                    {milestone.name}
+                    <div className="font-bold text-xs text-gray-700 leading-tight line-clamp-3 text-center" title={milestone.name}>
+                        {milestone.name}
+                    </div>
                 </div>
             </div>
-
-            {/* Connector Node */}
-            <div className={`w-3 h-3 rounded-full border-[3px] z-20 transition-all duration-500 ${nodeColor} shadow-sm group-hover:scale-125`} />
             
         </motion.div>
     );
