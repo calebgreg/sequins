@@ -120,6 +120,7 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
 
 function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUpdate, allMilestones }) {
     const [isDragging, setIsDragging] = useState(false);
+    const constraintsRef = useRef(null);
     
     // Calculate initial position
     const dueDate = parseISO(milestone.due_date);
@@ -198,6 +199,9 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
             </div>
 
             <div className="h-3 w-full rounded-full bg-gray-50 border border-gray-100 relative flex items-center overflow-visible">
+                {/* Constraint Container: Width + 20px (knob size) to allow full travel */}
+                <div ref={constraintsRef} className="absolute top-0 bottom-0 -left-[10px] -right-[10px] pointer-events-none" />
+
                 {/* Active Track Portion (Progress Indicator) */}
                 <motion.div 
                     className={`absolute left-0 h-full rounded-full ${progressTrackClass}`}
@@ -207,14 +211,7 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
                 {/* Draggable Knob */}
                 <motion.div
                     drag="x"
-                    // Constraints are relative to the STARTING position of the drag (which is initialX)
-                    // We want the knob to travel from 0 to containerWidth absolute.
-                    // So left delta limit = 0 - initialX
-                    // Right delta limit = containerWidth - initialX
-                    dragConstraints={{ 
-                        left: -initialX, 
-                        right: containerWidth - initialX 
-                    }}
+                    dragConstraints={constraintsRef}
                     dragElastic={0}
                     dragMomentum={false}
                     style={{ x, y: "-50%" }}
