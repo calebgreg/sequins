@@ -313,12 +313,38 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                 <PerformanceTimeline 
                     milestones={performance?.timeline_milestones} 
                     showDate={performance?.date}
-                    onMilestoneUpdate={(updatedMilestones) => {
-                        // Optimistic / Real update
+                    onMilestoneUpdate={async (updatedMilestones) => {
+                        // 1. Update Performance Entity
                         updatePerformance.mutate({ 
                             ...performance, 
                             timeline_milestones: updatedMilestones 
                         });
+
+                        // 2. Update Linked Family Tasks
+                        const updates = [];
+                        updatedMilestones.forEach(ms => {
+                            if (ms.tasks) {
+                                ms.tasks.forEach(t => {
+                                    if (t.family_task_id) {
+                                        updates.push(
+                                            base44.entities.FamilyTask.update(t.family_task_id, { 
+                                                due_date: ms.due_date 
+                                            }).catch(err => console.error("Failed to update task", t.family_task_id, err))
+                                        );
+                                    }
+                                });
+                            }
+                        });
+                        
+                        if (updates.length > 0) {
+                            try {
+                                await Promise.all(updates);
+                                queryClient.invalidateQueries(['tasks', performanceId]);
+                                toast.success("Timeline & tasks updated!");
+                            } catch (e) {
+                                console.error("Error updating tasks", e);
+                            }
+                        }
                     }}
                 />
             </div>
