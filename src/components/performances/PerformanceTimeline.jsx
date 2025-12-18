@@ -158,8 +158,8 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
     }
 
     // Dynamic date label while dragging
-    // Dynamic date label while dragging - using a ref for performance
-    const currentDragDateRef = useRef(dueDate);
+    // Dynamic date label while dragging
+    const [dragDate, setDragDate] = useState(dueDate);
 
     const handleDrag = (event, info) => {
         if (containerWidth > 0) {
@@ -167,7 +167,10 @@ function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUp
             const progress = Math.max(0, Math.min(1, currentX / containerWidth));
             const newDays = Math.round(progress * spanDays);
             const newDate = addDays(today, newDays);
-            currentDragDateRef.current = newDate; // Update ref, no state re-render during drag
+            // Only update state if date changed to minimize re-renders
+            if (!isSameDay(newDate, dragDate)) {
+                setDragDate(newDate);
+            }
         }
     };
 
