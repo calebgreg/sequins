@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { format, differenceInDays, addDays, startOfDay, parseISO, isSameDay, isPast, isToday } from 'date-fns';
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarDays, Sparkles, Flag, CheckCircle2, Circle, Clock, ArrowRight, Calendar as CalendarIcon, Edit2 } from 'lucide-react';
+import { CalendarDays, Sparkles, Flag, CheckCircle2, Circle, Clock, ArrowRight, Calendar as CalendarIcon, Edit2, PartyPopper, Trophy } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -10,10 +10,12 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
     const today = startOfDay(new Date());
     const showDay = showDate ? startOfDay(parseISO(showDate)) : null;
     
-    // Sort milestones by date
-    const sortedMilestones = [...(milestones || [])].sort((a, b) => {
-        return new Date(a.due_date) - new Date(b.due_date);
-    });
+    // Sort milestones by date and filter out explicit "Show Day" entries to avoid redundancy
+    const sortedMilestones = [...(milestones || [])]
+        .filter(m => m.name?.toLowerCase() !== 'show day' && (!showDay || !isSameDay(parseISO(m.due_date), showDay)))
+        .sort((a, b) => {
+            return new Date(a.due_date) - new Date(b.due_date);
+        });
 
     const totalDays = showDay ? differenceInDays(showDay, today) : 0;
     
@@ -114,14 +116,26 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                         />
                     ))}
 
-                    {/* Show Day Flag - Always at end, centered */}
-                    <div className="relative h-[220px] w-[80px] flex items-center justify-center group ml-6">
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-lg shadow-rose-200 rotate-3 group-hover:rotate-6 transition-transform duration-300 border-2 border-white z-20">
-                            <Sparkles className="w-4 h-4" />
+                    {/* Show Day Finale - Distinct & Celebratory */}
+                    <div className="relative h-[220px] w-[100px] flex items-center justify-center group ml-8">
+                         {/* Glow Effect behind */}
+                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-gradient-to-tr from-amber-200 to-rose-300 rounded-full blur-xl opacity-40 group-hover:opacity-60 transition-opacity" />
+                         
+                         {/* Main Badge */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-400 to-rose-500 flex items-center justify-center text-white shadow-[0_8px_16px_-4px_rgba(251,146,60,0.5)] rotate-6 group-hover:rotate-12 transition-transform duration-500 border-[3px] border-white z-20">
+                            <PartyPopper className="w-7 h-7" strokeWidth={2} />
                         </div>
-                        {/* Label always below */}
-                         <div className="absolute top-[65%] text-center">
-                            <div className="font-serif text-xs font-bold text-rose-600 leading-tight">Show<br/>Day</div>
+                        
+                        {/* Confetti Decos */}
+                        <div className="absolute top-[35%] right-[20%] w-2 h-2 rounded-full bg-blue-400 animate-pulse delay-75" />
+                        <div className="absolute bottom-[35%] left-[20%] w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse delay-150" />
+                        
+                        {/* Label */}
+                         <div className="absolute top-[68%] text-center w-full">
+                            <div className="font-serif text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-rose-600 leading-tight uppercase tracking-wide">Opening<br/>Night</div>
+                            {showDay && (
+                                <div className="text-[10px] font-bold text-amber-500/80 mt-1">{format(showDay, 'MMM d')}</div>
+                            )}
                         </div>
                     </div>
                 </div>
