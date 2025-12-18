@@ -1,24 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { format, differenceInDays, addDays, startOfDay, parseISO, isSameDay } from 'date-fns';
-import { motion, useMotionValue } from "framer-motion";
-import { CalendarDays, Sparkles, Flag, Clock } from 'lucide-react';
+import { format, differenceInDays, addDays, startOfDay, parseISO, isSameDay, isPast, isToday } from 'date-fns';
+import { motion, AnimatePresence } from "framer-motion";
+import { CalendarDays, Sparkles, Flag, CheckCircle2, Circle, Clock, ArrowRight, Calendar as CalendarIcon, Edit2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export default function PerformanceTimeline({ milestones = [], showDate, onMilestoneUpdate }) {
-    const containerRef = useRef(null);
-    const [width, setWidth] = useState(0);
-
-    // Update width on resize
-    useEffect(() => {
-        if (!containerRef.current) return;
-        const resizeObserver = new ResizeObserver((entries) => {
-            for (let entry of entries) {
-                setWidth(entry.contentRect.width);
-            }
-        });
-        resizeObserver.observe(containerRef.current);
-        return () => resizeObserver.disconnect();
-    }, []);
-
     const today = startOfDay(new Date());
     const showDay = showDate ? startOfDay(parseISO(showDate)) : null;
     
@@ -27,10 +15,24 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
         return new Date(a.due_date) - new Date(b.due_date);
     });
 
-    // --- ELEGANT EMPTY STATE (PINK GLASS) ---
+    const totalDays = showDay ? differenceInDays(showDay, today) : 0;
+    
+    // Calculate progress percentage for the main track
+    // Find the first milestone date or today, whichever is earlier
+    const startDate = sortedMilestones.length > 0 
+        ? startOfDay(parseISO(sortedMilestones[0].due_date)) 
+        : today;
+    
+    // If start date is after today, we start from today
+    const effectiveStart = startDate < today ? startDate : today;
+    const totalSpan = showDay ? differenceInDays(showDay, effectiveStart) : 1;
+    const daysPassed = differenceInDays(today, effectiveStart);
+    const progressPercent = Math.max(0, Math.min(100, (daysPassed / totalSpan) * 100));
+
+    // --- EMPTY STATE ---
     if (!showDay || sortedMilestones.length === 0) {
         return (
-            <div className="h-[400px] w-full rounded-[32px] overflow-hidden relative group">
+            <div className="h-[300px] w-full rounded-[32px] overflow-hidden relative group">
                 {/* Glassmorphic Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-rose-100 via-pink-50 to-white">
                     <div className="absolute inset-0 bg-white/40 backdrop-blur-3xl"></div>
@@ -46,224 +48,178 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                         initial={{ scale: 0.95, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="w-24 h-24 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center mb-6 border border-white/60 shadow-[0_8px_32px_0_rgba(244,63,94,0.1)]"
+                        className="w-20 h-20 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center mb-6 border border-white/60 shadow-[0_8px_32px_0_rgba(244,63,94,0.1)]"
                     >
-                        <Sparkles className="w-10 h-10 text-rose-400" strokeWidth={1.5} />
+                        <Sparkles className="w-8 h-8 text-rose-400" strokeWidth={1.5} />
                     </motion.div>
                     
-                    <h3 className="font-serif text-3xl mb-3 text-rose-950 font-medium">Production Timeline</h3>
-                    <p className="text-rose-800/60 max-w-sm mb-8 text-lg font-light leading-relaxed">
-                        A blank canvas awaits. Set your show date to unveil the production roadmap.
+                    <h3 className="font-serif text-2xl mb-2 text-rose-950 font-medium">Your Production Journey</h3>
+                    <p className="text-rose-800/60 max-w-sm mb-6 text-base font-light leading-relaxed">
+                        Every great show starts with a plan. Set your show date to begin the adventure.
                     </p>
                 </div>
             </div>
         );
     }
 
-    const totalDays = differenceInDays(showDay, today);
-    const spanDays = Math.max(totalDays, 1);
-    
-    // Generate grid markers
-    const markers = [];
-    const markerCount = spanDays > 120 ? 6 : 4;
-    const step = Math.ceil(spanDays / markerCount);
-    
-    for (let i = 0; i <= spanDays; i += step) {
-        markers.push({
-            day: i,
-            date: addDays(today, i),
-            label: i === 0 ? 'Today' : i === spanDays ? 'Show Day' : null
-        });
-    }
-    if (markers[markers.length - 1].day < spanDays) {
-        markers.push({ day: spanDays, date: showDay, label: 'Show Day' });
-    }
-
     return (
-        <div className="bg-white/60 backdrop-blur-xl rounded-[32px] border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col h-full relative">
-            {/* Soft pink gradient underlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-rose-50/30 to-transparent pointer-events-none" />
-
+        <div className="w-full bg-white/40 backdrop-blur-xl rounded-[32px] border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col relative">
             {/* Header */}
-            <div className="relative z-10 px-8 py-6 border-b border-rose-100/50 flex justify-between items-center">
-                <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-white to-rose-50 flex items-center justify-center text-rose-400 shadow-[0_2px_10px_-2px_rgba(244,63,94,0.1)] border border-white">
-                        <CalendarDays className="w-5 h-5" />
+            <div className="px-8 py-6 flex justify-between items-center border-b border-rose-100/30 bg-white/30">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-rose-400 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-rose-200">
+                        <Flag className="w-4 h-4" />
                     </div>
                     <div>
-                        <h3 className="font-serif text-rose-950 text-xl tracking-tight">Production Schedule</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs font-bold text-rose-300 uppercase tracking-widest">
-                                {format(today, 'MMM d')} — {format(showDay, 'MMM d, yyyy')}
-                            </span>
-                            <span className="w-1 h-1 bg-rose-200 rounded-full" />
-                            <span className="text-xs font-medium text-rose-700/60 font-serif italic">{totalDays} Days until curtain</span>
+                        <h3 className="font-serif text-rose-950 text-lg">Road to Opening Night</h3>
+                        <div className="flex items-center gap-2 text-xs font-medium text-rose-500/80">
+                            <span>{format(today, 'MMM d')}</span>
+                            <ArrowRight className="w-3 h-3" />
+                            <span>{format(showDay, 'MMM d, yyyy')}</span>
                         </div>
                     </div>
                 </div>
-                <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-rose-500 bg-rose-50/50 px-4 py-2 rounded-full border border-rose-100/50 backdrop-blur-sm">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Interactive</span>
+                
+                <div className="flex items-center gap-3">
+                    <div className="text-right hidden sm:block">
+                        <div className="text-xs font-bold text-rose-400 uppercase tracking-widest">Countdown</div>
+                        <div className="font-mono text-lg font-bold text-rose-600">{totalDays} <span className="text-xs font-sans font-medium text-rose-400">days left</span></div>
+                    </div>
                 </div>
             </div>
 
-            {/* Timeline Body */}
-            <div className="p-8 relative min-h-[400px]" ref={containerRef}>
-                {/* Background Grid */}
-                <div className="absolute inset-x-8 top-8 bottom-8 pointer-events-none">
-                     {markers.map((marker, idx) => (
-                         <div key={idx} className="h-full flex flex-col items-center relative group" style={{ left: `${(marker.day / spanDays) * 100}%`, position: 'absolute' }}>
-                             <div className="h-full w-px bg-rose-200/20 border-r border-dashed border-rose-300/20 group-last:bg-rose-300/40 group-last:border-rose-300/40" />
-                             <div className={`absolute bottom-0 translate-y-full pt-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${marker.label === 'Show Day' ? 'text-rose-500' : 'text-rose-300/60'}`}>
-                                 {marker.label || format(marker.date, 'MMM d')}
-                             </div>
-                         </div>
-                     ))}
+            {/* Scrollable Timeline Area */}
+            <div className="relative p-8 overflow-x-auto min-h-[320px] flex items-center custom-scrollbar">
+                
+                {/* Connecting Line Container */}
+                <div className="absolute left-8 right-8 top-1/2 -translate-y-1/2 h-1 bg-rose-100 rounded-full z-0 min-w-[800px]">
+                    {/* Progress Fill */}
+                    <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progressPercent}%` }}
+                        transition={{ duration: 1.5, ease: "easeInOut" }}
+                        className="h-full bg-gradient-to-r from-rose-300 to-pink-500 rounded-full relative"
+                    >
+                        {/* Current Day Indicator */}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 bg-white border-4 border-pink-500 rounded-full shadow-lg z-10" />
+                        <div className="absolute right-0 bottom-full mb-3 translate-x-1/2 text-[10px] font-bold text-pink-500 uppercase tracking-wider bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow-sm">
+                            Today
+                        </div>
+                    </motion.div>
                 </div>
 
-                {/* Tracks */}
-                <div className="relative z-10 space-y-10 mt-6">
+                {/* Milestones Container */}
+                <div className="relative z-10 flex gap-12 min-w-[800px] px-4 w-full justify-between items-start pt-12">
                     {sortedMilestones.map((milestone, idx) => (
-                        <TimelineRow
+                        <MilestoneCard
                             key={milestone.id}
                             milestone={milestone}
                             today={today}
-                            showDay={showDay}
-                            spanDays={spanDays}
-                            containerWidth={width}
-                            onUpdate={onMilestoneUpdate}
-                            allMilestones={milestones}
+                            onUpdate={(updatedMilestone) => {
+                                const newList = sortedMilestones.map(m => 
+                                    m.id === updatedMilestone.id ? updatedMilestone : m
+                                );
+                                onMilestoneUpdate(newList);
+                            }}
                             index={idx}
                         />
                     ))}
+
+                    {/* Show Day Flag */}
+                    <div className="flex flex-col items-center justify-start group min-w-[120px]">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-xl shadow-rose-200 rotate-3 group-hover:rotate-6 transition-transform duration-300 border-4 border-white">
+                            <Sparkles className="w-6 h-6" />
+                        </div>
+                        <div className="h-12 w-0.5 border-l-2 border-dashed border-rose-200 my-2"></div>
+                        <div className="text-center">
+                            <div className="font-serif text-lg font-bold text-rose-600">Show Day</div>
+                            <div className="text-xs font-medium text-rose-400 bg-rose-50 px-2 py-1 rounded-md mt-1 inline-block">
+                                {format(showDay, 'MMM d')}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
 
-function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUpdate, allMilestones, index }) {
-    const [isDragging, setIsDragging] = useState(false);
-    
+function MilestoneCard({ milestone, today, onUpdate, index }) {
     const dueDate = parseISO(milestone.due_date);
-    const daysFromStart = differenceInDays(dueDate, today);
-    const initialProgress = Math.max(0, Math.min(1, daysFromStart / spanDays));
+    const isPastDate = isPast(dueDate) && !isToday(dueDate);
+    const isTodayDate = isToday(dueDate);
     
-    const x = useMotionValue(initialProgress * containerWidth);
-    
-    useEffect(() => {
-        if (!isDragging && containerWidth > 0) {
-            const targetX = initialProgress * containerWidth;
-            if (Math.abs(x.get() - targetX) > 2) {
-                x.set(targetX);
-            }
-        }
-    }, [initialProgress, containerWidth, isDragging, x]);
+    // Status Logic
+    const isCompleted = isPastDate; // Simplified logic: past = done for this visual
+    const statusColor = isCompleted ? "bg-green-100 text-green-600 border-green-200" : 
+                       isTodayDate ? "bg-amber-100 text-amber-600 border-amber-200" : 
+                       "bg-white text-rose-900 border-white/60";
 
-    const daysUntil = differenceInDays(dueDate, today);
-    const isOverdue = daysUntil < 0;
-    
-    // Glassmorphic Colors
-    let trackGradient = "from-rose-300/80 to-pink-400/80";
-    let knobRing = "ring-white/50 shadow-[0_4px_14px_0_rgba(244,63,94,0.3)]";
-    let textColor = "text-rose-900/80";
-    let flagColor = "bg-white/60 text-rose-400 border-rose-100";
-    
-    if (isOverdue) {
-        trackGradient = "from-red-300/80 to-red-400/80";
-        knobRing = "ring-red-100/50 shadow-[0_4px_14px_0_rgba(239,68,68,0.3)]";
-        textColor = "text-red-900/80";
-        flagColor = "bg-red-50/60 text-red-500 border-red-100";
-    }
+    const nodeColor = isCompleted ? "bg-green-500 border-green-200" : 
+                     isTodayDate ? "bg-amber-500 border-amber-200" : 
+                     "bg-white border-rose-200";
 
-    const [dragDate, setDragDate] = useState(dueDate);
+    const [isEditing, setIsEditing] = useState(false);
+    const [tempDate, setTempDate] = useState(milestone.due_date);
 
-    const handleDrag = (event, info) => {
-        if (containerWidth > 0) {
-            const currentX = x.get();
-            const progress = Math.max(0, Math.min(1, currentX / containerWidth));
-            const newDays = Math.round(progress * spanDays);
-            const newDate = addDays(today, newDays);
-            if (!isSameDay(newDate, dragDate)) {
-                setDragDate(newDate);
-            }
-        }
-    };
-
-    const handleDragEnd = () => {
-        setIsDragging(false);
-        if (onUpdate) {
-            const updatedList = allMilestones.map(m => 
-                m.id === milestone.id ? { ...m, due_date: format(dragDate, 'yyyy-MM-dd') } : m
-            );
-            onUpdate(updatedList);
-        }
+    const handleSave = () => {
+        onUpdate({ ...milestone, due_date: tempDate });
+        setIsEditing(false);
     };
 
     return (
         <motion.div 
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.08, ease: "easeOut" }}
-            className="relative group"
+            transition={{ delay: index * 0.1 }}
+            className="flex flex-col items-center min-w-[140px] group"
         >
-            <div className="flex justify-between items-end mb-3 px-1">
-                <div className="flex items-center gap-3">
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center backdrop-blur-sm border transition-colors ${flagColor}`}>
-                        {isOverdue ? <Flag className="w-3 h-3" /> : <div className="w-1.5 h-1.5 rounded-full bg-rose-300/50" />}
+            {/* Top Card (Details) */}
+            <div className={`
+                relative p-4 rounded-2xl border backdrop-blur-md shadow-sm transition-all duration-300 w-full mb-4
+                ${isCompleted ? 'bg-green-50/50 border-green-100/50' : 'bg-white/60 border-white/60 hover:shadow-lg hover:-translate-y-1 hover:bg-white/80'}
+            `}>
+                <div className="flex justify-between items-start mb-2">
+                    <div className={`p-1.5 rounded-lg ${isCompleted ? 'bg-green-100 text-green-600' : 'bg-rose-50 text-rose-500'}`}>
+                        {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
                     </div>
-                    <span className={`text-sm font-medium tracking-wide ${textColor}`}>
-                        {milestone.name}
-                    </span>
-                </div>
-                <span className={`text-xs font-serif italic px-3 py-1 rounded-full transition-all border ${isDragging ? 'bg-rose-500 text-white shadow-lg scale-105 border-rose-400' : 'bg-white/40 text-rose-800/60 border-rose-100/50'}`}>
-                    {format(isDragging ? dragDate : dueDate, 'MMM do')}
-                </span>
-            </div>
-
-            <div className="h-2 w-full rounded-full bg-rose-100/30 border border-rose-100/20 relative flex items-center">
-                {/* Active Gradient Track with Shine */}
-                <motion.div 
-                    className={`absolute left-0 h-full rounded-full bg-gradient-to-r ${trackGradient} shadow-[0_0_10px_rgba(244,63,94,0.2)]`}
-                    style={{ width: x }}
-                >
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full" />
-                </motion.div>
-
-                {/* Draggable Glass Knob */}
-                <motion.div
-                    drag="x"
-                    dragConstraints={{ left: 0, right: containerWidth }}
-                    dragElastic={0}
-                    dragMomentum={false}
-                    style={{ x, y: "-50%", left: 0 }}
-                    onDragStart={() => setIsDragging(true)}
-                    onDrag={handleDrag}
-                    onDragEnd={handleDragEnd}
-                    className={`
-                        absolute top-1/2 -ml-[12px]
-                        w-6 h-6 rounded-full bg-white/80 backdrop-blur-md border border-white cursor-grab active:cursor-grabbing
-                        flex items-center justify-center z-20 transition-all
-                        ring-4 ${knobRing}
-                        ${isDragging ? 'scale-110' : 'hover:scale-110'}
-                    `}
-                >
-                    <div className={`w-2 h-2 rounded-full ${isOverdue ? 'bg-red-400' : 'bg-rose-400'}`} />
                     
-                    {/* Elegant Tooltip */}
-                    <div className={`
-                        absolute bottom-full mb-4 left-1/2 -translate-x-1/2 
-                        bg-white/90 backdrop-blur-xl text-rose-900 text-[10px] font-medium py-2 px-4 rounded-xl 
-                        whitespace-nowrap shadow-[0_10px_30px_-5px_rgba(244,63,94,0.3)] pointer-events-none transition-all border border-rose-100/50
-                        flex flex-col items-center
-                        ${isDragging || 'group-hover:opacity-100 opacity-0 translate-y-2 group-hover:translate-y-0'}
-                    `}>
-                        <span className="uppercase tracking-widest opacity-50 text-[8px] mb-0.5">Deadline</span>
-                        {format(isDragging ? dragDate : dueDate, 'EEEE, MMM do')}
-                        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white/90 rotate-45 border-r border-b border-rose-100/50"></div>
-                    </div>
-                </motion.div>
+                    <Popover open={isEditing} onOpenChange={setIsEditing}>
+                        <PopoverTrigger asChild>
+                            <button className="text-gray-300 hover:text-rose-400 transition-colors">
+                                <Edit2 className="w-3 h-3" />
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-4 bg-white/90 backdrop-blur-xl border-rose-100 shadow-xl rounded-2xl">
+                            <div className="space-y-3">
+                                <h4 className="font-medium text-sm text-rose-900">Reschedule Milestone</h4>
+                                <input 
+                                    type="date" 
+                                    value={tempDate}
+                                    onChange={(e) => setTempDate(e.target.value)}
+                                    className="w-full bg-rose-50 border border-rose-100 rounded-lg px-3 py-2 text-sm text-rose-900 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                                />
+                                <Button size="sm" onClick={handleSave} className="w-full bg-rose-500 hover:bg-rose-600 text-white rounded-lg">
+                                    Update Date
+                                </Button>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                </div>
+                
+                <div className="font-bold text-sm text-gray-800 leading-tight mb-1">{milestone.name}</div>
+                <div className={`text-xs font-mono font-medium ${isCompleted ? 'text-green-600/70' : 'text-gray-400'}`}>
+                    {format(dueDate, 'MMM d')}
+                </div>
             </div>
+
+            {/* Connector Node */}
+            <div className={`w-4 h-4 rounded-full border-4 z-20 transition-all duration-500 ${nodeColor} shadow-sm group-hover:scale-125`} />
+            
+            {/* Dashed Line to card */}
+            <div className="h-6 w-px border-l-2 border-dashed border-gray-200 -mt-2 mb-2 absolute top-[calc(100%-20px)] opacity-0"></div> 
+            {/* (Hiding vertical lines for cleaner look, letting cards float above) */}
+
         </motion.div>
     );
 }
