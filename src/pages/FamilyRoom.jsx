@@ -186,18 +186,22 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                  {isPreview && !previewConfig && <Badge variant="destructive" className="animate-pulse shadow-xl">Live Preview Mode</Badge>}
             </div>
 
-            {/* Performance Hub - Auto-injected if relevant */}
-            {!isPreview && primaryStudentId && (
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
-                     <PerformanceHub studentId={primaryStudentId} />
-                </div>
-            )}
-
             {visibleModules.map((module, idx) => {
                 
                 // HERO MODULE
                 if (module.type === 'hero') {
-                    return <HeroModule key={module.id} module={module} isMobilePreview={isMobilePreview} />;
+                    return (
+                        <React.Fragment key={module.id}>
+                            <HeroModule module={module} isMobilePreview={isMobilePreview} />
+                            
+                            {/* Performance Hub - Auto-injected immediately after Hero */}
+                            {!isPreview && primaryStudentId && (
+                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                                     <PerformanceHub studentId={primaryStudentId} />
+                                </div>
+                            )}
+                        </React.Fragment>
+                    );
                 }
 
                 // TEXT BLOCK MODULE
