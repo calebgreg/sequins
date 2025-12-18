@@ -133,55 +133,67 @@ export default function PerformanceHub({ studentId }) {
                             {/* Right Column: The "Spoon-fed" Details Grid */}
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                                 {/* Grooming Board - Pinterest Style */}
-                                <div className="mb-8">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
-                                            <Scissors className="w-5 h-5" />
+                                <div className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-sm hover:shadow-md transition-shadow mb-8 relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-stone-50/30 pointer-events-none" />
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
+                                                <Scissors className="w-5 h-5" />
+                                            </div>
+                                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Look & Feel Board</h4>
                                         </div>
-                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Look & Feel Board</h4>
-                                    </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <PinterestCard 
-                                            label="Hair" 
-                                            value={routine.grooming?.hair} 
-                                            rotate="rotate-1"
-                                            delay={0.1}
-                                        />
-                                        <PinterestCard 
-                                            label="Makeup" 
-                                            value={routine.grooming?.makeup} 
-                                            rotate="-rotate-1"
-                                            delay={0.2}
-                                        />
-                                        <PinterestCard 
-                                            label="Tights" 
-                                            value={routine.grooming?.tights} 
-                                            rotate="-rotate-2"
-                                            delay={0.3}
-                                        />
-                                        <PinterestCard 
-                                            label="Shoes" 
-                                            value={routine.grooming?.shoes} 
-                                            rotate="rotate-2"
-                                            delay={0.4}
-                                        />
-                                    </div>
+                                        {(!routine.grooming?.hair && !routine.grooming?.makeup && !routine.grooming?.tights && !routine.grooming?.shoes) ? (
+                                            <div className="text-center py-12 border-2 border-dashed border-stone-100 rounded-2xl bg-white/50">
+                                                <div className="mb-3 opacity-20">
+                                                    <Scissors className="w-12 h-12 mx-auto" />
+                                                </div>
+                                                <p className="text-sm text-gray-400 italic font-serif">Grooming details coming soon.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <PinterestCard 
+                                                    label="Hair" 
+                                                    value={routine.grooming?.hair} 
+                                                    rotate="rotate-1"
+                                                    delay={0.1}
+                                                />
+                                                <PinterestCard 
+                                                    label="Makeup" 
+                                                    value={routine.grooming?.makeup} 
+                                                    rotate="-rotate-1"
+                                                    delay={0.2}
+                                                />
+                                                <PinterestCard 
+                                                    label="Tights" 
+                                                    value={routine.grooming?.tights} 
+                                                    rotate="-rotate-2"
+                                                    delay={0.3}
+                                                />
+                                                <PinterestCard 
+                                                    label="Shoes" 
+                                                    value={routine.grooming?.shoes} 
+                                                    rotate="rotate-2"
+                                                    delay={0.4}
+                                                />
+                                            </div>
+                                        )}
 
-                                    {routine.grooming?.notes && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            whileInView={{ opacity: 1, y: 0 }}
-                                            viewport={{ once: true }}
-                                            className="mt-6 bg-[#fffbf0] p-6 rounded-xl shadow-md border border-stone-100 -rotate-1 mx-2 relative"
-                                        >
-                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-4 bg-yellow-100/50 blur-sm rounded-full" />
-                                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Director's Note</p>
-                                            <p className="text-sm text-[#333333] font-serif italic leading-relaxed">
-                                                "{routine.grooming.notes}"
-                                            </p>
-                                        </motion.div>
-                                    )}
+                                        {routine.grooming?.notes && (
+                                            <motion.div 
+                                                initial={{ opacity: 0, y: 10 }}
+                                                whileInView={{ opacity: 1, y: 0 }}
+                                                viewport={{ once: true }}
+                                                className="mt-6 bg-[#fffbf0] p-6 rounded-xl shadow-md border border-stone-100 -rotate-1 mx-2 relative"
+                                            >
+                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-4 bg-yellow-100/50 blur-sm rounded-full" />
+                                                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Director's Note</p>
+                                                <p className="text-sm text-[#333333] font-serif italic leading-relaxed">
+                                                    "{routine.grooming.notes}"
+                                                </p>
+                                            </motion.div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Schedule Card */}
