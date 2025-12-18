@@ -133,7 +133,7 @@ export default function PerformanceHub({ studentId }) {
                             {/* Right Column: The "Spoon-fed" Details Grid */}
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                                 {/* Grooming Board - Pinterest Style */}
-                                <div className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-sm hover:shadow-md transition-shadow mb-8 relative overflow-hidden">
+                                <div className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-sm hover:shadow-md transition-shadow h-full relative overflow-hidden flex flex-col">
                                     <div className="absolute inset-0 bg-stone-50/30 pointer-events-none" />
                                     <div className="relative z-10">
                                         <div className="flex items-center gap-3 mb-6">
@@ -197,7 +197,7 @@ export default function PerformanceHub({ studentId }) {
                                 </div>
 
                                 {/* Schedule Card */}
-                                <div className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500">
                                             <CalendarDays className="w-5 h-5" />
