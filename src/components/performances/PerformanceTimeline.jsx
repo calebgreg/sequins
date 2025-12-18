@@ -1,27 +1,22 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { format, differenceInDays, addDays, startOfDay, parseISO, isAfter, isBefore } from 'date-fns';
-import { motion } from "framer-motion";
-import { Milestone, Info } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { format, differenceInDays, addDays, startOfDay, parseISO, isBefore, isSameDay } from 'date-fns';
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import { Milestone, CalendarDays, Clock } from 'lucide-react';
 
 export default function PerformanceTimeline({ milestones = [], showDate, onMilestoneUpdate }) {
     const containerRef = useRef(null);
-    const [containerWidth, setContainerWidth] = useState(0);
+    const [width, setWidth] = useState(0);
 
-    // Update container width on resize
+    // Update width on resize
     useEffect(() => {
-        if (containerRef.current) {
-            setContainerWidth(containerRef.current.offsetWidth);
-        }
-        
-        const handleResize = () => {
-            if (containerRef.current) {
-                setContainerWidth(containerRef.current.offsetWidth);
+        if (!containerRef.current) return;
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                setWidth(entry.contentRect.width);
             }
-        };
-        
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        });
+        resizeObserver.observe(containerRef.current);
+        return () => resizeObserver.disconnect();
     }, []);
 
     const today = startOfDay(new Date());
@@ -34,202 +29,206 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
 
     if (!showDay || sortedMilestones.length === 0) {
         return (
-            <div className="h-[400px] bg-white rounded-[32px] border border-gray-100 p-8 flex flex-col items-center justify-center text-center">
-                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                    <Milestone className="w-8 h-8 text-gray-400" />
+            <div className="h-[400px] bg-white rounded-[24px] border border-gray-100 p-8 flex flex-col items-center justify-center text-center shadow-sm">
+                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 border border-gray-100">
+                    <Milestone className="w-8 h-8 text-gray-300" />
                 </div>
-                <h3 className="font-serif text-xl text-[#333333] mb-2">Production Timeline</h3>
-                <p className="text-gray-400 max-w-sm mb-6">
-                    Set a show date and generate milestones in the Producer Workspace to activate the interactive timeline.
+                <h3 className="font-serif text-xl text-gray-900 mb-2">Production Timeline</h3>
+                <p className="text-gray-400 max-w-sm mb-6 text-sm">
+                    Set a show date and generate milestones to see your interactive roadmap.
                 </p>
             </div>
         );
     }
 
     const totalDays = differenceInDays(showDay, today);
-    // If show is in the past or today, handle gracefully (min 1 day to avoid div by zero)
+    // Ensure we have a valid range (at least 30 days for visual context if strictly short, or actual range)
     const spanDays = Math.max(totalDays, 1);
+    
+    // Generate grid markers (every 2 weeks or month depending on span)
+    const markers = [];
+    const markerCount = spanDays > 120 ? 6 : 4; // approximate markers
+    const step = Math.ceil(spanDays / markerCount);
+    
+    for (let i = 0; i <= spanDays; i += step) {
+        markers.push({
+            day: i,
+            date: addDays(today, i),
+            label: i === 0 ? 'Today' : i === spanDays ? 'Show Day' : null
+        });
+    }
 
-    const getPositionFromDate = (dateString) => {
-        const date = startOfDay(parseISO(dateString));
-        // If date is before today, clamp to 0. If after show, clamp to 100.
-        const daysFromToday = differenceInDays(date, today);
-        const percentage = Math.max(0, Math.min(100, (daysFromToday / spanDays) * 100));
-        return percentage;
-    };
-
-    const getDateFromPercentage = (percentage) => {
-        const daysToAdd = Math.round((percentage / 100) * spanDays);
-        return addDays(today, daysToAdd);
-    };
+    // Ensure Show Day is explicitly the last marker if not hit by step
+    if (markers[markers.length - 1].day < spanDays) {
+        markers.push({ day: spanDays, date: showDay, label: 'Show Day' });
+    }
 
     return (
-        <div className="bg-white rounded-[32px] p-8 shadow-xl shadow-indigo-100/20 border border-gray-100">
-            <div className="flex items-center justify-between mb-12">
-                <h3 className="font-serif text-2xl text-[#333333]">Production Roadmap</h3>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Info className="w-4 h-4" />
-                    <span>Drag milestones to adjust due dates</span>
+        <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                        <CalendarDays className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-gray-900 text-lg">Production Schedule</h3>
+                        <p className="text-xs text-gray-500 font-medium">
+                            {format(today, 'MMM d')} — {format(showDay, 'MMM d, yyyy')} ({totalDays} days)
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-medium text-gray-400 bg-white px-3 py-1.5 rounded-full border border-gray-100 shadow-sm">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Drag knobs to reschedule</span>
                 </div>
             </div>
 
-            <div className="relative pt-6 pb-2" ref={containerRef}>
-                {/* Global Timeline Labels */}
-                <div className="absolute top-0 left-0 text-xs font-bold text-gray-400 uppercase tracking-wider">Today</div>
-                <div className="absolute top-0 right-0 text-xs font-bold text-gray-400 uppercase tracking-wider">Show Day</div>
+            {/* Timeline Body */}
+            <div className="p-8 relative min-h-[400px]" ref={containerRef}>
+                {/* Background Grid */}
+                <div className="absolute inset-0 px-8 pt-8 pb-4 pointer-events-none flex justify-between">
+                     {markers.map((marker, idx) => (
+                         <div key={idx} className="h-full flex flex-col items-center relative" style={{ left: `${(marker.day / spanDays) * 100}%`, position: 'absolute' }}>
+                             <div className="h-full w-px bg-gray-100 border-r border-dashed border-gray-200" />
+                             <div className="absolute bottom-0 translate-y-full pt-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                                 {marker.label || format(marker.date, 'MMM d')}
+                             </div>
+                         </div>
+                     ))}
+                </div>
 
-                <div className="space-y-12">
-                    {sortedMilestones.map((milestone, idx) => {
-                        const initialPercentage = getPositionFromDate(milestone.due_date);
-                        const isCompleted = isBefore(parseISO(milestone.due_date), today);
-                        
-                        // Status Color Logic
-                        const daysUntil = differenceInDays(parseISO(milestone.due_date), today);
-                        let statusColor = "bg-gray-200"; // default/upcoming
-                        let knobColor = "bg-white border-gray-300";
-                        
-                        if (daysUntil < 0) {
-                            // Overdue / Past
-                            statusColor = "bg-red-100";
-                            knobColor = "bg-red-500 border-red-600";
-                        } else if (daysUntil <= 14) {
-                            // Due soon (< 2 weeks)
-                            statusColor = "bg-amber-100";
-                            knobColor = "bg-amber-400 border-amber-500";
-                        } else {
-                            // Upcoming
-                            statusColor = "bg-gray-100";
-                            knobColor = "bg-white border-gray-300 shadow-sm";
-                        }
-
-                        // Completed override? (If there was a status field, we'd use it. For now infer from date vs today)
-                        // The user prompt said "Completed: subtle green". 
-                        // Assuming milestones in past are completed for now unless we have status.
-                        // Actually, let's stick to the user's prompt logic:
-                        // "Gray track, button color indicates status"
-                        
-                        return (
-                            <TimelineTrack 
-                                key={milestone.id || idx}
-                                milestone={milestone}
-                                initialPercentage={initialPercentage}
-                                containerWidth={containerWidth}
-                                spanDays={spanDays}
-                                today={today}
-                                knobColor={knobColor}
-                                onUpdate={(newDate) => {
-                                    if (onMilestoneUpdate) {
-                                        // Create new array with updated date
-                                        const updated = milestones.map(m => 
-                                            m.id === milestone.id ? { ...m, due_date: format(newDate, 'yyyy-MM-dd') } : m
-                                        );
-                                        onMilestoneUpdate(updated);
-                                    }
-                                }}
-                            />
-                        );
-                    })}
+                {/* Tracks */}
+                <div className="relative z-10 space-y-8 mt-4">
+                    {sortedMilestones.map((milestone) => (
+                        <TimelineRow
+                            key={milestone.id}
+                            milestone={milestone}
+                            today={today}
+                            showDay={showDay}
+                            spanDays={spanDays}
+                            containerWidth={width}
+                            onUpdate={onMilestoneUpdate}
+                            allMilestones={milestones}
+                        />
+                    ))}
                 </div>
             </div>
         </div>
     );
 }
 
-function TimelineTrack({ milestone, initialPercentage, containerWidth, spanDays, today, knobColor, onUpdate }) {
-    const [percentage, setPercentage] = useState(initialPercentage);
+function TimelineRow({ milestone, today, showDay, spanDays, containerWidth, onUpdate, allMilestones }) {
     const [isDragging, setIsDragging] = useState(false);
-    const [currentDate, setCurrentDate] = useState(parseISO(milestone.due_date));
-
-    // Update internal state when props change (if not dragging)
+    
+    // Calculate initial position
+    const dueDate = parseISO(milestone.due_date);
+    const daysFromStart = differenceInDays(dueDate, today);
+    const initialProgress = Math.max(0, Math.min(1, daysFromStart / spanDays));
+    
+    // Motion value for smooth dragging
+    const x = useMotionValue(0);
+    
+    // Sync x with props when not dragging
     useEffect(() => {
-        if (!isDragging) {
-            setPercentage(initialPercentage);
-            setCurrentDate(parseISO(milestone.due_date));
+        if (!isDragging && containerWidth > 0) {
+            x.set(initialProgress * containerWidth);
         }
-    }, [initialPercentage, milestone.due_date, isDragging]);
+    }, [initialProgress, containerWidth, isDragging, x]);
+
+    // Derived values for visual feedback
+    const daysUntil = differenceInDays(dueDate, today);
+    const isOverdue = daysUntil < 0;
+    const isDueSoon = daysUntil >= 0 && daysUntil <= 14;
+    
+    let colorClass = "bg-indigo-500 border-indigo-600 shadow-indigo-200";
+    let trackClass = "bg-indigo-100";
+    
+    if (isOverdue) {
+        colorClass = "bg-rose-500 border-rose-600 shadow-rose-200";
+        trackClass = "bg-rose-100";
+    } else if (isDueSoon) {
+        colorClass = "bg-amber-500 border-amber-600 shadow-amber-200";
+        trackClass = "bg-amber-100";
+    } else {
+        colorClass = "bg-white border-gray-200 shadow-sm text-gray-700";
+        trackClass = "bg-gray-100";
+    }
+
+    // Dynamic date label while dragging
+    const [dragDate, setDragDate] = useState(dueDate);
 
     const handleDrag = (event, info) => {
-        if (containerWidth === 0) return;
-        const newPercentage = Math.max(0, Math.min(100, (info.point.x / containerWidth) * 100));
-        // We need to calculate based on the parent container's bounding box to be precise, 
-        // but framer motion drag on a constrained axis usually gives delta.
-        // Better approach: Use a ref for the track constraints.
+        if (containerWidth > 0) {
+            const currentX = x.get();
+            const progress = Math.max(0, Math.min(1, currentX / containerWidth));
+            const newDays = Math.round(progress * spanDays);
+            const newDate = addDays(today, newDays);
+            setDragDate(newDate);
+        }
     };
 
-    // Calculate date for tooltip
-    const daysFromNow = differenceInDays(currentDate, today);
-    const dateLabel = format(currentDate, 'MMM d');
-    
-    // Calculate weeks text
-    const weeksTotal = Math.round(spanDays / 7);
-    const weeksUntil = Math.round(differenceInDays(currentDate, today) / 7);
-    const weeksLabel = weeksUntil > 0 ? `${weeksUntil} weeks out` : weeksUntil < 0 ? `${Math.abs(weeksUntil)} weeks ago` : 'This week';
+    const handleDragEnd = () => {
+        setIsDragging(false);
+        if (onUpdate) {
+            // Optimistic update of the specific milestone
+            const updatedList = allMilestones.map(m => 
+                m.id === milestone.id ? { ...m, due_date: format(dragDate, 'yyyy-MM-dd') } : m
+            );
+            onUpdate(updatedList);
+        }
+    };
 
     return (
-        <div className="relative pt-6">
-            {/* Label */}
-            <div className="flex justify-between items-end mb-2 absolute top-0 w-full pointer-events-none">
-                <div className="font-bold text-sm text-[#333333]">{milestone.name}</div>
+        <div className="relative group">
+            <div className="flex justify-between items-end mb-2 px-1">
+                <span className={`text-sm font-semibold ${isOverdue ? 'text-rose-600' : 'text-gray-700'}`}>
+                    {milestone.name}
+                </span>
+                <span className={`text-xs font-mono font-medium ${isDragging ? 'text-indigo-600 scale-110' : 'text-gray-400'} transition-all`}>
+                    {format(isDragging ? dragDate : dueDate, 'MMM d')}
+                </span>
             </div>
 
-            {/* Track */}
-            <div className="h-0.5 w-full bg-gray-200 rounded-full relative flex items-center">
+            <div className="h-3 w-full rounded-full bg-gray-50 border border-gray-100 relative flex items-center overflow-visible">
+                {/* Active Track Portion (Optional - from start to point) */}
+                <motion.div 
+                    className={`absolute left-0 h-full rounded-full opacity-30 ${trackClass}`}
+                    style={{ width: x }}
+                />
+
                 {/* Draggable Knob */}
-                {/* We use a container for the drag constraint */}
-                <div className="absolute inset-0" ref={(node) => {
-                    // This is a bit hacky to get the constraint rect, strictly we rely on the parent width passed down
-                }} />
-                
                 <motion.div
                     drag="x"
                     dragConstraints={{ left: 0, right: containerWidth }}
                     dragElastic={0}
                     dragMomentum={false}
-                    onDrag={(event, info) => {
-                        // We need to map the x position to percentage.
-                        // Framer motion transforms are visual. To get logical value we need to compute it.
-                        // However, simple drag with absolute positioning is tricky without useMotionValue.
-                        // Let's simplify: 
-                        // The button is positioned via 'left' style.
-                    }}
+                    style={{ x }}
                     onDragStart={() => setIsDragging(true)}
-                    onDragEnd={(event, info) => {
-                        setIsDragging(false);
-                        onUpdate(currentDate);
-                    }}
-                    // Controlled position using style left
-                    style={{ 
-                        x: (percentage / 100) * containerWidth,
-                        position: 'absolute',
-                        left: 0 // Start from left edge
-                        // Note: If we use 'x', we must keep 'left: 0'. 
-                        // But dragging modifies 'x' transform.
-                        // If we control 'x', we must update it on drag.
-                    }}
-                    onUpdate={(latest) => {
-                         // This onUpdate is from framer-motion, fires every frame
-                         if (typeof latest.x === 'number' && containerWidth > 0) {
-                             const p = Math.max(0, Math.min(100, (latest.x / containerWidth) * 100));
-                             setPercentage(p);
-                             const daysToAdd = Math.round((p / 100) * spanDays);
-                             setCurrentDate(addDays(today, daysToAdd));
-                         }
-                    }}
-                    className={`w-6 h-6 rounded-full shadow-md cursor-grab active:cursor-grabbing border-2 z-10 flex items-center justify-center ${knobColor}`}
+                    onDrag={handleDrag}
+                    onDragEnd={handleDragEnd}
+                    className={`
+                        absolute top-1/2 -translate-y-1/2 -ml-3
+                        w-6 h-6 rounded-full border-2 cursor-grab active:cursor-grabbing
+                        flex items-center justify-center z-20 shadow-lg transition-all
+                        ${isDragging ? 'scale-110 ring-4 ring-indigo-500/10' : 'hover:scale-105'}
+                        ${colorClass}
+                    `}
                 >
-                    {/* Tooltip on Hover/Drag */}
-                    <div className="absolute top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                        {dateLabel}
+                    {/* Inner Dot */}
+                    <div className={`w-1.5 h-1.5 rounded-full ${isOverdue || isDueSoon ? 'bg-white' : 'bg-gray-400'}`} />
+                    
+                    {/* Tooltip Label (Visible on Hover/Drag) */}
+                    <div className={`
+                        absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
+                        bg-gray-900 text-white text-[10px] py-1 px-2 rounded-lg 
+                        whitespace-nowrap shadow-xl pointer-events-none transition-all
+                        ${isDragging || 'group-hover:opacity-100 opacity-0'}
+                    `}>
+                        {format(isDragging ? dragDate : dueDate, 'EEE, MMM d')}
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
                     </div>
                 </motion.div>
-                
-                {/* Date Label (Always Visible below) */}
-                <div 
-                    className="absolute top-8 transform -translate-x-1/2 text-xs font-medium text-gray-500 transition-all pointer-events-none"
-                    style={{ left: `${percentage}%` }}
-                >
-                    {dateLabel}
-                </div>
             </div>
         </div>
     );
