@@ -10,7 +10,7 @@ export default function ProducerCostumeEnricher({ segment, onUpdate, context }) 
     
     const enrichMutation = useMutation({
         mutationFn: async () => {
-            const response = await base44.functions.invoke('producePerformance', {
+            const response = await base44.functions.invoke('producePerformanceV2', {
                 action: 'enrich_costume',
                 segment: segment,
                 context: context
