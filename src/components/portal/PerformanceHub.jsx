@@ -17,13 +17,11 @@ export default function PerformanceHub({ studentIds }) {
         queryFn: async () => {
             if (!studentIds || studentIds.length === 0) return null;
 
-            // 1. Fetch routines for all students in the family
-            const allStudentRoutines = await Promise.all(studentIds.map(async (id) => {
-                return base44.entities.PerformanceRoutine.filter({
-                    performers: id
-                });
-            }));
-            const studentRoutines = allStudentRoutines.flat();
+            // 1. Fetch all routines and filter client-side
+            const allRoutines = await base44.entities.PerformanceRoutine.list();
+            const studentRoutines = allRoutines.filter(routine => 
+                routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
+            );
 
             if (!studentRoutines || studentRoutines.length === 0) return null;
 
