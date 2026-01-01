@@ -34,24 +34,26 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
                     }]
                 };
             }
-            
-            if (!studentIds || studentIds.length === 0) return null;
 
-            // 1. Fetch all routines and filter client-side
+            // 1. Fetch all routines
             const allRoutines = await base44.entities.PerformanceRoutine.list();
-            const studentRoutines = allRoutines.filter(routine => 
-                routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
-            );
+            
+            // 2. Filter routines by student IDs if provided, otherwise show all
+            const studentRoutines = (studentIds && studentIds.length > 0)
+                ? allRoutines.filter(routine => 
+                    routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
+                  )
+                : allRoutines;
 
             if (!studentRoutines || studentRoutines.length === 0) return null;
 
-            // 2. Identify relevant performance IDs
+            // 3. Identify relevant performance IDs
             const performanceIds = [...new Set(studentRoutines.map(r => r.performance_id))];
 
-            // 3. Fetch all performances
+            // 4. Fetch all performances
             const allPerformances = await base44.entities.Performance.list();
 
-            // 4. Filter for future performances
+            // 5. Filter for future performances
             const relevantPerformances = allPerformances.filter(p => 
                 p.date && 
                 parseISO(p.date) >= new Date(new Date().setHours(0,0,0,0)) &&
@@ -60,15 +62,15 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
 
             if (relevantPerformances.length === 0) return null;
 
-            // 5. Pick the soonest one
-            const nextPerformance = relevantPerformances.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+            // 6. Pick the soonest one
+            const nextPerformance = relevantPerformances.sort((a, b) => parseISO(a.date) - parseISO(b.date))[0];
 
             return {
                 performance: nextPerformance,
                 routines: studentRoutines.filter(r => r.performance_id === nextPerformance.id)
             };
         },
-        enabled: !!studentIds && studentIds.length > 0 || isPreview
+        enabled: true
     });
 
     if (isLoading || !hubData) return null;
