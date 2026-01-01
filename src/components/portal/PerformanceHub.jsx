@@ -10,11 +10,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export default function PerformanceHub({ studentIds }) {
+export default function PerformanceHub({ studentIds, isPreview = false }) {
     // 1. Find upcoming performances for all students in the family
     const { data: hubData, isLoading } = useQuery({
         queryKey: ['performanceHub', studentIds],
         queryFn: async () => {
+            if (isPreview) {
+                // Mock data for preview
+                return {
+                    performance: { 
+                        id: 'mock-perf', 
+                        title: 'Winter Showcase', 
+                        date: '2026-02-15',
+                        venue: { venue_name: 'Abbey Theater' }
+                    },
+                    routines: [{
+                        id: 'mock-routine-1',
+                        title: 'Opening Number',
+                        song_title: 'Let It Go',
+                        duration_seconds: 240,
+                        grooming: { hair: 'Slicked back bun', makeup: 'Stage makeup with glitter' },
+                        rehearsals: [{ date: '2026-01-15', title: 'Full Run-Through', start_time: '6:00 PM', end_time: '8:00 PM', location: 'Main Studio' }]
+                    }]
+                };
+            }
             if (!studentIds || studentIds.length === 0) return null;
 
             // 1. Fetch all routines and filter client-side
