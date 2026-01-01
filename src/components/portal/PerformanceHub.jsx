@@ -32,15 +32,22 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
             // Get all routines for this performance
             const routinesForPerformance = allRoutines.filter(r => r.performance_id === nextPerformance.id);
 
-            // Filter to only show routines for the specified students
-            if (!studentIds || studentIds.length === 0) {
-                return null;
+            // Filter to show routines for the specified students
+            // If no students specified OR no routines have performers assigned yet, show all routines
+            let studentRoutines = routinesForPerformance;
+            
+            if (studentIds && studentIds.length > 0) {
+                const filteredRoutines = routinesForPerformance.filter(routine => 
+                    routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
+                );
+                
+                // Only use filtered routines if we actually found matches
+                if (filteredRoutines.length > 0) {
+                    studentRoutines = filteredRoutines;
+                }
             }
             
-            const studentRoutines = routinesForPerformance.filter(routine => 
-                routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
-            );
-            
+            // If no routines at all, don't show the hub
             if (studentRoutines.length === 0) {
                 return null;
             }
