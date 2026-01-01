@@ -194,7 +194,7 @@ export default function PerformanceHub({ studentIds }) {
                                             </p>
                                         </div>
                                     )}
-                                    </div>
+                                </div>
 
                                 {/* Schedule Card */}
                                 <div className="bg-white p-5 md:p-8 rounded-xl md:rounded-2xl border border-stone-100 shadow-sm">
