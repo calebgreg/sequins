@@ -207,7 +207,7 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                                      {/* Digital Program - Auto-generated for upcoming performances */}
                                      {(performances.length > 0 || isPreview) && (
                                          <DigitalProgram 
-                                             performance={performances.filter(p => p.date && new Date(p.date) >= new Date()).sort((a, b) => new Date(a.date) - new Date(b.date))[0]}
+                                             performance={performances.filter(p => p.date && parseISO(p.date) >= new Date(new Date().setHours(0,0,0,0))).sort((a, b) => parseISO(a.date) - parseISO(b.date))[0]}
                                              studentIds={familyStudentIds}
                                              isPreview={isPreview}
                                          />

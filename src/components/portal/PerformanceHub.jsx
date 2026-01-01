@@ -54,7 +54,7 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
             // 4. Filter for future performances
             const relevantPerformances = allPerformances.filter(p => 
                 p.date && 
-                new Date(p.date) >= new Date(new Date().setHours(0,0,0,0)) &&
+                parseISO(p.date) >= new Date(new Date().setHours(0,0,0,0)) &&
                 performanceIds.includes(p.id)
             );
 
