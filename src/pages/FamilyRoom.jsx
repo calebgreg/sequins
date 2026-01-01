@@ -69,7 +69,10 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     // Fetch performances for event cards
     const { data: performances = [] } = useQuery({
         queryKey: ['performances'],
-        queryFn: () => base44.entities.Performance.list(),
+        queryFn: async () => {
+            if (isPreview) return [{ id: 'mock-perf-1', title: 'Winter Showcase', date: '2026-02-15', venue: { venue_name: 'Abbey Theater' } }];
+            return await base44.entities.Performance.list();
+        },
     });
 
     const config = previewConfig || (urlPreview ? previewData : dbConfig);
@@ -93,11 +96,12 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     const { data: familyStudents = [] } = useQuery({
         queryKey: ['familyStudents', config?.parent_email],
         queryFn: async () => {
+            if (isPreview) return [{ id: 'mock-student-1', name: 'Ava Williams', parent_email: 'test@example.com' }];
             if (!config?.parent_email) return [];
             // Use backend filtering to ensure we find the student even if the list is large
             return await base44.entities.Student.filter({ parent_email: config.parent_email });
         },
-        enabled: !!config?.parent_email
+        enabled: true
     });
 
     useEffect(() => {
@@ -196,12 +200,12 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                             <HeroModule module={module} isMobilePreview={isMobilePreview} />
                             
                             {/* Performance Hub - Auto-injected immediately after Hero */}
-                            {familyStudentIds.length > 0 && (
+                            {(familyStudentIds.length > 0 || isPreview) && (
                                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-12">
                                      <PerformanceHub studentIds={familyStudentIds} />
 
                                      {/* Digital Program - Auto-generated for upcoming performances */}
-                                     {performances.filter(p => p.date && new Date(p.date) >= new Date()).length > 0 && (
+                                     {(performances.length > 0 || isPreview) && (
                                          <DigitalProgram 
                                              performance={performances.filter(p => p.date && new Date(p.date) >= new Date()).sort((a, b) => new Date(a.date) - new Date(b.date))[0]}
                                              studentIds={familyStudentIds}
