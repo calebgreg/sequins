@@ -10,17 +10,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export default function PerformanceHub({ studentId }) {
-    // 1. Find upcoming performances for this student
+export default function PerformanceHub({ studentIds }) {
+    // 1. Find upcoming performances for all students in the family
     const { data: hubData, isLoading } = useQuery({
-        queryKey: ['performanceHub', studentId],
+        queryKey: ['performanceHub', studentIds],
         queryFn: async () => {
-            if (!studentId) return null;
+            if (!studentIds || studentIds.length === 0) return null;
 
-            // 1. Fetch routines directly where student is a performer
-            const studentRoutines = await base44.entities.PerformanceRoutine.filter({
-                performers: studentId
-            });
+            // 1. Fetch routines for all students in the family
+            const allStudentRoutines = await Promise.all(studentIds.map(async (id) => {
+                return base44.entities.PerformanceRoutine.filter({
+                    performers: id
+                });
+            }));
+            const studentRoutines = allStudentRoutines.flat();
 
             if (!studentRoutines || studentRoutines.length === 0) return null;
 
@@ -47,7 +50,7 @@ export default function PerformanceHub({ studentId }) {
                 routines: studentRoutines.filter(r => r.performance_id === nextPerformance.id)
             };
         },
-        enabled: !!studentId
+        enabled: !!studentIds && studentIds.length > 0
     });
 
     if (isLoading || !hubData) return null;

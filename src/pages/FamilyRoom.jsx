@@ -21,7 +21,7 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     const isPreview = urlPreview || !!previewConfig;
     const [previewData, setPreviewData] = useState(null);
     const [previewError, setPreviewError] = useState(false);
-    const [primaryStudentId, setPrimaryStudentId] = useState(null);
+    const [familyStudentIds, setFamilyStudentIds] = useState([]);
 
     // Load preview data from URL hash (robust against domain/storage issues)
     useEffect(() => {
@@ -88,7 +88,7 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     // Mock for preview if no real data
     const displayInvoices = isPreview ? [{ balance_due: 450, stripe_payment_link: '#' }] : (familyInvoices || []);
 
-    // Fetch students to identify the primary student for this family
+    // Fetch students to identify all students for this family
     const { data: familyStudents = [] } = useQuery({
         queryKey: ['familyStudents', config?.parent_email],
         queryFn: async () => {
@@ -100,10 +100,10 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     });
 
     useEffect(() => {
-        if (familyStudents.length > 0 && !primaryStudentId) {
-            setPrimaryStudentId(familyStudents[0].id);
+        if (familyStudents.length > 0) {
+            setFamilyStudentIds(familyStudents.map(s => s.id));
         }
-    }, [familyStudents, primaryStudentId]);
+    }, [familyStudents]);
 
     // Fetch classes for recommendations
     const { data: allClasses = [] } = useQuery({
@@ -195,9 +195,9 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                             <HeroModule module={module} isMobilePreview={isMobilePreview} />
                             
                             {/* Performance Hub - Auto-injected immediately after Hero */}
-                            {!isPreview && primaryStudentId && (
+                            {!isPreview && familyStudentIds.length > 0 && (
                                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                                     <PerformanceHub studentId={primaryStudentId} />
+                                     <PerformanceHub studentIds={familyStudentIds} />
                                 </div>
                             )}
                         </React.Fragment>
