@@ -90,7 +90,6 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     const { data: performances = [] } = useQuery({
         queryKey: ['performances'],
         queryFn: async () => {
-            if (isPreview) return [{ id: 'mock-perf-1', title: 'Winter Showcase', date: '2026-02-15', venue: { venue_name: 'Abbey Theater' } }];
             return await base44.entities.Performance.list();
         },
     });
@@ -116,12 +115,11 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
     const { data: familyStudents = [] } = useQuery({
         queryKey: ['familyStudents', config?.parent_email],
         queryFn: async () => {
-            if (isPreview) return [{ id: 'mock-student-1', name: 'Ava Williams', parent_email: 'test@example.com' }];
             if (!config?.parent_email) return [];
-            // Use backend filtering to ensure we find the student even if the list is large
+            // Always fetch real students from the database
             return await base44.entities.Student.filter({ parent_email: config.parent_email });
         },
-        enabled: true
+        enabled: !!config?.parent_email
     });
 
     useEffect(() => {

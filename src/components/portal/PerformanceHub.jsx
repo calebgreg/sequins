@@ -13,48 +13,28 @@ import { Badge } from "@/components/ui/badge";
 export default function PerformanceHub({ studentIds, isPreview = false }) {
     // 1. Find upcoming performances for all students in the family
     const { data: hubData, isLoading } = useQuery({
-        queryKey: ['performanceHub', studentIds],
+        queryKey: ['performanceHub', studentIds, isPreview],
         queryFn: async () => {
-            if (isPreview) {
-                // Mock data for preview
-                return {
-                    performance: { 
-                        id: 'mock-perf', 
-                        title: 'Winter Showcase', 
-                        date: '2026-02-15',
-                        venue: { venue_name: 'Abbey Theater' }
-                    },
-                    routines: [{
-                        id: 'mock-routine-1',
-                        title: 'Opening Number',
-                        song_title: 'Let It Go',
-                        duration_seconds: 240,
-                        grooming: { hair: 'Slicked back bun', makeup: 'Stage makeup with glitter' },
-                        rehearsals: [{ date: '2026-01-15', title: 'Full Run-Through', start_time: '6:00 PM', end_time: '8:00 PM', location: 'Main Studio' }]
-                    }]
-                };
-            }
-
-            // 1. Fetch all performances and routines
+            // Always fetch real data from the database
             const allPerformances = await base44.entities.Performance.list();
             const allRoutines = await base44.entities.PerformanceRoutine.list();
 
-            // 2. Filter for future performances
+            // Filter for future performances
             const futurePerformances = allPerformances.filter(p => 
                 p.date && parseISO(p.date) >= new Date(new Date().setHours(0,0,0,0))
             );
 
             if (futurePerformances.length === 0) return null;
 
-            // 3. Sort by date and get the next one
+            // Sort by date and get the next one
             const nextPerformance = futurePerformances.sort((a, b) => parseISO(a.date) - parseISO(b.date))[0];
 
-            // 4. Get all routines for this performance
+            // Get all routines for this performance
             const routinesForPerformance = allRoutines.filter(r => r.performance_id === nextPerformance.id);
 
-            // 5. Filter to only show routines for the specified students
+            // Filter to only show routines for the specified students
             if (!studentIds || studentIds.length === 0) {
-                return null; // No students specified, can't show personalized content
+                return null;
             }
             
             const studentRoutines = routinesForPerformance.filter(routine => 
@@ -62,7 +42,7 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
             );
             
             if (studentRoutines.length === 0) {
-                return null; // No routines found for these students
+                return null;
             }
 
             return {
