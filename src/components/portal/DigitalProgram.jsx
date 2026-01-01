@@ -11,39 +11,32 @@ import jsPDF from 'jspdf';
 export default function DigitalProgram({ performance, studentIds, isPreview = false }) {
     const [isExpanded, setIsExpanded] = useState(false);
 
-    // Fetch all routines for this performance
+    // Fetch all routines for this performance - ALWAYS fetch real data
     const { data: allRoutines = [], isLoading } = useQuery({
-        queryKey: ['programRoutines', performance.id],
+        queryKey: ['programRoutines', performance?.id],
         queryFn: async () => {
             const routines = await base44.entities.PerformanceRoutine.filter({ 
                 performance_id: performance.id 
             });
             return routines.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
         },
-        enabled: !!performance?.id && !isPreview
+        enabled: !!performance?.id
     });
 
-    // Mock routines for preview
-    const mockRoutines = isPreview ? [
-        { id: 'mock-1', title: 'Opening Act', song_title: 'Dance of the Hours', duration_seconds: 240, order_index: 1, performers: studentIds },
-        { id: 'mock-2', title: 'Contemporary Solo', song_title: 'River Flows In You', duration_seconds: 180, order_index: 2, performers: [] },
-        { id: 'mock-3', title: 'Group Jazz', song_title: 'Uptown Funk', duration_seconds: 210, order_index: 3, performers: studentIds }
-    ] : [];
-
-    const routinesToUse = isPreview ? mockRoutines : allRoutines;
-
     // Identify which routines include family's students
-    const familyRoutines = routinesToUse.filter(routine => 
-        routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
+    const familyRoutines = allRoutines.filter(routine => 
+        routine.performers && routine.performers.length > 0 &&
+        routine.performers.some(performerId => studentIds.includes(performerId))
     );
 
-    if (isLoading || (!isPreview && familyRoutines.length === 0)) return null;
+    // Hide if loading or no family routines found
+    if (isLoading || familyRoutines.length === 0) return null;
 
     // Calculate estimated timing (assuming 7:00 PM start)
     const showStartTime = performance.date ? parseISO(`${performance.date}T19:00:00`) : new Date();
     let cumulativeMinutes = 0;
 
-    const routinesWithTiming = routinesToUse.map(routine => {
+    const routinesWithTiming = allRoutines.map(routine => {
         const startTime = addMinutes(showStartTime, cumulativeMinutes);
         const durationMinutes = Math.ceil((routine.duration_seconds || 180) / 60);
         cumulativeMinutes += durationMinutes;
