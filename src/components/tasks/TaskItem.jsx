@@ -91,10 +91,10 @@ const TaskItem = ({
                         onClick={(e) => onTogglePriority(task, e)}
                         className={`
                             text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md border select-none transition-all
-                            ${priorityConfig[task.priority].color}
+                            ${priorityConfig[task.priority || 'medium'].color}
                         `}
                     >
-                        {priorityConfig[task.priority].label}
+                        {priorityConfig[task.priority || 'medium'].label}
                     </button>
 
                     {/* Shared Toggle (Only if handler provided) */}
