@@ -155,46 +155,46 @@ export default function PerformanceHub({ studentIds }) {
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-2 gap-3">
-                                                <PinterestCard 
-                                                    label="Hair" 
-                                                    value={routine.grooming?.hair} 
-                                                    image={routine.grooming?.hair_image}
-                                                    rotate="rotate-1"
-                                                    delay={0.1}
-                                                />
-                                                <PinterestCard 
-                                                    label="Makeup" 
-                                                    value={routine.grooming?.makeup} 
-                                                    image={routine.grooming?.makeup_image}
-                                                    rotate="-rotate-1"
-                                                    delay={0.2}
-                                                />
-                                                <PinterestCard 
-                                                    label="Tights" 
-                                                    value={routine.grooming?.tights} 
-                                                    image={routine.grooming?.tights_image}
-                                                    rotate="-rotate-2"
-                                                    delay={0.3}
-                                                />
-                                                <PinterestCard 
-                                                    label="Shoes" 
-                                                    value={routine.grooming?.shoes} 
-                                                    image={routine.grooming?.shoes_image}
-                                                    rotate="rotate-2"
-                                                    delay={0.4}
-                                                />
-                                            </div>
-                                        )}
-                                        
-                                        {routine.grooming?.notes && (
-                                            <div className="mt-4 bg-[#fffbf0] p-4 rounded-lg border border-stone-100">
-                                                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Director's Note</p>
-                                                <p className="text-base text-[#2c2c2c] leading-relaxed" style={{ fontFamily: '"Caveat", "Brush Script MT", cursive' }}>
-                                                    {routine.grooming.notes}
-                                                </p>
-                                            </div>
-                                        )}
+                                            <PinterestCard 
+                                                label="Hair" 
+                                                value={routine.grooming?.hair} 
+                                                image={routine.grooming?.hair_image}
+                                                rotate="rotate-1"
+                                                delay={0.1}
+                                            />
+                                            <PinterestCard 
+                                                label="Makeup" 
+                                                value={routine.grooming?.makeup} 
+                                                image={routine.grooming?.makeup_image}
+                                                rotate="-rotate-1"
+                                                delay={0.2}
+                                            />
+                                            <PinterestCard 
+                                                label="Tights" 
+                                                value={routine.grooming?.tights} 
+                                                image={routine.grooming?.tights_image}
+                                                rotate="-rotate-2"
+                                                delay={0.3}
+                                            />
+                                            <PinterestCard 
+                                                label="Shoes" 
+                                                value={routine.grooming?.shoes} 
+                                                image={routine.grooming?.shoes_image}
+                                                rotate="rotate-2"
+                                                delay={0.4}
+                                            />
+                                        </div>
                                     )}
+
+                                    {routine.grooming?.notes && (
+                                        <div className="mt-4 bg-[#fffbf0] p-4 rounded-lg border border-stone-100">
+                                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Director's Note</p>
+                                            <p className="text-base text-[#2c2c2c] leading-relaxed" style={{ fontFamily: '"Caveat", "Brush Script MT", cursive' }}>
+                                                {routine.grooming.notes}
+                                            </p>
+                                        </div>
+                                    )}
+                                    </div>
 
                                 {/* Schedule Card */}
                                 <div className="bg-white p-5 md:p-8 rounded-xl md:rounded-2xl border border-stone-100 shadow-sm">
