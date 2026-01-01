@@ -35,15 +35,15 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
                 };
             }
 
+            if (!studentIds || studentIds.length === 0) return null;
+
             // 1. Fetch all routines
             const allRoutines = await base44.entities.PerformanceRoutine.list();
             
-            // 2. Filter routines by student IDs if provided, otherwise show all
-            const studentRoutines = (studentIds && studentIds.length > 0)
-                ? allRoutines.filter(routine => 
-                    routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
-                  )
-                : allRoutines;
+            // 2. Filter routines by student IDs
+            const studentRoutines = allRoutines.filter(routine => 
+                routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
+            );
 
             if (!studentRoutines || studentRoutines.length === 0) return null;
 
@@ -70,7 +70,7 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
                 routines: studentRoutines.filter(r => r.performance_id === nextPerformance.id)
             };
         },
-        enabled: true
+        enabled: (!!studentIds && studentIds.length > 0) || isPreview
     });
 
     if (isLoading || !hubData) return null;

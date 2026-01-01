@@ -201,16 +201,20 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                             <HeroModule module={module} isMobilePreview={isMobilePreview} />
                             
                             {/* Performance Hub - Auto-injected immediately after Hero */}
-                            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 space-y-8 md:space-y-12">
+                            {(familyStudentIds.length > 0 || isPreview) && (
+                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 space-y-8 md:space-y-12">
                                      <PerformanceHub studentIds={familyStudentIds} isPreview={isPreview} />
 
                                      {/* Digital Program - Auto-generated for upcoming performances */}
-                                     <DigitalProgram 
-                                         performance={performances.filter(p => p.date && parseISO(p.date) >= new Date(new Date().setHours(0,0,0,0))).sort((a, b) => parseISO(a.date) - parseISO(b.date))[0]}
-                                         studentIds={familyStudentIds}
-                                         isPreview={isPreview}
-                                     />
+                                     {(performances.length > 0 || isPreview) && (
+                                         <DigitalProgram 
+                                             performance={performances.filter(p => p.date && parseISO(p.date) >= new Date(new Date().setHours(0,0,0,0))).sort((a, b) => parseISO(a.date) - parseISO(b.date))[0]}
+                                             studentIds={familyStudentIds}
+                                             isPreview={isPreview}
+                                         />
+                                     )}
                                 </div>
+                            )}
                         </React.Fragment>
                     );
                 }
