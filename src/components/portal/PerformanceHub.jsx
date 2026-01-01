@@ -72,20 +72,20 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
                 {`@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap');`}
             </style>
             {/* Countdown Header - Integrated into flow */}
-            <div className="text-center mb-16 px-4 max-w-4xl mx-auto">
-                <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6">
+            <div className="text-center mb-8 md:mb-16 px-4 max-w-4xl mx-auto">
+                <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-4 md:mb-6">
                     <Sparkles className="w-3 h-3" /> Upcoming Event
                 </div>
-                <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl text-[#1c1c1c] mb-6 tracking-tight leading-none">
+                <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl text-[#1c1c1c] mb-4 md:mb-6 tracking-tight leading-none">
                     {countdownTitle}
                 </h2>
-                <div className="flex flex-wrap items-center justify-center gap-4 text-xl text-gray-500 font-serif italic">
-                    <span className="font-semibold text-[#1c1c1c] text-2xl">{performance.title}</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-                    <span>{format(parseISO(performance.date), 'MMMM do')}</span>
+                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 text-base md:text-xl text-gray-500 font-serif italic">
+                    <span className="font-semibold text-[#1c1c1c] text-lg md:text-2xl">{performance.title}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300 hidden sm:block" />
+                    <span className="text-sm md:text-xl">{format(parseISO(performance.date), 'MMMM do')}</span>
                     {performance.venue && (
                         <>
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-300 hidden sm:block" />
                             <a 
                                 href={performance.venue.lat && performance.venue.lng 
                                     ? `https://www.google.com/maps/dir/?api=1&destination=${performance.venue.lat},${performance.venue.lng}`
@@ -93,9 +93,9 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 hover:text-rose-600 transition-colors cursor-pointer group"
+                                className="inline-flex items-center gap-1 md:gap-2 hover:text-rose-600 transition-colors cursor-pointer group text-sm md:text-xl"
                             >
-                                <MapPin className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
+                                <MapPin className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform flex-shrink-0" /> 
                                 <span className="underline decoration-transparent group-hover:decoration-rose-300 underline-offset-4 transition-all">
                                     {performance.venue.venue_name || performance.venue}
                                 </span>
@@ -106,7 +106,7 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
             </div>
 
             {/* Spoon-fed Routine List - No Modals */}
-            <div className="space-y-12 md:space-y-16 px-4">
+            <div className="space-y-8 md:space-y-16 px-4">
                 {routines.map((routine, idx) => (
                     <motion.div 
                         key={routine.id}
@@ -119,21 +119,21 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
                         <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-start">
                             {/* Left Column: Routine Identity */}
                             <div className="w-full md:w-1/3 md:sticky md:top-24">
-                                <div className="flex items-center gap-2 mb-4 text-rose-500">
+                                <div className="flex items-center gap-2 mb-3 md:mb-4 text-rose-500">
                                     <div className="w-6 md:w-8 h-px bg-rose-300" />
                                     <span className="text-xs font-bold uppercase tracking-[0.2em]">Routine {idx + 1}</span>
                                 </div>
-                                <h3 className="font-serif text-3xl sm:text-4xl md:text-5xl mb-3 md:mb-4 text-[#1c1c1c] leading-tight">{routine.title}</h3>
-                                <div className="flex items-center gap-2 text-gray-500 italic font-serif mb-6 md:mb-8 text-lg md:text-xl">
-                                    <Music className="w-5 h-5 opacity-40" /> 
+                                <h3 className="font-serif text-2xl sm:text-3xl md:text-5xl mb-2 md:mb-4 text-[#1c1c1c] leading-tight">{routine.title}</h3>
+                                <div className="flex items-center gap-2 text-gray-500 italic font-serif mb-4 md:mb-8 text-base md:text-xl">
+                                    <Music className="w-4 h-4 md:w-5 md:h-5 opacity-40 flex-shrink-0" /> 
                                     <span className="break-words">{routine.song_title}</span>
                                 </div>
 
                                 {routine.costume_product_suggestions?.[0] && (
-                                    <div className="aspect-[3/4] w-full max-w-[200px] md:max-w-[240px] rounded-2xl overflow-hidden bg-white border-4 md:border-[6px] border-white shadow-lg mx-auto md:mx-0 relative group rotate-2 hover:rotate-0 transition-all duration-500">
+                                    <div className="aspect-[3/4] w-full max-w-[180px] md:max-w-[240px] rounded-xl md:rounded-2xl overflow-hidden bg-white border-4 md:border-[6px] border-white shadow-lg mx-auto md:mx-0 relative group rotate-2 hover:rotate-0 transition-all duration-500">
                                         <img src={routine.costume_product_suggestions[0].image_url} alt="Costume" className="w-full h-full object-cover rounded-lg" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 rounded-lg" />
-                                        <div className="absolute bottom-3 left-3 text-white text-xs font-medium tracking-wide">
+                                        <div className="absolute bottom-2 md:bottom-3 left-2 md:left-3 text-white text-xs font-medium tracking-wide">
                                             Costume Reference
                                         </div>
                                     </div>
@@ -260,7 +260,7 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
                         </div>
                         {/* Elegant Divider between routines */}
                         {idx < routines.length - 1 && (
-                            <div className="mt-16 mb-16 h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent w-full max-w-2xl mx-auto" />
+                            <div className="mt-8 md:mt-16 mb-8 md:mb-16 h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent w-full max-w-2xl mx-auto" />
                         )}
                     </motion.div>
                 ))}
