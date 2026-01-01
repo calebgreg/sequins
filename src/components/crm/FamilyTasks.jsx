@@ -88,7 +88,7 @@ export default function FamilyTasks({ familyEmail, currentUser }) {
     const togglePriority = (task, e) => {
         e.stopPropagation();
         const map = { low: 'medium', medium: 'high', high: 'low' };
-        updateMutation.mutate({ id: task.id, priority: map[task.priority] });
+        updateMutation.mutate({ id: task.id, priority: map[task.priority || 'medium'] });
     };
 
     const toggleShared = (task, e) => {
