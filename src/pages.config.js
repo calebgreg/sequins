@@ -1,35 +1,33 @@
-import FamilyPortal from './pages/FamilyPortal';
-import Home from './pages/Home';
-import ClassManager from './pages/ClassManager';
-import Teachers from './pages/Teachers';
-import TeacherStudio from './pages/TeacherStudio';
-import Students from './pages/Students';
 import Billing from './pages/Billing';
-import Settings from './pages/Settings';
-import Features from './pages/Features';
+import ClassManager from './pages/ClassManager';
 import FamilyRoom from './pages/FamilyRoom';
-import Tasks from './pages/Tasks';
+import Features from './pages/Features';
+import Home from './pages/Home';
 import Performances from './pages/Performances';
+import Settings from './pages/Settings';
+import Students from './pages/Students';
+import Tasks from './pages/Tasks';
+import TeacherStudio from './pages/TeacherStudio';
+import Teachers from './pages/Teachers';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "FamilyPortal": FamilyPortal,
-    "Home": Home,
-    "ClassManager": ClassManager,
-    "Teachers": Teachers,
-    "TeacherStudio": TeacherStudio,
-    "Students": Students,
     "Billing": Billing,
-    "Settings": Settings,
-    "Features": Features,
+    "ClassManager": ClassManager,
     "FamilyRoom": FamilyRoom,
-    "Tasks": Tasks,
+    "Features": Features,
+    "Home": Home,
     "Performances": Performances,
+    "Settings": Settings,
+    "Students": Students,
+    "Tasks": Tasks,
+    "TeacherStudio": TeacherStudio,
+    "Teachers": Teachers,
 }
 
 export const pagesConfig = {
-    mainPage: "FamilyPortal",
+    mainPage: "Billing",
     Pages: PAGES,
     Layout: __Layout,
 };
