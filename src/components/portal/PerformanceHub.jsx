@@ -67,17 +67,17 @@ export default function PerformanceHub({ studentIds }) {
                 {`@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap');`}
             </style>
             {/* Countdown Header - Integrated into flow */}
-            <div className="text-center mb-8 md:mb-16 px-4">
+            <div className="text-center mb-8 md:mb-16 px-4 max-w-4xl mx-auto">
                 <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
                     <Sparkles className="w-3 h-3" /> Upcoming Event
                 </div>
-                <h2 className="font-serif text-3xl sm:text-5xl md:text-7xl text-[#1c1c1c] mb-4 md:mb-6 tracking-tight">
+                <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl text-[#1c1c1c] mb-4 md:mb-6 tracking-tight leading-tight">
                     {countdownTitle}
                 </h2>
-                <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-8 text-base md:text-xl text-gray-500 font-serif italic">
-                    <span className="font-semibold text-[#1c1c1c]">{performance.title}</span>
+                <div className="space-y-2 md:space-y-0 md:flex md:flex-row md:items-center md:justify-center md:gap-4 text-base md:text-xl text-gray-500 font-serif italic">
+                    <span className="block font-semibold text-[#1c1c1c]">{performance.title}</span>
                     <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-300" />
-                    <span className="text-sm md:text-xl">{format(parseISO(performance.date), 'MMMM do')}</span>
+                    <span className="block text-base md:text-xl">{format(parseISO(performance.date), 'MMMM do')}</span>
                     {performance.venue && (
                         <>
                             <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-300" />
@@ -88,9 +88,9 @@ export default function PerformanceHub({ studentIds }) {
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 hover:text-rose-600 transition-colors cursor-pointer group text-sm md:text-xl"
+                                className="inline-flex items-center gap-2 hover:text-rose-600 transition-colors cursor-pointer group text-base md:text-xl"
                             >
-                                <MapPin className="w-3 h-3 md:w-4 md:h-4 group-hover:scale-110 transition-transform" /> 
+                                <MapPin className="w-4 h-4 group-hover:scale-110 transition-transform" /> 
                                 <span className="underline decoration-transparent group-hover:decoration-rose-300 underline-offset-4 transition-all">
                                     {performance.venue.venue_name || performance.venue}
                                 </span>
