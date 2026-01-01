@@ -50,22 +50,24 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
             const nextPerformance = futurePerformances.sort((a, b) => parseISO(a.date) - parseISO(b.date))[0];
 
             // 4. Get all routines for this performance
-            let routinesForPerformance = allRoutines.filter(r => r.performance_id === nextPerformance.id);
+            const routinesForPerformance = allRoutines.filter(r => r.performance_id === nextPerformance.id);
 
-            // 5. If studentIds provided, filter to only show their routines
-            if (studentIds && studentIds.length > 0) {
-                const studentRoutines = routinesForPerformance.filter(routine => 
-                    routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
-                );
-                // If there are student-specific routines, use those. Otherwise show all routines.
-                if (studentRoutines.length > 0) {
-                    routinesForPerformance = studentRoutines;
-                }
+            // 5. Filter to only show routines for the specified students
+            if (!studentIds || studentIds.length === 0) {
+                return null; // No students specified, can't show personalized content
+            }
+            
+            const studentRoutines = routinesForPerformance.filter(routine => 
+                routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
+            );
+            
+            if (studentRoutines.length === 0) {
+                return null; // No routines found for these students
             }
 
             return {
                 performance: nextPerformance,
-                routines: routinesForPerformance
+                routines: studentRoutines
             };
         },
         enabled: (!!studentIds && studentIds.length > 0) || isPreview

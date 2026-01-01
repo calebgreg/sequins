@@ -60,8 +60,27 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
         queryFn: async () => {
             if (isPreview) return null;
             const configs = await base44.entities.FamilyRoomConfig.list();
-            // If ID is provided, use it. Otherwise, fallback to the most recent config for demo purposes.
-            return configId ? configs.find(c => c.id === configId) : configs[0];
+            
+            // Priority 1: If ID is provided in URL, use it
+            if (configId) {
+                return configs.find(c => c.id === configId);
+            }
+            
+            // Priority 2: Try to match logged-in user's email
+            try {
+                const user = await base44.auth.me();
+                if (user?.email) {
+                    const userConfig = configs.find(c => c.parent_email === user.email);
+                    if (userConfig) {
+                        return userConfig;
+                    }
+                }
+            } catch (e) {
+                // User not logged in or error, continue to fallback
+            }
+            
+            // Priority 3: Fallback to first config
+            return configs[0];
         },
         enabled: !isPreview,
         retry: false
