@@ -35,39 +35,37 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
                 };
             }
 
-            if (!studentIds || studentIds.length === 0) return null;
-
-            // 1. Fetch all routines
-            const allRoutines = await base44.entities.PerformanceRoutine.list();
-            
-            // 2. Filter routines by student IDs
-            const studentRoutines = allRoutines.filter(routine => 
-                routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
-            );
-
-            if (!studentRoutines || studentRoutines.length === 0) return null;
-
-            // 3. Identify relevant performance IDs
-            const performanceIds = [...new Set(studentRoutines.map(r => r.performance_id))];
-
-            // 4. Fetch all performances
+            // 1. Fetch all performances and routines
             const allPerformances = await base44.entities.Performance.list();
+            const allRoutines = await base44.entities.PerformanceRoutine.list();
 
-            // 5. Filter for future performances
-            const relevantPerformances = allPerformances.filter(p => 
-                p.date && 
-                parseISO(p.date) >= new Date(new Date().setHours(0,0,0,0)) &&
-                performanceIds.includes(p.id)
+            // 2. Filter for future performances
+            const futurePerformances = allPerformances.filter(p => 
+                p.date && parseISO(p.date) >= new Date(new Date().setHours(0,0,0,0))
             );
 
-            if (relevantPerformances.length === 0) return null;
+            if (futurePerformances.length === 0) return null;
 
-            // 6. Pick the soonest one
-            const nextPerformance = relevantPerformances.sort((a, b) => parseISO(a.date) - parseISO(b.date))[0];
+            // 3. Sort by date and get the next one
+            const nextPerformance = futurePerformances.sort((a, b) => parseISO(a.date) - parseISO(b.date))[0];
+
+            // 4. Get all routines for this performance
+            let routinesForPerformance = allRoutines.filter(r => r.performance_id === nextPerformance.id);
+
+            // 5. If studentIds provided, filter to only show their routines
+            if (studentIds && studentIds.length > 0) {
+                const studentRoutines = routinesForPerformance.filter(routine => 
+                    routine.performers && routine.performers.some(performerId => studentIds.includes(performerId))
+                );
+                // If there are student-specific routines, use those. Otherwise show all routines.
+                if (studentRoutines.length > 0) {
+                    routinesForPerformance = studentRoutines;
+                }
+            }
 
             return {
                 performance: nextPerformance,
-                routines: studentRoutines.filter(r => r.performance_id === nextPerformance.id)
+                routines: routinesForPerformance
             };
         },
         enabled: (!!studentIds && studentIds.length > 0) || isPreview
