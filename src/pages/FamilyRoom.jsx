@@ -195,7 +195,7 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                             <HeroModule module={module} isMobilePreview={isMobilePreview} />
                             
                             {/* Performance Hub - Auto-injected immediately after Hero */}
-                            {!isPreview && familyStudentIds.length > 0 && (
+                            {familyStudentIds.length > 0 && (
                                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                                      <PerformanceHub studentIds={familyStudentIds} />
                                 </div>
