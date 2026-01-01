@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import EventDetailCard from '@/components/portal/EventDetailCard';
 import PerformanceHub from '@/components/portal/PerformanceHub';
 import HeroModule from '@/components/portal/modules/HeroModule';
+import DigitalProgram from '@/components/portal/DigitalProgram';
 
 export default function FamilyRoom({ previewConfig = null, isMobilePreview = false }) {
     const [searchParams] = useSearchParams();
@@ -196,8 +197,16 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                             
                             {/* Performance Hub - Auto-injected immediately after Hero */}
                             {familyStudentIds.length > 0 && (
-                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-12">
                                      <PerformanceHub studentIds={familyStudentIds} />
+
+                                     {/* Digital Program - Auto-generated for upcoming performances */}
+                                     {performances.filter(p => p.date && new Date(p.date) >= new Date()).length > 0 && (
+                                         <DigitalProgram 
+                                             performance={performances.filter(p => p.date && new Date(p.date) >= new Date()).sort((a, b) => new Date(a.date) - new Date(b.date))[0]}
+                                             studentIds={familyStudentIds}
+                                         />
+                                     )}
                                 </div>
                             )}
                         </React.Fragment>
