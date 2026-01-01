@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { parseISO } from 'date-fns';
 import { 
     ChevronRight, Download, Star, Calendar, CreditCard, 
     ArrowRight, MapPin, Mail, Phone, ExternalLink, PlayCircle, Clock 
