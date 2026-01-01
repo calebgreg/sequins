@@ -87,8 +87,8 @@ export default function FamilyTasks({ familyEmail, currentUser }) {
 
     const togglePriority = (task, e) => {
         e.stopPropagation();
-        const map = { low: 'medium', medium: 'high', high: 'low' };
-        updateMutation.mutate({ id: task.id, priority: map[task.priority || 'medium'] });
+        const map = { low: 'medium', medium: 'high', high: 'critical', critical: 'low' };
+        updateMutation.mutate({ id: task.id, priority: map[task.priority] || 'medium' });
     };
 
     const toggleShared = (task, e) => {
@@ -112,6 +112,7 @@ export default function FamilyTasks({ familyEmail, currentUser }) {
     });
 
     const priorityConfig = {
+        critical: { color: 'text-rose-600 bg-rose-50 border-rose-100', label: 'Critical' },
         high: { color: 'text-red-600 bg-red-50 border-red-100', label: 'High' },
         medium: { color: 'text-amber-600 bg-amber-50 border-amber-100', label: 'Med' },
         low: { color: 'text-blue-600 bg-blue-50 border-blue-100', label: 'Low' }

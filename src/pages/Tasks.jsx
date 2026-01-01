@@ -125,6 +125,7 @@ export default function TasksPage() {
     });
 
     const priorityConfig = {
+        critical: { color: 'text-rose-600 bg-rose-50 border-rose-100', label: 'Critical' },
         high: { color: 'text-red-600 bg-red-50 border-red-100', label: 'High' },
         medium: { color: 'text-amber-600 bg-amber-50 border-amber-100', label: 'Med' },
         low: { color: 'text-blue-600 bg-blue-50 border-blue-100', label: 'Low' }
