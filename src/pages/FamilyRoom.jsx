@@ -96,7 +96,7 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
             // Use backend filtering to ensure we find the student even if the list is large
             return await base44.entities.Student.filter({ parent_email: config.parent_email });
         },
-        enabled: !!config?.parent_email && !isPreview
+        enabled: !!config?.parent_email
     });
 
     useEffect(() => {
