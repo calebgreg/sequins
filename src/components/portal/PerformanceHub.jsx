@@ -67,37 +67,41 @@ export default function PerformanceHub({ studentIds }) {
                 {`@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap');`}
             </style>
             {/* Countdown Header - Integrated into flow */}
-            <div className="text-center mb-12 md:mb-16 px-6 max-w-4xl mx-auto">
-                <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-6">
+            <div className="text-center mb-8 md:mb-16 px-4 max-w-4xl mx-auto">
+                <div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
                     <Sparkles className="w-3 h-3" /> Upcoming Event
                 </div>
-                <h2 className="font-serif text-5xl md:text-7xl text-[#1c1c1c] mb-6 tracking-tight leading-[1.1] px-4">
+                <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl text-[#1c1c1c] mb-4 md:mb-6 tracking-tight leading-tight">
                     {countdownTitle}
                 </h2>
-                <div className="space-y-3">
-                    <div className="font-semibold text-xl md:text-2xl text-[#1c1c1c]">{performance.title}</div>
-                    <div className="text-base md:text-xl text-gray-500 font-serif italic">{format(parseISO(performance.date), 'MMMM do')}</div>
+                <div className="space-y-2 md:space-y-0 md:flex md:flex-row md:items-center md:justify-center md:gap-4 text-base md:text-xl text-gray-500 font-serif italic">
+                    <span className="block font-semibold text-[#1c1c1c]">{performance.title}</span>
+                    <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-300" />
+                    <span className="block text-base md:text-xl">{format(parseISO(performance.date), 'MMMM do')}</span>
                     {performance.venue && (
-                        <a 
-                            href={performance.venue.lat && performance.venue.lng 
-                                ? `https://www.google.com/maps/dir/?api=1&destination=${performance.venue.lat},${performance.venue.lng}`
-                                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(performance.venue.formatted_address || performance.venue.venue_name || performance.venue)}`
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 hover:text-rose-600 transition-colors cursor-pointer group text-base md:text-xl text-gray-500 font-serif italic"
-                        >
-                            <MapPin className="w-4 h-4 group-hover:scale-110 transition-transform" /> 
-                            <span className="underline decoration-transparent group-hover:decoration-rose-300 underline-offset-4 transition-all">
-                                {performance.venue.venue_name || performance.venue}
-                            </span>
-                        </a>
+                        <>
+                            <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-300" />
+                            <a 
+                                href={performance.venue.lat && performance.venue.lng 
+                                    ? `https://www.google.com/maps/dir/?api=1&destination=${performance.venue.lat},${performance.venue.lng}`
+                                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(performance.venue.formatted_address || performance.venue.venue_name || performance.venue)}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 hover:text-rose-600 transition-colors cursor-pointer group text-base md:text-xl"
+                            >
+                                <MapPin className="w-4 h-4 group-hover:scale-110 transition-transform" /> 
+                                <span className="underline decoration-transparent group-hover:decoration-rose-300 underline-offset-4 transition-all">
+                                    {performance.venue.venue_name || performance.venue}
+                                </span>
+                            </a>
+                        </>
                     )}
                 </div>
             </div>
 
             {/* Spoon-fed Routine List - No Modals */}
-            <div className="space-y-12 md:space-y-16 px-6 max-w-6xl mx-auto">
+            <div className="space-y-8 md:space-y-16 px-4">
                 {routines.map((routine, idx) => (
                     <motion.div 
                         key={routine.id}
@@ -107,20 +111,20 @@ export default function PerformanceHub({ studentIds }) {
                         transition={{ delay: idx * 0.1 }}
                         className="relative"
                     >
-                        <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
+                        <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-start">
                             {/* Left Column: Routine Identity */}
                             <div className="w-full md:w-1/3 md:sticky md:top-24">
-                                <div className="flex items-center gap-2 mb-4 text-rose-500">
-                                    <div className="w-8 h-px bg-rose-300" />
+                                <div className="flex items-center gap-2 mb-3 text-rose-500">
+                                    <div className="w-6 md:w-8 h-px bg-rose-300" />
                                     <span className="text-xs font-bold uppercase tracking-[0.2em]">Routine {idx + 1}</span>
                                 </div>
-                                <h3 className="font-serif text-3xl md:text-4xl mb-3 text-[#1c1c1c] leading-[1.2]">{routine.title}</h3>
-                                <div className="flex items-center gap-2 text-gray-500 italic font-serif mb-6 md:mb-8 text-lg">
+                                <h3 className="font-serif text-2xl sm:text-3xl md:text-4xl mb-2 md:mb-3 text-[#1c1c1c] leading-tight">{routine.title}</h3>
+                                <div className="flex items-center gap-2 text-gray-500 italic font-serif mb-4 md:mb-8 text-base md:text-lg">
                                     <Music className="w-4 h-4 opacity-40" /> {routine.song_title}
                                 </div>
 
                                 {routine.costume_product_suggestions?.[0] && (
-                                    <div className="aspect-[3/4] w-full max-w-[240px] rounded-2xl overflow-hidden bg-white border-[6px] border-white shadow-lg mx-auto md:mx-0 relative group rotate-2 hover:rotate-0 transition-all duration-500">
+                                    <div className="aspect-[3/4] w-full max-w-[200px] md:max-w-[240px] rounded-2xl overflow-hidden bg-white border-4 md:border-[6px] border-white shadow-lg mx-auto md:mx-0 relative group rotate-2 hover:rotate-0 transition-all duration-500">
                                         <img src={routine.costume_product_suggestions[0].image_url} alt="Costume" className="w-full h-full object-cover rounded-lg" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 rounded-lg" />
                                         <div className="absolute bottom-3 left-3 text-white text-xs font-medium tracking-wide">
@@ -131,14 +135,14 @@ export default function PerformanceHub({ studentIds }) {
                             </div>
 
                             {/* Right Column: The "Spoon-fed" Details Grid */}
-                            <div className="flex-1 grid grid-cols-1 gap-6 w-full">
+                            <div className="flex-1 grid grid-cols-1 gap-4 md:gap-6 w-full">
                                 {/* Grooming Board - Pinterest Style */}
-                                <div className="bg-white p-6 md:p-8 rounded-2xl md:rounded-[32px] border border-stone-100 shadow-sm hover:shadow-md transition-shadow h-full relative overflow-hidden flex flex-col">
+                                <div className="bg-white p-4 md:p-8 rounded-2xl md:rounded-[32px] border border-stone-100 shadow-sm hover:shadow-md transition-shadow h-full relative overflow-hidden flex flex-col">
                                     <div className="absolute inset-0 bg-stone-50/30 pointer-events-none" />
                                     <div className="relative z-10">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
-                                                <Scissors className="w-5 h-5" />
+                                        <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+                                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
+                                                <Scissors className="w-4 h-4 md:w-5 md:h-5" />
                                             </div>
                                             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Look & Feel Board</h4>
                                         </div>
@@ -201,10 +205,10 @@ export default function PerformanceHub({ studentIds }) {
                                 </div>
 
                                 {/* Schedule Card */}
-                                <div className="bg-white p-6 md:p-8 rounded-2xl md:rounded-[32px] border border-stone-100 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500">
-                                            <CalendarDays className="w-5 h-5" />
+                                <div className="bg-white p-4 md:p-8 rounded-2xl md:rounded-[32px] border border-stone-100 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
+                                    <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500">
+                                            <CalendarDays className="w-4 h-4 md:w-5 md:h-5" />
                                         </div>
                                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Rehearsals</h4>
                                     </div>
