@@ -18,7 +18,6 @@ import SubRequestModal from '../components/teacher/SubRequestModal';
 import TimeSheetReviewModal from '../components/teacher/TimeSheetReviewModal';
 import SubRequestHistoryModal from '../components/teacher/SubRequestHistoryModal';
 import TeacherSidebar from '../components/teacher/TeacherSidebar';
-import TimeManagementHub from '../components/teacher/TimeManagementHub';
 import { WeekView, MonthView } from '../components/teacher/ScheduleViews';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -506,7 +505,8 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
 // --- MAIN PAGE COMPONENT ---
 export default function TeacherStudio() {
   const [selectedClass, setSelectedClass] = useState(null);
-  const [isTimeManagementOpen, setIsTimeManagementOpen] = useState(false);
+  const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
+  const [isSubHistoryOpen, setIsSubHistoryOpen] = useState(false);
   const [isSubRequestOpen, setIsSubRequestOpen] = useState(false); // Global sub request state
   const [viewMode, setViewMode] = useState('list'); // 'list', 'week', 'month'
   const [activeTab, setActiveTab] = useState('classes'); // 'classes', 'admin'
@@ -539,9 +539,8 @@ export default function TeacherStudio() {
   });
 
   const handleNav = (view) => {
-    if (view === 'timecard' || view === 'subs') {
-      setIsTimeManagementOpen(true);
-    }
+    if (view === 'timecard') setIsTimeSheetOpen(true);
+    if (view === 'subs') setIsSubHistoryOpen(true);
     // 'schedule' is default
   };
 
@@ -625,15 +624,28 @@ export default function TeacherStudio() {
                      ))}
                    </div>
 
-                   {/* Time Management Button */}
-                   <Button 
-                     onClick={() => setIsTimeManagementOpen(true)}
-                     variant="outline"
-                     className="rounded-full gap-2 h-11 px-5 border-gray-200 hover:bg-gray-50"
-                   >
-                     <Clock className="w-4 h-4" />
-                     <span className="hidden md:inline">Time & Schedule</span>
-                   </Button>
+                   {/* Quick Actions Dropdown */}
+                   <DropdownMenu>
+                     <DropdownMenuTrigger asChild>
+                       <Button variant="outline" size="icon" className="rounded-full h-11 w-11 border-gray-200">
+                         <MoreVertical className="w-4 h-4" />
+                       </Button>
+                     </DropdownMenuTrigger>
+                     <DropdownMenuContent align="end" className="w-48">
+                       <DropdownMenuItem onClick={() => setIsSubRequestOpen(true)}>
+                         <CalendarX className="w-4 h-4 mr-2" />
+                         Request Coverage
+                       </DropdownMenuItem>
+                       <DropdownMenuItem onClick={() => setIsSubHistoryOpen(true)}>
+                         <FileText className="w-4 h-4 mr-2" />
+                         My Requests
+                       </DropdownMenuItem>
+                       <DropdownMenuItem onClick={() => setIsTimeSheetOpen(true)}>
+                         <Clock className="w-4 h-4 mr-2" />
+                         Time Sheet
+                       </DropdownMenuItem>
+                     </DropdownMenuContent>
+                   </DropdownMenu>
                  </div>
               </div>
 
@@ -685,20 +697,30 @@ export default function TeacherStudio() {
         </AnimatePresence>
       </div>
 
-      {/* Time Management Hub */}
-      <TimeManagementHub
-        isOpen={isTimeManagementOpen}
-        onOpenChange={setIsTimeManagementOpen}
+      {/* Modals managed by Sidebar Actions */}
+      <TimeSheetReviewModal 
+        isOpen={isTimeSheetOpen}
+        onOpenChange={setIsTimeSheetOpen}
         teacherName={currentTeacherName}
         classes={classes.filter(c => c.teacher === currentTeacherName)}
         subRequests={subRequests}
       />
+
+      <SubRequestHistoryModal
+        isOpen={isSubHistoryOpen}
+        onOpenChange={setIsSubHistoryOpen}
+        teacherName={currentTeacherName}
+        onNewRequest={() => {
+          setSelectedClass(null); // Ensure no specific class is selected to trigger generic mode
+          setIsSubRequestOpen(true);
+        }}
+      />
       
-      {/* Global Sub Request Modal (for when accessing from class detail view) */}
+      {/* Global Sub Request Modal (for when accessing via sidebar/history) */}
       <SubRequestModal 
-        isOpen={isSubRequestOpen && !selectedClass}
+        isOpen={isSubRequestOpen && !selectedClass} // Only show this one if not in detail view
         onOpenChange={setIsSubRequestOpen}
-        classData={null}
+        classData={null} // No pre-selected class
         teacherName={currentTeacherName}
         availableClasses={classes.filter(c => c.teacher === currentTeacherName)}
       />
