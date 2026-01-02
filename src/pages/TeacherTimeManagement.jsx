@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -10,16 +10,17 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Clock, CheckCircle2, Calendar, AlertCircle, Sparkles, Play, Square } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle2, Calendar, Sparkles, Minus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, differenceInMinutes } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
+const dayMap = { M: 1, T: 2, W: 3, R: 4, F: 5, S: 6, U: 0 };
+
 export default function TeacherTimeManagement() {
   const [activeTab, setActiveTab] = useState('timesheet');
-  const [isClocking, setIsClocking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   
@@ -46,14 +47,6 @@ export default function TeacherTimeManagement() {
 
   const myClasses = classes.filter(c => c.teacher === teacherName);
 
-  const { data: timeLogs = [] } = useQuery({
-    queryKey: ['timeLogs', teacherName],
-    queryFn: async () => {
-      const all = await base44.entities.TimeLog.list();
-      return all.filter(log => log.teacher_name === teacherName);
-    }
-  });
-
   const { data: subRequests = [] } = useQuery({
     queryKey: ['subRequests', teacherName],
     queryFn: async () => {
@@ -65,31 +58,6 @@ export default function TeacherTimeManagement() {
   const { data: teachers = [] } = useQuery({
     queryKey: ['teachers'],
     queryFn: () => base44.entities.Teacher.list(),
-  });
-
-  const activeLog = timeLogs.find(log => log.status === 'active');
-
-  const clockInMutation = useMutation({
-    mutationFn: () => base44.entities.TimeLog.create({
-      teacher_name: teacherName,
-      clock_in: new Date().toISOString(),
-      status: 'active'
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['timeLogs'] });
-      setIsClocking(false);
-    }
-  });
-
-  const clockOutMutation = useMutation({
-    mutationFn: () => base44.entities.TimeLog.update(activeLog.id, {
-      clock_out: new Date().toISOString(),
-      status: 'completed'
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['timeLogs'] });
-      setIsClocking(false);
-    }
   });
 
   const submitTimeSheetMutation = useMutation({
@@ -150,15 +118,6 @@ export default function TeacherTimeManagement() {
     }
   });
 
-  const handleClockToggle = async () => {
-    setIsClocking(true);
-    if (activeLog) {
-      await clockOutMutation.mutateAsync();
-    } else {
-      await clockInMutation.mutateAsync();
-    }
-  };
-
   const handleSubmitCoverageRequest = async () => {
     if (!selectedClassId || !requestDate || !requestReason) return;
     await createSubRequestMutation.mutateAsync({
@@ -169,28 +128,41 @@ export default function TeacherTimeManagement() {
     });
   };
 
-  // Calculate weekly hours
+  // Calculate weekly hours based on scheduled classes
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
   const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
   
-  const completedLogs = timeLogs.filter(log => log.status === 'completed');
-  const weeklyBreakdown = weekDays.map(day => {
-    const dayLogs = completedLogs.filter(log => 
-      format(new Date(log.clock_in), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')
-    );
-    const totalMinutes = dayLogs.reduce((sum, log) => {
-      return sum + differenceInMinutes(new Date(log.clock_out), new Date(log.clock_in));
-    }, 0);
-    return {
-      day: format(day, 'EEE'),
-      date: format(day, 'MMM d'),
-      hours: (totalMinutes / 60).toFixed(1),
-      logs: dayLogs
-    };
-  });
+  const weeklyBreakdown = useMemo(() => {
+    return weekDays.map(day => {
+      const dayOfWeek = day.getDay();
+      const dayClasses = myClasses.filter(cls => dayMap[cls.day] === dayOfWeek);
+      
+      // Check if any of these classes have filled sub requests for this specific date
+      const dateStr = format(day, 'yyyy-MM-dd');
+      const filledSubsForDay = subRequests.filter(
+        req => req.status === 'filled' && format(new Date(req.date || req.created_date), 'yyyy-MM-dd') === dateStr
+      );
+      
+      const scheduledHours = dayClasses.reduce((sum, cls) => sum + (cls.duration || 0), 0);
+      const subbedHours = filledSubsForDay.reduce((sum, req) => {
+        const cls = dayClasses.find(c => c.id === req.class_id);
+        return sum + (cls?.duration || 0);
+      }, 0);
+      
+      return {
+        day: format(day, 'EEE'),
+        date: format(day, 'MMM d'),
+        scheduledHours,
+        subbedHours,
+        netHours: scheduledHours - subbedHours,
+        classes: dayClasses,
+        subbedClasses: filledSubsForDay
+      };
+    });
+  }, [weekDays, myClasses, subRequests]);
 
-  const totalWeekHours = weeklyBreakdown.reduce((sum, d) => sum + parseFloat(d.hours), 0);
+  const totalWeekHours = weeklyBreakdown.reduce((sum, d) => sum + d.netHours, 0);
 
   const urgencyColors = {
     low: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -262,69 +234,78 @@ export default function TeacherTimeManagement() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             >
-              {/* Clock In/Out Card */}
-              <Card className="p-8 bg-white rounded-[32px] shadow-sm border-0 lg:col-span-1 flex flex-col items-center justify-center gap-6">
-                <div className={`w-32 h-32 rounded-full flex items-center justify-center ${activeLog ? 'bg-red-50 animate-pulse' : 'bg-[#F4F4F6]'}`}>
-                  {activeLog ? (
-                    <Square className="w-12 h-12 text-red-500 fill-current" />
-                  ) : (
-                    <Play className="w-12 h-12 text-[#333333] fill-current" />
-                  )}
-                </div>
-                
-                {activeLog && (
-                  <div className="text-center">
-                    <p className="text-sm text-gray-400 mb-1">Clocked in at</p>
-                    <p className="text-2xl font-serif text-[#333333]">
-                      {format(new Date(activeLog.clock_in), 'h:mm a')}
-                    </p>
-                  </div>
-                )}
-
-                <Button
-                  onClick={handleClockToggle}
-                  disabled={isClocking}
-                  className={`w-full h-14 rounded-full text-lg font-serif shadow-lg ${activeLog ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-[#333333] hover:bg-black text-white'}`}
-                >
-                  {isClocking ? 'Processing...' : activeLog ? 'Clock Out' : 'Clock In'}
-                </Button>
-              </Card>
-
-              {/* Weekly Summary */}
-              <Card className="p-8 bg-white rounded-[32px] shadow-sm border-0 lg:col-span-2">
-                <div className="flex items-center justify-between mb-6">
+              <Card className="p-8 bg-white rounded-[32px] shadow-sm border-0">
+                <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="font-serif text-2xl text-[#333333]">This Week</h2>
+                    <h2 className="font-serif text-3xl text-[#333333]">This Week</h2>
                     <p className="text-gray-400 text-sm mt-1">
                       {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d')}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-gray-400">Total Hours</p>
-                    <p className="text-4xl font-serif text-[#333333]">{totalWeekHours.toFixed(1)}</p>
+                    <p className="text-sm text-gray-400 mb-1">Total Hours</p>
+                    <p className="text-5xl font-serif text-[#333333]">{totalWeekHours.toFixed(1)}</p>
                   </div>
                 </div>
 
-                <ScrollArea className="h-64">
-                  <div className="space-y-3">
+                <ScrollArea className="h-[500px] mb-8">
+                  <div className="space-y-4">
                     {weeklyBreakdown.map((day, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-4 bg-[#F4F4F6] rounded-2xl">
-                        <div>
-                          <p className="font-medium text-[#333333]">{day.day}</p>
-                          <p className="text-xs text-gray-400">{day.date}</p>
+                      <div key={idx} className="p-6 bg-[#F4F4F6] rounded-3xl">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <p className="text-xl font-medium text-[#333333]">{day.day}</p>
+                            <p className="text-sm text-gray-400">{day.date}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-2xl font-serif text-[#333333]">{day.netHours.toFixed(1)} hrs</p>
+                            {day.subbedHours > 0 && (
+                              <p className="text-xs text-gray-400">
+                                {day.scheduledHours.toFixed(1)} - {day.subbedHours.toFixed(1)} subbed
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-lg font-serif text-[#333333]">{day.hours} hrs</p>
-                          <p className="text-xs text-gray-400">{day.logs.length} sessions</p>
-                        </div>
+
+                        {day.classes.length > 0 && (
+                          <div className="space-y-2 mt-3">
+                            {day.classes.map((cls) => {
+                              const isSubbed = day.subbedClasses.some(req => req.class_id === cls.id);
+                              return (
+                                <div
+                                  key={cls.id}
+                                  className={`flex items-center justify-between p-3 rounded-xl ${
+                                    isSubbed ? 'bg-red-50 border border-red-100' : 'bg-white'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    {isSubbed && <Minus className="w-4 h-4 text-red-500" />}
+                                    <div>
+                                      <p className={`text-sm font-medium ${isSubbed ? 'text-red-600 line-through' : 'text-[#333333]'}`}>
+                                        {cls.title}
+                                      </p>
+                                      <p className="text-xs text-gray-400">
+                                        {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <p className={`text-sm font-medium ${isSubbed ? 'text-red-500' : 'text-gray-600'}`}>
+                                    {cls.duration?.toFixed(1)} hrs
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {day.classes.length === 0 && (
+                          <p className="text-center text-gray-400 text-sm py-2">No classes scheduled</p>
+                        )}
                       </div>
                     ))}
                   </div>
                 </ScrollArea>
-
-                <Separator className="my-6" />
 
                 <Button
                   onClick={() => {
@@ -333,7 +314,7 @@ export default function TeacherTimeManagement() {
                     setTimeout(() => setIsSubmitting(false), 1000);
                   }}
                   disabled={isSubmitting || submitSuccess || totalWeekHours === 0}
-                  className={`w-full h-14 rounded-full text-lg font-serif shadow-lg transition-all ${
+                  className={`w-full h-16 rounded-full text-xl font-serif shadow-lg transition-all ${
                     submitSuccess 
                       ? 'bg-green-500 hover:bg-green-500' 
                       : 'bg-[#333333] hover:bg-black text-white'
