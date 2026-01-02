@@ -128,6 +128,11 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
                                     <Music className="w-5 h-5 opacity-40 flex-shrink-0" /> 
                                     <span className="break-words">{routine.song_title}</span>
                                 </div>
+                                {routine.choreographer && (
+                                    <div className="text-sm text-gray-400 mt-1">
+                                        Choreographed by {routine.choreographer}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Content Grid */}

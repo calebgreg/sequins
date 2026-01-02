@@ -292,19 +292,23 @@ export default function ProducerWorkspace({ performanceId, onCancel, onPlanCreat
                 
                 const routines = plan.show_plan.run_of_show
                     .filter(segment => segment.segment_type === 'performance')
-                    .map((segment) => ({
-                        performance_id: targetPerformanceId,
-                        title: segment.title,
-                        order_index: segment.order,
-                        duration_seconds: Math.round(segment.estimated_minutes * 60),
-                        class_id: segment.class_id,
-                        notes: segment.stage_action, 
-                        costume_details: segment.costume_concept,
-                        costume_product_suggestions: segment.costume_product_suggestions,
-                        lighting_notes: segment.visual_concept,
-                        song_title: segment.music_selection?.title,
-                        artist: segment.music_selection?.artist
-                    }));
+                    .map((segment) => {
+                        const linkedClass = classes.find(c => c.id === segment.class_id);
+                        return {
+                            performance_id: targetPerformanceId,
+                            title: segment.title,
+                            order_index: segment.order,
+                            duration_seconds: Math.round(segment.estimated_minutes * 60),
+                            class_id: segment.class_id,
+                            choreographer: linkedClass?.teacher,
+                            notes: segment.stage_action, 
+                            costume_details: segment.costume_concept,
+                            costume_product_suggestions: segment.costume_product_suggestions,
+                            lighting_notes: segment.visual_concept,
+                            song_title: segment.music_selection?.title,
+                            artist: segment.music_selection?.artist
+                        };
+                    });
 
                 if (routines.length > 0) {
                      // Check existing to avoid duplicates? Or just append?

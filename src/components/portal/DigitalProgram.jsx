@@ -270,6 +270,9 @@ export default function DigitalProgram({ performance, studentIds, isPreview = fa
                                                 {routine.song_title && (
                                                     <div className="text-xs text-gray-500 italic font-serif mt-0.5">"{routine.song_title}"</div>
                                                 )}
+                                                {routine.choreographer && (
+                                                    <div className="text-xs text-gray-400 mt-0.5">Choreographed by {routine.choreographer}</div>
+                                                )}
                                             </div>
                                             <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
                                                 <Clock className="w-3 h-3 text-gray-300" />
