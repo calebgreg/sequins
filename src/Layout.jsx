@@ -21,16 +21,6 @@ function LayoutContent({ children }) {
     return <>{children}</>;
   }
 
-  // TeacherStudio has its own internal layout structure, but we wrap it to provide CommandMenu access
-  if (isTeacherStudio) {
-    return (
-      <>
-        <CommandMenu open={isOpen} onOpenChange={setIsOpen} />
-        {children}
-      </>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#F4F4F6] flex font-sans text-[#333333]">
       <CommandMenu open={isOpen} onOpenChange={setIsOpen} />
