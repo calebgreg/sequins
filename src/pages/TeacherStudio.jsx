@@ -561,8 +561,8 @@ export default function TeacherStudio() {
             >
               {/* Header Controls */}
               <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-                 {/* Classes / Admin Toggle */}
-                 <div className="flex items-center gap-3">
+                 {/* Left Section - Classes / Admin Toggle + Quick Actions */}
+                 <div className="flex items-center gap-3 flex-wrap justify-center md:justify-start">
                    <div className="bg-[#333333] p-1.5 rounded-full inline-flex relative shadow-lg">
                      {[
                        { id: 'classes', label: 'Classes' },
@@ -595,10 +595,29 @@ export default function TeacherStudio() {
                    
                    <Button 
                      onClick={() => setIsSubRequestOpen(true)}
-                     className="bg-[#F2DCDD] text-[#333333] hover:bg-[#eec8ca] border border-[#E5C0C2] rounded-full gap-2 shadow-md h-12 px-6 transition-all font-serif font-medium hover:scale-105 active:scale-95"
+                     variant="outline"
+                     className="rounded-full gap-2 h-12 px-6 border-gray-200 hover:bg-gray-50"
                    >
                      <CalendarX className="w-4 h-4" />
-                     Request Coverage
+                     <span className="hidden sm:inline">Request Coverage</span>
+                   </Button>
+
+                   <Button 
+                     onClick={() => setIsSubHistoryOpen(true)}
+                     variant="outline"
+                     className="rounded-full gap-2 h-12 px-6 border-gray-200 hover:bg-gray-50"
+                   >
+                     <FileText className="w-4 h-4" />
+                     <span className="hidden sm:inline">My Requests</span>
+                   </Button>
+
+                   <Button 
+                     onClick={() => setIsTimeSheetOpen(true)}
+                     variant="outline"
+                     className="rounded-full gap-2 h-12 px-6 border-gray-200 hover:bg-gray-50"
+                   >
+                     <Clock className="w-4 h-4" />
+                     <span className="hidden sm:inline">Time Sheet</span>
                    </Button>
                  </div>
 
