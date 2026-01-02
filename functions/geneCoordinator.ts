@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
                 
                 AVAILABLE DATA CATEGORIES:
                 - Student: Roster info, finding a person, checking enrollment, ages, parents.
-                - DanceClass: Schedule, time, class details, day of week.
+                - DanceClass: Schedule, time, class details, day of week, CLASS ROSTERS (who's in a class).
                 - Performance: Upcoming events, recitals, shows, dates.
                 - Teacher: Staff info, bios.
                 - TuitionPlan: Pricing plans, billing info.
@@ -96,7 +96,10 @@ Deno.serve(async (req) => {
 
         if (dataMap["DanceClass"]) {
             dynamicContext += `\nSCHEDULE:\n` + 
-                dataMap["DanceClass"].map(c => `${c.title} (${c.style}) on ${c.day} @ ${c.start_time}:00`).join('\n');
+                dataMap["DanceClass"].map(c => {
+                    const students = c.student_names?.length ? ` [Students: ${c.student_names.join(', ')}]` : '';
+                    return `${c.title} (${c.style}) on ${c.day} @ ${c.start_time}:00${students}`;
+                }).join('\n');
         }
 
         if (dataMap["Performance"]) {
@@ -128,6 +131,7 @@ Deno.serve(async (req) => {
             ${dynamicContext || "(No specific database data retrieved for this query)"}
             
             INSTRUCTIONS:
+            - If the user asks "who's in [class name]" or "students in [class]", look up the class in the schedule and list the students enrolled.
             - If the user asks for personal info not in context, use the 'read' action (e.g. Student lookup).
             - If data is missing, say so.
             - Default 'due_date' for tasks is today (${new Date().toISOString().split('T')[0]}).
