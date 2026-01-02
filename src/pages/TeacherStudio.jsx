@@ -166,7 +166,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
         }
       }
       
-      // Select 2-3 students to prompt for notes
+      // Only prompt for notes on students who attended (marked present)
       const classStudents = students.filter(s => classData.student_names?.includes(s.name));
       const presentStudents = classStudents.filter(s => attendance[s.name] === 'present');
       const shuffled = [...presentStudents].sort(() => Math.random() - 0.5);
