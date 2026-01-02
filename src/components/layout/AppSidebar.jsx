@@ -34,6 +34,7 @@ export default function AppSidebar({ className = "", onSearchClick }) {
 
   const navItems = [
     { path: '/Home', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/TeacherStudio', icon: Briefcase, label: 'Teacher Studio' },
     { path: '/Tasks', icon: CheckSquare, label: 'Tasks' },
     { path: '/ClassManager', icon: Calendar, label: 'Schedule' },
     { path: '/Students', icon: GraduationCap, label: 'Students' },
@@ -112,23 +113,6 @@ export default function AppSidebar({ className = "", onSearchClick }) {
 
       {/* Bottom Actions */}
       <div className="flex flex-col gap-6 items-center w-full px-4">
-        
-        {/* Quick Link to Teacher Studio (for demo/convenience) */}
-        <TooltipProvider>
-           <Tooltip>
-             <TooltipTrigger asChild>
-                <Link to="/TeacherStudio">
-                   <button className="w-12 h-12 rounded-2xl flex items-center justify-center text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 transition-all">
-                      <Briefcase className="w-5 h-5" />
-                   </button>
-                </Link>
-             </TooltipTrigger>
-             <TooltipContent side="right" className="bg-indigo-900 text-indigo-100 border-indigo-800 ml-2">
-                Teacher View
-             </TooltipContent>
-           </Tooltip>
-        </TooltipProvider>
-
         <div className="w-full h-px bg-white/10 w-8" />
 
         <Avatar className="w-10 h-10 border-2 border-white/10 cursor-pointer hover:border-white hover:scale-105 transition-all">
