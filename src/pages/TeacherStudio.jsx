@@ -560,95 +560,92 @@ export default function TeacherStudio() {
               className="flex-1 p-6 pt-20 md:pt-10 max-w-5xl mx-auto w-full"
             >
               {/* Header Controls */}
-              <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-                 {/* Left Section - Classes / Admin Toggle + Quick Actions */}
-                 <div className="flex items-center gap-3 flex-wrap justify-center md:justify-start">
-                   <div className="bg-[#333333] p-1.5 rounded-full inline-flex relative shadow-lg">
-                     {[
-                       { id: 'classes', label: 'Classes' },
-                       { id: 'admin', label: 'Admin' }
-                     ].map((tab) => {
-                     const isActive = activeTab === tab.id;
-                     return (
-                       <button
-                         key={tab.id}
-                         onClick={() => setActiveTab(tab.id)}
-                         className={`
-                           relative px-8 py-2.5 rounded-full text-sm font-serif transition-all duration-300 z-10
-                           ${isActive ? 'text-[#333333]' : 'text-gray-400 hover:text-white'}
-                         `}
-                       >
-                         {isActive && (
-                           <motion.div
-                             layoutId="activeMainTab"
-                             className="absolute inset-0 bg-[#F2DCDD] rounded-full shadow-sm"
-                             initial={false}
-                             transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                             style={{ zIndex: -1 }}
-                           />
-                         )}
-                         <span>{tab.label}</span>
-                       </button>
-                     )
-                   })}
-                   </div>
-                   
-                   <Button 
-                     onClick={() => setIsSubRequestOpen(true)}
-                     variant="outline"
-                     className="rounded-full gap-2 h-12 px-6 border-gray-200 hover:bg-gray-50"
-                   >
-                     <CalendarX className="w-4 h-4" />
-                     <span className="hidden sm:inline">Request Coverage</span>
-                   </Button>
-
-                   <Button 
-                     onClick={() => setIsSubHistoryOpen(true)}
-                     variant="outline"
-                     className="rounded-full gap-2 h-12 px-6 border-gray-200 hover:bg-gray-50"
-                   >
-                     <FileText className="w-4 h-4" />
-                     <span className="hidden sm:inline">My Requests</span>
-                   </Button>
-
-                   <Button 
-                     onClick={() => setIsTimeSheetOpen(true)}
-                     variant="outline"
-                     className="rounded-full gap-2 h-12 px-6 border-gray-200 hover:bg-gray-50"
-                   >
-                     <Clock className="w-4 h-4" />
-                     <span className="hidden sm:inline">Time Sheet</span>
-                   </Button>
-                 </div>
-
-                 {/* View Modes (List/Week/Month) */}
+              <div className="flex justify-between items-center mb-12">
+                 {/* Left: Classes / Admin Toggle */}
                  <div className="bg-white p-1 rounded-full inline-flex relative shadow-sm border border-gray-100">
                    {[
-                     { id: 'list', label: 'List', icon: List },
-                     { id: 'week', label: 'Week', icon: LayoutGrid },
-                     { id: 'month', label: 'Month', icon: CalendarIcon }
-                   ].map(view => (
+                     { id: 'classes', label: 'Classes' },
+                     { id: 'admin', label: 'Admin' }
+                   ].map((tab) => {
+                   const isActive = activeTab === tab.id;
+                   return (
                      <button
-                       key={view.id}
-                       onClick={() => setViewMode(view.id)}
+                       key={tab.id}
+                       onClick={() => setActiveTab(tab.id)}
                        className={`
-                         relative px-6 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-colors duration-200 z-10
-                         ${viewMode === view.id ? 'text-[#333333]' : 'text-gray-400 hover:text-gray-700'}
+                         relative px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 z-10
+                         ${isActive ? 'text-[#333333]' : 'text-gray-500 hover:text-gray-700'}
                        `}
                      >
-                       {viewMode === view.id && (
+                       {isActive && (
                          <motion.div
-                           layoutId="activeViewTab"
-                           className="absolute inset-0 bg-gray-100 rounded-full"
+                           layoutId="activeMainTab"
+                           className="absolute inset-0 bg-[#F2DCDD] rounded-full"
                            initial={false}
                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
                            style={{ zIndex: -1 }}
                          />
                        )}
-                       <view.icon className="w-4 h-4" />
-                       <span>{view.label}</span>
+                       <span>{tab.label}</span>
                      </button>
-                   ))}
+                   )
+                 })}
+                 </div>
+                   
+                 {/* Right: View Modes + Quick Actions */}
+                 <div className="flex items-center gap-3">
+                   {/* View Mode Toggle */}
+                   <div className="bg-white p-1 rounded-full inline-flex relative shadow-sm border border-gray-100">
+                     {[
+                       { id: 'list', label: 'List', icon: List },
+                       { id: 'week', label: 'Week', icon: LayoutGrid },
+                       { id: 'month', label: 'Month', icon: CalendarIcon }
+                     ].map(view => (
+                       <button
+                         key={view.id}
+                         onClick={() => setViewMode(view.id)}
+                         className={`
+                           relative px-5 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 transition-colors duration-200 z-10
+                           ${viewMode === view.id ? 'text-[#333333]' : 'text-gray-400 hover:text-gray-700'}
+                         `}
+                       >
+                         {viewMode === view.id && (
+                           <motion.div
+                             layoutId="activeViewTab"
+                             className="absolute inset-0 bg-gray-100 rounded-full"
+                             initial={false}
+                             transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                             style={{ zIndex: -1 }}
+                           />
+                         )}
+                         <view.icon className="w-4 h-4" />
+                         <span className="hidden md:inline">{view.label}</span>
+                       </button>
+                     ))}
+                   </div>
+
+                   {/* Quick Actions Dropdown */}
+                   <DropdownMenu>
+                     <DropdownMenuTrigger asChild>
+                       <Button variant="outline" size="icon" className="rounded-full h-11 w-11 border-gray-200">
+                         <MoreVertical className="w-4 h-4" />
+                       </Button>
+                     </DropdownMenuTrigger>
+                     <DropdownMenuContent align="end" className="w-48">
+                       <DropdownMenuItem onClick={() => setIsSubRequestOpen(true)}>
+                         <CalendarX className="w-4 h-4 mr-2" />
+                         Request Coverage
+                       </DropdownMenuItem>
+                       <DropdownMenuItem onClick={() => setIsSubHistoryOpen(true)}>
+                         <FileText className="w-4 h-4 mr-2" />
+                         My Requests
+                       </DropdownMenuItem>
+                       <DropdownMenuItem onClick={() => setIsTimeSheetOpen(true)}>
+                         <Clock className="w-4 h-4 mr-2" />
+                         Time Sheet
+                       </DropdownMenuItem>
+                     </DropdownMenuContent>
+                   </DropdownMenu>
                  </div>
               </div>
 
