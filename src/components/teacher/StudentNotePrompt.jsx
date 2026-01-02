@@ -187,14 +187,14 @@ export default function StudentNotePrompt({
               disabled={isLoading}
             >
               <SkipForward className="w-5 h-5 mr-2" />
-              {isLastStudent ? 'Finish' : 'Skip'}
+              Skip
             </Button>
             <Button
               onClick={handleSubmitNote}
               className="flex-1 rounded-full bg-[#333333] text-white hover:bg-black h-14 text-lg font-serif shadow-lg"
               disabled={isLoading}
             >
-              {isLoading ? 'Saving...' : isLastStudent ? 'Save & Finish' : 'Next'}
+              {isLoading ? 'Saving...' : isLastStudent ? 'Finish' : 'Next'}
               {!isLoading && <ArrowRight className="w-5 h-5 ml-2" />}
             </Button>
           </div>
