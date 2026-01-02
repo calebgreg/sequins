@@ -545,37 +545,10 @@ export default function TeacherStudio() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F4F6] flex">
-      
-      {/* Sidebar - Desktop */}
-      <TeacherSidebar 
-        className="hidden md:flex w-24 flex-shrink-0 h-screen sticky top-0 z-20"
-        activeView="schedule"
-        onNavigate={handleNav}
-        teacherName={currentTeacherName}
-      />
+    <div className="min-h-screen bg-[#F4F4F6]">
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative max-w-[100vw] overflow-x-hidden">
-        
-        {/* Mobile Header / Toggle */}
-        <div className="md:hidden absolute top-6 left-6 z-50">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="bg-[#333333] shadow-lg rounded-full text-white hover:bg-black">
-                <Menu className="w-5 h-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-24 border-none bg-transparent shadow-none">
-              <TeacherSidebar 
-                className="h-full rounded-r-[32px] shadow-2xl"
-                activeView="schedule"
-                onNavigate={handleNav}
-                teacherName={currentTeacherName}
-              />
-            </SheetContent>
-          </Sheet>
-        </div>
 
         <AnimatePresence mode="wait">
           {!selectedClass ? (
