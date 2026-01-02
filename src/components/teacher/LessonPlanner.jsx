@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Clock, Plus, Save, RotateCcw, Wand2, Music, PlayCircle, ChevronRight } from 'lucide-react';
+import { Sparkles, Clock, Plus, Save, ArrowLeft, Wand2, Music, PlayCircle, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 
@@ -103,13 +103,15 @@ export default function LessonPlanner({ classData, onBack }) {
     <div className="h-full flex flex-col bg-[#F4F4F6]">
       {/* Header */}
       <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]">
-        <div className="flex items-center gap-6">
-          <Button variant="ghost" size="icon" onClick={onBack} className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80">
-            <RotateCcw className="w-5 h-5" />
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={onBack} className="gap-2 text-gray-500 hover:text-[#333333] hover:bg-white">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Class
           </Button>
+          <div className="w-px h-8 bg-gray-200" />
           <div>
-            <h2 className="font-serif text-3xl text-[#333333]">Lesson Planner</h2>
-            <p className="text-gray-400 font-serif">Plan your {classData.title} class</p>
+            <h2 className="font-serif text-2xl text-[#333333]">Lesson Planner</h2>
+            <p className="text-sm text-gray-400">{classData.title}</p>
           </div>
         </div>
         
