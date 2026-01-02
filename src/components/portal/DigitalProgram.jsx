@@ -23,6 +23,13 @@ export default function DigitalProgram({ performance, studentIds, isPreview = fa
         enabled: !!performance?.id
     });
 
+    // Fetch classes to derive choreographer from teacher if not set
+    const { data: allClasses = [] } = useQuery({
+        queryKey: ['allClasses'],
+        queryFn: () => base44.entities.DanceClass.list(),
+        enabled: !!performance?.id
+    });
+
     // Identify which routines include family's students
     const familyRoutines = allRoutines.filter(routine => 
         routine.performers && routine.performers.length > 0 &&
@@ -41,8 +48,16 @@ export default function DigitalProgram({ performance, studentIds, isPreview = fa
         const durationMinutes = Math.ceil((routine.duration_seconds || 180) / 60);
         cumulativeMinutes += durationMinutes;
         
+        // Derive choreographer from linked class if not set
+        let choreographer = routine.choreographer;
+        if (!choreographer && routine.class_id) {
+            const linkedClass = allClasses.find(c => c.id === routine.class_id);
+            choreographer = linkedClass?.teacher;
+        }
+        
         return {
             ...routine,
+            choreographer,
             estimatedTime: startTime,
             isFamilyRoutine: familyRoutines.some(fr => fr.id === routine.id)
         };
@@ -315,6 +330,9 @@ export default function DigitalProgram({ performance, studentIds, isPreview = fa
                                             </div>
                                             {routine.song_title && (
                                                 <div className="text-xs text-gray-500 italic font-serif mt-0.5">"{routine.song_title}"</div>
+                                            )}
+                                            {routine.choreographer && (
+                                                <div className="text-xs text-gray-400 mt-0.5">Choreographed by {routine.choreographer}</div>
                                             )}
                                         </div>
 
