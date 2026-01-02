@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, ArrowRight, SkipForward } from 'lucide-react';
+import { Sparkles, ArrowRight, SkipForward, Mic, Square } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { motion } from 'framer-motion';
@@ -16,9 +16,46 @@ export default function StudentNotePrompt({
 }) {
   const [noteContent, setNoteContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef(null);
 
   const currentStudent = studentsToPrompt[currentIndex];
   const isLastStudent = currentIndex === studentsToPrompt.length - 1;
+
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+
+      recognitionRef.current.onresult = (event) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript) {
+          setNoteContent(prev => prev + ' ' + finalTranscript);
+        }
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsRecording(false);
+      };
+    }
+  }, []);
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+    } else {
+      recognitionRef.current?.start();
+      setIsRecording(true);
+    }
+  };
 
   const handleSubmitNote = async () => {
     setIsLoading(true);
@@ -94,7 +131,7 @@ export default function StudentNotePrompt({
           exit={{ opacity: 0, x: -20 }}
           className="bg-white rounded-[32px] p-8 shadow-lg space-y-6"
         >
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <div className="w-20 h-20 rounded-full bg-[#F4F4F6] flex items-center justify-center text-3xl font-serif text-[#333333] mx-auto mb-4">
               {currentStudent.name.charAt(0)}
             </div>
@@ -102,14 +139,45 @@ export default function StudentNotePrompt({
             <p className="text-gray-500 font-serif text-lg">What stood out today?</p>
           </div>
 
-          <Textarea
-            placeholder="Share any progress, achievements, struggles, or areas to work on..."
-            value={noteContent}
-            onChange={(e) => setNoteContent(e.target.value)}
-            className="min-h-[150px] bg-gray-50 border-gray-200 focus:bg-white transition-colors text-lg p-4 resize-none"
-            disabled={isLoading}
-            autoFocus
-          />
+          <div className="relative mb-4">
+            <div className={`h-24 rounded-2xl flex items-center justify-center transition-colors duration-300 ${isRecording ? 'bg-red-50 border-2 border-red-200' : 'bg-gray-50 border-2 border-dashed border-gray-200'}`}>
+              {isRecording ? (
+                <div className="flex gap-1 items-center">
+                  {[1,2,3,4,5].map(i => (
+                    <motion.div
+                      key={i}
+                      animate={{ height: [10, 30, 10] }}
+                      transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }}
+                      className="w-2 bg-red-400 rounded-full"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-sm">Tap mic to dictate or type below</p>
+              )}
+            </div>
+            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2">
+              <Button
+                size="icon"
+                type="button"
+                className={`h-12 w-12 rounded-full shadow-lg transition-all ${isRecording ? 'bg-red-500 hover:bg-red-600 scale-110' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                onClick={toggleRecording}
+                disabled={isLoading}
+              >
+                {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
+              </Button>
+            </div>
+          </div>
+
+          <div className="pt-4">
+            <Textarea
+              placeholder="Or type your notes here..."
+              value={noteContent}
+              onChange={(e) => setNoteContent(e.target.value)}
+              className="min-h-[120px] bg-gray-50 border-gray-200 focus:bg-white transition-colors text-lg p-4 resize-none"
+              disabled={isLoading}
+            />
+          </div>
 
           <div className="flex gap-3">
             <Button
