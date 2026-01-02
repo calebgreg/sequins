@@ -81,15 +81,18 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
 
 import LessonPlanner from '../components/teacher/LessonPlanner';
 import MusicManager from '../components/teacher/MusicManager';
+import StudentNotePrompt from '../components/teacher/StudentNotePrompt';
 
 // --- SUB-COMPONENT: Class Detail View ---
 const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) => {
-  const [mode, setMode] = useState('dashboard'); // 'dashboard', 'roster', 'notes', 'active_class', 'student', 'music', 'lesson_plan'
+  const [mode, setMode] = useState('dashboard'); // 'dashboard', 'roster', 'notes', 'active_class', 'student', 'music', 'lesson_plan', 'student_note_prompt'
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [attendance, setAttendance] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
+  const [studentsToPrompt, setStudentsToPrompt] = useState([]);
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
 
   // Initialize attendance
   useEffect(() => {
@@ -162,8 +165,24 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
           }));
         }
       }
-      setSubmitSuccess(true);
-      setTimeout(() => setSubmitSuccess(false), 3000);
+      
+      // Select 2-3 students to prompt for notes
+      const classStudents = students.filter(s => classData.student_names?.includes(s.name));
+      const presentStudents = classStudents.filter(s => attendance[s.name] === 'present');
+      const shuffled = [...presentStudents].sort(() => Math.random() - 0.5);
+      const selectedForNotes = shuffled.slice(0, Math.min(3, shuffled.length));
+      
+      if (selectedForNotes.length > 0) {
+        setStudentsToPrompt(selectedForNotes);
+        setCurrentPromptIndex(0);
+        setMode('student_note_prompt');
+      } else {
+        setSubmitSuccess(true);
+        setTimeout(() => {
+          setSubmitSuccess(false);
+          setMode('dashboard');
+        }, 2000);
+      }
     } catch (error) {
       console.error("Attendance save failed", error);
     } finally {
@@ -188,6 +207,23 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
 
   if (mode === 'music') {
     return <MusicManager classData={classData} onBack={() => setMode('dashboard')} />;
+  }
+
+  if (mode === 'student_note_prompt') {
+    return (
+      <StudentNotePrompt
+        classData={classData}
+        studentsToPrompt={studentsToPrompt}
+        currentIndex={currentPromptIndex}
+        teacherName={currentTeacherName}
+        onNext={() => setCurrentPromptIndex(prev => prev + 1)}
+        onComplete={() => {
+          setMode('dashboard');
+          setStudentsToPrompt([]);
+          setCurrentPromptIndex(0);
+        }}
+      />
+    );
   }
 
   // Student Profile View
