@@ -7,8 +7,9 @@ import Performances from './pages/Performances';
 import Settings from './pages/Settings';
 import Students from './pages/Students';
 import Tasks from './pages/Tasks';
-import TeacherStudio from './pages/TeacherStudio';
 import Teachers from './pages/Teachers';
+import TeacherStudio from './pages/TeacherStudio';
+import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -22,8 +23,9 @@ export const PAGES = {
     "Settings": Settings,
     "Students": Students,
     "Tasks": Tasks,
-    "TeacherStudio": TeacherStudio,
     "Teachers": Teachers,
+    "TeacherStudio": TeacherStudio,
+    "TeacherTimeManagement": TeacherTimeManagement,
 }
 
 export const pagesConfig = {

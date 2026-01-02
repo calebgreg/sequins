@@ -15,9 +15,6 @@ import VoiceNoteIntake from '../components/teacher/VoiceNoteIntake';
 import ClassRosterView from '../components/teacher/ClassRosterView';
 import StudentProfileView from '../components/teacher/StudentProfileView';
 import SubRequestModal from '../components/teacher/SubRequestModal';
-import TimeSheetReviewModal from '../components/teacher/TimeSheetReviewModal';
-import SubRequestHistoryModal from '../components/teacher/SubRequestHistoryModal';
-import TeacherSidebar from '../components/teacher/TeacherSidebar';
 import { WeekView, MonthView } from '../components/teacher/ScheduleViews';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -505,9 +502,6 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
 // --- MAIN PAGE COMPONENT ---
 export default function TeacherStudio() {
   const [selectedClass, setSelectedClass] = useState(null);
-  const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
-  const [isSubHistoryOpen, setIsSubHistoryOpen] = useState(false);
-  const [isSubRequestOpen, setIsSubRequestOpen] = useState(false); // Global sub request state
   const [viewMode, setViewMode] = useState('list'); // 'list', 'week', 'month'
   const [activeTab, setActiveTab] = useState('classes'); // 'classes', 'admin'
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -530,19 +524,7 @@ export default function TeacherStudio() {
     queryFn: () => base44.entities.Student.list(),
   });
 
-  const { data: subRequests = [] } = useQuery({
-    queryKey: ['sub_requests', currentTeacherName],
-    queryFn: async () => {
-      const all = await base44.entities.SubRequest.list();
-      return all.filter(r => r.teacher_name === currentTeacherName);
-    }
-  });
 
-  const handleNav = (view) => {
-    if (view === 'timecard') setIsTimeSheetOpen(true);
-    if (view === 'subs') setIsSubHistoryOpen(true);
-    // 'schedule' is default
-  };
 
   return (
     <div className="min-h-screen bg-[#F4F4F6]">
@@ -624,28 +606,12 @@ export default function TeacherStudio() {
                      ))}
                    </div>
 
-                   {/* Quick Actions Dropdown */}
-                   <DropdownMenu>
-                     <DropdownMenuTrigger asChild>
-                       <Button variant="outline" size="icon" className="rounded-full h-11 w-11 border-gray-200">
-                         <MoreVertical className="w-4 h-4" />
-                       </Button>
-                     </DropdownMenuTrigger>
-                     <DropdownMenuContent align="end" className="w-48">
-                       <DropdownMenuItem onClick={() => setIsSubRequestOpen(true)}>
-                         <CalendarX className="w-4 h-4 mr-2" />
-                         Request Coverage
-                       </DropdownMenuItem>
-                       <DropdownMenuItem onClick={() => setIsSubHistoryOpen(true)}>
-                         <FileText className="w-4 h-4 mr-2" />
-                         My Requests
-                       </DropdownMenuItem>
-                       <DropdownMenuItem onClick={() => setIsTimeSheetOpen(true)}>
-                         <Clock className="w-4 h-4 mr-2" />
-                         Time Sheet
-                       </DropdownMenuItem>
-                     </DropdownMenuContent>
-                   </DropdownMenu>
+                   {/* Time Management Link */}
+                   <Link to={createPageUrl('TeacherTimeManagement')}>
+                     <Button variant="outline" size="icon" className="rounded-full h-11 w-11 border-gray-200">
+                       <Clock className="w-4 h-4" />
+                     </Button>
+                   </Link>
                  </div>
               </div>
 
@@ -697,33 +663,7 @@ export default function TeacherStudio() {
         </AnimatePresence>
       </div>
 
-      {/* Modals managed by Sidebar Actions */}
-      <TimeSheetReviewModal 
-        isOpen={isTimeSheetOpen}
-        onOpenChange={setIsTimeSheetOpen}
-        teacherName={currentTeacherName}
-        classes={classes.filter(c => c.teacher === currentTeacherName)}
-        subRequests={subRequests}
-      />
 
-      <SubRequestHistoryModal
-        isOpen={isSubHistoryOpen}
-        onOpenChange={setIsSubHistoryOpen}
-        teacherName={currentTeacherName}
-        onNewRequest={() => {
-          setSelectedClass(null); // Ensure no specific class is selected to trigger generic mode
-          setIsSubRequestOpen(true);
-        }}
-      />
-      
-      {/* Global Sub Request Modal (for when accessing via sidebar/history) */}
-      <SubRequestModal 
-        isOpen={isSubRequestOpen && !selectedClass} // Only show this one if not in detail view
-        onOpenChange={setIsSubRequestOpen}
-        classData={null} // No pre-selected class
-        teacherName={currentTeacherName}
-        availableClasses={classes.filter(c => c.teacher === currentTeacherName)}
-      />
     </div>
   );
 }
