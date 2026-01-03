@@ -55,17 +55,20 @@ export default function AppleMusicSettings() {
           });
         }
 
-        // Configure MusicKit
-        await window.MusicKit.configure({
-          developerToken: developerToken,
-          app: {
-            name: 'Sequins',
-            build: '1.0.0'
-          }
+        // Wait for MusicKit to be ready
+        await document.addEventListener('musickitloaded', async () => {
+          // Configure and get instance
+          const music = window.MusicKit.getInstance();
+          await music.configure({
+            developerToken: developerToken,
+            app: {
+              name: 'Sequins',
+              build: '1.0.0'
+            }
+          });
+          setMusicKit(music);
         });
 
-        const instance = window.MusicKit.getInstance();
-        setMusicKit(instance);
       } catch (error) {
         console.error('MusicKit initialization error:', error);
         toast.error('Failed to initialize Apple Music');
