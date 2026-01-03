@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import jwt from 'npm:jsonwebtoken@9.0.2';
+import * as jose from 'npm:jose@5.2.0';
 
 Deno.serve(async (req) => {
     try {
@@ -29,20 +29,19 @@ Deno.serve(async (req) => {
             privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`;
         }
 
+        // Import the private key for ES256
+        const ecPrivateKey = await jose.importPKCS8(privateKey, 'ES256');
+
         // Generate JWT token valid for 6 months
+        const token = await new jose.SignJWT({})
+            .setProtectedHeader({ alg: 'ES256', kid: keyId })
+            .setIssuedAt()
+            .setIssuer(teamId)
+            .setExpirationTime('180d')
+            .sign(ecPrivateKey);
+
         const now = Math.floor(Date.now() / 1000);
         const expiry = now + (60 * 60 * 24 * 180); // 180 days
-
-        const payload = {
-            iss: teamId,
-            iat: now,
-            exp: expiry
-        };
-
-        const token = jwt.sign(payload, privateKey, {
-            algorithm: 'ES256',
-            keyid: keyId
-        });
 
         return Response.json({ 
             token,
