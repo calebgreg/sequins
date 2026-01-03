@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
         // Get Apple Music credentials from environment
         const teamId = Deno.env.get('APPLEMUSIC_TEAM_ID');
         const keyId = Deno.env.get('APPLEMUSIC_KEY_ID');
-        const privateKey = Deno.env.get('APPLEMUSIC_PRIVATE_KEY');
+        const privateKey = Deno.env.get('APPLEMUSIC_PRIVATE_KEY').replace(/\\n/g, '\n');
 
         if (!teamId || !keyId || !privateKey) {
             return Response.json({ 
