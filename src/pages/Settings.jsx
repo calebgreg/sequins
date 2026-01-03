@@ -5,6 +5,7 @@ import { ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import GeneralSettings from '../components/settings/GeneralSettings';
 import TuitionConfiguration from '../components/billing/TuitionConfiguration';
+import AppleMusicSettings from '../components/settings/AppleMusicSettings';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function Settings() {
@@ -33,6 +34,9 @@ export default function Settings() {
             <TabsTrigger value="billing" className="rounded-full px-8 py-3 text-base gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
               Billing & Tuition
             </TabsTrigger>
+            <TabsTrigger value="integrations" className="rounded-full px-8 py-3 text-base gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
+              Integrations
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -41,6 +45,10 @@ export default function Settings() {
 
           <TabsContent value="billing">
              <TuitionConfiguration />
+          </TabsContent>
+
+          <TabsContent value="integrations">
+             <AppleMusicSettings />
           </TabsContent>
         </Tabs>
 
