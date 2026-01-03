@@ -56,16 +56,18 @@ export default function AppleMusicSettings() {
         }
 
         // Wait for MusicKit to be ready
-        await document.addEventListener('musickitloaded', async () => {
-          // Configure and get instance
-          const music = window.MusicKit.getInstance();
-          await music.configure({
+        document.addEventListener('musickitloaded', () => {
+          // Configure MusicKit
+          window.MusicKit.configure({
             developerToken: developerToken,
             app: {
               name: 'Sequins',
               build: '1.0.0'
             }
           });
+
+          // Get the configured instance
+          const music = window.MusicKit.getInstance();
           setMusicKit(music);
         });
 
