@@ -13,12 +13,20 @@ Deno.serve(async (req) => {
         // Get Apple Music credentials from environment
         const teamId = Deno.env.get('APPLEMUSIC_TEAM_ID');
         const keyId = Deno.env.get('APPLEMUSIC_KEY_ID');
-        const privateKey = Deno.env.get('APPLEMUSIC_PRIVATE_KEY').replace(/\\n/g, '\n');
+        let privateKey = Deno.env.get('APPLEMUSIC_PRIVATE_KEY');
 
         if (!teamId || !keyId || !privateKey) {
             return Response.json({ 
                 error: 'Apple Music credentials not configured' 
             }, { status: 500 });
+        }
+
+        // Ensure proper formatting of private key
+        privateKey = privateKey.replace(/\\n/g, '\n');
+        
+        // Add headers if missing
+        if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+            privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`;
         }
 
         // Generate JWT token valid for 6 months
