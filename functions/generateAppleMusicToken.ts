@@ -33,14 +33,15 @@ Deno.serve(async (req) => {
         const now = Math.floor(Date.now() / 1000);
         const expiry = now + (60 * 60 * 24 * 180); // 180 days
 
-        const token = jwt.sign({}, privateKey, {
+        const payload = {
+            iss: teamId,
+            iat: now,
+            exp: expiry
+        };
+
+        const token = jwt.sign(payload, privateKey, {
             algorithm: 'ES256',
-            expiresIn: '180d',
-            issuer: teamId,
-            header: {
-                alg: 'ES256',
-                kid: keyId
-            }
+            keyid: keyId
         });
 
         return Response.json({ 
