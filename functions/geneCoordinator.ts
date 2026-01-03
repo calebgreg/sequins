@@ -143,6 +143,7 @@ Deno.serve(async (req) => {
             - Student: read (payload: { name: "student name" }) - Use this to look up detailed info if not in roster snapshot.
             - Performance: create_draft (payload: { title: "string" }) - Use this when the user wants to PLAN/CREATE a new performance. This will create a draft and generate a link to the drafting table UI.
             - PerformanceProducer: invoke (action: "chat" | "generate_plan", chatHistory: array)
+            - AppleMusic: search (payload: { query: "string" }) - Use this to search Apple Music for songs. Returns a list of songs with title, artist, artwork, preview, and buy link.
         `;
 
         // --- PASS 2: EXECUTION & RESPONSE ---
@@ -173,7 +174,7 @@ Deno.serve(async (req) => {
                         properties: {
                             entity: { 
                                 type: "string", 
-                                enum: ["FamilyTask", "FamilyNote", "StudentNote", "Student", "PerformanceProducer", "Performance"] 
+                                enum: ["FamilyTask", "FamilyNote", "StudentNote", "Student", "PerformanceProducer", "Performance", "AppleMusic"] 
                             },
                             action: { 
                                 type: "string", 
@@ -266,6 +267,16 @@ Deno.serve(async (req) => {
                         actionResult = { type: 'error', message: 'Student not found' };
                     }
 
+                } else if (entity === 'AppleMusic' && action === 'search') {
+                    const searchResults = await base44.functions.invoke('searchAppleMusic', { query: payload.query });
+                    if (searchResults.data && searchResults.data.songs && searchResults.data.songs.length > 0) {
+                        responseText = `Here are some songs from Apple Music matching "${payload.query}":\n` + 
+                                       searchResults.data.songs.map(song => `- ${song.song_title} by ${song.artist}`).join('\n');
+                        actionResult = { type: 'success', entity, action, result: searchResults.data.songs, message: "Apple Music search results" };
+                    } else {
+                        responseText = `I couldn't find any songs on Apple Music for "${payload.query}".`;
+                        actionResult = { type: 'error', message: 'No Apple Music results found' };
+                    }
                 } else if (action === 'create') {
                     // Enrich payload defaults
                     if (entity === 'FamilyNote') payload.author_name = user.full_name || 'Gene AI';
