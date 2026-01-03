@@ -42,26 +42,38 @@ export default function AppleMusicSettings() {
 
     const initMusicKit = async () => {
       try {
+        // Check if MusicKit is already configured
+        if (window.MusicKit && window.MusicKit.getInstance()) {
+          setMusicKit(window.MusicKit.getInstance());
+          return;
+        }
+
         // Load MusicKit JS if not already loaded
         if (!window.MusicKit) {
           const script = document.createElement('script');
           script.src = 'https://js-cdn.music.apple.com/musickit/v3/musickit.js';
           script.async = true;
-          document.body.appendChild(script);
-
-          await new Promise((resolve, reject) => {
+          
+          const loadPromise = new Promise((resolve, reject) => {
             script.onload = resolve;
             script.onerror = reject;
           });
+          
+          document.body.appendChild(script);
+          await loadPromise;
 
-          // Wait for MusicKit to be ready after script loads
+          // Wait for MusicKit global to be ready
           await new Promise((resolve) => {
-            document.addEventListener('musickitloaded', resolve, { once: true });
+            if (window.MusicKit) {
+              resolve();
+            } else {
+              document.addEventListener('musickitloaded', resolve, { once: true });
+            }
           });
         }
 
         // Configure MusicKit
-        window.MusicKit.configure({
+        await window.MusicKit.configure({
           developerToken: developerToken,
           app: {
             name: 'Sequins',
@@ -72,6 +84,7 @@ export default function AppleMusicSettings() {
         // Get the configured instance
         const music = window.MusicKit.getInstance();
         setMusicKit(music);
+        console.log('MusicKit initialized successfully');
 
       } catch (error) {
         console.error('MusicKit initialization error:', error);
