@@ -116,8 +116,16 @@ export default function AppleMusicSettings() {
 
     setIsConnecting(true);
     try {
-      // Authorize user with Apple Music
+      // Open authorization in a popup window
+      const authWindow = window.open('', 'Apple Music Authorization', 'width=500,height=600,left=200,top=100');
+      
+      // Authorize user with Apple Music (will use the popup)
       const userToken = await musicKit.authorize();
+
+      // Close the popup if it's still open
+      if (authWindow && !authWindow.closed) {
+        authWindow.close();
+      }
 
       if (userToken) {
         // Save user token to settings
