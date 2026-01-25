@@ -155,7 +155,7 @@ export default function StaffDirectory() {
               <div className={`h-px bg-gray-300 absolute top-0 left-0 right-0`}></div>
               
               {/* Direct Reports */}
-              <div className="flex gap-12 pt-12">
+              <div className="flex pt-12" style={{ gap: '96px' }}>
                 {staff.reports.map((report, idx) => (
                   <div key={report.id} className="relative">
                     {/* Vertical Line Up */}
