@@ -55,9 +55,39 @@ Deno.serve(async (req) => {
             return tPhone.includes(normalizedFrom) || normalizedFrom.includes(tPhone);
         });
 
-        const senderName = teacher ? teacher.name : "Unknown Staff";
         const settings = settingsList[0] || {};
         const aiName = settings.ai_assistant_name || 'Gene';
+
+        // Check SMS opt-in status
+        if (teacher && !teacher.sms_opt_in) {
+            console.log(`[SMS] Teacher ${teacher.name} has not opted in to SMS`);
+            
+            const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
+            const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+            const messagingServiceSid = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
+            
+            const optInMessage = `Hi ${teacher.name}! To use ${aiName} via text, please enable SMS in your staff profile in the Sequins app. Your studio administrator can enable this for you.`;
+            
+            await fetch(
+                `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`),
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        To: fromNumber,
+                        Body: optInMessage,
+                        MessagingServiceSid: messagingServiceSid
+                    })
+                }
+            );
+            
+            return new Response(null, { status: 200 });
+        }
+
+        const senderName = teacher ? teacher.name : "Unknown Staff";
 
         // 4. Prepare Context Strings
         const activeStudents = students.filter(s => s.status === 'active');
