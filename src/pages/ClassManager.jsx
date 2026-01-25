@@ -125,7 +125,6 @@ export default function ClassManager() {
                   <div key={room.id} className="flex-1 px-2">
                     <div className="bg-white rounded-2xl px-4 py-3 text-center shadow-sm border border-gray-100">
                       <div className="font-medium text-[#333333]">{room.name}</div>
-                      <div className="text-xs text-gray-500">Cap: {room.capacity}</div>
                     </div>
                   </div>
                 ))
