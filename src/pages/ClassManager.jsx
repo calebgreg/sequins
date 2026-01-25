@@ -172,16 +172,16 @@ export default function ClassManager() {
                           .map(cls => {
                             const style = getClassStyle(cls);
                             return (
-                              <button
+                              <Link
                                 key={cls.id}
-                                onClick={() => setAttendanceClass(cls)}
-                                className="absolute left-2 right-2 bg-white rounded-xl shadow-md border-l-4 border-black p-3 hover:shadow-lg transition-all cursor-pointer overflow-hidden"
+                                to={`${createPageUrl('ClassDetail')}?id=${cls.id}`}
+                                className="absolute left-2 right-2 bg-white rounded-xl shadow-md border-l-4 border-black p-3 hover:shadow-lg transition-all cursor-pointer overflow-hidden block"
                                 style={style}
                               >
                                 <div className="font-medium text-sm text-[#333333] mb-1 truncate">{cls.title}</div>
                                 <div className="text-xs text-gray-500 truncate">{cls.teacher}</div>
                                 <div className="text-xs text-gray-400 mt-1">{cls.student_names?.length || 0} students</div>
-                              </button>
+                              </Link>
                             );
                           })}
                       </div>
