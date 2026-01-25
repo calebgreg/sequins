@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Sparkles, ArrowUp } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -31,12 +31,12 @@ const QUESTIONS = [
   { id: 'names', text: 'What do you call each room?', type: 'text' },
   { id: 'capacity', text: 'How many dancers fit comfortably in each room?', type: 'number' },
   { id: 'floor_type', text: 'What type of floor does each room have?', type: 'select' },
-  { id: 'tap_ok', text: 'Which rooms can you teach tap in?', type: 'boolean' },
-  { id: 'has_mirrors', text: 'Which rooms have mirrors?', type: 'boolean' },
-  { id: 'has_barres', text: 'Which rooms have ballet barres?', type: 'boolean' },
-  { id: 'has_sound_system', text: 'Which rooms have a sound system?', type: 'boolean' },
-  { id: 'acro_safe', text: 'Which rooms are safe for acro and tumbling?', type: 'boolean' },
-  { id: 'styles', text: 'What styles work best in each room?', type: 'multi-select' },
+  { id: 'tap_ok', text: 'Which rooms can you teach tap in?', type: 'boolean', helper: 'Click to toggle' },
+  { id: 'has_mirrors', text: 'Which rooms have mirrors?', type: 'boolean', helper: 'Click to toggle' },
+  { id: 'has_barres', text: 'Which rooms have ballet barres?', type: 'boolean', helper: 'Click to toggle' },
+  { id: 'has_sound_system', text: 'Which rooms have a sound system?', type: 'boolean', helper: 'Click to toggle' },
+  { id: 'acro_safe', text: 'Which rooms are safe for acro and tumbling?', type: 'boolean', helper: 'Click to toggle' },
+  { id: 'styles', text: 'What styles work best in each room?', type: 'multi-select', helper: 'Select all that apply' },
 ];
 
 export default function RoomSetupWizard({ onComplete }) {
@@ -55,7 +55,7 @@ export default function RoomSetupWizard({ onComplete }) {
     if (existingRooms.length > 0 && rooms.length === 0) {
       setRooms(existingRooms);
       setRoomCount(existingRooms.length);
-      setQuestionIndex(1); // Skip count if rooms exist
+      setQuestionIndex(1);
     }
   }, [existingRooms]);
 
@@ -78,7 +78,7 @@ export default function RoomSetupWizard({ onComplete }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
-      toast.success('🎉 Your studio spaces are ready!');
+      toast.success('Your studio spaces are ready!');
       if (onComplete) onComplete();
     },
   });
@@ -86,7 +86,6 @@ export default function RoomSetupWizard({ onComplete }) {
   const handleContinue = () => {
     const currentQuestion = QUESTIONS[questionIndex];
 
-    // Initialize rooms after count question
     if (currentQuestion.id === 'count' && roomCount > 0) {
       const newRooms = Array.from({ length: roomCount }, (_, i) => ({
         name: existingRooms[i]?.name || `Studio ${i + 1}`,
@@ -103,7 +102,6 @@ export default function RoomSetupWizard({ onComplete }) {
       setRooms(newRooms);
     }
 
-    // Move to next question or finish
     if (questionIndex < QUESTIONS.length - 1) {
       setQuestionIndex(questionIndex + 1);
     } else {
@@ -139,62 +137,58 @@ export default function RoomSetupWizard({ onComplete }) {
 
   return (
     <div className="min-h-screen bg-[#F4F4F6] flex items-center justify-center p-4 font-sans">
-      <div className="w-full max-w-5xl">
+      <div className="w-full max-w-4xl">
         
-        {/* Chat Container */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-[32px] border border-white/40 shadow-2xl overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-xl rounded-[32px] border border-white/40 shadow-xl overflow-hidden ring-1 ring-black/5">
           
-          {/* Messages Area */}
           <div 
             ref={scrollRef}
-            className="p-8 md:p-12 space-y-8 max-h-[70vh] overflow-y-auto"
+            className="p-6 md:p-10 space-y-6 max-h-[75vh] overflow-y-auto"
           >
-            {/* Gene's Question */}
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shrink-0">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="text-xs font-medium text-gray-400 mb-2">Gene</div>
-                <div className="bg-white/80 rounded-2xl rounded-tl-sm border border-gray-200/50 px-5 py-4 shadow-sm">
-                  <p className="text-[#333333] text-lg leading-relaxed">{currentQuestion.text}</p>
-                </div>
+            {/* Gene's Message */}
+            <div className="flex flex-col">
+              <div className="text-[10px] font-medium text-gray-400 mb-1 px-1">Gene</div>
+              <div className="bg-white/60 text-gray-900 rounded-2xl rounded-tl-sm border border-gray-200/50 px-4 py-3 shadow-sm max-w-[85%]">
+                <p className="text-sm leading-relaxed">{currentQuestion.text}</p>
+                {currentQuestion.helper && (
+                  <p className="text-xs text-gray-500 mt-1">{currentQuestion.helper}</p>
+                )}
               </div>
             </div>
 
-            {/* Interactive Response Area */}
+            {/* Interactive Cards */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentQuestion.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="pl-14"
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
               >
                 {currentQuestion.type === 'number' && currentQuestion.id === 'count' && (
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 pl-1">
                     <Input
                       type="number"
                       min="1"
                       max="20"
                       value={roomCount}
                       onChange={(e) => setRoomCount(parseInt(e.target.value) || 1)}
-                      className="w-24 h-16 text-3xl font-bold text-center border-2 border-gray-200 rounded-2xl"
+                      className="w-20 h-14 text-2xl font-bold text-center border rounded-2xl"
                       autoFocus
                     />
-                    <span className="text-xl text-gray-500">rooms</span>
+                    <span className="text-base text-gray-500">rooms</span>
                   </div>
                 )}
 
                 {currentQuestion.type === 'text' && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {rooms.map((room, i) => (
-                      <Card key={i} className="p-4 bg-white rounded-[24px] shadow-sm border border-gray-100 hover:border-indigo-200 transition-all">
+                      <Card key={i} className="p-4 bg-white rounded-[20px] shadow-sm border border-gray-100">
                         <Input
                           value={room.name}
                           onChange={(e) => updateRoom(i, 'name', e.target.value)}
-                          className="text-center font-medium border-0 focus-visible:ring-0 p-0"
+                          className="text-center text-sm font-medium border-0 focus-visible:ring-1 focus-visible:ring-gray-200 p-1 h-auto"
                         />
                       </Card>
                     ))}
@@ -202,15 +196,15 @@ export default function RoomSetupWizard({ onComplete }) {
                 )}
 
                 {currentQuestion.type === 'number' && currentQuestion.id === 'capacity' && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {rooms.map((room, i) => (
-                      <Card key={i} className="p-6 bg-white rounded-[24px] shadow-sm border border-gray-100 hover:border-indigo-200 transition-all text-center">
-                        <div className="text-sm font-medium text-gray-500 mb-3">{room.name}</div>
+                      <Card key={i} className="p-4 bg-white rounded-[20px] shadow-sm border border-gray-100 text-center">
+                        <div className="text-xs text-gray-500 mb-2">{room.name}</div>
                         <Input
                           type="number"
                           value={room.capacity}
                           onChange={(e) => updateRoom(i, 'capacity', parseInt(e.target.value) || 0)}
-                          className="text-2xl font-bold text-center border h-12"
+                          className="text-xl font-bold text-center border h-10"
                         />
                       </Card>
                     ))}
@@ -218,12 +212,12 @@ export default function RoomSetupWizard({ onComplete }) {
                 )}
 
                 {currentQuestion.type === 'select' && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {rooms.map((room, i) => (
-                      <Card key={i} className="p-6 bg-white rounded-[24px] shadow-sm border border-gray-100 hover:border-indigo-200 transition-all text-center">
-                        <div className="text-sm font-medium text-gray-500 mb-3">{room.name}</div>
+                      <Card key={i} className="p-4 bg-white rounded-[20px] shadow-sm border border-gray-100 text-center">
+                        <div className="text-xs text-gray-500 mb-2">{room.name}</div>
                         <Select value={room.floor_type} onValueChange={(value) => updateRoom(i, 'floor_type', value)}>
-                          <SelectTrigger className="h-10">
+                          <SelectTrigger className="h-9 text-sm">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -238,26 +232,26 @@ export default function RoomSetupWizard({ onComplete }) {
                 )}
 
                 {currentQuestion.type === 'boolean' && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {rooms.map((room, i) => {
                       const isActive = room[currentQuestion.id];
                       return (
                         <Card 
                           key={i}
                           onClick={() => toggleRoomBoolean(i, currentQuestion.id)}
-                          className={`p-8 rounded-[24px] shadow-sm border-2 cursor-pointer transition-all text-center ${
+                          className={`p-6 rounded-[20px] shadow-sm border cursor-pointer transition-all text-center ${
                             isActive 
-                              ? 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-300 shadow-lg scale-105' 
-                              : 'bg-white border-gray-100 hover:border-gray-300'
+                              ? 'bg-black/5 border-black/20 shadow-md' 
+                              : 'bg-white border-gray-100 hover:border-gray-200'
                           }`}
                         >
-                          <div className="text-sm font-medium text-gray-700 mb-4">{room.name}</div>
-                          <div className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center transition-all ${
-                            isActive ? 'bg-indigo-500 scale-110' : 'bg-gray-200'
+                          <div className="text-xs font-medium text-gray-600 mb-3">{room.name}</div>
+                          <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center transition-all ${
+                            isActive ? 'bg-black' : 'bg-gray-200'
                           }`}>
                             {isActive && (
-                              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                               </svg>
                             )}
                           </div>
@@ -268,18 +262,19 @@ export default function RoomSetupWizard({ onComplete }) {
                 )}
 
                 {currentQuestion.type === 'multi-select' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {rooms.map((room, i) => (
-                      <Card key={i} className="p-6 bg-white rounded-[24px] shadow-sm border border-gray-100">
-                        <div className="text-base font-medium text-gray-700 mb-4">{room.name}</div>
+                      <Card key={i} className="p-5 bg-white rounded-[20px] shadow-sm border border-gray-100">
+                        <div className="text-sm font-medium text-gray-700 mb-3">{room.name}</div>
                         <div className="grid grid-cols-2 gap-2">
                           {STYLE_OPTIONS.map(style => (
-                            <label key={style} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+                            <label key={style} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded-lg transition-colors">
                               <Checkbox
                                 checked={room.styles?.includes(style)}
                                 onCheckedChange={() => toggleRoomStyle(i, style)}
+                                className="border-gray-300"
                               />
-                              <span className="text-sm text-gray-700">{style}</span>
+                              <span className="text-xs text-gray-700">{style}</span>
                             </label>
                           ))}
                         </div>
@@ -291,21 +286,21 @@ export default function RoomSetupWizard({ onComplete }) {
             </AnimatePresence>
           </div>
 
-          {/* Input Area */}
-          <div className="border-t border-gray-200/50 bg-gray-50/40 backdrop-blur-sm p-6 flex items-center justify-end gap-4">
+          {/* Bottom Input Bar */}
+          <div className="bg-gray-50/40 backdrop-blur-sm shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)] border-t border-white/30 ring-1 ring-black/10 rounded-b-[32px] p-4 flex items-center justify-end">
             <Button 
               onClick={handleContinue}
               disabled={saveMutation.isPending}
-              className="rounded-full px-8 h-12 bg-black hover:bg-black/90 text-white shadow-lg gap-2"
+              className="rounded-full px-6 h-10 bg-black hover:bg-black/90 text-white shadow-lg gap-2 text-sm"
             >
               {saveMutation.isPending ? (
                 'Saving...'
               ) : isLastQuestion ? (
-                'Save & Finish'
+                'Finish'
               ) : (
                 <>
                   Continue
-                  <ArrowUp className="w-4 h-4" />
+                  <ArrowUp className="w-3.5 h-3.5" />
                 </>
               )}
             </Button>
