@@ -7,6 +7,7 @@ import GeneralSettings from '../components/settings/GeneralSettings';
 import TuitionConfiguration from '../components/billing/TuitionConfiguration';
 import AppleMusicSettings from '../components/settings/AppleMusicSettings';
 import RoomSetupWizard from '../components/settings/RoomSetupWizard';
+import RoomList from '../components/settings/RoomList';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useSearchParams } from 'react-router-dom';
 
@@ -56,18 +57,7 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="rooms">
-             <div className="space-y-6">
-               <div className="bg-white rounded-[32px] p-8 shadow-sm border-0">
-                 <h2 className="text-2xl font-serif mb-4">Studio Rooms</h2>
-                 <p className="text-gray-500 mb-6">Configure your physical teaching spaces to enable smarter scheduling and room-based recommendations.</p>
-                 <Button 
-                   onClick={() => setSearchParams({ wizard: 'rooms' })}
-                   className="rounded-full px-8 h-12 bg-black hover:bg-black/90 text-white shadow-lg"
-                 >
-                   Set Up Rooms
-                 </Button>
-               </div>
-             </div>
+             <RoomList onAddNew={() => setSearchParams({ wizard: 'rooms' })} />
           </TabsContent>
 
           <TabsContent value="billing">
