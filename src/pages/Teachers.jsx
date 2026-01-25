@@ -131,58 +131,52 @@ export default function Teachers() {
         <div className="relative group">
           <Card 
             className={`
-              w-56 cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border-2
-              ${isSelected ? 'ring-2 ring-[#333333] shadow-lg border-[#333333]' : 'border-gray-200'}
-              ${level === 0 ? 'border-[#333333]' : ''}
+              w-64 cursor-pointer transition-all duration-200 bg-white
+              ${isSelected ? 'ring-1 ring-[#333333] shadow-md border-[#333333]' : 'border-[#E5E7EB] hover:shadow-md'}
+              border rounded-xl
             `}
             onClick={() => handleViewDetails(staff)}
           >
-            <CardContent className="p-6 flex flex-col items-center text-center">
+            <CardContent className="p-0 flex flex-col items-center text-center relative overflow-hidden">
               {/* Checkbox */}
               <div 
-                className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleSelect(staff.id, e);
                 }}
               >
-                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all
+                <div className={`w-4 h-4 rounded border flex items-center justify-center cursor-pointer transition-all
                   ${isSelected ? 'bg-[#333333] border-[#333333]' : 'bg-white border-gray-300 hover:border-gray-500'}`}
                 >
                   {isSelected && (
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   )}
                 </div>
               </div>
 
-              {level === 0 && hasReports && (
-                <Badge className="absolute top-3 left-3 bg-[#333333] text-white text-xs px-2 py-0.5">
-                  {staff.title || 'Leader'}
-                </Badge>
-              )}
+              {/* Avatar at the top of the card */}
+              <div className="w-full bg-gradient-to-b from-gray-50 to-white pt-8 pb-3">
+                <Avatar className="w-16 h-16 mx-auto border border-gray-200">
+                  {staff.avatar_url && <AvatarImage src={staff.avatar_url} />}
+                  <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 font-medium text-lg">
+                    {staff.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
 
-              <Avatar className="w-20 h-20 border-2 border-gray-100 shadow-sm mb-3">
-                {staff.avatar_url && <AvatarImage src={staff.avatar_url} />}
-                <AvatarFallback className="bg-[#333333] text-white font-serif text-xl">
-                  {staff.name.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-
-              <h4 className="font-semibold text-gray-900 text-base mb-1">{staff.name}</h4>
-              <p className="text-sm text-gray-500 mb-3">{staff.title || 'Staff Member'}</p>
-              
-              <div className="flex gap-2 flex-wrap justify-center">
-                {staff.styles && staff.styles.length > 0 && (
-                  <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
-                    {staff.styles[0]}
-                  </Badge>
-                )}
+              {/* Info Section */}
+              <div className="px-6 pb-6 w-full">
+                <h4 className="font-semibold text-gray-900 text-sm mb-0.5 tracking-tight">{staff.name}</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">{staff.title || 'Staff Member'}</p>
+                
+                {/* Direct reports badge at bottom */}
                 {hasReports && (
-                  <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
-                    {staff.reports.length} report{staff.reports.length !== 1 ? 's' : ''}
-                  </Badge>
+                  <div className="mt-3 inline-flex items-center justify-center bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded-full">
+                    {staff.reports.length}x
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -191,23 +185,23 @@ export default function Teachers() {
 
         {/* Connecting Lines and Reports */}
         {hasReports && (
-          <div className="flex flex-col items-center mt-16">
+          <div className="flex flex-col items-center mt-12">
             {/* Vertical Line Down */}
-            <div className="w-0.5 h-16 bg-gradient-to-b from-gray-400 to-gray-300"></div>
+            <div className="w-px h-12 bg-gray-200"></div>
             
             {/* Horizontal Connector Section */}
             <div className="flex items-start relative">
               {/* Horizontal Line spanning all reports */}
               {staff.reports.length > 1 && (
-                <div className="h-0.5 bg-gray-300 absolute top-0 left-0 right-0"></div>
+                <div className="h-px bg-gray-200 absolute top-0 left-0 right-0"></div>
               )}
               
               {/* Direct Reports */}
-              <div className="flex pt-16 gap-x-24">
+              <div className="flex pt-12 gap-x-16">
                 {staff.reports.map((report) => (
                   <div key={report.id} className="relative flex flex-col items-center">
                     {/* Vertical Line Up to horizontal connector */}
-                    <div className="w-0.5 h-16 bg-gray-300 absolute left-1/2 -top-16 -translate-x-1/2"></div>
+                    <div className="w-px h-12 bg-gray-200 absolute left-1/2 -top-12 -translate-x-1/2"></div>
                     <OrgNode staff={report} level={level + 1} />
                   </div>
                 ))}
@@ -222,20 +216,20 @@ export default function Teachers() {
   const selectedStaff = teachers.filter(t => selectedIds.has(t.id));
 
   return (
-    <div className="min-h-screen bg-[#F4F4F6] p-6 md:p-12 font-sans">
+    <div className="min-h-screen bg-white p-6 md:p-12 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-4xl font-serif text-[#333333] mb-2">Staff Directory</h1>
-            <p className="text-gray-500">Organization chart and team structure</p>
+            <h1 className="text-3xl font-semibold text-gray-900 mb-1 tracking-tight">Staff Directory</h1>
+            <p className="text-sm text-gray-500">Organization chart and team structure</p>
           </div>
           
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#333333] text-white rounded-2xl px-6 hover:bg-black shadow-lg">
-                <Plus className="w-5 h-5 mr-2" />
+              <Button className="bg-[#333333] text-white rounded-lg px-5 py-2 hover:bg-black text-sm font-medium">
+                <Plus className="w-4 h-4 mr-2" />
                 Add Staff
               </Button>
             </DialogTrigger>
@@ -252,13 +246,13 @@ export default function Teachers() {
         </div>
 
         {/* Org Chart */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-sm font-medium text-gray-500">Org chart</h2>
-            <button className="text-sm text-gray-400 hover:text-gray-600">Full screen</button>
+            <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Org chart</h2>
+            <button className="text-xs text-gray-400 hover:text-gray-600">Full screen</button>
           </div>
           
-          <div className="bg-white rounded-3xl shadow-sm p-12 overflow-x-auto">
+          <div className="bg-gray-50 rounded-2xl border border-gray-100 p-16 overflow-x-auto">
             <div className="flex justify-center gap-x-20">
               {orgChart.map(staff => (
                 <OrgNode key={staff.id} staff={staff} />
@@ -269,13 +263,13 @@ export default function Teachers() {
 
         {/* Teams */}
         {teams.length > 0 && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-sm font-medium text-gray-500">Teams</h2>
-              <button className="text-sm text-gray-400 hover:text-gray-600">View all ({teams.length})</button>
+              <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Teams</h2>
+              <button className="text-xs text-gray-400 hover:text-gray-600">View all ({teams.length})</button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {teams.map(team => {
                 const teamMembers = teachers.filter(t => t.team_ids?.includes(team.id));
                 const allSelected = teamMembers.length > 0 && teamMembers.every(tm => selectedIds.has(tm.id));
@@ -283,18 +277,18 @@ export default function Teachers() {
                 return (
                   <Card 
                     key={team.id}
-                    className="cursor-pointer hover:shadow-lg transition-all group border border-gray-200 bg-white"
+                    className="cursor-pointer hover:shadow-sm transition-all group border border-gray-200 bg-white rounded-xl"
                     onClick={(e) => selectTeam(team.id, e)}
                   >
-                    <CardContent className="p-6">
-                      <div className="flex flex-col gap-3">
+                    <CardContent className="p-5">
+                      <div className="flex flex-col gap-2">
                         <div className="flex items-start justify-between">
-                          <h4 className="font-semibold text-gray-900 text-sm">{team.name}</h4>
-                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0
-                            ${allSelected ? 'bg-[#333333] border-[#333333]' : 'bg-white border-gray-300 group-hover:border-gray-500'}`}
+                          <h4 className="font-medium text-gray-900 text-sm">{team.name}</h4>
+                          <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all flex-shrink-0
+                            ${allSelected ? 'bg-[#333333] border-[#333333]' : 'bg-white border-gray-300 group-hover:border-gray-400'}`}
                           >
                             {allSelected && (
-                              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                               </svg>
                             )}
