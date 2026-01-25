@@ -20,6 +20,7 @@ export default function Teachers() {
   const [viewingTeacher, setViewingTeacher] = useState(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [addReportsTo, setAddReportsTo] = useState(null);
+  const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: teachers = [] } = useQuery({
@@ -48,6 +49,14 @@ export default function Teachers() {
       queryClient.invalidateQueries({ queryKey: ['teachers'] });
       setIsAddOpen(false);
       setAddReportsTo(null);
+    }
+  });
+
+  const createTeamMutation = useMutation({
+    mutationFn: (data) => base44.entities.Team.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      setIsCreateTeamOpen(false);
     }
   });
 
@@ -374,9 +383,80 @@ export default function Teachers() {
         </DialogContent>
       </Dialog>
     );
-  };
+    };
 
-  const selectedStaff = teachers.filter(t => selectedIds.has(t.id));
+    const CreateTeamModal = ({ isOpen, onClose }) => {
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (name) {
+        createTeamMutation.mutate({ name, description });
+        setName('');
+        setDescription('');
+      }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-[#1a1a1a]">Create Team</DialogTitle>
+            <p className="text-sm text-[#6b7280] mt-2">
+              Create a new team to organize your staff
+            </p>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-5 mt-4">
+            <div>
+              <Label className="text-xs font-medium text-[#374151] mb-2 block">Team Name</Label>
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Ballet Faculty"
+                autoFocus
+                className="w-full px-3.5 py-3 rounded-lg border border-[#e5e5e5] text-sm"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs font-medium text-[#374151] mb-2 block">Description</Label>
+              <Input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="e.g. All ballet instructors and assistants"
+                className="w-full px-3.5 py-3 rounded-lg border border-[#e5e5e5] text-sm"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end pt-2">
+              <Button
+                type="button"
+                onClick={onClose}
+                variant="outline"
+                className="px-5 py-3 rounded-lg text-sm font-medium"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="px-5 py-3 rounded-lg bg-[#1a1a1a] hover:bg-black text-white text-sm font-medium"
+              >
+                Create Team
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    );
+    };
+
+    const selectedStaff = teachers.filter(t => selectedIds.has(t.id));
 
   return (
     <div className="min-h-screen bg-white">
@@ -420,9 +500,13 @@ export default function Teachers() {
       <div className="px-8 py-12 border-t border-[#e5e5e5] mt-8">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-[15px] font-semibold text-[#1a1a1a]">Teams</h2>
-          <button className="text-sm text-[#6b7280]">
-            View all ({teams.length})
-          </button>
+          <Button
+            onClick={() => setIsCreateTeamOpen(true)}
+            className="text-sm bg-[#1a1a1a] hover:bg-black text-white"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Create Team
+          </Button>
         </div>
 
         <div className="flex gap-4 flex-wrap">
@@ -476,6 +560,11 @@ export default function Teachers() {
           setAddReportsTo(null);
         }}
         reportsToId={addReportsTo}
+      />
+
+      <CreateTeamModal
+        isOpen={isCreateTeamOpen}
+        onClose={() => setIsCreateTeamOpen(false)}
       />
 
       <StaffMessageModal 
