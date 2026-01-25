@@ -158,6 +158,7 @@ export default function GlobalAiChat() {
     const [inputValue, setInputValue] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const [messages, setMessages] = useState([]);
+    const navigate = useNavigate();
     
     // Get Current User
     const { data: currentUser } = useQuery({
