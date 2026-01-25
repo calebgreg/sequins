@@ -143,17 +143,14 @@ export default function RoomSetupWizard({ onComplete }) {
           
           <div 
             ref={scrollRef}
-            className="p-6 md:p-10 space-y-6 max-h-[75vh] overflow-y-auto"
+            className="p-6 md:p-10 space-y-8 max-h-[75vh] overflow-y-auto"
           >
-            {/* Gene's Message */}
-            <div className="flex flex-col">
-              <div className="text-[10px] font-medium text-gray-400 mb-1 px-1">Gene</div>
-              <div className="bg-white/60 text-gray-900 rounded-2xl rounded-tl-sm border border-gray-200/50 px-4 py-3 shadow-sm max-w-[85%]">
-                <p className="text-sm leading-relaxed">{currentQuestion.text}</p>
-                {currentQuestion.helper && (
-                  <p className="text-xs text-gray-500 mt-1">{currentQuestion.helper}</p>
-                )}
-              </div>
+            {/* Question Header */}
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl md:text-3xl font-serif text-[#333333]">{currentQuestion.text}</h2>
+              {currentQuestion.helper && (
+                <p className="text-sm text-gray-500">{currentQuestion.helper}</p>
+              )}
             </div>
 
             {/* Interactive Cards */}
