@@ -90,7 +90,7 @@ export default function StaffDirectory() {
     a.click();
   };
 
-  const OrgNode = ({ staff }) => {
+  const OrgNode = ({ staff, level = 0 }) => {
     const isSelected = selectedIds.has(staff.id);
     const hasReports = staff.reports && staff.reports.length > 0;
 
@@ -100,8 +100,9 @@ export default function StaffDirectory() {
         <div className="relative group">
           <Card 
             className={`
-              w-56 cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border border-gray-200
-              ${isSelected ? 'ring-2 ring-indigo-500 shadow-lg' : ''}
+              w-56 cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border-2
+              ${isSelected ? 'ring-2 ring-indigo-500 shadow-lg border-indigo-500' : 'border-gray-200'}
+              ${level === 0 ? 'border-indigo-600' : ''}
             `}
             onClick={() => navigate(createPageUrl('Teachers') + '?id=' + staff.id)}
           >
@@ -125,6 +126,12 @@ export default function StaffDirectory() {
                 </div>
               </div>
 
+              {level === 0 && (
+                <Badge className="absolute top-3 left-3 bg-indigo-600 text-white text-xs px-2 py-0.5">
+                  Leader
+                </Badge>
+              )}
+
               <Avatar className="w-20 h-20 border-2 border-gray-100 shadow-sm mb-3">
                 {staff.avatar_url && <AvatarImage src={staff.avatar_url} />}
                 <AvatarFallback className="bg-gray-900 text-white font-serif text-xl">
@@ -135,32 +142,42 @@ export default function StaffDirectory() {
               <h4 className="font-semibold text-gray-900 text-base mb-1">{staff.name}</h4>
               <p className="text-sm text-gray-500 mb-3">{staff.title || 'Staff Member'}</p>
               
-              {staff.styles && staff.styles.length > 0 && (
-                <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
-                  {staff.styles[0]}
-                </Badge>
-              )}
+              <div className="flex gap-2 flex-wrap justify-center">
+                {staff.styles && staff.styles.length > 0 && (
+                  <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                    {staff.styles[0]}
+                  </Badge>
+                )}
+                {hasReports && (
+                  <Badge variant="outline" className="text-xs border-indigo-200 text-indigo-700">
+                    {staff.reports.length} report{staff.reports.length !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Connecting Lines and Reports */}
         {hasReports && (
-          <div className="flex flex-col items-center mt-12">
+          <div className="flex flex-col items-center mt-16">
             {/* Vertical Line Down */}
-            <div className="w-px h-12 bg-gray-300"></div>
+            <div className="w-0.5 h-16 bg-gradient-to-b from-indigo-400 to-gray-300"></div>
             
-            {/* Horizontal Line */}
+            {/* Horizontal Connector Section */}
             <div className="flex items-start relative">
-              <div className={`h-px bg-gray-300 absolute top-0 left-0 right-0`}></div>
+              {/* Horizontal Line spanning all reports */}
+              {staff.reports.length > 1 && (
+                <div className="h-0.5 bg-gray-300 absolute top-0 left-0 right-0"></div>
+              )}
               
               {/* Direct Reports */}
-              <div className="flex pt-12 gap-x-20">
-                {staff.reports.map((report, idx) => (
-                  <div key={report.id} className="relative">
-                    {/* Vertical Line Up */}
-                    <div className="w-px h-12 bg-gray-300 absolute left-1/2 -top-12 -translate-x-1/2"></div>
-                    <OrgNode staff={report} />
+              <div className="flex pt-16 gap-x-24">
+                {staff.reports.map((report) => (
+                  <div key={report.id} className="relative flex flex-col items-center">
+                    {/* Vertical Line Up to horizontal connector */}
+                    <div className="w-0.5 h-16 bg-gray-300 absolute left-1/2 -top-16 -translate-x-1/2"></div>
+                    <OrgNode staff={report} level={level + 1} />
                   </div>
                 ))}
               </div>
