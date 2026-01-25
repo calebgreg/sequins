@@ -28,20 +28,6 @@ export default function ClassManager() {
   const [selectedDay, setSelectedDay] = useState('M');
   const scrollContainerRef = useRef(null);
 
-  // Auto-scroll to current time
-  useEffect(() => {
-    if (scrollContainerRef.current && classes.length > 0) {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinutes = now.getMinutes();
-      
-      // Calculate scroll position: each hour is 80px tall
-      const scrollPosition = ((currentHour - 6) * 80) + ((currentMinutes / 60) * 80);
-      
-      scrollContainerRef.current.scrollTop = Math.max(0, scrollPosition);
-    }
-  }, [selectedDay, classes.length]);
-
   const { data: classes = [] } = useQuery({
     queryKey: ['classes'],
     queryFn: () => base44.entities.DanceClass.list(),
@@ -61,6 +47,20 @@ export default function ClassManager() {
     queryKey: ['teachers'],
     queryFn: () => base44.entities.Teacher.list(),
   });
+
+  // Auto-scroll to current time
+  useEffect(() => {
+    if (scrollContainerRef.current && classes.length > 0) {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinutes = now.getMinutes();
+      
+      // Calculate scroll position: each hour is 80px tall
+      const scrollPosition = ((currentHour - 6) * 80) + ((currentMinutes / 60) * 80);
+      
+      scrollContainerRef.current.scrollTop = Math.max(0, scrollPosition);
+    }
+  }, [selectedDay, classes.length]);
 
   const dayClasses = classes.filter(c => c.day === selectedDay);
 
