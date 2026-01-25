@@ -66,41 +66,16 @@ export default function ClassManager() {
             <Link to={createPageUrl('Home')} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </Link>
-            <div>
-              <h1 className="text-2xl font-serif text-[#333333]">Classes</h1>
-              <div className="flex gap-4 text-sm mt-1">
-                <span className="font-medium text-gray-900 border-b-2 border-black pb-1">Schedule</span>
-                <Link to={createPageUrl('Teachers')} className="text-gray-500 hover:text-gray-900 transition-colors">Teachers</Link>
-                <Link to={createPageUrl('Students')} className="text-gray-500 hover:text-gray-900 transition-colors">Students</Link>
-              </div>
-            </div>
+            <h1 className="text-2xl font-serif text-[#333333]">Classes</h1>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button 
-              onClick={() => setIsRecommenderOpen(true)}
-              variant="outline"
-              className="rounded-full px-4 gap-2"
-            >
-              <User className="w-4 h-4" />
-              Student Advisor
-            </Button>
-            <Button 
-              onClick={() => setIsAutoAssignOpen(true)}
-              variant="outline"
-              className="rounded-full px-4 gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-            >
-              <Sparkles className="w-4 h-4" />
-              Auto-Assign Staff
-            </Button>
-            <Button 
-              onClick={() => setIsImportOpen(true)}
-              className="bg-[#333333] hover:bg-black text-white rounded-full px-6 gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Import Schedule
-            </Button>
-          </div>
+          <Button 
+            onClick={() => setIsImportOpen(true)}
+            className="bg-[#333333] hover:bg-black text-white rounded-full px-6 gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Import Schedule
+          </Button>
         </div>
       </div>
 
