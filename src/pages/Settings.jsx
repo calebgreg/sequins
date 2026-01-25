@@ -6,9 +6,18 @@ import { Button } from "@/components/ui/button";
 import GeneralSettings from '../components/settings/GeneralSettings';
 import TuitionConfiguration from '../components/billing/TuitionConfiguration';
 import AppleMusicSettings from '../components/settings/AppleMusicSettings';
+import RoomSetupWizard from '../components/settings/RoomSetupWizard';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useSearchParams } from 'react-router-dom';
 
 export default function Settings() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const showWizard = searchParams.get('wizard') === 'rooms';
+
+  if (showWizard) {
+    return <RoomSetupWizard onComplete={() => setSearchParams({})} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#F4F4F6] p-6 md:p-12 font-sans text-[#333333]">
       <div className="max-w-5xl mx-auto space-y-8">
@@ -31,6 +40,9 @@ export default function Settings() {
             <TabsTrigger value="general" className="rounded-full px-8 py-3 text-base gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
               General
             </TabsTrigger>
+            <TabsTrigger value="rooms" className="rounded-full px-8 py-3 text-base gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
+              Studio Spaces
+            </TabsTrigger>
             <TabsTrigger value="billing" className="rounded-full px-8 py-3 text-base gap-2 data-[state=active]:bg-[#333333] data-[state=active]:text-white">
               Billing & Tuition
             </TabsTrigger>
@@ -41,6 +53,21 @@ export default function Settings() {
 
           <TabsContent value="general">
              <GeneralSettings />
+          </TabsContent>
+
+          <TabsContent value="rooms">
+             <div className="space-y-6">
+               <div className="bg-white rounded-[32px] p-8 shadow-sm border-0">
+                 <h2 className="text-2xl font-serif mb-4">Studio Rooms</h2>
+                 <p className="text-gray-500 mb-6">Configure your physical teaching spaces to enable smarter scheduling and room-based recommendations.</p>
+                 <Button 
+                   onClick={() => setSearchParams({ wizard: 'rooms' })}
+                   className="rounded-full px-8 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg"
+                 >
+                   Set Up Rooms
+                 </Button>
+               </div>
+             </div>
           </TabsContent>
 
           <TabsContent value="billing">
