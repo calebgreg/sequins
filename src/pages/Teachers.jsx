@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
@@ -189,6 +188,8 @@ export default function Teachers() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
+                onClick={() => handleViewDetails(teacher)}
+                className="cursor-pointer"
             >
                 <Card className="border-none shadow-sm rounded-[32px] overflow-hidden group hover:shadow-md transition-all duration-300 flex flex-col h-full">
                 <CardHeader className="bg-white p-6 pb-2">
@@ -212,7 +213,10 @@ export default function Teachers() {
                             variant="ghost" 
                             size="icon" 
                             className="h-8 w-8 text-gray-300 hover:text-[#333333] hover:bg-gray-50 rounded-full"
-                            onClick={() => handleEdit(teacher)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(teacher);
+                            }}
                         >
                             <Pencil className="w-4 h-4" />
                         </Button>
@@ -266,7 +270,10 @@ export default function Teachers() {
                             </ReactMarkdown>
                         </div>
                         <button 
-                            onClick={() => handleGenerateReview(teacher)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleGenerateReview(teacher);
+                            }}
                             className="text-[10px] font-medium text-indigo-500 mt-2 hover:text-indigo-700 flex items-center gap-1"
                         >
                             Refresh Analysis
@@ -278,7 +285,10 @@ export default function Teachers() {
                                 variant="ghost" 
                                 size="sm" 
                                 className="text-xs text-gray-400 hover:text-[#333333]"
-                                onClick={() => handleGenerateReview(teacher)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleGenerateReview(teacher);
+                                }}
                                 disabled={isGeneratingReview}
                              >
                                 <Sparkles className="w-3 h-3 mr-2" />
@@ -291,7 +301,7 @@ export default function Teachers() {
                         <Button 
                             variant="outline" 
                             className="w-full rounded-xl border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#333333]"
-                            onClick={() => handleViewDetails(teacher)}
+                            onClick={(e) => e.stopPropagation()}
                         >
                             <Calendar className="w-4 h-4 mr-2" />
                             Schedule
@@ -299,6 +309,7 @@ export default function Teachers() {
                         <Button 
                             variant="outline" 
                             className="w-full rounded-xl border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#333333]"
+                            onClick={(e) => e.stopPropagation()}
                         >
                             <MessageSquare className="w-4 h-4 mr-2" />
                             Message
