@@ -100,19 +100,15 @@ export default function StaffDirectory() {
         <div className="relative group">
           <Card 
             className={`
-              w-48 cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border border-gray-200
+              w-56 cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border border-gray-200
               ${isSelected ? 'ring-2 ring-indigo-500 shadow-lg' : ''}
             `}
-            onClick={(e) => {
-              if (!e.target.closest('.checkbox-area')) {
-                toggleSelect(staff.id, e);
-              }
-            }}
+            onClick={() => navigate(createPageUrl('Teachers') + '?id=' + staff.id)}
           >
-            <CardContent className="p-4 flex flex-col items-center text-center">
+            <CardContent className="p-6 flex flex-col items-center text-center">
               {/* Checkbox */}
               <div 
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 checkbox-area"
+                className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleSelect(staff.id, e);
@@ -129,18 +125,18 @@ export default function StaffDirectory() {
                 </div>
               </div>
 
-              <Avatar className="w-16 h-16 border-2 border-gray-100 shadow-sm mb-3">
+              <Avatar className="w-20 h-20 border-2 border-gray-100 shadow-sm mb-3">
                 {staff.avatar_url && <AvatarImage src={staff.avatar_url} />}
-                <AvatarFallback className="bg-gray-900 text-white font-serif text-lg">
+                <AvatarFallback className="bg-gray-900 text-white font-serif text-xl">
                   {staff.name.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
 
-              <h4 className="font-semibold text-gray-900 text-sm mb-1">{staff.name}</h4>
-              <p className="text-xs text-gray-500 mb-2">{staff.title || 'Staff Member'}</p>
+              <h4 className="font-semibold text-gray-900 text-base mb-1">{staff.name}</h4>
+              <p className="text-sm text-gray-500 mb-3">{staff.title || 'Staff Member'}</p>
               
               {staff.styles && staff.styles.length > 0 && (
-                <Badge variant="secondary" className="text-[10px] bg-gray-100 text-gray-700">
+                <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
                   {staff.styles[0]}
                 </Badge>
               )}
@@ -150,20 +146,20 @@ export default function StaffDirectory() {
 
         {/* Connecting Lines and Reports */}
         {hasReports && (
-          <div className="flex flex-col items-center mt-8">
+          <div className="flex flex-col items-center mt-12">
             {/* Vertical Line Down */}
-            <div className="w-px h-8 bg-gray-300"></div>
+            <div className="w-px h-12 bg-gray-300"></div>
             
             {/* Horizontal Line */}
             <div className="flex items-start relative">
               <div className={`h-px bg-gray-300 absolute top-0 left-0 right-0`}></div>
               
               {/* Direct Reports */}
-              <div className="flex gap-12 pt-8">
+              <div className="flex gap-24 pt-12">
                 {staff.reports.map((report, idx) => (
                   <div key={report.id} className="relative">
                     {/* Vertical Line Up */}
-                    <div className="w-px h-8 bg-gray-300 absolute left-1/2 -top-8 -translate-x-1/2"></div>
+                    <div className="w-px h-12 bg-gray-300 absolute left-1/2 -top-12 -translate-x-1/2"></div>
                     <OrgNode staff={report} />
                   </div>
                 ))}
