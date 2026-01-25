@@ -203,6 +203,14 @@ export default function Students() {
 
   return (
     <div className="min-h-screen bg-[#F4F4F6] p-6 md:p-12 font-sans text-[#333333]">
+      {/* SVG Filter for Liquid Glass Effect */}
+      <svg width="0" height="0" className="absolute">
+        <filter id="liquid-glass-students">
+          <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="1" result="turbulence" />
+          <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="2" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+      
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Top Header & Stats */}
@@ -259,13 +267,15 @@ export default function Students() {
                <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-full mr-2">
                  <button 
                    onClick={() => setView('list')}
-                   className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${view === 'list' ? 'bg-white shadow-sm text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
+                   className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${view === 'list' ? 'bg-pink-50/30 backdrop-blur-[20px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)] border-b border-pink-100/40 ring-1 ring-pink-200/20 text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
+                   style={view === 'list' ? {filter: 'url(#liquid-glass-students)'} : {}}
                  >
                    Students
                  </button>
                  <button 
                    onClick={() => setView('families')}
-                   className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${view === 'families' ? 'bg-white shadow-sm text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
+                   className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${view === 'families' ? 'bg-pink-50/30 backdrop-blur-[20px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)] border-b border-pink-100/40 ring-1 ring-pink-200/20 text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
+                   style={view === 'families' ? {filter: 'url(#liquid-glass-students)'} : {}}
                  >
                    Families
                  </button>
