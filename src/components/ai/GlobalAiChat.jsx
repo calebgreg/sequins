@@ -257,23 +257,11 @@ export default function GlobalAiChat() {
 
     return (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 font-sans text-gray-900 pointer-events-none">
-            {/* SVG Filter for Liquid Glass Effect */}
-            <svg width="0" height="0" className="absolute">
-                <defs>
-                    <filter id="liquid-glass">
-                        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="1" result="turbulence" />
-                        <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="10" xChannelSelector="R" yChannelSelector="G" result="displacement" />
-                    </filter>
-                </defs>
-            </svg>
             <div ref={containerRef} className="pointer-events-auto flex flex-col items-center">
                 
                 {/* Chat History Panel (Appears Above) */}
                 {isOpen && (messages.length > 0 || isThinking) && (
-                    <div 
-                        className="w-full mb-2 bg-white/10 backdrop-blur-[20px] border border-white/40 shadow-xl rounded-2xl overflow-hidden ring-1 ring-black/5 animate-in slide-in-from-bottom-2 fade-in duration-200"
-                        style={{ filter: 'url(#liquid-glass)' }}
-                    >
+                    <div className="w-full mb-2 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl overflow-hidden ring-1 ring-black/5 animate-in slide-in-from-bottom-2 fade-in duration-200">
                         <div 
                             ref={scrollRef}
                             className="max-h-[40vh] overflow-y-auto p-4 scroll-smooth"
@@ -295,12 +283,11 @@ export default function GlobalAiChat() {
                 {/* Input Bar */}
                 <div 
                     className={`
-                        w-full bg-white/10 backdrop-blur-[20px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)]
+                        w-full bg-gray-50/40 backdrop-blur-md shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)]
                         border-b border-white/30 ring-1 ring-black/10 rounded-full 
                         flex items-center gap-2.5 px-3 py-2 transition-all duration-300
                         ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-90 hover:scale-100 hover:opacity-100'}
                     `}
-                    style={{ filter: 'url(#liquid-glass)' }}
                 >
                     <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center shrink-0">
                         {isThinking ? (
