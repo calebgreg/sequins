@@ -1,61 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
-import { createPageUrl } from '../utils';
-import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Plus, Sparkles, Star, MoreHorizontal, Mail, Calendar, User, Loader2, Pencil, MessageSquare } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import SmartTeacherIntake from '../components/manager/SmartTeacherIntake';
-import TeacherEditModal from '../components/manager/TeacherEditModal';
-import TeacherDetailSheet from '../components/manager/TeacherDetailSheet';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { motion } from "framer-motion";
-import ReactMarkdown from 'react-markdown';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-
-const calculateTeacherMetrics = (teacher, allClasses, allAttendance) => {
-  const teacherClasses = allClasses.filter(c => c.teacher === teacher.name);
-  const classIds = new Set(teacherClasses.map(c => c.id));
-  const teacherAttendance = allAttendance.filter(a => classIds.has(a.class_id));
-
-  const totalClasses = teacherClasses.length;
-  const totalEnrollment = teacherClasses.reduce((sum, c) => sum + (c.student_names?.length || 0), 0);
-  
-  // Calculate attendance rate
-  const totalRecords = teacherAttendance.length;
-  const presentCount = teacherAttendance.filter(a => a.status === 'present').length;
-  const attendanceRate = totalRecords > 0 ? Math.round((presentCount / totalRecords) * 100) : null;
-
-  return {
-    totalClasses,
-    totalEnrollment,
-    attendanceRate,
-    dataPoints: totalRecords
-  };
-};
+import { Badge } from "@/components/ui/badge";
+import { Mail, Download, X, Plus } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import StaffMessageModal from '../components/staff/StaffMessageModal';
+import TeacherDetailSheet from '../components/manager/TeacherDetailSheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import SmartTeacherIntake from '../components/manager/SmartTeacherIntake';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function Teachers() {
-  const [searchParams] = useSearchParams();
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [messageModalOpen, setMessageModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [editingTeacher, setEditingTeacher] = useState(null);
   const [viewingTeacher, setViewingTeacher] = useState(null);
-  const [newTeacher, setNewTeacher] = useState({ name: '', styles: '', availability: '', bio: '' });
-  const [selectedTeacher, setSelectedTeacher] = useState(null); // For AI review context
-  const [isGeneratingReview, setIsGeneratingReview] = useState(false);
-  
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: teachers = [] } = useQuery({
     queryKey: ['teachers'],
     queryFn: () => base44.entities.Teacher.list(),
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
   });
 
   const { data: classes = [] } = useQuery({
@@ -68,18 +44,6 @@ export default function Teachers() {
     queryFn: () => base44.entities.Attendance.list(),
   });
 
-  // Auto-open detail sheet if ID in URL
-  useEffect(() => {
-    const teacherId = searchParams.get('id');
-    if (teacherId && teachers.length > 0) {
-      const teacher = teachers.find(t => t.id === teacherId);
-      if (teacher) {
-        setViewingTeacher(teacher);
-        setIsDetailOpen(true);
-      }
-    }
-  }, [searchParams, teachers]);
-
   const createTeacherMutation = useMutation({
     mutationFn: (data) => base44.entities.Teacher.create(data),
     onSuccess: () => {
@@ -88,17 +52,68 @@ export default function Teachers() {
     }
   });
 
-  const updateTeacherMutation = useMutation({
-    mutationFn: ({id, data}) => base44.entities.Teacher.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teachers'] });
-      setIsEditOpen(false);
-    }
-  });
+  // Build org chart hierarchy
+  const orgChart = useMemo(() => {
+    const rootStaff = teachers.filter(t => !t.manager_id);
+    
+    const buildTree = (staffId) => {
+      const staff = teachers.find(t => t.id === staffId);
+      if (!staff) return null;
+      
+      const reports = teachers.filter(t => t.manager_id === staffId);
+      return {
+        ...staff,
+        reports: reports.map(r => buildTree(r.id)).filter(Boolean)
+      };
+    };
 
-  const handleEdit = (teacher) => {
-    setEditingTeacher(teacher);
-    setIsEditOpen(true);
+    return rootStaff.map(s => buildTree(s.id)).filter(Boolean);
+  }, [teachers]);
+
+  const toggleSelect = (id, e) => {
+    e.stopPropagation();
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const selectTeam = (teamId, e) => {
+    e.stopPropagation();
+    const teamMembers = teachers.filter(t => t.team_ids?.includes(teamId));
+    const newSelected = new Set(selectedIds);
+    
+    const allSelected = teamMembers.every(tm => newSelected.has(tm.id));
+    
+    if (allSelected) {
+      teamMembers.forEach(tm => newSelected.delete(tm.id));
+    } else {
+      teamMembers.forEach(tm => newSelected.add(tm.id));
+    }
+    
+    setSelectedIds(newSelected);
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleExport = () => {
+    const selectedStaff = teachers.filter(t => selectedIds.has(t.id));
+    const csv = [
+      ['Name', 'Email', 'Title', 'Phone'].join(','),
+      ...selectedStaff.map(s => [s.name, s.email, s.title || '', s.phone || ''].join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'staff-export.csv';
+    a.click();
   };
 
   const handleViewDetails = (teacher) => {
@@ -106,81 +121,127 @@ export default function Teachers() {
     setIsDetailOpen(true);
   };
 
-  const handleGenerateReview = async (teacher) => {
-    setSelectedTeacher(teacher);
-    setIsGeneratingReview(true);
-    try {
-      const metrics = calculateTeacherMetrics(teacher, classes, attendance);
-      const hasData = metrics.dataPoints > 0;
+  const OrgNode = ({ staff, level = 0 }) => {
+    const isSelected = selectedIds.has(staff.id);
+    const hasReports = staff.reports && staff.reports.length > 0;
 
-      const prompt = `
-        You are a supportive but data-focused Dance Studio Director. Write a brief professional coaching insight for "${teacher.name}".
-        
-        HARD METRICS:
-        - Teaching Load: ${metrics.totalClasses} classes/week
-        - Total Students: ${metrics.totalEnrollment}
-        - Attendance Health: ${hasData ? metrics.attendanceRate + '%' : 'No attendance data yet'}
-        - Expertise: ${teacher.styles?.join(', ') || 'General'}
-        
-        INSTRUCTIONS:
-        1. If NO attendance data exists (${!hasData}), write a warm "Welcome Aboard" message focusing on their potential with ${metrics.totalEnrollment} students.
-        2. If attendance is high (>90%), praise their engagement skills.
-        3. If attendance is low (<80%), suggest specific engagement techniques (gamification, themes).
-        4. Tone: Inspiring, Professional, Actionable.
-        5. Format: Use Markdown. Bold key strengths. Bullet points for actions. Max 100 words.
-      `;
+    return (
+      <div className="flex flex-col items-center">
+        {/* Staff Card */}
+        <div className="relative group">
+          <Card 
+            className={`
+              w-56 cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border-2
+              ${isSelected ? 'ring-2 ring-indigo-500 shadow-lg border-indigo-500' : 'border-gray-200'}
+              ${level === 0 ? 'border-indigo-600' : ''}
+            `}
+            onClick={() => handleViewDetails(staff)}
+          >
+            <CardContent className="p-6 flex flex-col items-center text-center">
+              {/* Checkbox */}
+              <div 
+                className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSelect(staff.id, e);
+                }}
+              >
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all
+                  ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-300 hover:border-indigo-400'}`}
+                >
+                  {isSelected && (
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
 
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: prompt
-      });
+              {level === 0 && (
+                <Badge className="absolute top-3 left-3 bg-indigo-600 text-white text-xs px-2 py-0.5">
+                  Leader
+                </Badge>
+              )}
 
-      if (res) {
-        updateTeacherMutation.mutate({
-          id: teacher.id,
-          data: {
-            performance_summary: res,
-            last_review_date: new Date().toISOString()
-          }
-        });
-      }
-    } catch (e) {
-      console.error("Review gen failed", e);
-    } finally {
-      setIsGeneratingReview(false);
-    }
+              <Avatar className="w-20 h-20 border-2 border-gray-100 shadow-sm mb-3">
+                {staff.avatar_url && <AvatarImage src={staff.avatar_url} />}
+                <AvatarFallback className="bg-gray-900 text-white font-serif text-xl">
+                  {staff.name.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+
+              <h4 className="font-semibold text-gray-900 text-base mb-1">{staff.name}</h4>
+              <p className="text-sm text-gray-500 mb-3">{staff.title || 'Staff Member'}</p>
+              
+              <div className="flex gap-2 flex-wrap justify-center">
+                {staff.styles && staff.styles.length > 0 && (
+                  <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                    {staff.styles[0]}
+                  </Badge>
+                )}
+                {hasReports && (
+                  <Badge variant="outline" className="text-xs border-indigo-200 text-indigo-700">
+                    {staff.reports.length} report{staff.reports.length !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Connecting Lines and Reports */}
+        {hasReports && (
+          <div className="flex flex-col items-center mt-16">
+            {/* Vertical Line Down */}
+            <div className="w-0.5 h-16 bg-gradient-to-b from-indigo-400 to-gray-300"></div>
+            
+            {/* Horizontal Connector Section */}
+            <div className="flex items-start relative">
+              {/* Horizontal Line spanning all reports */}
+              {staff.reports.length > 1 && (
+                <div className="h-0.5 bg-gray-300 absolute top-0 left-0 right-0"></div>
+              )}
+              
+              {/* Direct Reports */}
+              <div className="flex pt-16 gap-x-24">
+                {staff.reports.map((report) => (
+                  <div key={report.id} className="relative flex flex-col items-center">
+                    {/* Vertical Line Up to horizontal connector */}
+                    <div className="w-0.5 h-16 bg-gray-300 absolute left-1/2 -top-16 -translate-x-1/2"></div>
+                    <OrgNode staff={report} level={level + 1} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
-  const getInitials = (name) => {
-    return name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'T';
-  };
+  const selectedStaff = teachers.filter(t => selectedIds.has(t.id));
 
   return (
-    <div className="min-h-screen bg-[#F4F4F6] p-6 md:p-12 font-sans text-[#333333]">
+    <div className="min-h-screen bg-[#F4F4F6] p-6 md:p-12 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="flex justify-between items-start">
           <div>
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                <Link to={createPageUrl('Home')} className="hover:text-[#333333]">Dashboard</Link>
-                <span>/</span>
-                <span className="text-[#333333]">Staff</span>
-            </div>
-            <h1 className="text-4xl font-serif text-[#333333]">Staff Directory</h1>
+            <h1 className="text-4xl font-serif text-[#333333] mb-2">Staff Directory</h1>
+            <p className="text-gray-500">Organization chart and team structure</p>
           </div>
           
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger asChild>
-              <Button className="h-auto bg-[#333333] text-white rounded-2xl px-6 hover:bg-black shadow-lg transition-transform hover:scale-105">
-                <div className="flex flex-col items-center gap-1 py-2">
-                  <Plus className="w-5 h-5" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Add Staff</span>
-                </div>
+              <Button className="bg-[#333333] text-white rounded-2xl px-6 hover:bg-black shadow-lg">
+                <Plus className="w-5 h-5 mr-2" />
+                Add Staff
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-xl">
               <DialogHeader>
-                <DialogTitle>Add New Teacher</DialogTitle>
+                <DialogTitle>Add New Staff Member</DialogTitle>
               </DialogHeader>
               <SmartTeacherIntake 
                 onSave={(data) => createTeacherMutation.mutate(data)}
@@ -190,172 +251,122 @@ export default function Teachers() {
           </Dialog>
         </div>
 
-        {/* Teacher Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {teachers.map((teacher, i) => {
-            const metrics = calculateTeacherMetrics(teacher, classes, attendance);
-            
-            return (
-            <motion.div
-                key={teacher.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                onClick={() => handleViewDetails(teacher)}
-                className="cursor-pointer"
-            >
-                <Card className="border-none shadow-sm rounded-[32px] overflow-hidden group hover:shadow-md transition-all duration-300 flex flex-col h-full">
-                <CardHeader className="bg-white p-6 pb-2">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="flex gap-4 items-center">
-                            <Avatar className="w-16 h-16 border-4 border-[#F4F4F6] shadow-sm">
-                                <AvatarFallback className="bg-[#333333] text-white font-serif text-xl">
-                                    {getInitials(teacher.name)}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <CardTitle className="text-xl font-serif text-[#333333]">{teacher.name}</CardTitle>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant="outline" className="text-xs font-normal text-gray-400 border-gray-200">
-                                        {metrics.totalClasses} Classes
-                                    </Badge>
-                                </div>
-                            </div>
-                        </div>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-gray-300 hover:text-[#333333] hover:bg-gray-50 rounded-full"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleEdit(teacher);
-                            }}
-                        >
-                            <Pencil className="w-4 h-4" />
-                        </Button>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2 min-h-[32px]">
-                    {teacher.styles?.slice(0, 3).map(style => (
-                        <Badge key={style} className="bg-[#F4F4F6] hover:bg-gray-200 text-gray-600 font-normal border-none px-3 py-1 rounded-full text-xs transition-colors">
-                        {style}
-                        </Badge>
-                    ))}
-                    </div>
-                </CardHeader>
-
-                <CardContent className="p-6 pt-2 space-y-6 flex-1 flex flex-col">
-                    {/* Live Metrics Row */}
-                    <div className="grid grid-cols-3 gap-2 mt-2">
-                        <div className="bg-[#F9FAFB] p-3 rounded-2xl text-center">
-                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Students</div>
-                            <div className="text-lg font-serif text-[#333333]">{metrics.totalEnrollment}</div>
-                        </div>
-                        <div className={`p-3 rounded-2xl text-center ${metrics.attendanceRate >= 90 ? 'bg-green-50' : metrics.attendanceRate < 80 && metrics.attendanceRate !== null ? 'bg-amber-50' : 'bg-[#F9FAFB]'}`}>
-                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Attend %</div>
-                            <div className={`text-lg font-serif ${metrics.attendanceRate >= 90 ? 'text-green-700' : 'text-[#333333]'}`}>
-                                {metrics.attendanceRate !== null ? `${metrics.attendanceRate}%` : '-'}
-                            </div>
-                        </div>
-                        <div className="bg-[#F9FAFB] p-3 rounded-2xl text-center">
-                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Load</div>
-                            <div className="text-lg font-serif text-[#333333]">{metrics.totalClasses}</div>
-                        </div>
-                    </div>
-
-                    {/* AI Coach Section (Compact) */}
-                    {teacher.performance_summary ? (
-                    <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100/50">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Sparkles className="w-3 h-3 text-indigo-500" />
-                            <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-wide">Coach's Insight</h4>
-                        </div>
-                        <div className="text-xs text-indigo-900/80 leading-relaxed line-clamp-3">
-                            <ReactMarkdown
-                                components={{
-                                    p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />,
-                                    strong: ({node, ...props}) => <span className="font-bold text-indigo-900" {...props} />,
-                                    ul: ({node, ...props}) => <ul className="list-disc pl-3 mb-1" {...props} />,
-                                    li: ({node, ...props}) => <li className="mb-0.5" {...props} />
-                                }}
-                            >
-                                {teacher.performance_summary}
-                            </ReactMarkdown>
-                        </div>
-                        <button 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleGenerateReview(teacher);
-                            }}
-                            className="text-[10px] font-medium text-indigo-500 mt-2 hover:text-indigo-700 flex items-center gap-1"
-                        >
-                            Refresh Analysis
-                        </button>
-                    </div>
-                    ) : (
-                        <div className="flex items-center justify-center p-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50/50">
-                             <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-xs text-gray-400 hover:text-[#333333]"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleGenerateReview(teacher);
-                                }}
-                                disabled={isGeneratingReview}
-                             >
-                                <Sparkles className="w-3 h-3 mr-2" />
-                                {isGeneratingReview && selectedTeacher?.id === teacher.id ? "Analyzing..." : "Generate Coaching Insight"}
-                             </Button>
-                        </div>
-                    )}
-
-                    <div className="mt-auto grid grid-cols-2 gap-3">
-                        <Button 
-                            variant="outline" 
-                            className="w-full rounded-xl border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#333333]"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <Calendar className="w-4 h-4 mr-2" />
-                            Schedule
-                        </Button>
-                        <Button 
-                            variant="outline" 
-                            className="w-full rounded-xl border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-[#333333]"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <MessageSquare className="w-4 h-4 mr-2" />
-                            Message
-                        </Button>
-                    </div>
-                </CardContent>
-                </Card>
-            </motion.div>
-            );
-          })}
+        {/* Org Chart */}
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-medium text-gray-500">Org chart</h2>
+            <button className="text-sm text-gray-400 hover:text-gray-600">Full screen</button>
+          </div>
           
-          {teachers.length === 0 && (
-            <div className="col-span-full text-center py-24">
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <User className="w-8 h-8 text-gray-300" />
-                </div>
-              <h3 className="font-serif text-2xl text-[#333333] mb-2">No Staff Members Yet</h3>
-              <p className="text-gray-400 max-w-md mx-auto mb-8">Start building your team by adding your first teacher to the directory.</p>
-              <Button onClick={() => setIsAddOpen(true)} className="bg-[#333333] text-white rounded-full px-8 h-12 shadow-lg hover:scale-105 transition-transform">
-                Add First Teacher
-              </Button>
+          <div className="bg-white rounded-3xl shadow-sm p-12 overflow-x-auto">
+            <div className="flex justify-center gap-x-20">
+              {orgChart.map(staff => (
+                <OrgNode key={staff.id} staff={staff} />
+              ))}
             </div>
-          )}
+          </div>
         </div>
+
+        {/* Teams */}
+        {teams.length > 0 && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-sm font-medium text-gray-500">Teams</h2>
+              <button className="text-sm text-gray-400 hover:text-gray-600">View all ({teams.length})</button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {teams.map(team => {
+                const teamMembers = teachers.filter(t => t.team_ids?.includes(team.id));
+                const allSelected = teamMembers.length > 0 && teamMembers.every(tm => selectedIds.has(tm.id));
+                
+                return (
+                  <Card 
+                    key={team.id}
+                    className="cursor-pointer hover:shadow-lg transition-all group border border-gray-200 bg-white"
+                    onClick={(e) => selectTeam(team.id, e)}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-start justify-between">
+                          <h4 className="font-semibold text-gray-900 text-sm">{team.name}</h4>
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0
+                            ${allSelected ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-300 group-hover:border-indigo-400'}`}
+                          >
+                            {allSelected && (
+                              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {teamMembers.length} people · {teamMembers.filter(tm => tm.styles?.includes('Ballet')).length || 0} jobs
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
       </div>
 
-      <TeacherEditModal 
-        isOpen={isEditOpen} 
-        onOpenChange={setIsEditOpen}
-        teacher={editingTeacher}
-        onSave={(data) => updateTeacherMutation.mutate(data)}
-        isSaving={updateTeacherMutation.isPending}
+      {/* Floating Action Bar */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className="bg-[#333333] text-white rounded-full shadow-2xl px-6 py-4 flex items-center gap-4">
+              <span className="font-medium">
+                {selectedIds.size} selected
+              </span>
+              
+              <div className="w-px h-6 bg-white/20" />
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/10 h-8"
+                onClick={() => setMessageModalOpen(true)}
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Send Message
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/10 h-8"
+                onClick={handleExport}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-white hover:bg-white/10"
+                onClick={clearSelection}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <StaffMessageModal 
+        isOpen={messageModalOpen}
+        onOpenChange={setMessageModalOpen}
+        recipients={selectedStaff}
       />
 
       <TeacherDetailSheet
