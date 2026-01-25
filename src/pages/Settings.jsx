@@ -62,7 +62,7 @@ export default function Settings() {
                  <p className="text-gray-500 mb-6">Configure your physical teaching spaces to enable smarter scheduling and room-based recommendations.</p>
                  <Button 
                    onClick={() => setSearchParams({ wizard: 'rooms' })}
-                   className="rounded-full px-8 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg"
+                   className="rounded-full px-8 h-12 bg-black hover:bg-black/90 text-white shadow-lg"
                  >
                    Set Up Rooms
                  </Button>
