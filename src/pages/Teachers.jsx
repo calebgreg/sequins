@@ -450,7 +450,7 @@ export default function Teachers() {
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] bg-[#1a1a1a] text-white rounded-full shadow-2xl px-6 py-4 flex items-center gap-4">
+        <div className="fixed bottom-6 left-6 z-[100] bg-[#1a1a1a] text-white rounded-full shadow-2xl px-6 py-4 flex items-center gap-4">
           <span className="font-medium text-sm">{selectedIds.size} selected</span>
           <div className="w-px h-6 bg-white/20" />
           <button
