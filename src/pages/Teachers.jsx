@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Sparkles, Star, MoreHorizontal, Mail, Calendar, User, Loader2, Pencil, MessageSquare } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +41,7 @@ const calculateTeacherMetrics = (teacher, allClasses, allAttendance) => {
 };
 
 export default function Teachers() {
+  const [searchParams] = useSearchParams();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -66,6 +67,18 @@ export default function Teachers() {
     queryKey: ['attendance'],
     queryFn: () => base44.entities.Attendance.list(),
   });
+
+  // Auto-open detail sheet if ID in URL
+  useEffect(() => {
+    const teacherId = searchParams.get('id');
+    if (teacherId && teachers.length > 0) {
+      const teacher = teachers.find(t => t.id === teacherId);
+      if (teacher) {
+        setViewingTeacher(teacher);
+        setIsDetailOpen(true);
+      }
+    }
+  }, [searchParams, teachers]);
 
   const createTeacherMutation = useMutation({
     mutationFn: (data) => base44.entities.Teacher.create(data),
