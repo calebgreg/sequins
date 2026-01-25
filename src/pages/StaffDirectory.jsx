@@ -103,13 +103,20 @@ export default function StaffDirectory() {
               w-48 cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border border-gray-200
               ${isSelected ? 'ring-2 ring-indigo-500 shadow-lg' : ''}
             `}
-            onClick={() => navigate(createPageUrl('Teachers') + '?id=' + staff.id)}
+            onClick={(e) => {
+              if (!e.target.closest('.checkbox-area')) {
+                toggleSelect(staff.id, e);
+              }
+            }}
           >
             <CardContent className="p-4 flex flex-col items-center text-center">
               {/* Checkbox */}
               <div 
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                onClick={(e) => toggleSelect(staff.id, e)}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 checkbox-area"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSelect(staff.id, e);
+                }}
               >
                 <div className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all
                   ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-300 hover:border-indigo-400'}`}
