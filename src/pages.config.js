@@ -6,12 +6,12 @@ import Features from './pages/Features';
 import Home from './pages/Home';
 import Performances from './pages/Performances';
 import Settings from './pages/Settings';
+import StaffDirectory from './pages/StaffDirectory';
 import Students from './pages/Students';
 import Tasks from './pages/Tasks';
 import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
-import StaffDirectory from './pages/StaffDirectory';
 import __Layout from './Layout.jsx';
 
 
@@ -24,12 +24,12 @@ export const PAGES = {
     "Home": Home,
     "Performances": Performances,
     "Settings": Settings,
+    "StaffDirectory": StaffDirectory,
     "Students": Students,
     "Tasks": Tasks,
     "TeacherStudio": TeacherStudio,
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
-    "StaffDirectory": StaffDirectory,
 }
 
 export const pagesConfig = {
