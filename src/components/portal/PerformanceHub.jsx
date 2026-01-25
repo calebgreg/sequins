@@ -43,9 +43,7 @@ export default function PerformanceHub({ studentIds, isPreview = false }) {
                     routine.performers.some(performerId => studentIds.includes(performerId))
                 );
                 
-                if (matchingRoutines.length > 0) {
-                    displayRoutines = matchingRoutines;
-                }
+                displayRoutines = matchingRoutines;
             }
 
             return {
