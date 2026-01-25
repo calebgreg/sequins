@@ -1,4 +1,5 @@
 import Billing from './pages/Billing';
+import ClassDetail from './pages/ClassDetail';
 import ClassManager from './pages/ClassManager';
 import FamilyRoom from './pages/FamilyRoom';
 import Features from './pages/Features';
@@ -10,12 +11,12 @@ import Tasks from './pages/Tasks';
 import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
-import ClassDetail from './pages/ClassDetail';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Billing": Billing,
+    "ClassDetail": ClassDetail,
     "ClassManager": ClassManager,
     "FamilyRoom": FamilyRoom,
     "Features": Features,
@@ -27,7 +28,6 @@ export const PAGES = {
     "TeacherStudio": TeacherStudio,
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
-    "ClassDetail": ClassDetail,
 }
 
 export const pagesConfig = {

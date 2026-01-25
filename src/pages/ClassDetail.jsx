@@ -163,7 +163,7 @@ export default function ClassDetail() {
               {enrolledStudents.map((student) => (
                 <Link 
                   key={student.id} 
-                  to={`${createPageUrl('Students')}?student=${student.id}`}
+                  to={`${createPageUrl('Students')}?id=${student.id}`}
                   className="flex items-center gap-3 p-4 rounded-2xl hover:bg-[#F4F4F6] transition-colors cursor-pointer group"
                 >
                   <Avatar className="w-12 h-12 border-2 border-white shadow-sm">

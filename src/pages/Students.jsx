@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { Search, Filter, Plus, Download, Mail, MoreHorizontal, User, Phone, MapPin, Users, Edit, ArrowRight, Activity, CreditCard, ChevronDown } from 'lucide-react';
@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { createPageUrl } from '../utils';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import StudentProfileView from '../components/teacher/StudentProfileView';
 import FamilyProfileView from '../components/crm/FamilyProfileView';
 import StudentFormModal from '../components/crm/StudentFormModal';
@@ -20,6 +20,7 @@ import NaturalLanguageSearch from '../components/crm/NaturalLanguageSearch';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Students() {
+  const location = useLocation();
   const [view, setView] = useState('list'); // 'list' or 'families'
   const [search, setSearch] = useState(''); // Legacy simple search
   const [aiFilter, setAiFilter] = useState(null); // New AI smart filter
@@ -48,6 +49,18 @@ export default function Students() {
     queryFn: () => base44.entities.DanceClass.list(),
     enabled: !!aiFilter?.class_filters // Only fetch if we need to filter by class
   });
+
+  // Handle direct student links via URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const studentId = params.get('id');
+    if (studentId && students.length > 0) {
+      const studentToSelect = students.find(s => s.id === studentId);
+      if (studentToSelect) {
+        setSelectedStudent(studentToSelect);
+      }
+    }
+  }, [location.search, students]);
 
   // Stats
   const totalStudents = students.length;
