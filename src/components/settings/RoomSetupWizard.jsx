@@ -86,7 +86,11 @@ export default function RoomSetupWizard({ onComplete }) {
   const handleContinue = () => {
     const currentQuestion = QUESTIONS[questionIndex];
 
-    if (currentQuestion.id === 'count' && roomCount > 0) {
+    if (currentQuestion.id === 'count') {
+      const validCount = Math.max(1, roomCount || 1);
+      setRoomCount(validCount);
+      if (validCount > 0) {
+        const roomCount = validCount;
       const newRooms = Array.from({ length: roomCount }, (_, i) => ({
         name: existingRooms[i]?.name || `Studio ${i + 1}`,
         capacity: existingRooms[i]?.capacity || DEFAULT_CAPACITIES[i] || 15,
@@ -100,6 +104,7 @@ export default function RoomSetupWizard({ onComplete }) {
         id: existingRooms[i]?.id || null,
       }));
       setRooms(newRooms);
+      }
     }
 
     if (questionIndex < QUESTIONS.length - 1) {
@@ -169,10 +174,15 @@ export default function RoomSetupWizard({ onComplete }) {
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      value={roomCount}
+                      value={roomCount === 0 ? '' : roomCount}
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, '');
-                        setRoomCount(parseInt(val) || 1);
+                        setRoomCount(val === '' ? 0 : parseInt(val));
+                      }}
+                      onBlur={(e) => {
+                        if (roomCount === 0 || !roomCount) {
+                          setRoomCount(1);
+                        }
                       }}
                       className="w-20 h-14 text-2xl font-bold text-center border rounded-2xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       autoFocus
