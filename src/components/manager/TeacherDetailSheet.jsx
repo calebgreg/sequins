@@ -1,14 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar, Users, Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Calendar, Users, Mail, Phone, MapPin, Clock, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { createPageUrl } from '../../utils';
 import { Link } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from "@/api/base44Client";
+import { toast } from 'sonner';
 
 export default function TeacherDetailSheet({ isOpen, onOpenChange, teacher, classes = [], attendance = [] }) {
+    const [smsOptIn, setSmsOptIn] = useState(teacher?.sms_opt_in || false);
+    const [phoneNumber, setPhoneNumber] = useState(teacher?.phone || '');
+    const queryClient = useQueryClient();
+
+    const updateTeacherMutation = useMutation({
+        mutationFn: ({id, data}) => base44.entities.Teacher.update(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['teachers'] });
+            toast.success('SMS preferences updated');
+        }
+    });
+
     if (!teacher) return null;
 
     const teacherClasses = classes.filter(c => c.teacher === teacher.name);
@@ -55,6 +73,63 @@ export default function TeacherDetailSheet({ isOpen, onOpenChange, teacher, clas
                             <p className="text-gray-600 text-sm leading-relaxed">{teacher.bio}</p>
                         </div>
                     )}
+
+                    {/* SMS Opt-In Section */}
+                    <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+                        <div className="flex items-center gap-2 mb-3">
+                            <MessageCircle className="w-4 h-4 text-indigo-600" />
+                            <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Text Gene AI</h4>
+                        </div>
+                        
+                        <p className="text-xs text-gray-600 mb-4 leading-relaxed">
+                            Enable SMS to allow this teacher to text Gene, your AI assistant, for scheduling help, student questions, and studio support.
+                        </p>
+
+                        <div className="space-y-4">
+                            <div>
+                                <Label htmlFor="phone" className="text-xs text-gray-700 mb-1.5 block">Phone Number</Label>
+                                <Input 
+                                    id="phone"
+                                    type="tel"
+                                    placeholder="+1 (555) 123-4567"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    className="h-9 text-sm"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-100">
+                                <div className="flex items-center gap-2">
+                                    {smsOptIn ? (
+                                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                    ) : (
+                                        <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
+                                    )}
+                                    <span className="text-sm font-medium text-gray-900">SMS Enabled</span>
+                                </div>
+                                <Switch 
+                                    checked={smsOptIn}
+                                    onCheckedChange={(checked) => {
+                                        setSmsOptIn(checked);
+                                        updateTeacherMutation.mutate({
+                                            id: teacher.id,
+                                            data: {
+                                                phone: phoneNumber,
+                                                sms_opt_in: checked,
+                                                sms_consent_date: checked ? new Date().toISOString() : null
+                                            }
+                                        });
+                                    }}
+                                />
+                            </div>
+
+                            {teacher.sms_consent_date && smsOptIn && (
+                                <p className="text-[10px] text-gray-400 text-center">
+                                    Opted in on {new Date(teacher.sms_consent_date).toLocaleDateString()}
+                                </p>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Contact/Info Actions */}
                     <div className="grid grid-cols-2 gap-3">
