@@ -289,8 +289,8 @@ export default function GlobalAiChat() {
                 {/* Input Bar */}
                 <div 
                     className={`
-                        w-full bg-white/10 backdrop-blur-[20px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)]
-                        border-b border-white/30 ring-1 ring-black/10 rounded-full 
+                        w-full bg-pink-50/30 backdrop-blur-[20px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)]
+                        border-b border-pink-100/40 ring-1 ring-pink-200/20 rounded-full 
                         flex items-center gap-2.5 px-3 py-2 transition-all duration-300
                         ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-90 hover:scale-100 hover:opacity-100'}
                     `}
@@ -310,8 +310,8 @@ export default function GlobalAiChat() {
                         onChange={(e) => setInputValue(e.target.value)}
                         onFocus={handleFocus}
                         onKeyDown={handleKeyDown}
-                        placeholder={`Ask ${aiName}...`}
-                        className="flex-1 bg-transparent border-none text-[13px] text-pink-500 placeholder:text-pink-300 focus:ring-0 focus:outline-none h-full font-medium"
+                        placeholder=""
+                        className="flex-1 bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none h-full font-medium"
                     />
 
                     <div className="flex items-center gap-2">
