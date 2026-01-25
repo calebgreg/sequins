@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Plus, Calendar, MoreHorizontal, Search, Clock, MapPin, User, CheckSquare, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, User, Sparkles } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import ImportScheduleModal from '../components/manager/ImportScheduleModal';
 import StudentRecommender from '../components/manager/StudentRecommender';
 import AttendanceModal from '../components/manager/AttendanceModal';
 import AutoAssignModal from '../components/manager/AutoAssignModal';
-import { motion } from 'framer-motion';
 
-const formatTime = (val) => {
-  const hours = Math.floor(val);
-  const minutes = Math.round((val - hours) * 60);
-  const period = hours >= 12 ? 'pm' : 'am';
-  const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
-  const displayMinutes = minutes.toString().padStart(2, '0');
-  return `${displayHours}:${displayMinutes}${period}`;
+const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6am to 9pm
+const DAYS = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
+const DAY_NAMES = { M: 'Mon', T: 'Tue', W: 'Wed', R: 'Thu', F: 'Fri', S: 'Sat', U: 'Sun' };
+
+const formatTime = (hour) => {
+  const period = hour >= 12 ? 'pm' : 'am';
+  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  return `${displayHour}${period}`;
 };
 
 export default function ClassManager() {
@@ -26,15 +25,18 @@ export default function ClassManager() {
   const [isRecommenderOpen, setIsRecommenderOpen] = useState(false);
   const [isAutoAssignOpen, setIsAutoAssignOpen] = useState(false);
   const [attendanceClass, setAttendanceClass] = useState(null);
-  const [search, setSearch] = useState('');
+  const [selectedDay, setSelectedDay] = useState('M');
 
-  // Fetch existing classes
   const { data: classes = [] } = useQuery({
     queryKey: ['classes'],
     queryFn: () => base44.entities.DanceClass.list(),
   });
 
-  // Fetch students for demographics/recommendations
+  const { data: rooms = [] } = useQuery({
+    queryKey: ['rooms'],
+    queryFn: () => base44.entities.Room.list(),
+  });
+
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
@@ -45,57 +47,48 @@ export default function ClassManager() {
     queryFn: () => base44.entities.Teacher.list(),
   });
 
-  const filteredClasses = classes.filter(c => 
-    c.title.toLowerCase().includes(search.toLowerCase()) ||
-    c.teacher?.toLowerCase().includes(search.toLowerCase())
-  );
+  const dayClasses = classes.filter(c => c.day === selectedDay);
 
-  // Group by Day for a nicer view
-  const days = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
-  const dayNames = { M: 'Monday', T: 'Tuesday', W: 'Wednesday', R: 'Thursday', F: 'Friday', S: 'Saturday', U: 'Sunday' };
+  const getClassStyle = (cls) => {
+    const startHour = cls.start_time;
+    const duration = cls.duration;
+    const top = ((startHour - 6) * 80) + 'px';
+    const height = (duration * 80) + 'px';
+    return { top, height };
+  };
 
   return (
-    <div className="min-h-screen bg-[#F4F4F6] p-6 md:p-12">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+    <div className="min-h-screen bg-[#F4F4F6]">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to={createPageUrl('Home')} className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors">
+            <Link to={createPageUrl('Home')} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </Link>
             <div>
-              <h1 className="text-3xl font-serif text-[#333333]">Classes</h1>
+              <h1 className="text-2xl font-serif text-[#333333]">Classes</h1>
               <div className="flex gap-4 text-sm mt-1">
-                 <span className="font-medium text-gray-900 border-b-2 border-black pb-1">Schedule</span>
-                 <Link to={createPageUrl('Teachers')} className="text-gray-500 hover:text-gray-900 transition-colors">Teachers</Link>
-                 <Link to={createPageUrl('Students')} className="text-gray-500 hover:text-gray-900 transition-colors">Students</Link>
+                <span className="font-medium text-gray-900 border-b-2 border-black pb-1">Schedule</span>
+                <Link to={createPageUrl('Teachers')} className="text-gray-500 hover:text-gray-900 transition-colors">Teachers</Link>
+                <Link to={createPageUrl('Students')} className="text-gray-500 hover:text-gray-900 transition-colors">Students</Link>
               </div>
             </div>
-            </div>
+          </div>
 
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input 
-                placeholder="Search classes..." 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-white border-gray-200 rounded-full w-full md:w-64"
-              />
-            </div>
             <Button 
               onClick={() => setIsRecommenderOpen(true)}
               variant="outline"
-              className="rounded-full px-4 gap-2 hidden md:flex"
+              className="rounded-full px-4 gap-2"
             >
               <User className="w-4 h-4" />
               Student Advisor
             </Button>
-             <Button 
+            <Button 
               onClick={() => setIsAutoAssignOpen(true)}
               variant="outline"
-              className="rounded-full px-4 gap-2 hidden md:flex border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+              className="rounded-full px-4 gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
             >
               <Sparkles className="w-4 h-4" />
               Auto-Assign Staff
@@ -109,115 +102,138 @@ export default function ClassManager() {
             </Button>
           </div>
         </div>
-
-        {/* Active Classes List */}
-        <div className="space-y-8">
-          {classes.length === 0 ? (
-             <div className="text-center py-20 bg-white rounded-[32px] border border-dashed border-gray-200">
-               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                 <Calendar className="w-8 h-8 text-gray-300" />
-               </div>
-               <h3 className="text-lg font-medium text-gray-900">No classes yet</h3>
-               <p className="text-gray-500 mb-6">Import your schedule to get started</p>
-               <Button onClick={() => setIsImportOpen(true)} variant="outline">Import Now</Button>
-             </div>
-          ) : (
-            days.map(day => {
-              const dayClasses = filteredClasses.filter(c => c.day === day).sort((a, b) => a.start_time - b.start_time);
-              if (dayClasses.length === 0) return null;
-
-              return (
-                <div key={day}>
-                  <h3 className="text-lg font-medium text-gray-400 mb-4 ml-2">{dayNames[day]}</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {dayClasses.map((cls) => (
-                      <motion.div 
-                        key={cls.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all group"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <h4 className="font-medium text-lg text-[#333333]">{cls.title}</h4>
-                          <div className="flex gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-gray-300 hover:text-[#333333] hover:bg-gray-100"
-                              onClick={() => setAttendanceClass(cls)}
-                              title="Take Attendance"
-                            >
-                              <CheckSquare className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 text-gray-300 group-hover:text-gray-500">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Clock className="w-4 h-4 text-[#F2DCDD]" />
-                            <span>{formatTime(cls.start_time)} - {formatTime(cls.start_time + cls.duration)}</span>
-                          </div>
-                          
-                          {cls.teacher && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <User className="w-4 h-4 text-[#F2DCDD]" />
-                              <span>{cls.teacher}</span>
-                            </div>
-                          )}
-                          
-                          {cls.room && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <MapPin className="w-4 h-4 text-[#F2DCDD]" />
-                              <span>{cls.room}</span>
-                            </div>
-                          )}
-                          
-                          <div className="pt-2 mt-2 border-t border-gray-50 flex items-center gap-2 text-xs font-medium text-gray-400 uppercase tracking-wide">
-                             <span>{cls.student_names?.length || 0} Students Enrolled</span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        <ImportScheduleModal 
-          isOpen={isImportOpen} 
-          onOpenChange={setIsImportOpen}
-          existingClasses={classes}
-          students={students}
-        />
-
-        <StudentRecommender 
-          isOpen={isRecommenderOpen}
-          onOpenChange={setIsRecommenderOpen}
-          students={students}
-          classes={classes}
-        />
-
-        <AttendanceModal 
-          isOpen={!!attendanceClass}
-          onOpenChange={(open) => !open && setAttendanceClass(null)}
-          classData={attendanceClass}
-          students={students}
-        />
-
-        <AutoAssignModal 
-          isOpen={isAutoAssignOpen}
-          onOpenChange={setIsAutoAssignOpen}
-          classes={classes}
-          teachers={teachers}
-        />
-
       </div>
+
+      {/* Day Selector */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3">
+        <div className="max-w-[1600px] mx-auto flex gap-2">
+          {DAYS.map(day => (
+            <button
+              key={day}
+              onClick={() => setSelectedDay(day)}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                selectedDay === day
+                  ? 'bg-black text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {DAY_NAMES[day]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Schedule Grid */}
+      {classes.length === 0 ? (
+        <div className="max-w-[1600px] mx-auto px-6 py-20">
+          <div className="text-center bg-white rounded-[32px] border border-dashed border-gray-200 py-20">
+            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-gray-300" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900">No classes yet</h3>
+            <p className="text-gray-500 mb-6">Import your schedule to get started</p>
+            <Button onClick={() => setIsImportOpen(true)} variant="outline">Import Now</Button>
+          </div>
+        </div>
+      ) : (
+        <div className="max-w-[1600px] mx-auto px-6 py-6 overflow-x-auto">
+          <div className="min-w-[1200px]">
+            {/* Header Row - Rooms */}
+            <div className="flex mb-4">
+              <div className="w-20 flex-shrink-0" />
+              {rooms.length === 0 ? (
+                <div className="flex-1 text-center py-8 bg-white rounded-2xl border border-dashed border-gray-200">
+                  <p className="text-gray-500 text-sm">No rooms configured. Set up rooms in Settings to organize classes by studio.</p>
+                </div>
+              ) : (
+                rooms.map(room => (
+                  <div key={room.id} className="flex-1 px-2">
+                    <div className="bg-white rounded-2xl px-4 py-3 text-center shadow-sm border border-gray-100">
+                      <div className="font-medium text-[#333333]">{room.name}</div>
+                      <div className="text-xs text-gray-500">Cap: {room.capacity}</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Time Grid */}
+            <div className="relative">
+              {HOURS.map((hour) => (
+                <div key={hour} className="flex border-t border-gray-200" style={{ height: '80px' }}>
+                  {/* Time Label */}
+                  <div className="w-20 flex-shrink-0 pr-4 pt-1 text-right">
+                    <span className="text-sm text-gray-500 font-medium">{formatTime(hour)}</span>
+                  </div>
+
+                  {/* Room Columns */}
+                  {rooms.map(room => (
+                    <div key={room.id} className="flex-1 px-2 relative border-l border-gray-100">
+                      {/* Empty cell for grid structure */}
+                    </div>
+                  ))}
+                </div>
+              ))}
+
+              {/* Classes Overlay */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="flex h-full">
+                  <div className="w-20 flex-shrink-0" />
+                  {rooms.map((room, roomIndex) => (
+                    <div key={room.id} className="flex-1 px-2 relative pointer-events-auto">
+                      {dayClasses
+                        .filter(cls => cls.room === room.name)
+                        .map(cls => {
+                          const style = getClassStyle(cls);
+                          return (
+                            <button
+                              key={cls.id}
+                              onClick={() => setAttendanceClass(cls)}
+                              className="absolute left-2 right-2 bg-white rounded-xl shadow-md border-l-4 border-black p-3 hover:shadow-lg transition-all cursor-pointer overflow-hidden"
+                              style={style}
+                            >
+                              <div className="font-medium text-sm text-[#333333] mb-1 truncate">{cls.title}</div>
+                              <div className="text-xs text-gray-500 truncate">{cls.teacher}</div>
+                              <div className="text-xs text-gray-400 mt-1">{cls.student_names?.length || 0} students</div>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ImportScheduleModal 
+        isOpen={isImportOpen} 
+        onOpenChange={setIsImportOpen}
+        existingClasses={classes}
+        students={students}
+      />
+
+      <StudentRecommender 
+        isOpen={isRecommenderOpen}
+        onOpenChange={setIsRecommenderOpen}
+        students={students}
+        classes={classes}
+      />
+
+      <AttendanceModal 
+        isOpen={!!attendanceClass}
+        onOpenChange={(open) => !open && setAttendanceClass(null)}
+        classData={attendanceClass}
+        students={students}
+      />
+
+      <AutoAssignModal 
+        isOpen={isAutoAssignOpen}
+        onOpenChange={setIsAutoAssignOpen}
+        classes={classes}
+        teachers={teachers}
+      />
     </div>
   );
 }
