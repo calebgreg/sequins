@@ -169,12 +169,15 @@ export default function RoomSetupWizard({ onComplete }) {
                 {currentQuestion.type === 'number' && currentQuestion.id === 'count' && (
                   <div className="flex items-center gap-3 pl-1">
                     <Input
-                      type="number"
-                      min="1"
-                      max="20"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={roomCount}
-                      onChange={(e) => setRoomCount(parseInt(e.target.value) || 1)}
-                      className="w-20 h-14 text-2xl font-bold text-center border rounded-2xl"
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        setRoomCount(parseInt(val) || 1);
+                      }}
+                      className="w-20 h-14 text-2xl font-bold text-center border rounded-2xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       autoFocus
                     />
                     <span className="text-base text-gray-500">rooms</span>
@@ -201,10 +204,15 @@ export default function RoomSetupWizard({ onComplete }) {
                       <Card key={i} className="p-4 bg-white rounded-[20px] shadow-sm border border-gray-100 text-center">
                         <div className="text-xs text-gray-500 mb-2">{room.name}</div>
                         <Input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           value={room.capacity}
-                          onChange={(e) => updateRoom(i, 'capacity', parseInt(e.target.value) || 0)}
-                          className="text-xl font-bold text-center border h-10"
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '');
+                            updateRoom(i, 'capacity', parseInt(val) || 0);
+                          }}
+                          className="text-xl font-bold text-center border h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </Card>
                     ))}
