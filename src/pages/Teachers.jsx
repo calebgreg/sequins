@@ -72,6 +72,13 @@ export default function Teachers() {
     return topPerson ? getDirectReports(topPerson.id) : [];
   }, [teachers, topPerson]);
 
+  // Auto-expand top person on mount
+  React.useEffect(() => {
+    if (topPerson && !expandedNodes.has(topPerson.id)) {
+      setExpandedNodes(new Set([topPerson.id]));
+    }
+  }, [topPerson]);
+
   const toggleExpand = (id) => {
     setExpandedNodes(prev => {
       const next = new Set(prev);
