@@ -132,8 +132,8 @@ export default function Teachers() {
           <Card 
             className={`
               w-56 cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border-2
-              ${isSelected ? 'ring-2 ring-indigo-500 shadow-lg border-indigo-500' : 'border-gray-200'}
-              ${level === 0 ? 'border-indigo-600' : ''}
+              ${isSelected ? 'ring-2 ring-[#333333] shadow-lg border-[#333333]' : 'border-gray-200'}
+              ${level === 0 ? 'border-[#333333]' : ''}
             `}
             onClick={() => handleViewDetails(staff)}
           >
@@ -147,7 +147,7 @@ export default function Teachers() {
                 }}
               >
                 <div className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all
-                  ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-300 hover:border-indigo-400'}`}
+                  ${isSelected ? 'bg-[#333333] border-[#333333]' : 'bg-white border-gray-300 hover:border-gray-500'}`}
                 >
                   {isSelected && (
                     <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -157,15 +157,15 @@ export default function Teachers() {
                 </div>
               </div>
 
-              {level === 0 && (
-                <Badge className="absolute top-3 left-3 bg-indigo-600 text-white text-xs px-2 py-0.5">
-                  Leader
+              {level === 0 && hasReports && (
+                <Badge className="absolute top-3 left-3 bg-[#333333] text-white text-xs px-2 py-0.5">
+                  {staff.title || 'Leader'}
                 </Badge>
               )}
 
               <Avatar className="w-20 h-20 border-2 border-gray-100 shadow-sm mb-3">
                 {staff.avatar_url && <AvatarImage src={staff.avatar_url} />}
-                <AvatarFallback className="bg-gray-900 text-white font-serif text-xl">
+                <AvatarFallback className="bg-[#333333] text-white font-serif text-xl">
                   {staff.name.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
@@ -180,7 +180,7 @@ export default function Teachers() {
                   </Badge>
                 )}
                 {hasReports && (
-                  <Badge variant="outline" className="text-xs border-indigo-200 text-indigo-700">
+                  <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
                     {staff.reports.length} report{staff.reports.length !== 1 ? 's' : ''}
                   </Badge>
                 )}
@@ -193,7 +193,7 @@ export default function Teachers() {
         {hasReports && (
           <div className="flex flex-col items-center mt-16">
             {/* Vertical Line Down */}
-            <div className="w-0.5 h-16 bg-gradient-to-b from-indigo-400 to-gray-300"></div>
+            <div className="w-0.5 h-16 bg-gradient-to-b from-gray-400 to-gray-300"></div>
             
             {/* Horizontal Connector Section */}
             <div className="flex items-start relative">
@@ -291,7 +291,7 @@ export default function Teachers() {
                         <div className="flex items-start justify-between">
                           <h4 className="font-semibold text-gray-900 text-sm">{team.name}</h4>
                           <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0
-                            ${allSelected ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-300 group-hover:border-indigo-400'}`}
+                            ${allSelected ? 'bg-[#333333] border-[#333333]' : 'bg-white border-gray-300 group-hover:border-gray-500'}`}
                           >
                             {allSelected && (
                               <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
