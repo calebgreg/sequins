@@ -209,13 +209,19 @@ export default function GlobalAiChat() {
                 chatHistory: messages.map(({ role, content }) => ({ role, content }))
             });
             
+            // Handle navigation action
+            if (data.navigation) {
+                navigate(data.navigation.path);
+                toast.success(`Navigating to ${data.navigation.page_name}`);
+            }
+
             if (data.action_result) {
                 if (data.action_result.type === 'success') {
                     const { entity, action, result } = data.action_result;
                     let actionDesc = `${action} ${entity}`;
                     if (entity === 'FamilyTask' && result.title) actionDesc = `Created task: "${result.title}"`;
                     if (entity === 'FamilyNote') actionDesc = `Added note to family`;
-                    
+
                     toast.success(`Action Executed: ${actionDesc}`);
                 } else {
                     toast.error(`Action Failed: ${data.action_result.message}`);
