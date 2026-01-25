@@ -153,10 +153,60 @@ export default function Students() {
     return matchesSearch && matchesStatus && matchesBilling && matchesAi;
   });
 
-  const filteredFamilies = families.filter(f => 
-    f.parent_name.toLowerCase().includes(search.toLowerCase()) || 
-    f.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredFamilies = families.filter(f => {
+    const matchesSearch = f.parent_name.toLowerCase().includes(search.toLowerCase()) || 
+                          f.email?.toLowerCase().includes(search.toLowerCase());
+
+    if (!aiFilter) return matchesSearch;
+
+    // Check if ANY student in the family matches the AI filter
+    const hasMatchingStudent = f.students.some(s => {
+        let studentMatchesAi = true;
+
+        if (aiFilter.filters) {
+            const af = aiFilter.filters;
+            if (af.name && !s.name.toLowerCase().includes(af.name.toLowerCase())) studentMatchesAi = false;
+            if (af.status && s.status !== af.status) studentMatchesAi = false;
+            if (af.billing_method && s.billing_method !== af.billing_method) studentMatchesAi = false;
+            if (af.level && s.level.toLowerCase() !== af.level.toLowerCase()) studentMatchesAi = false;
+            if (af.age) {
+                const currentStudentAge = Number(s.age);
+                if (af.age.$eq !== undefined) {
+                    const targetAge = Number(af.age.$eq);
+                    if (s.age === null || s.age === undefined || s.age === '' || isNaN(currentStudentAge) || 
+                        currentStudentAge < targetAge || currentStudentAge >= targetAge + 1) {
+                        studentMatchesAi = false;
+                    }
+                }
+                if (af.age.$gt !== undefined && currentStudentAge <= Number(af.age.$gt)) studentMatchesAi = false;
+                if (af.age.$gte !== undefined && currentStudentAge < Number(af.age.$gte)) studentMatchesAi = false;
+                if (af.age.$lt !== undefined && currentStudentAge >= Number(af.age.$lt)) studentMatchesAi = false;
+                if (af.age.$lte !== undefined && currentStudentAge > Number(af.age.$lte)) studentMatchesAi = false;
+            }
+            if (af.tags && af.tags.length > 0) {
+                 const hasTags = af.tags.every(tag => s.tags?.some(t => t.toLowerCase().includes(tag.toLowerCase())));
+                 if (!hasTags) studentMatchesAi = false;
+            }
+        }
+
+        if (aiFilter.class_filters && studentMatchesAi) {
+            const cf = aiFilter.class_filters;
+            const matchingClasses = classes.filter(c => {
+                let match = true;
+                if (cf.day && c.day !== cf.day) match = false;
+                if (cf.style && !c.style?.toLowerCase().includes(cf.style.toLowerCase())) match = false;
+                if (cf.teacher && !c.teacher?.toLowerCase().includes(cf.teacher.toLowerCase())) match = false;
+                return match;
+            });
+            const isEnrolled = matchingClasses.some(c => c.student_names?.includes(s.name));
+            if (!isEnrolled) studentMatchesAi = false;
+        }
+
+        return studentMatchesAi;
+    });
+
+    return matchesSearch && hasMatchingStudent;
+  });
 
   const handleEdit = (e, student) => {
     e.stopPropagation();
