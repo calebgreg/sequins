@@ -133,7 +133,8 @@ Deno.serve(async (req) => {
             
             INSTRUCTIONS:
             - If the user asks "who's in [class name]" or "students in [class]", look up the class in the schedule and list the students enrolled.
-            - If the user asks for personal info not in context, use the 'read' action (e.g. Student lookup).
+            - If the user asks for COUNTS or SUMMARY info (e.g., "how many students", "total classes"), answer directly using the retrieved data context above. DO NOT use a read action.
+            - Only use the 'read' action for Student if looking up SPECIFIC personal details about an individual student that aren't in the roster snapshot.
             - If data is missing, say so.
             - Default 'due_date' for tasks is today (${new Date().toISOString().split('T')[0]}).
 
