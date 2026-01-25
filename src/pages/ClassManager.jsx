@@ -73,50 +73,44 @@ export default function ClassManager() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F4F6]">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to={createPageUrl('Home')} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </Link>
-            <h1 className="text-2xl font-serif text-[#333333]">Classes</h1>
+    <div className="fixed inset-0 bg-[#F4F4F6] flex flex-col">
+      {/* Compact Header */}
+      <div className="bg-white/95 backdrop-blur-sm border-b border-gray-200 px-6 py-3 flex-shrink-0 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link to={createPageUrl('Home')} className="p-1.5 hover:bg-gray-50 rounded-full transition-colors">
+            <ArrowLeft className="w-4 h-4 text-gray-600" />
+          </Link>
+          <div className="flex gap-2">
+            {DAYS.map(day => (
+              <button
+                key={day}
+                onClick={() => setSelectedDay(day)}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  selectedDay === day
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {DAY_NAMES[day]}
+              </button>
+            ))}
           </div>
-
-          <Button 
-            onClick={() => setIsImportOpen(true)}
-            className="bg-[#333333] hover:bg-black text-white rounded-full px-6 gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Import Schedule
-          </Button>
         </div>
-      </div>
 
-      {/* Day Selector */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3">
-        <div className="max-w-[1600px] mx-auto flex gap-2">
-          {DAYS.map(day => (
-            <button
-              key={day}
-              onClick={() => setSelectedDay(day)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
-                selectedDay === day
-                  ? 'bg-black text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {DAY_NAMES[day]}
-            </button>
-          ))}
-        </div>
+        <Button 
+          onClick={() => setIsImportOpen(true)}
+          size="sm"
+          className="bg-[#333333] hover:bg-black text-white rounded-full px-4 gap-1.5"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Import
+        </Button>
       </div>
 
       {/* Schedule Grid */}
       {classes.length === 0 ? (
-        <div className="max-w-[1600px] mx-auto px-6 py-20">
-          <div className="text-center bg-white rounded-[32px] border border-dashed border-gray-200 py-20">
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="text-center bg-white rounded-[32px] border border-dashed border-gray-200 py-16 px-12 max-w-md">
             <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-gray-300" />
             </div>
@@ -126,69 +120,73 @@ export default function ClassManager() {
           </div>
         </div>
       ) : (
-        <div ref={scrollContainerRef} className="max-w-[1600px] mx-auto px-6 py-6 overflow-x-auto overflow-y-auto h-[calc(100vh-200px)]">
-          <div className="min-w-[1200px]">
-            {/* Header Row - Rooms */}
-            <div className="flex mb-4">
-              <div className="w-20 flex-shrink-0" />
-              {rooms.length === 0 ? (
-                <div className="flex-1 text-center py-8 bg-white rounded-2xl border border-dashed border-gray-200">
-                  <p className="text-gray-500 text-sm">No rooms configured. Set up rooms in Settings to organize classes by studio.</p>
-                </div>
-              ) : (
-                rooms.map(room => (
-                  <div key={room.id} className="flex-1 px-2">
-                    <div className="bg-white rounded-2xl px-4 py-3 text-center shadow-sm border border-gray-100">
-                      <div className="font-medium text-[#333333]">{room.name}</div>
-                    </div>
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full flex flex-col">
+            {/* Sticky Header Row - Rooms */}
+            <div className="flex-shrink-0 bg-[#F4F4F6] px-6 py-3 border-b border-gray-200">
+              <div className="flex">
+                <div className="w-20 flex-shrink-0" />
+                {rooms.length === 0 ? (
+                  <div className="flex-1 text-center py-6 bg-white rounded-2xl border border-dashed border-gray-200">
+                    <p className="text-gray-500 text-sm">No rooms configured. Set up rooms in Settings.</p>
                   </div>
-                ))
-              )}
+                ) : (
+                  rooms.map(room => (
+                    <div key={room.id} className="flex-1 px-2">
+                      <div className="bg-white rounded-xl px-4 py-2.5 text-center shadow-sm border border-gray-100">
+                        <div className="font-medium text-sm text-[#333333]">{room.name}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
 
-            {/* Time Grid */}
-            <div className="relative">
-              {HOURS.map((hour) => (
-                <div key={hour} className="flex border-t border-gray-200" style={{ height: '80px' }}>
-                  {/* Time Label */}
-                  <div className="w-20 flex-shrink-0 pr-4 pt-1 text-right">
-                    <span className="text-sm text-gray-500 font-medium">{formatTime(hour)}</span>
+            {/* Scrollable Time Grid */}
+            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-6">
+              <div className="relative">
+                {HOURS.map((hour) => (
+                  <div key={hour} className="flex border-t border-gray-200" style={{ height: '80px' }}>
+                    {/* Time Label */}
+                    <div className="w-20 flex-shrink-0 pr-4 pt-1 text-right">
+                      <span className="text-sm text-gray-500 font-medium">{formatTime(hour)}</span>
+                    </div>
+
+                    {/* Room Columns */}
+                    {rooms.map(room => (
+                      <div key={room.id} className="flex-1 px-2 relative border-l border-gray-100">
+                        {/* Empty cell for grid structure */}
+                      </div>
+                    ))}
                   </div>
+                ))}
 
-                  {/* Room Columns */}
-                  {rooms.map(room => (
-                    <div key={room.id} className="flex-1 px-2 relative border-l border-gray-100">
-                      {/* Empty cell for grid structure */}
-                    </div>
-                  ))}
-                </div>
-              ))}
-
-              {/* Classes Overlay */}
-              <div className="absolute inset-0 pointer-events-none">
-                <div className="flex h-full">
-                  <div className="w-20 flex-shrink-0" />
-                  {rooms.map((room, roomIndex) => (
-                    <div key={room.id} className="flex-1 px-2 relative pointer-events-auto">
-                      {dayClasses
-                        .filter(cls => cls.room === room.name)
-                        .map(cls => {
-                          const style = getClassStyle(cls);
-                          return (
-                            <button
-                              key={cls.id}
-                              onClick={() => setAttendanceClass(cls)}
-                              className="absolute left-2 right-2 bg-white rounded-xl shadow-md border-l-4 border-black p-3 hover:shadow-lg transition-all cursor-pointer overflow-hidden"
-                              style={style}
-                            >
-                              <div className="font-medium text-sm text-[#333333] mb-1 truncate">{cls.title}</div>
-                              <div className="text-xs text-gray-500 truncate">{cls.teacher}</div>
-                              <div className="text-xs text-gray-400 mt-1">{cls.student_names?.length || 0} students</div>
-                            </button>
-                          );
-                        })}
-                    </div>
-                  ))}
+                {/* Classes Overlay */}
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="flex h-full">
+                    <div className="w-20 flex-shrink-0" />
+                    {rooms.map((room, roomIndex) => (
+                      <div key={room.id} className="flex-1 px-2 relative pointer-events-auto">
+                        {dayClasses
+                          .filter(cls => cls.room === room.name)
+                          .map(cls => {
+                            const style = getClassStyle(cls);
+                            return (
+                              <button
+                                key={cls.id}
+                                onClick={() => setAttendanceClass(cls)}
+                                className="absolute left-2 right-2 bg-white rounded-xl shadow-md border-l-4 border-black p-3 hover:shadow-lg transition-all cursor-pointer overflow-hidden"
+                                style={style}
+                              >
+                                <div className="font-medium text-sm text-[#333333] mb-1 truncate">{cls.title}</div>
+                                <div className="text-xs text-gray-500 truncate">{cls.teacher}</div>
+                                <div className="text-xs text-gray-400 mt-1">{cls.student_names?.length || 0} students</div>
+                              </button>
+                            );
+                          })}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
