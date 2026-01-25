@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
@@ -26,6 +26,21 @@ export default function ClassManager() {
   const [isAutoAssignOpen, setIsAutoAssignOpen] = useState(false);
   const [attendanceClass, setAttendanceClass] = useState(null);
   const [selectedDay, setSelectedDay] = useState('M');
+  const scrollContainerRef = useRef(null);
+
+  // Auto-scroll to current time
+  useEffect(() => {
+    if (scrollContainerRef.current && classes.length > 0) {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinutes = now.getMinutes();
+      
+      // Calculate scroll position: each hour is 80px tall
+      const scrollPosition = ((currentHour - 6) * 80) + ((currentMinutes / 60) * 80);
+      
+      scrollContainerRef.current.scrollTop = Math.max(0, scrollPosition);
+    }
+  }, [selectedDay, classes.length]);
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes'],
@@ -111,7 +126,7 @@ export default function ClassManager() {
           </div>
         </div>
       ) : (
-        <div className="max-w-[1600px] mx-auto px-6 py-6 overflow-x-auto">
+        <div ref={scrollContainerRef} className="max-w-[1600px] mx-auto px-6 py-6 overflow-x-auto overflow-y-auto h-[calc(100vh-200px)]">
           <div className="min-w-[1200px]">
             {/* Header Row - Rooms */}
             <div className="flex mb-4">
