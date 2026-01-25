@@ -5,8 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, Download, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Mail, Download, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -14,7 +13,6 @@ import StaffMessageModal from '../components/staff/StaffMessageModal';
 
 export default function StaffDirectory() {
   const [selectedIds, setSelectedIds] = useState(new Set());
-  const [expandedNodes, setExpandedNodes] = useState(new Set());
   const [messageModalOpen, setMessageModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -57,23 +55,11 @@ export default function StaffDirectory() {
     setSelectedIds(newSelected);
   };
 
-  const toggleExpand = (id, e) => {
-    e.stopPropagation();
-    const newExpanded = new Set(expandedNodes);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedNodes(newExpanded);
-  };
-
   const selectTeam = (teamId, e) => {
     e.stopPropagation();
     const teamMembers = teachers.filter(t => t.team_ids?.includes(teamId));
     const newSelected = new Set(selectedIds);
     
-    // If all team members are selected, deselect them. Otherwise, select all.
     const allSelected = teamMembers.every(tm => newSelected.has(tm.id));
     
     if (allSelected) {
@@ -104,28 +90,28 @@ export default function StaffDirectory() {
     a.click();
   };
 
-  const StaffCard = ({ staff, level = 0 }) => {
+  const OrgNode = ({ staff }) => {
     const isSelected = selectedIds.has(staff.id);
-    const isExpanded = expandedNodes.has(staff.id);
     const hasReports = staff.reports && staff.reports.length > 0;
 
     return (
-      <div className="relative">
-        <Card 
-          className={`
-            cursor-pointer transition-all duration-200 hover:shadow-md group
-            ${isSelected ? 'ring-2 ring-indigo-500 shadow-md' : 'hover:ring-1 hover:ring-gray-200'}
-          `}
-          onClick={() => navigate(createPageUrl('Teachers') + '?id=' + staff.id)}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
+      <div className="flex flex-col items-center">
+        {/* Staff Card */}
+        <div className="relative group">
+          <Card 
+            className={`
+              w-48 cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border border-gray-200
+              ${isSelected ? 'ring-2 ring-indigo-500 shadow-lg' : ''}
+            `}
+            onClick={() => navigate(createPageUrl('Teachers') + '?id=' + staff.id)}
+          >
+            <CardContent className="p-4 flex flex-col items-center text-center">
               {/* Checkbox */}
               <div 
-                className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                 onClick={(e) => toggleSelect(staff.id, e)}
               >
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all
                   ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-300 hover:border-indigo-400'}`}
                 >
                   {isSelected && (
@@ -136,41 +122,46 @@ export default function StaffDirectory() {
                 </div>
               </div>
 
-              <Avatar className="w-12 h-12 border-2 border-white shadow-sm">
+              <Avatar className="w-16 h-16 border-2 border-gray-100 shadow-sm mb-3">
                 {staff.avatar_url && <AvatarImage src={staff.avatar_url} />}
-                <AvatarFallback className="bg-indigo-100 text-indigo-700 font-serif">
+                <AvatarFallback className="bg-gray-900 text-white font-serif text-lg">
                   {staff.name.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
 
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-gray-900 truncate">{staff.name}</h4>
-                <p className="text-sm text-gray-500 truncate">{staff.title || 'Staff Member'}</p>
-                {staff.email && (
-                  <p className="text-xs text-gray-400 truncate mt-1">{staff.email}</p>
-                )}
-              </div>
-
-              {hasReports && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-gray-400 hover:text-gray-600"
-                  onClick={(e) => toggleExpand(staff.id, e)}
-                >
-                  {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                </Button>
+              <h4 className="font-semibold text-gray-900 text-sm mb-1">{staff.name}</h4>
+              <p className="text-xs text-gray-500 mb-2">{staff.title || 'Staff Member'}</p>
+              
+              {staff.styles && staff.styles.length > 0 && (
+                <Badge variant="secondary" className="text-[10px] bg-gray-100 text-gray-700">
+                  {staff.styles[0]}
+                </Badge>
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Direct Reports */}
-        {hasReports && isExpanded && (
-          <div className="ml-8 mt-4 space-y-4 border-l-2 border-gray-200 pl-4">
-            {staff.reports.map(report => (
-              <StaffCard key={report.id} staff={report} level={level + 1} />
-            ))}
+        {/* Connecting Lines and Reports */}
+        {hasReports && (
+          <div className="flex flex-col items-center mt-8">
+            {/* Vertical Line Down */}
+            <div className="w-px h-8 bg-gray-300"></div>
+            
+            {/* Horizontal Line */}
+            <div className="flex items-start relative">
+              <div className={`h-px bg-gray-300 absolute top-0 left-0 right-0`}></div>
+              
+              {/* Direct Reports */}
+              <div className="flex gap-12 pt-8">
+                {staff.reports.map((report, idx) => (
+                  <div key={report.id} className="relative">
+                    {/* Vertical Line Up */}
+                    <div className="w-px h-8 bg-gray-300 absolute left-1/2 -top-8 -translate-x-1/2"></div>
+                    <OrgNode staff={report} />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -191,11 +182,17 @@ export default function StaffDirectory() {
 
         {/* Org Chart */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-serif text-[#333333]">Org chart</h2>
-          <div className="space-y-4">
-            {orgChart.map(staff => (
-              <StaffCard key={staff.id} staff={staff} />
-            ))}
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-medium text-gray-500">Org chart</h2>
+            <button className="text-sm text-gray-400 hover:text-gray-600">Full screen</button>
+          </div>
+          
+          <div className="bg-white rounded-3xl shadow-sm p-12 overflow-x-auto">
+            <div className="min-w-max flex justify-center">
+              {orgChart.map(staff => (
+                <OrgNode key={staff.id} staff={staff} />
+              ))}
+            </div>
           </div>
         </div>
 
@@ -203,11 +200,11 @@ export default function StaffDirectory() {
         {teams.length > 0 && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-serif text-[#333333]">Teams</h2>
-              <span className="text-sm text-gray-400">View all ({teams.length})</span>
+              <h2 className="text-sm font-medium text-gray-500">Teams</h2>
+              <button className="text-sm text-gray-400 hover:text-gray-600">View all ({teams.length})</button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {teams.map(team => {
                 const teamMembers = teachers.filter(t => t.team_ids?.includes(team.id));
                 const allSelected = teamMembers.length > 0 && teamMembers.every(tm => selectedIds.has(tm.id));
@@ -215,32 +212,26 @@ export default function StaffDirectory() {
                 return (
                   <Card 
                     key={team.id}
-                    className="cursor-pointer hover:shadow-md transition-all group"
+                    className="cursor-pointer hover:shadow-lg transition-all group border border-gray-200 bg-white"
                     onClick={(e) => selectTeam(team.id, e)}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium text-gray-900">{team.name}</h4>
-                            <Badge variant="secondary" className="text-xs">
-                              {teamMembers.length} {teamMembers.length === 1 ? 'person' : 'people'}
-                            </Badge>
+                    <CardContent className="p-6">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-start justify-between">
+                          <h4 className="font-semibold text-gray-900 text-sm">{team.name}</h4>
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0
+                            ${allSelected ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-300 group-hover:border-indigo-400'}`}
+                          >
+                            {allSelected && (
+                              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
                           </div>
-                          {team.description && (
-                            <p className="text-sm text-gray-500">{team.description}</p>
-                          )}
                         </div>
-                        
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all
-                          ${allSelected ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-300 group-hover:border-indigo-400'}`}
-                        >
-                          {allSelected && (
-                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </div>
+                        <p className="text-xs text-gray-500">
+                          {teamMembers.length} people · {teamMembers.filter(tm => tm.styles?.includes('Ballet')).length || 0} jobs
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
