@@ -315,17 +315,13 @@ export default function GlobalAiChat() {
                     />
 
                     <div className="flex items-center gap-2">
-                        {inputValue.trim() ? (
+                        {inputValue.trim() && (
                             <button 
                                 onClick={handleSend}
                                 className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
                             >
                                 <ArrowUp className="w-3 h-3" />
                             </button>
-                        ) : (
-                            <div className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-black/5 text-[9px] font-bold text-gray-400">
-                                K
-                            </div>
                         )}
                     </div>
                 </div>
