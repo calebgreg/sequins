@@ -126,6 +126,7 @@ Deno.serve(async (req) => {
             1. Answer questions using the retrieved data context.
             2. Execute ACTIONS on the database (create tasks, notes, etc).
             3. Route complex planning requests to the "PerformanceProducer" (Sequins).
+            4. Navigate users to different pages in the app.
 
             RETRIEVED DATA CONTEXT:
             ${dynamicContext || "(No specific database data retrieved for this query)"}
@@ -144,6 +145,7 @@ Deno.serve(async (req) => {
             - Performance: create_draft (payload: { title: "string" }) - Use this when the user wants to PLAN/CREATE a new performance. This will create a draft and generate a link to the drafting table UI.
             - PerformanceProducer: invoke (action: "chat" | "generate_plan", chatHistory: array)
             - AppleMusic: search (payload: { query: "string" }) - Use this to search Apple Music for songs. Returns a list of songs with title, artist, artwork, preview, and buy link.
+            - Navigation: navigate (payload: { page: "students" | "teachers" | "classmanager" | "performances" | "billing" | "tasks" | "settings" | "home" }) - Use this when user wants to go to a specific page.
         `;
 
         // --- PASS 2: EXECUTION & RESPONSE ---
@@ -174,11 +176,11 @@ Deno.serve(async (req) => {
                         properties: {
                             entity: { 
                                 type: "string", 
-                                enum: ["FamilyTask", "FamilyNote", "StudentNote", "Student", "PerformanceProducer", "Performance", "AppleMusic"] 
+                                enum: ["FamilyTask", "FamilyNote", "StudentNote", "Student", "PerformanceProducer", "Performance", "AppleMusic", "Navigation"] 
                             },
                             action: { 
                                 type: "string", 
-                                enum: ["create", "update", "read", "invoke", "create_draft"] 
+                                enum: ["create", "update", "read", "invoke", "create_draft", "navigate"] 
                             },
                             payload: {
                                 type: "object",
@@ -314,6 +316,31 @@ Deno.serve(async (req) => {
                     const link = `/performances?mode=producer&id=${newPerf.id}`;
                     responseText = `I've opened Backstage for "${newPerf.title}". [Click here to start planning](${link})`;
                     actionResult = { type: 'success', entity, action, result: newPerf, message: "Backstage Opened" };
+                } else if (action === 'navigate' && entity === 'Navigation') {
+                    // Map page names to paths
+                    const pageMap = {
+                        'students': '/students',
+                        'teachers': '/teachers',
+                        'classmanager': '/classmanager',
+                        'classes': '/classmanager',
+                        'schedule': '/classmanager',
+                        'performances': '/performances',
+                        'billing': '/billing',
+                        'tasks': '/tasks',
+                        'settings': '/settings',
+                        'home': '/'
+                    };
+                    
+                    const requestedPage = (payload.page || '').toLowerCase();
+                    const path = pageMap[requestedPage] || '/';
+                    const pageName = requestedPage.charAt(0).toUpperCase() + requestedPage.slice(1);
+                    
+                    // Return navigation instruction to frontend
+                    return Response.json({ 
+                        response_text: responseText,
+                        action_result: actionResult,
+                        navigation: { path, page_name: pageName }
+                    });
                 }
 
             } catch (err) {
