@@ -306,19 +306,7 @@ export function BillingOverview({ onSelectFamily }) {
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-10">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm" style={{ color: colors.muted }}>{collectedPercent.toFixed(0)}% collected</span>
-            <span className="text-sm" style={{ color: colors.muted }}><Money amount={total} size="sm" muted /> expected</span>
-          </div>
-          <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: colors.border }}>
-            <div 
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${collectedPercent}%`, backgroundColor: colors.success }}
-            />
-          </div>
-        </div>
+
 
         {/* Filter Tabs */}
         <div className="flex gap-2 mb-6">
