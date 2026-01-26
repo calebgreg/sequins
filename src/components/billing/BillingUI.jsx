@@ -332,7 +332,7 @@ export function BillingOverview({ onSelectFamily }) {
               </div>
               
               {/* Name & Students */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 flex items-center gap-16">
                 <p className="font-semibold" style={{ color: colors.ink }}>{family.displayName}</p>
                 <p className="text-sm" style={{ color: colors.muted }}>
                   {family.studentFirstNames}
