@@ -34,7 +34,7 @@ export default function BillingPortal({ isOpen, onOpenChange, studentEmail }) {
     }
   });
 
-  const unpaidInvoices = invoices.filter(i => i.status === 'sent' || i.status === 'overdue');
+  const unpaidInvoices = invoices.filter(i => i.status === 'sent' || i.status === 'overdue' || i.status === 'pending');
   const paidInvoices = invoices.filter(i => i.status === 'paid');
   const balance = unpaidInvoices.reduce((acc, curr) => acc + curr.balance_due, 0);
 
