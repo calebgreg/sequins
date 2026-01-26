@@ -242,7 +242,7 @@ function PreviewState({ data, onConfirm, onCancel }) {
                 className="px-6 py-4 rounded-2xl text-center"
                 style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
               >
-                <p className="text-2xl font-bold" style={{ color: colors.error }}>{expiredCards.length + noMethod.length}</p>
+                <p className="text-2xl font-bold" style={{ color: colors.error }}>{expiredCards.length}</p>
                 <p className="text-xs mt-0.5" style={{ color: colors.error }}>need attention</p>
               </div>
             )}
