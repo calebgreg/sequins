@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 // ============================================
 // SEQUINS TUITION BILLING - COMPLETE
@@ -588,10 +589,10 @@ export default function TuitionBillingWizard({ onSave }) {
         onSave(rules);
       }
       
-      alert('Tuition rules saved successfully!');
+      toast.success('Tuition rules saved successfully!');
     } catch (error) {
       console.error('Error saving rules:', error);
-      alert('Failed to save rules. Please try again.');
+      toast.error('Failed to save rules. Please try again.');
     } finally {
       setSaving(false);
     }
