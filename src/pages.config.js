@@ -12,6 +12,7 @@ import Tasks from './pages/Tasks';
 import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
+import RunBilling from './pages/RunBilling';
 import __Layout from './Layout.jsx';
 
 
@@ -30,6 +31,7 @@ export const PAGES = {
     "TeacherStudio": TeacherStudio,
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
+    "RunBilling": RunBilling,
 }
 
 export const pagesConfig = {

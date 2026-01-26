@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { calculateTuition } from './TuitionBillingWizard';
-import BillingCycleManager from './BillingCycleManager';
+import { createPageUrl } from '../../utils';
 import { Play } from 'lucide-react';
 
 // ============================================
@@ -104,7 +105,6 @@ function buildCalculationInput(familyStudents, classes, studentIndex = 1) {
 
 export function BillingOverview({ onSelectFamily }) {
   const [filter, setFilter] = useState('all');
-  const [showBillingCycle, setShowBillingCycle] = useState(false);
   
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
@@ -224,17 +224,15 @@ export function BillingOverview({ onSelectFamily }) {
             </p>
             <h1 className="text-4xl font-bold" style={{ color: colors.ink, letterSpacing: '-0.02em' }}>Billing</h1>
           </div>
-          <button
-            onClick={() => setShowBillingCycle(true)}
+          <Link
+            to={createPageUrl('RunBilling')}
             className="flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white transition-all hover:opacity-90"
             style={{ backgroundColor: colors.ink }}
           >
             <Play className="w-4 h-4 fill-current" />
             Run Billing
-          </button>
+          </Link>
         </div>
-
-        <BillingCycleManager isOpen={showBillingCycle} onOpenChange={setShowBillingCycle} />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-4 mb-8">

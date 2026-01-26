@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format, addDays } from 'date-fns';
 import { motion } from 'framer-motion';
-import { calculateTuition } from './TuitionBillingWizard';
+import { calculateTuition } from '../components/billing/TuitionBillingWizard';
 
 // ============================================
 // DESIGN TOKENS
@@ -171,7 +171,7 @@ function PreviewState({ data, onConfirm, onCancel }) {
   const hasProblems = expiredCards.length > 0 || noMethod.length > 0;
 
   return (
-    <div className="h-full overflow-y-auto" style={{ backgroundColor: colors.paper }}>
+    <div className="min-h-screen" style={{ backgroundColor: colors.paper }}>
       <div className="max-w-2xl mx-auto p-8">
         
         {/* Header */}
@@ -467,7 +467,7 @@ function RunningState({ data, onComplete }) {
   const progress = (processed / data.families.length) * 100;
 
   return (
-    <div className="h-full flex items-center justify-center" style={{ backgroundColor: colors.paper }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.paper }}>
       <div className="max-w-lg w-full p-8">
         
         {/* Header */}
@@ -562,7 +562,7 @@ function CompleteState({ data, results, onDone }) {
   const failedAmount = failed.reduce((s, r) => s + (data.families.find(f => f.parentEmail === r.familyId)?.total || 0), 0);
 
   return (
-    <div className="h-full flex items-center justify-center" style={{ backgroundColor: colors.paper }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.paper }}>
       <div className="max-w-lg w-full p-8">
         
         {/* Success header */}
@@ -683,7 +683,7 @@ function CompleteState({ data, results, onDone }) {
 
 function LoadingState() {
   return (
-    <div className="h-full flex items-center justify-center" style={{ backgroundColor: colors.paper }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.paper }}>
       <div className="text-center">
         <div className="w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.warm }}>
           <Spinner size={32} />
@@ -695,10 +695,11 @@ function LoadingState() {
 }
 
 // ============================================
-// MAIN COMPONENT
+// MAIN PAGE COMPONENT
 // ============================================
 
-export default function BillingCycleManager({ isOpen, onOpenChange }) {
+export default function RunBilling() {
+  const navigate = useNavigate();
   const [state, setState] = useState('preview');
   const [previewData, setPreviewData] = useState(null);
   const [results, setResults] = useState([]);
@@ -725,12 +726,12 @@ export default function BillingCycleManager({ isOpen, onOpenChange }) {
     queryFn: () => base44.entities.TuitionRule.list(),
   });
 
-  // Calculate preview when modal opens
+  // Calculate preview on mount
   useEffect(() => {
-    if (isOpen && students.length > 0 && !previewData) {
+    if (students.length > 0 && !previewData) {
       calculatePreview();
     }
-  }, [isOpen, students, tuitionRules]);
+  }, [students, tuitionRules]);
 
   const calculatePreview = () => {
     setIsCalculating(true);
@@ -813,49 +814,41 @@ export default function BillingCycleManager({ isOpen, onOpenChange }) {
     setIsCalculating(false);
   };
 
-  const handleClose = (open) => {
-    if (!open) {
-      setState('preview');
-      setPreviewData(null);
-      setResults([]);
-      setIsCalculating(true);
-    }
-    onOpenChange(open);
+  const handleBack = () => {
+    navigate('/Billing');
   };
 
+  if (isCalculating) {
+    return <LoadingState />;
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl h-[90vh] p-0 overflow-hidden border-none rounded-3xl">
-        
-        {isCalculating && <LoadingState />}
-        
-        {!isCalculating && state === 'preview' && previewData && (
-          <PreviewState 
-            data={previewData}
-            onConfirm={() => setState('running')}
-            onCancel={() => handleClose(false)}
-          />
-        )}
-        
-        {state === 'running' && previewData && (
-          <RunningState 
-            data={previewData}
-            onComplete={(r) => {
-              setResults(r);
-              setState('complete');
-            }}
-          />
-        )}
-        
-        {state === 'complete' && previewData && (
-          <CompleteState 
-            data={previewData}
-            results={results}
-            onDone={() => handleClose(false)}
-          />
-        )}
-        
-      </DialogContent>
-    </Dialog>
+    <>
+      {state === 'preview' && previewData && (
+        <PreviewState 
+          data={previewData}
+          onConfirm={() => setState('running')}
+          onCancel={handleBack}
+        />
+      )}
+      
+      {state === 'running' && previewData && (
+        <RunningState 
+          data={previewData}
+          onComplete={(r) => {
+            setResults(r);
+            setState('complete');
+          }}
+        />
+      )}
+      
+      {state === 'complete' && previewData && (
+        <CompleteState 
+          data={previewData}
+          results={results}
+          onDone={handleBack}
+        />
+      )}
+    </>
   );
 }
