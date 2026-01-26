@@ -142,14 +142,17 @@ export function BillingOverview({ onSelectFamily }) {
 
     // Calculate bill for each family
     return Object.values(groups).map(family => {
-      // Format parent name as "Last, First"
+      // Format parent name as "Last, First" (removing titles like Mrs., Mr., etc.)
       const parentFullName = family.name;
       let formattedParentName = parentFullName;
-      const nameParts = parentFullName.split(' ');
+      const titles = ['mrs.', 'mr.', 'ms.', 'dr.', 'mrs', 'mr', 'ms', 'dr'];
+      const nameParts = parentFullName.split(' ').filter(part => !titles.includes(part.toLowerCase()));
       if (nameParts.length > 1) {
         const firstName = nameParts[0];
         const lastName = nameParts[nameParts.length - 1];
         formattedParentName = `${lastName}, ${firstName}`;
+      } else if (nameParts.length === 1) {
+        formattedParentName = nameParts[0];
       }
       
       // Get just first names of students
