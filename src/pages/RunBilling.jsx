@@ -260,12 +260,10 @@ function PreviewState({ data, onConfirm, onCancel }) {
             </div>
             <div className="flex-1">
               <p className="font-medium" style={{ color: colors.ink }}>
-                {expiredCards.length + noMethod.length} families need attention before billing
+                {expiredCards.length} families need attention before billing
               </p>
               <p className="text-sm" style={{ color: colors.muted }}>
-                {expiredCards.length > 0 && `${expiredCards.length} expired card${expiredCards.length > 1 ? 's' : ''}`}
-                {expiredCards.length > 0 && noMethod.length > 0 && ' · '}
-                {noMethod.length > 0 && `${noMethod.length} missing payment method${noMethod.length > 1 ? 's' : ''}`}
+                {expiredCards.length} expired card{expiredCards.length > 1 ? 's' : ''}
               </p>
             </div>
           </div>
