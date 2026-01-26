@@ -298,17 +298,9 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                     );
                 }
 
-                // INVOICE HIGHLIGHT MODULE - Hidden by default, shows frosted pink trigger
+                // INVOICE HIGHLIGHT MODULE - Skip rendering, handled globally below
                 if (module.type === 'invoice_highlight') {
-                    return (
-                        <div key={module.id} className="fixed bottom-6 right-6 z-50">
-                            <FamilyBillingTrigger 
-                                parentEmail={config?.parent_email} 
-                                studioName={config?.header_text || 'Dance Studio'}
-                                isPreview={isPreview}
-                            />
-                        </div>
-                    );
+                    return null;
                 }
 
                 // CLASS RECOMMENDATION MODULE
@@ -504,6 +496,15 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
 
                 return null;
             })}
+
+            {/* Billing Trigger - Always visible */}
+            <div className="fixed bottom-6 right-6 z-50">
+                <FamilyBillingTrigger 
+                    parentEmail={config?.parent_email} 
+                    studioName={config?.header_text || 'Dance Studio'}
+                    isPreview={isPreview}
+                />
+            </div>
 
             {/* Footer */}
             {footer.show_footer && (
