@@ -16,6 +16,7 @@ import PerformanceHub from '@/components/portal/PerformanceHub';
 import HeroModule from '@/components/portal/modules/HeroModule';
 import DigitalProgram from '@/components/portal/DigitalProgram';
 import { ParentBillView } from '@/components/billing/BillingUI';
+import FamilyBillingTrigger from '@/components/portal/FamilyBillingDisplay';
 
 export default function FamilyRoom({ previewConfig = null, isMobilePreview = false }) {
     const [searchParams] = useSearchParams();
@@ -297,56 +298,15 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                     );
                 }
 
-                // INVOICE HIGHLIGHT MODULE
+                // INVOICE HIGHLIGHT MODULE - Hidden by default, shows frosted pink trigger
                 if (module.type === 'invoice_highlight') {
-                    const balance = displayInvoices.reduce((sum, inv) => sum + (inv.balance_due || 0), 0) || 0;
-                    
-                    const handlePayment = () => {
-                        // Find first unpaid invoice with a link
-                        const paymentLink = displayInvoices.find(inv => (inv.balance_due > 0 && inv.stripe_payment_link))?.stripe_payment_link;
-                        
-                        if (paymentLink && paymentLink !== '#') {
-                            window.open(paymentLink, '_blank');
-                        } else if (isPreview) {
-                            toast.success("In live mode, this connects to your payment processor.");
-                        } else {
-                            toast.info("No online payment link available for this invoice.");
-                        }
-                    };
-
                     return (
-                        <div key={module.id} className="py-16 px-6">
-                            <div className="max-w-5xl mx-auto">
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 30 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    className={`bg-white rounded-[40px] p-8 ${!isMobilePreview ? 'md:p-16' : ''} shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col ${!isMobilePreview ? 'md:flex-row' : ''} items-center justify-between gap-12 relative overflow-hidden`}
-                                >
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50" />
-                                    
-                                    <div className="relative z-10 text-center md:text-left">
-                                        <div className="flex items-center justify-center md:justify-start gap-2 mb-4 text-indigo-600 uppercase tracking-widest text-xs font-bold">
-                                            <CreditCard className="w-4 h-4" /> Account Status
-                                        </div>
-                                        <h3 className="font-serif text-4xl text-[#333333] mb-2">Outstanding Balance</h3>
-                                        <p className="text-gray-400 max-w-md">
-                                            Please settle your account to ensure uninterrupted access to classes and resources.
-                                        </p>
-                                    </div>
-
-                                    <div className="relative z-10 flex flex-col items-center gap-4 bg-gray-50 p-8 rounded-3xl border border-gray-100 min-w-[300px]">
-                                        <div className="text-6xl font-serif text-[#333333]">${balance.toLocaleString()}</div>
-                                        <div className="text-xs text-gray-400 font-medium uppercase tracking-wider">Due Immediately</div>
-                                        <Button 
-                                            onClick={handlePayment}
-                                            className="w-full bg-[#333333] text-white hover:bg-black rounded-full h-12 mt-2 shadow-lg hover:shadow-xl transition-all"
-                                        >
-                                            Pay Securely
-                                        </Button>
-                                    </div>
-                                </motion.div>
-                            </div>
+                        <div key={module.id} className="fixed bottom-6 right-6 z-50">
+                            <FamilyBillingTrigger 
+                                parentEmail={config?.parent_email} 
+                                studioName={config?.header_text || 'Dance Studio'}
+                                isPreview={isPreview}
+                            />
                         </div>
                     );
                 }

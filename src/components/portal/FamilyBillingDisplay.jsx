@@ -1,0 +1,489 @@
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from "@/api/base44Client";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { DollarSign } from 'lucide-react';
+
+// ============================================
+// DESIGN TOKENS
+// ============================================
+
+const colors = {
+  ink: '#1a1a1a',
+  paper: '#faf9f7',
+  warm: '#f5f3ef',
+  muted: '#8a8478',
+  border: '#e8e6e1',
+  success: '#2d6a4f',
+  successLight: '#dcfce7',
+  error: '#dc2626',
+  accent: '#e85d04',
+  frost: '#fef7f7',
+  frostShadow: 'rgba(180, 120, 120, 0.08)',
+  frostDeep: 'rgba(180, 120, 120, 0.05)',
+  etchLight: '#c4a0a0',
+  etchDark: '#8a7070',
+};
+
+// ============================================
+// ETCHED TEXT COMPONENT
+// ============================================
+
+const EtchedText = ({ children, size = 'lg' }) => {
+  const sizes = {
+    md: 'text-2xl',
+    lg: 'text-4xl',
+    xl: 'text-5xl',
+  };
+  
+  return (
+    <span
+      className={`${sizes[size]} font-bold tracking-tight`}
+      style={{
+        color: 'transparent',
+        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+        filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+      }}
+    >
+      {children}
+    </span>
+  );
+};
+
+// ============================================
+// FROSTED CARD COMPONENT
+// ============================================
+
+const FrostedCard = ({ children, className = '' }) => (
+  <div
+    className={`rounded-3xl p-5 ${className}`}
+    style={{
+      backgroundColor: colors.frost,
+      boxShadow: `inset 0 2px 12px ${colors.frostShadow}, inset 0 1px 3px ${colors.frostDeep}`,
+    }}
+  >
+    {children}
+  </div>
+);
+
+// ============================================
+// WHITE CARD COMPONENT
+// ============================================
+
+const WhiteCard = ({ children, className = '', onClick }) => (
+  <div
+    className={`rounded-2xl bg-white ${className} ${onClick ? 'cursor-pointer active:scale-[0.98] transition-transform' : ''}`}
+    style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+    onClick={onClick}
+  >
+    {children}
+  </div>
+);
+
+// ============================================
+// STATUS PILL
+// ============================================
+
+const StatusPill = ({ status }) => {
+  const config = {
+    upcoming: { bg: colors.warm, text: colors.muted, label: 'Upcoming' },
+    due: { bg: '#fef3c7', text: '#b45309', label: 'Due' },
+    paid: { bg: colors.successLight, text: colors.success, label: 'Paid' },
+    overdue: { bg: '#fee2e2', text: colors.error, label: 'Overdue' },
+    sent: { bg: '#fef3c7', text: '#b45309', label: 'Pending' },
+    pending: { bg: '#fef3c7', text: '#b45309', label: 'Pending' },
+    draft: { bg: colors.warm, text: colors.muted, label: 'Draft' },
+  };
+  const c = config[status] || config.pending;
+  
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
+      style={{ backgroundColor: c.bg, color: c.text }}
+    >
+      {status === 'paid' && (
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+        </svg>
+      )}
+      {c.label}
+    </span>
+  );
+};
+
+// ============================================
+// ICONS
+// ============================================
+
+const IconChevron = ({ direction = 'right' }) => {
+  const rotations = { right: '', down: 'rotate-90', up: '-rotate-90' };
+  return (
+    <svg className={`w-5 h-5 ${rotations[direction]}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
+  );
+};
+
+const IconCard = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+  </svg>
+);
+
+const IconReceipt = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+  </svg>
+);
+
+// ============================================
+// FULL BILLING COMPONENT
+// ============================================
+
+function FamilyBilling({ parentEmail, studioName = 'Dance Studio', isPreview = false }) {
+  const [activeTab, setActiveTab] = useState('current');
+
+  // Fetch invoices
+  const { data: invoices = [] } = useQuery({
+    queryKey: ['familyBillingInvoices', parentEmail],
+    queryFn: async () => {
+      if (!parentEmail) return [];
+      const all = await base44.entities.Invoice.list('-issue_date', 20);
+      return all.filter(inv => inv.parent_email === parentEmail);
+    },
+    enabled: !!parentEmail && !isPreview,
+  });
+
+  // Fetch family info
+  const { data: family } = useQuery({
+    queryKey: ['familyBillingFamily', parentEmail],
+    queryFn: async () => {
+      if (!parentEmail) return null;
+      const families = await base44.entities.Family.filter({ parent_email: parentEmail });
+      return families[0] || null;
+    },
+    enabled: !!parentEmail && !isPreview,
+  });
+
+  // Sample data for preview
+  const sampleData = {
+    currentBalance: 316.92,
+    dueDate: 'Feb 1',
+    autopay: true,
+    cardBrand: 'Visa',
+    cardLast4: '4242',
+    currentBill: {
+      period: 'February 2026',
+      status: 'upcoming',
+      items: [
+        { student: 'Emma', class: 'Ballet III', duration: '60min', amount: 87.00 },
+        { student: 'Emma', class: 'Jazz II', duration: '45min', amount: 75.00 },
+        { student: 'Olivia', class: 'Pre-Ballet', duration: '45min', amount: 75.00 },
+      ],
+      subtotal: 237.00,
+      discounts: [
+        { name: 'Sibling discount', detail: '10% off 2nd student', amount: -7.50 },
+      ],
+      fees: [],
+      total: 229.50,
+    },
+    history: [
+      { period: 'January 2026', amount: 229.50, status: 'paid', date: 'Jan 3' },
+      { period: 'December 2025', amount: 229.50, status: 'paid', date: 'Dec 2' },
+    ],
+  };
+
+  // Use real data or sample for preview
+  const currentInvoice = invoices.find(inv => inv.status === 'sent' || inv.status === 'pending' || inv.status === 'draft');
+  const paidInvoices = invoices.filter(inv => inv.status === 'paid');
+
+  const data = isPreview ? sampleData : {
+    currentBalance: currentInvoice?.balance_due || currentInvoice?.total_amount || 0,
+    dueDate: currentInvoice?.due_date ? new Date(currentInvoice.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A',
+    autopay: family?.payment_status === 'autopay',
+    cardBrand: family?.card_brand || '',
+    cardLast4: family?.card_last4 || '',
+    currentBill: {
+      period: currentInvoice?.title || 'Current Period',
+      status: currentInvoice?.status || 'pending',
+      items: currentInvoice?.items || [],
+      subtotal: currentInvoice?.subtotal || 0,
+      discounts: [],
+      fees: [],
+      total: currentInvoice?.total_amount || 0,
+    },
+    history: paidInvoices.map(inv => ({
+      period: inv.title || 'Payment',
+      amount: inv.total_amount,
+      status: inv.status,
+      date: new Date(inv.updated_date || inv.issue_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    })),
+  };
+
+  const bill = data.currentBill;
+
+  return (
+    <div 
+      className="min-h-[80vh] pb-8 overflow-y-auto max-h-[85vh]"
+      style={{ backgroundColor: colors.paper }}
+    >
+      {/* Header */}
+      <div className="px-5 pt-6 pb-4">
+        <p className="text-sm font-medium" style={{ color: colors.muted }}>{studioName}</p>
+        <h1 className="text-2xl font-bold mt-1" style={{ color: colors.ink }}>Tuition</h1>
+      </div>
+
+      {/* Balance Card */}
+      <div className="px-4 mb-4">
+        <FrostedCard>
+          <div className="text-center py-4">
+            <p className="text-sm mb-3" style={{ color: colors.muted }}>
+              {bill.status === 'paid' ? 'Last payment' : 'Amount due'}
+            </p>
+            <EtchedText size="xl">
+              ${data.currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </EtchedText>
+            <div className="flex items-center justify-center gap-2 mt-3">
+              <StatusPill status={bill.status} />
+              {bill.status !== 'paid' && (
+                <span className="text-sm" style={{ color: colors.muted }}>· Due {data.dueDate}</span>
+              )}
+            </div>
+          </div>
+
+          {bill.status !== 'paid' && data.currentBalance > 0 && (
+            <div className="mt-4">
+              {data.autopay ? (
+                <div 
+                  className="flex items-center justify-center gap-2 py-3 rounded-2xl"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
+                >
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.success }} />
+                  <span className="text-sm font-medium" style={{ color: colors.ink }}>
+                    Auto-pay on {data.dueDate}
+                  </span>
+                </div>
+              ) : (
+                <button
+                  className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-[0.98]"
+                  style={{ backgroundColor: colors.ink }}
+                >
+                  Pay ${data.currentBalance.toFixed(2)}
+                </button>
+              )}
+            </div>
+          )}
+        </FrostedCard>
+      </div>
+
+      {/* Tab Switcher */}
+      <div className="px-4 mb-4">
+        <div 
+          className="flex p-1 rounded-2xl"
+          style={{ backgroundColor: colors.warm }}
+        >
+          {[
+            { id: 'current', label: 'Current Bill' },
+            { id: 'history', label: 'History' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+              style={{
+                backgroundColor: activeTab === tab.id ? '#fff' : 'transparent',
+                color: activeTab === tab.id ? colors.ink : colors.muted,
+                boxShadow: activeTab === tab.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Current Bill Tab */}
+      {activeTab === 'current' && (
+        <div className="px-4 space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <span className="font-semibold" style={{ color: colors.ink }}>{bill.period}</span>
+            <StatusPill status={bill.status} />
+          </div>
+
+          {bill.items.length > 0 && (
+            <WhiteCard className="overflow-hidden">
+              <div className="px-4 py-3" style={{ borderBottom: `1px solid ${colors.border}` }}>
+                <span className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.muted }}>
+                  Classes
+                </span>
+              </div>
+              {bill.items.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: i < bill.items.length - 1 ? `1px solid ${colors.border}` : undefined }}
+                >
+                  <div>
+                    <p className="font-medium" style={{ color: colors.ink }}>{item.description || item.class}</p>
+                    <p className="text-sm" style={{ color: colors.muted }}>{item.student_name || item.student}</p>
+                  </div>
+                  <span className="font-medium tabular-nums" style={{ color: colors.ink }}>
+                    ${(item.amount || 0).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+              <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: colors.warm }}>
+                <span style={{ color: colors.muted }}>Subtotal</span>
+                <span className="font-medium tabular-nums" style={{ color: colors.ink }}>
+                  ${bill.subtotal.toFixed(2)}
+                </span>
+              </div>
+            </WhiteCard>
+          )}
+
+          {bill.discounts?.length > 0 && (
+            <WhiteCard className="overflow-hidden">
+              <div className="px-4 py-3" style={{ borderBottom: `1px solid ${colors.border}` }}>
+                <span className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.success }}>
+                  Discounts Applied
+                </span>
+              </div>
+              {bill.discounts.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: i < bill.discounts.length - 1 ? `1px solid ${colors.border}` : undefined }}
+                >
+                  <div>
+                    <p className="font-medium" style={{ color: colors.success }}>{item.name}</p>
+                    <p className="text-sm" style={{ color: colors.muted }}>{item.detail}</p>
+                  </div>
+                  <span className="font-medium tabular-nums" style={{ color: colors.success }}>
+                    −${Math.abs(item.amount).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </WhiteCard>
+          )}
+
+          <FrostedCard className="flex items-center justify-between">
+            <span className="font-semibold" style={{ color: colors.ink }}>Total</span>
+            <EtchedText size="md">${bill.total.toFixed(2)}</EtchedText>
+          </FrostedCard>
+
+          {(data.cardBrand || data.cardLast4) && (
+            <WhiteCard className="p-4">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: colors.warm }}
+                >
+                  <IconCard />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium" style={{ color: colors.ink }}>
+                    {data.cardBrand} ····{data.cardLast4}
+                  </p>
+                  <p className="text-sm" style={{ color: colors.muted }}>
+                    {data.autopay ? 'Auto-pay enabled' : 'Payment method on file'}
+                  </p>
+                </div>
+              </div>
+            </WhiteCard>
+          )}
+        </div>
+      )}
+
+      {/* History Tab */}
+      {activeTab === 'history' && (
+        <div className="px-4">
+          {data.history.length > 0 ? (
+            <WhiteCard className="overflow-hidden">
+              {data.history.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-4 py-4"
+                  style={{ borderBottom: i < data.history.length - 1 ? `1px solid ${colors.border}` : undefined }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: colors.successLight }}
+                    >
+                      <IconReceipt />
+                    </div>
+                    <div>
+                      <p className="font-medium" style={{ color: colors.ink }}>{item.period}</p>
+                      <p className="text-sm" style={{ color: colors.muted }}>Paid {item.date}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium tabular-nums" style={{ color: colors.ink }}>
+                      ${item.amount.toFixed(2)}
+                    </p>
+                    <StatusPill status={item.status} />
+                  </div>
+                </div>
+              ))}
+            </WhiteCard>
+          ) : (
+            <div className="text-center py-12" style={{ color: colors.muted }}>
+              No payment history yet
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Help Footer */}
+      <div className="px-4 mt-8">
+        <div 
+          className="text-center py-4 rounded-2xl"
+          style={{ backgroundColor: colors.warm }}
+        >
+          <p className="text-sm" style={{ color: colors.muted }}>
+            Questions about your bill?
+          </p>
+          <button 
+            className="text-sm font-medium mt-1"
+            style={{ color: colors.ink }}
+          >
+            Contact {studioName}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// HIDDEN TRIGGER BUTTON (Frosted Pink Circle with Money Icon)
+// ============================================
+
+export default function FamilyBillingTrigger({ parentEmail, studioName, isPreview = false }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <button
+          className="w-14 h-14 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg"
+          style={{
+            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.9) 0%, rgba(252, 231, 231, 0.8) 100%)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 200, 200, 0.3)',
+            boxShadow: '0 4px 24px rgba(180, 120, 120, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
+          }}
+        >
+          <DollarSign className="w-6 h-6" style={{ color: '#8a7070' }} />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-3xl border-0 bg-transparent shadow-2xl">
+        <FamilyBilling parentEmail={parentEmail} studioName={studioName} isPreview={isPreview} />
+      </DialogContent>
+    </Dialog>
+  );
+}
