@@ -232,7 +232,9 @@ export function BillingOverview({ onSelectFamily }) {
   
   const filtered = filter === 'all' 
     ? families 
-    : families.filter(f => filter === 'overdue' ? (f.status === 'overdue' || f.status === 'failed') : f.status === filter);
+    : filter === 'pending'
+      ? families.filter(f => f.status === 'pending' || f.status === 'sent' || f.status === 'draft')
+      : families.filter(f => f.status === 'overdue' || f.status === 'failed');
 
   return (
     <div className="min-h-screen p-8" style={{ backgroundColor: colors.paper }}>
