@@ -414,10 +414,7 @@ function RunningState({ data, onComplete }) {
       let newStatus;
       let message;
 
-      if (family.paymentStatus === 'no_method') {
-        newStatus = 'failed';
-        message = 'No payment method';
-      } else if (family.isCardExpired) {
+      if (family.isCardExpired) {
         newStatus = 'failed';
         message = 'Card expired';
       } else {
