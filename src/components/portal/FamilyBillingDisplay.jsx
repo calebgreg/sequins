@@ -476,7 +476,7 @@ export default function FamilyBillingTrigger({ parentEmail, studioName, isPrevie
   });
 
   const currentInvoice = invoices.find(inv => inv.status === 'sent' || inv.status === 'pending');
-  const balance = isPreview ? 316.92 : (currentInvoice?.balance_due || currentInvoice?.total_amount || 0);
+  const balance = isPreview ? 229.50 : (currentInvoice?.balance_due || currentInvoice?.total_amount || 0);
   const dueDate = isPreview ? 'Feb 1' : (currentInvoice?.due_date ? new Date(currentInvoice.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null);
 
   return (
