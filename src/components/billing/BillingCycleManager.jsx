@@ -4,13 +4,13 @@ import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { format, addDays } from 'date-fns';
 import { 
   Loader2, Play, CheckCircle2, AlertTriangle, CreditCard, Mail, 
-  ChevronDown, ChevronRight, Calculator, AlertCircle, XCircle,
-  RefreshCw, FileText, Zap, Clock, ArrowRight
+  ChevronDown, ChevronRight, AlertCircle, XCircle,
+  RefreshCw, Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateTuition } from './TuitionBillingWizard';
@@ -21,7 +21,6 @@ import { calculateTuition } from './TuitionBillingWizard';
 // ============================================
 
 const STATES = {
-  CONFIGURE: 'configure',
   PREVIEW: 'preview',
   RUNNING: 'running',
   COMPLETE: 'complete'
@@ -229,12 +228,12 @@ function ProgressItem({ family, status, message }) {
 
 export default function BillingCycleManager({ isOpen, onOpenChange }) {
   const queryClient = useQueryClient();
-  const [state, setState] = useState(STATES.CONFIGURE);
-  const [selectedFees, setSelectedFees] = useState([]);
+  const [state, setState] = useState(STATES.PREVIEW);
   const [expandedFamilies, setExpandedFamilies] = useState({});
   const [previewData, setPreviewData] = useState(null);
   const [progressData, setProgressData] = useState([]);
   const [summaryData, setSummaryData] = useState(null);
+  const [isCalculating, setIsCalculating] = useState(true);
 
   // Data Fetching
   const { data: students = [] } = useQuery({
@@ -257,29 +256,19 @@ export default function BillingCycleManager({ isOpen, onOpenChange }) {
     queryFn: () => base44.entities.TuitionRule.list(),
   });
 
-  const { data: fees = [] } = useQuery({
-    queryKey: ['fee_types'],
-    queryFn: () => base44.entities.FeeType.list(),
-  });
-
-  // Optional fees (one-time, annual, per-session)
-  const optionalFees = fees.filter(f => 
-    f.billing_frequency === 'annual' || 
-    f.billing_frequency === 'one_time' || 
-    f.billing_frequency === 'per_session'
-  );
-
-  const toggleFee = (feeId) => {
-    setSelectedFees(prev => 
-      prev.includes(feeId) ? prev.filter(id => id !== feeId) : [...prev, feeId]
-    );
-  };
+  // Auto-calculate preview when modal opens and data is ready
+  React.useEffect(() => {
+    if (isOpen && students.length > 0 && tuitionRules.length > 0 && !previewData) {
+      calculatePreview();
+    }
+  }, [isOpen, students, tuitionRules]);
 
   // ============================================
   // CALCULATE PREVIEW
   // ============================================
 
   const calculatePreview = () => {
+    setIsCalculating(true);
     const rulesForCalc = tuitionRules
       .filter(r => r.active !== false)
       .map(convertRuleForCalculation);
@@ -393,18 +382,18 @@ export default function BillingCycleManager({ isOpen, onOpenChange }) {
           noMethodCount++;
         }
       }
-    });
+      });
 
-    setPreviewData({
+      setPreviewData({
       families: familyBills,
       totalRevenue,
       autopayCount,
       invoiceCount,
       noMethodCount,
       expiredCardCount,
-    });
-    setState(STATES.PREVIEW);
-  };
+      });
+      setIsCalculating(false);
+      };
 
   // ============================================
   // RUN BILLING
@@ -505,12 +494,12 @@ export default function BillingCycleManager({ isOpen, onOpenChange }) {
   // Reset on close
   const handleClose = (open) => {
     if (!open) {
-      setState(STATES.CONFIGURE);
-      setSelectedFees([]);
+      setState(STATES.PREVIEW);
       setExpandedFamilies({});
       setPreviewData(null);
       setProgressData([]);
       setSummaryData(null);
+      setIsCalculating(true);
     }
     onOpenChange(open);
   };
@@ -527,7 +516,6 @@ export default function BillingCycleManager({ isOpen, onOpenChange }) {
         <div className="bg-[#333333] px-8 py-6 flex justify-between items-center flex-shrink-0">
           <div>
             <DialogTitle className="font-serif text-2xl text-white">
-              {state === STATES.CONFIGURE && 'Run Billing Cycle'}
               {state === STATES.PREVIEW && 'Review & Confirm'}
               {state === STATES.RUNNING && 'Processing...'}
               {state === STATES.COMPLETE && 'Billing Complete'}
@@ -559,62 +547,16 @@ export default function BillingCycleManager({ isOpen, onOpenChange }) {
         <div className="flex-1 overflow-hidden flex flex-col bg-[#F4F4F6]">
           
           {/* ============================================ */}
-          {/* STATE: CONFIGURE */}
+          {/* STATE: PREVIEW */}
           {/* ============================================ */}
-          {state === STATES.CONFIGURE && (
+          {state === STATES.PREVIEW && isCalculating && (
             <div className="flex-1 flex flex-col items-center justify-center p-8">
-              <div className="bg-white rounded-[32px] p-8 shadow-sm max-w-2xl w-full mb-8">
-                <h3 className="font-serif text-xl text-[#333333] mb-2 flex items-center gap-2">
-                  <Zap className="w-5 h-5" /> Include Additional Fees
-                </h3>
-                <p className="text-gray-500 text-sm mb-6">
-                  Select any one-time or annual fees to include in this billing cycle.
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {optionalFees.length > 0 ? optionalFees.map(fee => (
-                    <div 
-                      key={fee.id}
-                      onClick={() => toggleFee(fee.id)} 
-                      className={`
-                        p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between
-                        ${selectedFees.includes(fee.id) ? 'border-[#333333] bg-gray-50' : 'border-gray-100 hover:border-gray-200'}
-                      `}
-                    >
-                      <div>
-                        <div className="font-bold text-[#333333]">{fee.name}</div>
-                        <div className="text-xs text-gray-400 capitalize">
-                          {fee.billing_frequency?.replace('_', ' ')} • ${fee.amount}
-                        </div>
-                      </div>
-                      <Checkbox 
-                        checked={selectedFees.includes(fee.id)} 
-                        className="data-[state=checked]:bg-[#333333]" 
-                      />
-                    </div>
-                  )) : (
-                    <div className="col-span-2 text-center text-gray-400 text-sm py-4">
-                      No optional fees configured.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <Button 
-                size="lg" 
-                onClick={calculatePreview}
-                className="bg-[#333333] text-white hover:bg-black rounded-full px-12 h-16 text-lg shadow-xl"
-              >
-                <Calculator className="w-6 h-6 mr-3" />
-                Calculate Preview
-              </Button>
+              <Loader2 className="w-12 h-12 animate-spin text-[#333333] mb-4" />
+              <p className="text-gray-500">Calculating tuition...</p>
             </div>
           )}
 
-          {/* ============================================ */}
-          {/* STATE: PREVIEW */}
-          {/* ============================================ */}
-          {state === STATES.PREVIEW && previewData && (
+          {state === STATES.PREVIEW && !isCalculating && previewData && (
             <div className="flex-1 flex flex-col overflow-hidden">
               {/* Stats Bar */}
               <div className="p-6 bg-white border-b border-gray-200 shadow-sm z-10">
