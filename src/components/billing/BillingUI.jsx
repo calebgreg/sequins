@@ -142,6 +142,19 @@ export function BillingOverview({ onSelectFamily }) {
 
     // Calculate bill for each family
     return Object.values(groups).map(family => {
+      // Format parent name as "Last, First"
+      const parentFullName = family.name;
+      let formattedParentName = parentFullName;
+      const nameParts = parentFullName.split(' ');
+      if (nameParts.length > 1) {
+        const firstName = nameParts[0];
+        const lastName = nameParts[nameParts.length - 1];
+        formattedParentName = `${lastName}, ${firstName}`;
+      }
+      
+      // Get just first names of students
+      const studentFirstNames = family.students.map(s => s.name.split(' ')[0]).join(', ');
+
       const inputs = buildCalculationInput(family.students, classes);
       let totalAmount = 0;
       const calculations = [];
@@ -188,6 +201,8 @@ export function BillingOverview({ onSelectFamily }) {
 
       return {
         ...family,
+        displayName: formattedParentName,
+        studentFirstNames,
         amount: existingInvoice?.total_amount || totalAmount,
         status: existingInvoice?.status || 'draft',
         autopay: family.students[0]?.billing_method === 'auto_pay',
@@ -306,14 +321,14 @@ export function BillingOverview({ onSelectFamily }) {
                 className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold"
                 style={{ backgroundColor: colors.warm, color: colors.ink }}
               >
-                {family.name[0]?.toUpperCase()}
+                {family.displayName[0]?.toUpperCase()}
               </div>
               
               {/* Name & Students */}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold" style={{ color: colors.ink }}>{family.name}</p>
-                <p className="text-sm truncate" style={{ color: colors.muted }}>
-                  {family.students.map(s => s.name).join(', ')}
+              <div className="flex-1 min-w-0 flex items-center gap-3">
+                <p className="font-semibold" style={{ color: colors.ink }}>{family.displayName}</p>
+                <p className="text-sm" style={{ color: colors.muted }}>
+                  {family.studentFirstNames}
                 </p>
               </div>
               
