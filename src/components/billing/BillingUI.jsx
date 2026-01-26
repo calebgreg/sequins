@@ -315,7 +315,7 @@ export function BillingOverview({ onSelectFamily }) {
         <div className="flex gap-2 mb-6">
           {[
             { id: 'all', label: 'All families', count: families.length },
-            { id: 'pending', label: 'Pending', count: families.filter(f => f.status === 'pending' || f.status === 'sent').length },
+            { id: 'pending', label: 'Pending', count: families.filter(f => f.status === 'pending' || f.status === 'sent' || f.status === 'draft').length },
             { id: 'overdue', label: 'Needs attention', count: families.filter(f => f.status === 'overdue' || f.status === 'failed').length },
           ].map(tab => (
             <button
