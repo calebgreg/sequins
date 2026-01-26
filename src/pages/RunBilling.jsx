@@ -307,8 +307,7 @@ function PreviewState({ data, onConfirm, onCancel }) {
                   
                   {/* Tags */}
                   {family.isCardExpired && <Pill color="error">Expired</Pill>}
-                  {family.paymentStatus === 'no_method' && <Pill color="error">No card</Pill>}
-                  {family.paymentStatus === 'invoice' && <Pill color="blue">Invoice</Pill>}
+                  {(family.paymentStatus === 'invoice' || family.paymentStatus === 'no_method') && <Pill color="blue">Invoice</Pill>}
                   {family.paymentStatus === 'autopay' && !family.isCardExpired && (
                     <span className="text-xs" style={{ color: colors.muted }}>
                       {family.cardBrand} ····{family.cardLast4}
