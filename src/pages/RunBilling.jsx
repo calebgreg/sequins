@@ -224,14 +224,14 @@ function PreviewState({ data, onConfirm, onCancel }) {
           
           <div className="flex justify-center gap-3">
             <div 
-              className="px-6 py-4 rounded-2xl text-center"
+              className="px-6 py-4 rounded-2xl text-center min-w-[100px]"
               style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
             >
               <p className="text-2xl font-bold" style={{ color: colors.ink }}>{autopayFamilies.length}</p>
               <p className="text-xs mt-0.5" style={{ color: colors.muted }}>auto-pay</p>
             </div>
             <div 
-              className="px-6 py-4 rounded-2xl text-center"
+              className="px-6 py-4 rounded-2xl text-center min-w-[100px]"
               style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
             >
               <p className="text-2xl font-bold" style={{ color: colors.ink }}>{invoiceFamilies.length}</p>
