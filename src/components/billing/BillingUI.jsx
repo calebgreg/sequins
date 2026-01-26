@@ -283,25 +283,25 @@ export function BillingOverview({ onSelectFamily }) {
 
           <div className="flex justify-center gap-3">
             <div 
-              className="px-6 py-4 rounded-2xl text-center"
+              className="px-6 py-4 rounded-2xl text-center min-w-[100px]"
               style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
             >
-              <p className="text-2xl font-bold" style={{ color: colors.success }}>${stats.collected.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+              <p className="text-2xl font-bold" style={{ color: colors.ink }}>${stats.collected.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
               <p className="text-xs mt-0.5" style={{ color: colors.muted }}>collected</p>
             </div>
             <div 
-              className="px-6 py-4 rounded-2xl text-center"
+              className="px-6 py-4 rounded-2xl text-center min-w-[100px]"
               style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
             >
-              <p className="text-2xl font-bold" style={{ color: colors.warning }}>${stats.pending.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+              <p className="text-2xl font-bold" style={{ color: colors.ink }}>${stats.pending.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
               <p className="text-xs mt-0.5" style={{ color: colors.muted }}>pending</p>
             </div>
             <div 
-              className="px-6 py-4 rounded-2xl text-center"
+              className="px-6 py-4 rounded-2xl text-center min-w-[100px]"
               style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
             >
-              <p className="text-2xl font-bold" style={{ color: colors.error }}>${stats.overdue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
-              <p className="text-xs mt-0.5" style={{ color: colors.error }}>outstanding</p>
+              <p className="text-2xl font-bold" style={{ color: colors.ink }}>${stats.overdue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+              <p className="text-xs mt-0.5" style={{ color: colors.muted }}>outstanding</p>
             </div>
           </div>
         </div>
