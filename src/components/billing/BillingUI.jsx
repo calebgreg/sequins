@@ -256,19 +256,53 @@ export function BillingOverview({ onSelectFamily }) {
           </Link>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-            <p className="text-sm font-medium mb-1" style={{ color: colors.success }}>Collected</p>
-            <Money amount={stats.collected} size="lg" />
+        {/* Stats Cards - Frosted Glass Style */}
+        <div 
+          className="rounded-3xl p-8 mb-8"
+          style={{ 
+            backgroundColor: '#fef7f7',
+            boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
+          }}
+        >
+          <div className="text-center mb-6">
+            <p className="text-sm mb-2" style={{ color: colors.muted }}>{families.length} families</p>
+            <p 
+              className="text-5xl font-bold tracking-tight"
+              style={{ 
+                color: 'transparent',
+                backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+                filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+              }}
+            >
+              ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
           </div>
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-            <p className="text-sm font-medium mb-1" style={{ color: colors.warning }}>Pending</p>
-            <Money amount={stats.pending} size="lg" />
-          </div>
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-            <p className="text-sm font-medium mb-1" style={{ color: colors.error }}>Outstanding</p>
-            <Money amount={stats.overdue} size="lg" />
+
+          <div className="flex justify-center gap-3">
+            <div 
+              className="px-6 py-4 rounded-2xl text-center"
+              style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+            >
+              <p className="text-2xl font-bold" style={{ color: colors.success }}>${stats.collected.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+              <p className="text-xs mt-0.5" style={{ color: colors.muted }}>collected</p>
+            </div>
+            <div 
+              className="px-6 py-4 rounded-2xl text-center"
+              style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+            >
+              <p className="text-2xl font-bold" style={{ color: colors.warning }}>${stats.pending.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+              <p className="text-xs mt-0.5" style={{ color: colors.muted }}>pending</p>
+            </div>
+            <div 
+              className="px-6 py-4 rounded-2xl text-center"
+              style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+            >
+              <p className="text-2xl font-bold" style={{ color: colors.error }}>${stats.overdue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+              <p className="text-xs mt-0.5" style={{ color: colors.error }}>outstanding</p>
+            </div>
           </div>
         </div>
 
