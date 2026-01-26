@@ -232,6 +232,13 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                                              isPreview={isPreview}
                                          />
                                      )}
+
+                                     {/* Billing Widget - Always visible */}
+                                     <FamilyBillingTrigger 
+                                         parentEmail={config?.parent_email} 
+                                         studioName={config?.header_text || 'Dance Studio'}
+                                         isPreview={isPreview}
+                                     />
                                 </div>
                             )}
                         </React.Fragment>
