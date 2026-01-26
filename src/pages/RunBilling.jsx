@@ -163,9 +163,8 @@ function PreviewState({ data, onConfirm, onCancel }) {
   const [expandedFamily, setExpandedFamily] = useState(null);
   
   const autopayFamilies = data.families.filter(f => f.paymentStatus === 'autopay' && !f.isCardExpired);
-  const invoiceFamilies = data.families.filter(f => f.paymentStatus === 'invoice');
+  const invoiceFamilies = data.families.filter(f => f.paymentStatus === 'invoice' || f.paymentStatus === 'no_method');
   const expiredCards = data.families.filter(f => f.isCardExpired);
-  const noMethod = data.families.filter(f => f.paymentStatus === 'no_method');
   
   const grandTotal = data.families.reduce((s, f) => s + f.total, 0);
   const hasProblems = expiredCards.length > 0 || noMethod.length > 0;
