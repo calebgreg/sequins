@@ -5,6 +5,7 @@ import FamilyRoom from './pages/FamilyRoom';
 import Features from './pages/Features';
 import Home from './pages/Home';
 import Performances from './pages/Performances';
+import RunBilling from './pages/RunBilling';
 import Settings from './pages/Settings';
 import StaffDirectory from './pages/StaffDirectory';
 import Students from './pages/Students';
@@ -12,7 +13,6 @@ import Tasks from './pages/Tasks';
 import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
-import RunBilling from './pages/RunBilling';
 import __Layout from './Layout.jsx';
 
 
@@ -24,6 +24,7 @@ export const PAGES = {
     "Features": Features,
     "Home": Home,
     "Performances": Performances,
+    "RunBilling": RunBilling,
     "Settings": Settings,
     "StaffDirectory": StaffDirectory,
     "Students": Students,
@@ -31,7 +32,6 @@ export const PAGES = {
     "TeacherStudio": TeacherStudio,
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
-    "RunBilling": RunBilling,
 }
 
 export const pagesConfig = {
