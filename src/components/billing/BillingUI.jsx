@@ -33,6 +33,7 @@ const StatusChip = ({ status, detail }) => {
   const config = {
     paid: { bg: colors.successLight, text: colors.success, label: 'Paid' },
     pending: { bg: colors.warningLight, text: colors.warning, label: 'Pending' },
+    sent: { bg: colors.warningLight, text: colors.warning, label: 'Pending' },
     overdue: { bg: colors.errorLight, text: colors.error, label: 'Overdue' },
     failed: { bg: colors.errorLight, text: colors.error, label: 'Failed' },
     draft: { bg: colors.warm, text: colors.muted, label: 'Draft' },
