@@ -171,6 +171,18 @@ export function BillingOverview({ onSelectFamily }) {
         inv.issue_date?.startsWith(currentMonth)
       );
 
+      // Calculate days past due for overdue invoices
+      let daysPastDue = null;
+      let paidDate = null;
+      if (existingInvoice?.status === 'overdue' && existingInvoice?.due_date) {
+        const dueDate = new Date(existingInvoice.due_date);
+        const today = new Date();
+        daysPastDue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+      }
+      if (existingInvoice?.status === 'paid' && existingInvoice?.updated_date) {
+        paidDate = new Date(existingInvoice.updated_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+
       return {
         ...family,
         amount: existingInvoice?.total_amount || totalAmount,
@@ -178,18 +190,20 @@ export function BillingOverview({ onSelectFamily }) {
         autopay: family.students[0]?.billing_method === 'auto_pay',
         calculations,
         invoiceId: existingInvoice?.id,
+        daysPastDue,
+        paidDate,
       };
     });
   }, [students, classes, tuitionRules, invoices]);
 
   const stats = {
     collected: families.filter(f => f.status === 'paid').reduce((s, f) => s + f.amount, 0),
-    pending: families.filter(f => f.status === 'pending' || f.status === 'sent').reduce((s, f) => s + f.amount, 0),
+    pending: families.filter(f => f.status === 'pending' || f.status === 'sent' || f.status === 'draft').reduce((s, f) => s + f.amount, 0),
     overdue: families.filter(f => f.status === 'overdue' || f.status === 'failed').reduce((s, f) => s + f.amount, 0),
   };
   
-  const total = stats.collected + stats.pending + stats.overdue || 1;
-  const collectedPercent = (stats.collected / total) * 100;
+  const total = stats.collected + stats.pending + stats.overdue;
+  const collectedPercent = total > 0 ? (stats.collected / total) * 100 : 0;
   
   const filtered = filter === 'all' 
     ? families 
@@ -307,7 +321,14 @@ export function BillingOverview({ onSelectFamily }) {
               
               {/* Status */}
               <div className="w-32 flex justify-end">
-                <StatusChip status={family.status} />
+                <StatusChip 
+                  status={family.status} 
+                  detail={
+                    family.status === 'paid' ? family.paidDate :
+                    family.status === 'overdue' ? `${family.daysPastDue}d` :
+                    family.status === 'failed' ? 'Retry' : undefined
+                  }
+                />
               </div>
               
               {/* Arrow */}
@@ -791,16 +812,68 @@ export function ParentBillView({ parentEmail }) {
 }
 
 // ============================================
+// VIEW SWITCHER
+// ============================================
+
+const ViewSwitcher = ({ view, onViewChange }) => (
+  <div className="fixed top-4 right-4 z-50 flex gap-1 p-1 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
+    {[
+      { id: 'overview', label: 'Admin: Overview' },
+      { id: 'detail', label: 'Admin: Family' },
+      { id: 'parent', label: 'Parent View' },
+    ].map(v => (
+      <button
+        key={v.id}
+        onClick={() => onViewChange(v.id)}
+        className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+        style={{ 
+          backgroundColor: view === v.id ? '#fff' : 'transparent',
+          color: view === v.id ? '#000' : '#fff',
+        }}
+      >
+        {v.label}
+      </button>
+    ))}
+  </div>
+);
+
+// ============================================
 // MAIN EXPORT
 // ============================================
 
 export default function BillingUI() {
   const [view, setView] = useState('overview');
   const [selectedFamily, setSelectedFamily] = useState(null);
+
+  // For parent view, get first family's email as demo
+  const { data: students = [] } = useQuery({
+    queryKey: ['students'],
+    queryFn: () => base44.entities.Student.list(),
+  });
+
+  const demoParentEmail = students.find(s => s.parent_email)?.parent_email;
+
+  const handleViewChange = (newView) => {
+    if (newView === 'detail' && !selectedFamily) {
+      // If switching to detail without a family selected, stay on overview
+      return;
+    }
+    setView(newView);
+  };
   
-  if (view === 'detail' && selectedFamily) {
-    return <FamilyBillingDetail family={selectedFamily} onBack={() => { setView('overview'); setSelectedFamily(null); }} />;
-  }
-  
-  return <BillingOverview onSelectFamily={(family) => { setSelectedFamily(family); setView('detail'); }} />;
+  return (
+    <div>
+      <ViewSwitcher view={view} onViewChange={handleViewChange} />
+      
+      {view === 'overview' && (
+        <BillingOverview onSelectFamily={(family) => { setSelectedFamily(family); setView('detail'); }} />
+      )}
+      {view === 'detail' && selectedFamily && (
+        <FamilyBillingDetail family={selectedFamily} onBack={() => { setView('overview'); setSelectedFamily(null); }} />
+      )}
+      {view === 'parent' && (
+        <ParentBillView parentEmail={demoParentEmail} />
+      )}
+    </div>
+  );
 }
