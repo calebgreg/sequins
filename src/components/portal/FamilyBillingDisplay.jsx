@@ -505,9 +505,9 @@ export default function FamilyBillingTrigger({ parentEmail, studioName, isPrevie
             </div>
             <div>
               <p className="text-xs sm:text-sm font-medium" style={{ color: colors.muted }}>Tuition</p>
-              <p className="text-xl sm:text-2xl font-bold" style={{ color: colors.ink }}>
+              <EtchedText size="md">
                 ${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </p>
+              </EtchedText>
               {dueDate && (
                 <p className="text-xs sm:text-sm mt-1" style={{ color: colors.muted }}>
                   Due {dueDate}
