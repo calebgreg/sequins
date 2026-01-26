@@ -493,31 +493,31 @@ export default function FamilyBillingTrigger({ parentEmail, studioName, isPrevie
       {/* Collapsed Header - Always visible */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="w-full px-6 py-5 flex items-center justify-between text-left"
+        className="w-full px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between text-left gap-2"
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
           <div 
-            className="w-12 h-12 rounded-2xl flex items-center justify-center"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
           >
-            <DollarSign className="w-6 h-6" style={{ color: colors.etchDark }} />
+            <DollarSign className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: colors.etchDark }} />
           </div>
-          <div>
-            <p className="text-sm font-medium" style={{ color: colors.muted }}>Tuition</p>
-            <p className="text-2xl font-bold" style={{ color: colors.ink }}>
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-medium" style={{ color: colors.muted }}>Tuition</p>
+            <p className="text-xl sm:text-2xl font-bold" style={{ color: colors.ink }}>
               ${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
-          {dueDate && !isCollapsed && (
-            <span className="text-sm hidden sm:block" style={{ color: colors.muted }}>
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          {dueDate && (
+            <span className="text-xs sm:text-sm whitespace-nowrap" style={{ color: colors.muted }}>
               Due {dueDate}
             </span>
           )}
           <div 
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-transform"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-transform flex-shrink-0"
             style={{ 
               backgroundColor: 'rgba(255, 255, 255, 0.6)',
               transform: isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)',
