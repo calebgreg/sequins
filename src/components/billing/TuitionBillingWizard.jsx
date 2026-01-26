@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // ============================================
 // SEQUINS TUITION BILLING - COMPLETE
@@ -517,6 +519,7 @@ const ProgressBar = ({ current, total }) => (
 export default function TuitionBillingWizard({ onSave }) {
   const [step, setStep] = useState(0);
   const [mode, setMode] = useState('choose');
+  const [saving, setSaving] = useState(false);
 
   const [pricingMethod, setPricingMethod] = useState('flat');
   const [flatRate, setFlatRate] = useState(87);
@@ -526,6 +529,14 @@ export default function TuitionBillingWizard({ onSave }) {
   const [packages, setPackages] = useState([]);
   const [discounts, setDiscounts] = useState([]);
   const [fees, setFees] = useState([]);
+
+  const queryClient = useQueryClient();
+
+  // Load existing rules
+  const { data: existingRules = [] } = useQuery({
+    queryKey: ['tuitionRules'],
+    queryFn: () => base44.entities.TuitionRule.list(),
+  });
 
   const createRule = (type) => ({
     id: `${type}_${Date.now()}`,
@@ -549,13 +560,40 @@ export default function TuitionBillingWizard({ onSave }) {
     return all;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setSaving(true);
     const rules = compileRules();
-    if (onSave) {
-      onSave(rules);
-    } else {
-      console.log('Rules:', JSON.stringify(rules, null, 2));
-      alert('Saved! Check console.');
+    
+    try {
+      // Delete existing rules first
+      for (const existing of existingRules) {
+        await base44.entities.TuitionRule.delete(existing.id);
+      }
+      
+      // Create new rules
+      for (const rule of rules) {
+        await base44.entities.TuitionRule.create({
+          type: rule.type,
+          priority: rule.priority || 0,
+          conditions: rule.conditions || [],
+          value: rule.value,
+          note: rule.note || '',
+          active: true,
+        });
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['tuitionRules'] });
+      
+      if (onSave) {
+        onSave(rules);
+      }
+      
+      alert('Tuition rules saved successfully!');
+    } catch (error) {
+      console.error('Error saving rules:', error);
+      alert('Failed to save rules. Please try again.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -626,7 +664,7 @@ export default function TuitionBillingWizard({ onSave }) {
           {step < steps.length - 1 ? (
             <button onClick={() => setStep(step + 1)} className="px-8 py-3 rounded-full font-semibold transition-all" style={{ backgroundColor: colors.ink, color: colors.paper }} onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'} onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}>Continue →</button>
           ) : (
-            <button onClick={handleSave} className="px-8 py-3 rounded-full font-semibold transition-all" style={{ backgroundColor: colors.success, color: '#fff' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'} onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}>Save rules ✓</button>
+            <button onClick={handleSave} disabled={saving} className="px-8 py-3 rounded-full font-semibold transition-all disabled:opacity-50" style={{ backgroundColor: colors.success, color: '#fff' }} onMouseEnter={(e) => !saving && (e.currentTarget.style.opacity = '0.9')} onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}>{saving ? 'Saving...' : 'Save rules ✓'}</button>
           )}
         </div>
       </div>
