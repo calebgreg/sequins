@@ -459,31 +459,57 @@ function FamilyBilling({ parentEmail, studioName = 'Dance Studio', isPreview = f
 }
 
 // ============================================
-// HIDDEN TRIGGER BUTTON (Frosted Pink Circle with Money Icon)
+// COLLAPSIBLE BILLING WIDGET (Visible by default)
 // ============================================
 
 export default function FamilyBillingTrigger({ parentEmail, studioName, isPreview = false }) {
-  const [open, setOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <div
+      className="transition-all duration-300 ease-in-out overflow-hidden rounded-3xl"
+      style={{
+        width: isCollapsed ? '56px' : '380px',
+        maxWidth: '90vw',
+        background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255, 200, 200, 0.3)',
+        boxShadow: '0 8px 32px rgba(180, 120, 120, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
+      }}
+    >
+      {/* Collapse/Expand Button */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.6)',
+          color: colors.muted,
+        }}
+      >
+        {isCollapsed ? (
+          <DollarSign className="w-4 h-4" />
+        ) : (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
+      </button>
+
+      {isCollapsed ? (
+        // Collapsed state - just the icon
         <button
-          className="w-14 h-14 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg"
-          style={{
-            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.9) 0%, rgba(252, 231, 231, 0.8) 100%)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255, 200, 200, 0.3)',
-            boxShadow: '0 4px 24px rgba(180, 120, 120, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
-          }}
+          onClick={() => setIsCollapsed(false)}
+          className="w-14 h-14 flex items-center justify-center"
         >
           <DollarSign className="w-6 h-6" style={{ color: '#8a7070' }} />
         </button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-3xl border-0 bg-transparent shadow-2xl">
-        <FamilyBilling parentEmail={parentEmail} studioName={studioName} isPreview={isPreview} />
-      </DialogContent>
-    </Dialog>
+      ) : (
+        // Expanded state - full billing content
+        <div className="relative max-h-[70vh] overflow-y-auto">
+          <FamilyBilling parentEmail={parentEmail} studioName={studioName} isPreview={isPreview} />
+        </div>
+      )}
+    </div>
   );
 }
