@@ -167,7 +167,7 @@ function PreviewState({ data, onConfirm, onCancel }) {
   const expiredCards = data.families.filter(f => f.isCardExpired);
   
   const grandTotal = data.families.reduce((s, f) => s + f.total, 0);
-  const hasProblems = expiredCards.length > 0 || noMethod.length > 0;
+  const hasProblems = expiredCards.length > 0;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: colors.paper }}>
