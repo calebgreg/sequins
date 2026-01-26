@@ -15,6 +15,7 @@ import EventDetailCard from '@/components/portal/EventDetailCard';
 import PerformanceHub from '@/components/portal/PerformanceHub';
 import HeroModule from '@/components/portal/modules/HeroModule';
 import DigitalProgram from '@/components/portal/DigitalProgram';
+import { ParentBillView } from '@/components/billing/BillingUI';
 
 export default function FamilyRoom({ previewConfig = null, isMobilePreview = false }) {
     const [searchParams] = useSearchParams();
@@ -478,6 +479,15 @@ export default function FamilyRoom({ previewConfig = null, isMobilePreview = fal
                              </motion.a>
                          </div>
                      )
+                }
+
+                // BILLING VIEW MODULE
+                if (module.type === 'billing_view') {
+                    return (
+                        <div key={module.id} className="max-w-lg mx-auto px-4 py-8">
+                            <ParentBillView parentEmail={config?.parent_email} />
+                        </div>
+                    );
                 }
 
                 // SHARED TASK LIST MODULE
