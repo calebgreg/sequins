@@ -495,8 +495,8 @@ export default function FamilyBillingTrigger({ parentEmail, studioName, isPrevie
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="w-full px-4 sm:px-6 py-4 sm:py-5 text-left"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-start justify-between">
+          <div className="flex gap-3 sm:gap-4">
             <div 
               className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
               style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
@@ -508,29 +508,26 @@ export default function FamilyBillingTrigger({ parentEmail, studioName, isPrevie
               <p className="text-xl sm:text-2xl font-bold" style={{ color: colors.ink }}>
                 ${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </p>
+              {dueDate && (
+                <p className="text-xs sm:text-sm mt-1" style={{ color: colors.muted }}>
+                  Due {dueDate}
+                </p>
+              )}
             </div>
           </div>
           
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div 
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-transform flex-shrink-0"
-              style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                transform: isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)',
-              }}
-            >
-              <svg className="w-4 h-4" style={{ color: colors.muted }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-transform flex-shrink-0 mt-1"
+            style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.6)',
+              transform: isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+            }}
+          >
+            <svg className="w-4 h-4" style={{ color: colors.muted }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
         </div>
-        
-        {dueDate && (
-          <p className="text-xs sm:text-sm mt-2 ml-13 sm:ml-16" style={{ color: colors.muted, marginLeft: '52px' }}>
-            Due {dueDate}
-          </p>
-        )}
       </button>
 
       {/* Expanded Content */}
