@@ -30,6 +30,7 @@ import { motion } from 'framer-motion';
 import InvoiceGenerator from '../components/billing/InvoiceGenerator';
 import TransactionHistory from '../components/billing/TransactionHistory';
 import TuitionConfiguration from '../components/billing/TuitionConfiguration';
+import TuitionBillingWizard from '../components/billing/TuitionBillingWizard';
 import TuitionAssignment from '../components/billing/TuitionAssignment';
 import BillingCycleRun from '../components/billing/BillingCycleRun';
 import { Link } from 'react-router-dom';
@@ -302,8 +303,8 @@ export default function BillingManager() {
              <TransactionHistory transactions={transactions} />
           </TabsContent>
 
-          <TabsContent value="settings">
-             <TuitionConfiguration />
+          <TabsContent value="settings" className="focus:outline-none">
+             <TuitionBillingWizard onSave={(rules) => console.log('Tuition rules saved:', rules)} />
           </TabsContent>
         </Tabs>
       </div>
