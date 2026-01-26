@@ -142,17 +142,21 @@ export function BillingOverview({ onSelectFamily }) {
 
     // Calculate bill for each family
     return Object.values(groups).map(family => {
-      // Format parent name as "Last, First" (removing titles like Mrs., Mr., etc.)
-      const parentFullName = family.name;
-      let formattedParentName = parentFullName;
+      // Format parent name as "Last, First" - derive from student's name since parent_name often only has title + last
+      // Use the first student's name to get the last name
+      const firstStudent = family.students[0];
+      const studentNameParts = firstStudent?.name?.split(' ') || [];
+      const lastName = studentNameParts.length > 1 ? studentNameParts[studentNameParts.length - 1] : family.name;
+      
+      // Try to get parent first name from parent_name field (remove titles)
       const titles = ['mrs.', 'mr.', 'ms.', 'dr.', 'mrs', 'mr', 'ms', 'dr'];
-      const nameParts = parentFullName.split(' ').filter(part => !titles.includes(part.toLowerCase()));
-      if (nameParts.length > 1) {
-        const firstName = nameParts[0];
-        const lastName = nameParts[nameParts.length - 1];
-        formattedParentName = `${lastName}, ${firstName}`;
-      } else if (nameParts.length === 1) {
-        formattedParentName = nameParts[0];
+      const parentNameParts = family.name.split(' ').filter(part => !titles.includes(part.toLowerCase()));
+      
+      // If parent_name has a first name (more than just last name), use it; otherwise just show last name
+      let formattedParentName = lastName;
+      if (parentNameParts.length > 1) {
+        const parentFirstName = parentNameParts[0];
+        formattedParentName = `${lastName}, ${parentFirstName}`;
       }
       
       // Get just first names of students
@@ -328,7 +332,7 @@ export function BillingOverview({ onSelectFamily }) {
               </div>
               
               {/* Name & Students */}
-              <div className="flex-1 min-w-0 flex items-center gap-3">
+              <div className="flex-1 min-w-0 flex items-center gap-6">
                 <p className="font-semibold" style={{ color: colors.ink }}>{family.displayName}</p>
                 <p className="text-sm" style={{ color: colors.muted }}>
                   {family.studentFirstNames}
