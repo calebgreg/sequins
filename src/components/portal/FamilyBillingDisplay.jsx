@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { DollarSign } from 'lucide-react';
 
 // ============================================
@@ -459,55 +458,312 @@ function FamilyBilling({ parentEmail, studioName = 'Dance Studio', isPreview = f
 }
 
 // ============================================
-// COLLAPSIBLE BILLING WIDGET (Visible by default)
+// COLLAPSIBLE BILLING WIDGET (Embedded in Family Room)
 // ============================================
 
 export default function FamilyBillingTrigger({ parentEmail, studioName, isPreview = false }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // Fetch current balance for collapsed preview
+  const { data: invoices = [] } = useQuery({
+    queryKey: ['billingWidgetInvoices', parentEmail],
+    queryFn: async () => {
+      if (!parentEmail) return [];
+      const all = await base44.entities.Invoice.list('-issue_date', 5);
+      return all.filter(inv => inv.parent_email === parentEmail);
+    },
+    enabled: !!parentEmail && !isPreview,
+  });
+
+  const currentInvoice = invoices.find(inv => inv.status === 'sent' || inv.status === 'pending');
+  const balance = isPreview ? 316.92 : (currentInvoice?.balance_due || currentInvoice?.total_amount || 0);
+  const dueDate = isPreview ? 'Feb 1' : (currentInvoice?.due_date ? new Date(currentInvoice.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null);
+
   return (
     <div
-      className="transition-all duration-300 ease-in-out overflow-hidden rounded-3xl"
+      className="w-full transition-all duration-300 ease-in-out overflow-hidden rounded-3xl"
       style={{
-        width: isCollapsed ? '56px' : '380px',
-        maxWidth: '90vw',
         background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         border: '1px solid rgba(255, 200, 200, 0.3)',
-        boxShadow: '0 8px 32px rgba(180, 120, 120, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
+        boxShadow: '0 8px 32px rgba(180, 120, 120, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
       }}
     >
-      {/* Collapse/Expand Button */}
+      {/* Collapsed Header - Always visible */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95"
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.6)',
-          color: colors.muted,
-        }}
+        className="w-full px-6 py-5 flex items-center justify-between text-left"
       >
-        {isCollapsed ? (
-          <DollarSign className="w-4 h-4" />
-        ) : (
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        )}
+        <div className="flex items-center gap-4">
+          <div 
+            className="w-12 h-12 rounded-2xl flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+          >
+            <DollarSign className="w-6 h-6" style={{ color: colors.etchDark }} />
+          </div>
+          <div>
+            <p className="text-sm font-medium" style={{ color: colors.muted }}>Tuition</p>
+            <p className="text-2xl font-bold" style={{ color: colors.ink }}>
+              ${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {dueDate && !isCollapsed && (
+            <span className="text-sm hidden sm:block" style={{ color: colors.muted }}>
+              Due {dueDate}
+            </span>
+          )}
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-transform"
+            style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.6)',
+              transform: isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+            }}
+          >
+            <svg className="w-4 h-4" style={{ color: colors.muted }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
       </button>
 
-      {isCollapsed ? (
-        // Collapsed state - just the icon
-        <button
-          onClick={() => setIsCollapsed(false)}
-          className="w-14 h-14 flex items-center justify-center"
-        >
-          <DollarSign className="w-6 h-6" style={{ color: '#8a7070' }} />
-        </button>
-      ) : (
-        // Expanded state - full billing content
-        <div className="relative max-h-[70vh] overflow-y-auto">
-          <FamilyBilling parentEmail={parentEmail} studioName={studioName} isPreview={isPreview} />
+      {/* Expanded Content */}
+      <div 
+        className="overflow-hidden transition-all duration-300"
+        style={{ 
+          maxHeight: isCollapsed ? '0px' : '600px',
+          opacity: isCollapsed ? 0 : 1,
+        }}
+      >
+        <div className="px-2 pb-2">
+          <div 
+            className="rounded-2xl overflow-hidden"
+            style={{ backgroundColor: colors.paper }}
+          >
+            <FamilyBillingContent parentEmail={parentEmail} studioName={studioName} isPreview={isPreview} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// BILLING CONTENT (Used inside collapsible)
+// ============================================
+
+function FamilyBillingContent({ parentEmail, studioName, isPreview = false }) {
+  const [activeTab, setActiveTab] = useState('current');
+
+  // Fetch invoices
+  const { data: invoices = [] } = useQuery({
+    queryKey: ['familyBillingInvoices', parentEmail],
+    queryFn: async () => {
+      if (!parentEmail) return [];
+      const all = await base44.entities.Invoice.list('-issue_date', 20);
+      return all.filter(inv => inv.parent_email === parentEmail);
+    },
+    enabled: !!parentEmail && !isPreview,
+  });
+
+  // Fetch family info
+  const { data: family } = useQuery({
+    queryKey: ['familyBillingFamily', parentEmail],
+    queryFn: async () => {
+      if (!parentEmail) return null;
+      const families = await base44.entities.Family.filter({ parent_email: parentEmail });
+      return families[0] || null;
+    },
+    enabled: !!parentEmail && !isPreview,
+  });
+
+  // Sample data for preview
+  const sampleData = {
+    autopay: true,
+    cardBrand: 'Visa',
+    cardLast4: '4242',
+    currentBill: {
+      period: 'February 2026',
+      status: 'upcoming',
+      items: [
+        { student: 'Emma', class: 'Ballet III', duration: '60min', amount: 87.00 },
+        { student: 'Emma', class: 'Jazz II', duration: '45min', amount: 75.00 },
+        { student: 'Olivia', class: 'Pre-Ballet', duration: '45min', amount: 75.00 },
+      ],
+      subtotal: 237.00,
+      discounts: [
+        { name: 'Sibling discount', detail: '10% off 2nd student', amount: -7.50 },
+      ],
+      total: 229.50,
+    },
+    history: [
+      { period: 'January 2026', amount: 229.50, status: 'paid', date: 'Jan 3' },
+      { period: 'December 2025', amount: 229.50, status: 'paid', date: 'Dec 2' },
+    ],
+  };
+
+  const currentInvoice = invoices.find(inv => inv.status === 'sent' || inv.status === 'pending' || inv.status === 'draft');
+  const paidInvoices = invoices.filter(inv => inv.status === 'paid');
+
+  const data = isPreview ? sampleData : {
+    autopay: family?.payment_status === 'autopay',
+    cardBrand: family?.card_brand || '',
+    cardLast4: family?.card_last4 || '',
+    currentBill: {
+      period: currentInvoice?.title || 'Current Period',
+      status: currentInvoice?.status || 'pending',
+      items: currentInvoice?.items || [],
+      subtotal: currentInvoice?.subtotal || 0,
+      discounts: [],
+      total: currentInvoice?.total_amount || 0,
+    },
+    history: paidInvoices.map(inv => ({
+      period: inv.title || 'Payment',
+      amount: inv.total_amount,
+      status: inv.status,
+      date: new Date(inv.updated_date || inv.issue_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    })),
+  };
+
+  const bill = data.currentBill;
+
+  return (
+    <div className="p-4">
+      {/* Tab Switcher */}
+      <div 
+        className="flex p-1 rounded-xl mb-4"
+        style={{ backgroundColor: colors.warm }}
+      >
+        {[
+          { id: 'current', label: 'Current Bill' },
+          { id: 'history', label: 'History' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className="flex-1 py-2 rounded-lg text-sm font-medium transition-all"
+            style={{
+              backgroundColor: activeTab === tab.id ? '#fff' : 'transparent',
+              color: activeTab === tab.id ? colors.ink : colors.muted,
+              boxShadow: activeTab === tab.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Current Bill Tab */}
+      {activeTab === 'current' && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-sm" style={{ color: colors.ink }}>{bill.period}</span>
+            <StatusPill status={bill.status} />
+          </div>
+
+          {bill.items.length > 0 && (
+            <WhiteCard className="overflow-hidden">
+              <div className="px-3 py-2" style={{ borderBottom: `1px solid ${colors.border}` }}>
+                <span className="text-xs font-medium uppercase tracking-wide" style={{ color: colors.muted }}>
+                  Classes
+                </span>
+              </div>
+              {bill.items.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-3 py-2.5"
+                  style={{ borderBottom: i < bill.items.length - 1 ? `1px solid ${colors.border}` : undefined }}
+                >
+                  <div>
+                    <p className="font-medium text-sm" style={{ color: colors.ink }}>{item.description || item.class}</p>
+                    <p className="text-xs" style={{ color: colors.muted }}>{item.student_name || item.student}</p>
+                  </div>
+                  <span className="font-medium text-sm tabular-nums" style={{ color: colors.ink }}>
+                    ${(item.amount || 0).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </WhiteCard>
+          )}
+
+          {bill.discounts?.length > 0 && (
+            <WhiteCard className="overflow-hidden">
+              {bill.discounts.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-3 py-2.5"
+                  style={{ borderBottom: i < bill.discounts.length - 1 ? `1px solid ${colors.border}` : undefined }}
+                >
+                  <span className="text-sm" style={{ color: colors.success }}>{item.name}</span>
+                  <span className="font-medium text-sm tabular-nums" style={{ color: colors.success }}>
+                    −${Math.abs(item.amount).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </WhiteCard>
+          )}
+
+          <div className="flex items-center justify-between px-1 pt-2">
+            <span className="font-semibold" style={{ color: colors.ink }}>Total</span>
+            <span className="text-xl font-bold" style={{ color: colors.ink }}>${bill.total.toFixed(2)}</span>
+          </div>
+
+          {(data.cardBrand || data.cardLast4) && (
+            <div 
+              className="flex items-center gap-3 p-3 rounded-xl"
+              style={{ backgroundColor: colors.warm }}
+            >
+              <IconCard />
+              <div className="flex-1">
+                <p className="text-sm font-medium" style={{ color: colors.ink }}>
+                  {data.cardBrand} ····{data.cardLast4}
+                </p>
+                <p className="text-xs" style={{ color: colors.muted }}>
+                  {data.autopay ? 'Auto-pay enabled' : 'On file'}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* History Tab */}
+      {activeTab === 'history' && (
+        <div>
+          {data.history.length > 0 ? (
+            <WhiteCard className="overflow-hidden">
+              {data.history.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-3 py-3"
+                  style={{ borderBottom: i < data.history.length - 1 ? `1px solid ${colors.border}` : undefined }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-8 h-8 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: colors.successLight }}
+                    >
+                      <IconReceipt />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: colors.ink }}>{item.period}</p>
+                      <p className="text-xs" style={{ color: colors.muted }}>Paid {item.date}</p>
+                    </div>
+                  </div>
+                  <span className="font-medium text-sm tabular-nums" style={{ color: colors.ink }}>
+                    ${item.amount.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </WhiteCard>
+          ) : (
+            <div className="text-center py-8" style={{ color: colors.muted }}>
+              <p className="text-sm">No payment history yet</p>
+            </div>
+          )}
         </div>
       )}
     </div>
