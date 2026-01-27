@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Plus, Calendar, User, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, User, Sparkles, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import ImportScheduleModal from '../components/manager/ImportScheduleModal';
 import StudentRecommender from '../components/manager/StudentRecommender';
@@ -13,6 +13,46 @@ import AutoAssignModal from '../components/manager/AutoAssignModal';
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6am to 9pm
 const DAYS = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
 const DAY_NAMES = { M: 'Mon', T: 'Tue', W: 'Wed', R: 'Thu', F: 'Fri', S: 'Sat', U: 'Sun' };
+
+// Design tokens matching FamilyBillingDisplay
+const colors = {
+  ink: '#1a1a1a',
+  paper: '#faf9f7',
+  warm: '#f5f3ef',
+  muted: '#8a8478',
+  border: '#e8e6e1',
+  frost: '#fef7f7',
+  frostShadow: 'rgba(180, 120, 120, 0.08)',
+  frostDeep: 'rgba(180, 120, 120, 0.05)',
+  etchLight: '#c4a0a0',
+  etchDark: '#8a7070',
+};
+
+// Etched text component
+const EtchedText = ({ children, size = 'md', className = '' }) => {
+  const sizes = {
+    sm: 'text-sm',
+    md: 'text-lg',
+    lg: 'text-2xl',
+    xl: 'text-3xl',
+  };
+  
+  return (
+    <span
+      className={`${sizes[size]} font-bold tracking-tight ${className}`}
+      style={{
+        color: 'transparent',
+        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+        filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+      }}
+    >
+      {children}
+    </span>
+  );
+};
 
 const formatTime = (hour) => {
   const period = hour >= 12 ? 'pm' : 'am';
