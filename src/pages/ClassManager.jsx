@@ -263,12 +263,22 @@ export default function ClassManager() {
                               <Link
                                 key={cls.id}
                                 to={`${createPageUrl('ClassDetail')}?id=${cls.id}`}
-                                className="absolute left-2 right-2 bg-white rounded-xl shadow-md border-l-4 border-black p-3 hover:shadow-lg transition-all cursor-pointer overflow-hidden block"
-                                style={style}
+                                className="absolute left-2 right-2 rounded-2xl p-4 transition-all cursor-pointer overflow-hidden block hover:scale-[1.02]"
+                                style={{
+                                  ...style,
+                                  background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
+                                  backdropFilter: 'blur(8px)',
+                                  WebkitBackdropFilter: 'blur(8px)',
+                                  border: '1px solid rgba(255, 200, 200, 0.4)',
+                                  boxShadow: '0 4px 16px rgba(180, 120, 120, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
+                                }}
                               >
-                                <div className="font-medium text-sm text-[#333333] mb-1 truncate">{cls.title}</div>
-                                <div className="text-xs text-gray-500 truncate">{cls.teacher}</div>
-                                <div className="text-xs text-gray-400 mt-1">{cls.student_names?.length || 0} students</div>
+                                <EtchedText size="md" className="block truncate">{cls.title}</EtchedText>
+                                <div className="text-xs mt-1 truncate" style={{ color: colors.muted }}>{cls.teacher}</div>
+                                <div className="flex items-center gap-1 mt-2 text-xs" style={{ color: colors.muted }}>
+                                  <Users className="w-3 h-3" />
+                                  {cls.student_names?.length || 0} students
+                                </div>
                               </Link>
                             );
                           })}
