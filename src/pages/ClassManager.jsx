@@ -234,15 +234,15 @@ export default function ClassManager() {
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-6">
               <div className="relative">
                 {HOURS.map((hour) => (
-                  <div key={hour} className="flex border-t border-gray-200" style={{ height: '80px' }}>
+                  <div key={hour} className="flex" style={{ height: '80px', borderTop: `1px solid ${colors.border}` }}>
                     {/* Time Label */}
                     <div className="w-20 flex-shrink-0 pr-4 pt-1 text-right">
-                      <span className="text-sm text-gray-500 font-medium">{formatTime(hour)}</span>
+                      <EtchedText size="sm">{formatTime(hour)}</EtchedText>
                     </div>
 
                     {/* Room Columns */}
                     {rooms.map(room => (
-                      <div key={room.id} className="flex-1 px-2 relative border-l border-gray-100">
+                      <div key={room.id} className="flex-1 px-2 relative" style={{ borderLeft: `1px solid ${colors.border}` }}>
                         {/* Empty cell for grid structure */}
                       </div>
                     ))}
