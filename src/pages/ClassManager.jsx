@@ -169,31 +169,60 @@ export default function ClassManager() {
       {/* Schedule Grid */}
       {classes.length === 0 ? (
         <div className="flex-1 flex items-center justify-center px-6">
-          <div className="text-center bg-white rounded-[32px] border border-dashed border-gray-200 py-16 px-12 max-w-md">
-            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-8 h-8 text-gray-300" />
+          <div 
+            className="text-center rounded-3xl py-16 px-12 max-w-md"
+            style={{
+              background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+              boxShadow: `inset 0 2px 12px ${colors.frostShadow}, inset 0 1px 3px ${colors.frostDeep}`,
+              border: '1px solid rgba(255, 200, 200, 0.3)',
+            }}
+          >
+            <div 
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+            >
+              <Calendar className="w-8 h-8" style={{ color: colors.etchDark }} />
             </div>
-            <h3 className="text-lg font-medium text-gray-900">No classes yet</h3>
-            <p className="text-gray-500 mb-6">Import your schedule to get started</p>
-            <Button onClick={() => setIsImportOpen(true)} variant="outline">Import Now</Button>
+            <EtchedText size="lg">No classes yet</EtchedText>
+            <p className="mt-2 mb-6" style={{ color: colors.muted }}>Import your schedule to get started</p>
+            <Button 
+              onClick={() => setIsImportOpen(true)} 
+              className="rounded-full px-6"
+              style={{ backgroundColor: colors.ink, color: '#fff' }}
+            >
+              Import Now
+            </Button>
           </div>
         </div>
       ) : (
         <div className="flex-1 overflow-hidden">
           <div className="h-full flex flex-col">
             {/* Sticky Header Row - Rooms */}
-            <div className="flex-shrink-0 bg-[#F4F4F6] px-6 py-3 border-b border-gray-200">
+            <div className="flex-shrink-0 px-6 py-3" style={{ backgroundColor: colors.paper }}>
               <div className="flex">
                 <div className="w-20 flex-shrink-0" />
                 {rooms.length === 0 ? (
-                  <div className="flex-1 text-center py-6 bg-white rounded-2xl border border-dashed border-gray-200">
-                    <p className="text-gray-500 text-sm">No rooms configured. Set up rooms in Settings.</p>
+                  <div 
+                    className="flex-1 text-center py-6 rounded-2xl"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+                      border: '1px dashed rgba(200, 160, 160, 0.4)',
+                    }}
+                  >
+                    <p className="text-sm" style={{ color: colors.muted }}>No rooms configured. Set up rooms in Settings.</p>
                   </div>
                 ) : (
                   rooms.map(room => (
                     <div key={room.id} className="flex-1 px-2">
-                      <div className="bg-white rounded-xl px-4 py-2.5 text-center shadow-sm border border-gray-100">
-                        <div className="font-medium text-sm text-[#333333]">{room.name}</div>
+                      <div 
+                        className="rounded-2xl px-4 py-3 text-center"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+                          boxShadow: `inset 0 2px 8px ${colors.frostShadow}, 0 1px 3px rgba(0,0,0,0.04)`,
+                          border: '1px solid rgba(255, 200, 200, 0.3)',
+                        }}
+                      >
+                        <EtchedText size="sm">{room.name}</EtchedText>
                       </div>
                     </div>
                   ))
