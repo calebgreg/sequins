@@ -113,23 +113,37 @@ export default function ClassManager() {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#F4F4F6] flex flex-col">
-      {/* Compact Header */}
-      <div className="bg-white/95 backdrop-blur-sm border-b border-gray-200 px-6 py-3 flex-shrink-0 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link to={createPageUrl('Home')} className="p-1.5 hover:bg-gray-50 rounded-full transition-colors">
-            <ArrowLeft className="w-4 h-4 text-gray-600" />
+    <div className="fixed inset-0 flex flex-col" style={{ backgroundColor: colors.paper }}>
+      {/* Frosted Header */}
+      <div 
+        className="px-6 py-4 flex-shrink-0 flex items-center justify-between"
+        style={{
+          background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(255, 200, 200, 0.3)',
+          boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
+        }}
+      >
+        <div className="flex items-center gap-4">
+          <Link 
+            to={createPageUrl('Home')} 
+            className="p-2 rounded-full transition-all hover:scale-105"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+          >
+            <ArrowLeft className="w-4 h-4" style={{ color: colors.etchDark }} />
           </Link>
           <div className="flex gap-2">
             {DAYS.map(day => (
               <button
                 key={day}
                 onClick={() => setSelectedDay(day)}
-                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  selectedDay === day
-                    ? 'bg-black text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
+                style={{
+                  backgroundColor: selectedDay === day ? colors.ink : 'rgba(255, 255, 255, 0.6)',
+                  color: selectedDay === day ? '#fff' : colors.muted,
+                  boxShadow: selectedDay === day ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                }}
               >
                 {DAY_NAMES[day]}
               </button>
@@ -140,9 +154,14 @@ export default function ClassManager() {
         <Button 
           onClick={() => setIsImportOpen(true)}
           size="sm"
-          className="bg-[#333333] hover:bg-black text-white rounded-full px-4 gap-1.5"
+          className="rounded-full px-5 gap-2 font-semibold"
+          style={{ 
+            backgroundColor: colors.ink, 
+            color: '#fff',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          }}
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-4 h-4" />
           Import
         </Button>
       </div>
