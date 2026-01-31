@@ -205,8 +205,15 @@ const TeacherDetails = () => {
             {/* Info */}
             <div className="flex-1 pt-2">
               <h1 
-                className="text-4xl font-medium tracking-tight mb-1"
-                style={{ color: '#b89a8c' }}
+                className="text-4xl font-bold tracking-tight mb-1"
+                style={{ 
+                  color: 'transparent',
+                  backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+                  filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+                }}
               >
                 {teacher.name}
               </h1>
