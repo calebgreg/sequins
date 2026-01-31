@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import SubRequestFlow from '../components/teachers/SubRequestFlow';
 
 const TeacherDetails = () => {
-  const [activeTab, setActiveTab] = useState('timecard');
-  const [timecardExpanded, setTimecardExpanded] = useState(true);
+  const [activeTab, setActiveTab] = useState('schedule');
   const [subRequestOpen, setSubRequestOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Get teacher ID from URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -269,7 +270,7 @@ const TeacherDetails = () => {
             }}
           >
             {[
-              { id: 'timecard', label: 'Timecard' },
+              { id: 'schedule', label: 'Schedule' },
               { id: 'subs', label: 'Subs' },
               { id: 'timeline', label: 'Timeline' },
             ].map((tab) => (
@@ -293,171 +294,62 @@ const TeacherDetails = () => {
           </div>
         </div>
 
-        {/* Smart Timecard Tab */}
-        {activeTab === 'timecard' && (
-          <div className="space-y-6">
-            
-            {/* Timecard Summary - Frosted Card */}
-            <div 
-              className="rounded-3xl p-8"
-              style={{
-                background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
-                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 15px 50px -15px rgba(180,150,140,0.15)',
-              }}
-            >
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-xl font-medium" style={{ color: '#8b7d72' }}>
-                    Smart Timecard
-                  </h2>
-                  <p className="text-sm mt-1" style={{ color: '#b5a599' }}>
-                    {currentPayPeriod.range}
-                  </p>
-                </div>
-                <div 
-                  className="px-4 py-1.5 rounded-full text-sm"
-                  style={{
-                    background: 'rgba(255,255,255,0.6)',
-                    color: '#c9a060',
-                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
-                  }}
-                >
-                  Pending Review
-                </div>
-              </div>
-
-              {/* The Formula */}
-              <div 
-                className="flex flex-wrap items-center justify-center gap-3 p-6 rounded-2xl mb-6"
-                style={{
-                  background: 'rgba(255,255,255,0.4)',
-                  boxShadow: 'inset 0 1px 2px rgba(180,150,140,0.08)',
-                }}
-              >
-                <div className="text-center px-4">
-                  <p className="text-3xl font-light" style={{ color: '#8b7d72' }}>{currentPayPeriod.scheduledHours}</p>
-                  <p className="text-xs mt-1" style={{ color: '#b5a599' }}>Scheduled</p>
-                </div>
-                
-                <span className="text-2xl" style={{ color: '#d4c4ba' }}>−</span>
-                
-                <div className="text-center px-4">
-                  <p className="text-3xl font-light" style={{ color: '#d4a574' }}>{currentPayPeriod.subbedOutHours}</p>
-                  <p className="text-xs mt-1" style={{ color: '#d4a574' }}>Out</p>
-                </div>
-                
-                <span className="text-2xl" style={{ color: '#d4c4ba' }}>+</span>
-                
-                <div className="text-center px-4">
-                  <p className="text-3xl font-light" style={{ color: '#7eb89a' }}>{currentPayPeriod.subbedInHours}</p>
-                  <p className="text-xs mt-1" style={{ color: '#7eb89a' }}>In</p>
-                </div>
-                
-                <span className="text-2xl" style={{ color: '#d4c4ba' }}>+</span>
-                
-                <div className="text-center px-4">
-                  <p className="text-3xl font-light" style={{ color: '#a48bc4' }}>{currentPayPeriod.eventHours}</p>
-                  <p className="text-xs mt-1" style={{ color: '#a48bc4' }}>Events</p>
-                </div>
-                
-                <span className="text-2xl" style={{ color: '#d4c4ba' }}>=</span>
-                
-                <div 
-                  className="text-center px-6 py-3 rounded-xl"
-                  style={{
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
-                    boxShadow: '0 4px 16px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,1)',
-                  }}
-                >
-                  <p className="text-4xl font-medium" style={{ color: '#8b7d72' }}>{currentPayPeriod.totalHours.toFixed(1)}</p>
-                  <p className="text-xs mt-1" style={{ color: '#b89a8c' }}>Total</p>
-                </div>
-              </div>
-
-              {/* Toggle breakdown */}
-              <button 
-                onClick={() => setTimecardExpanded(!timecardExpanded)}
-                className="flex items-center gap-2 mx-auto text-sm transition-colors hover:opacity-70"
-                style={{ color: '#b5a599' }}
-              >
-                {timecardExpanded ? 'Hide' : 'Show'} breakdown
-                <svg 
-                  className={`w-4 h-4 transition-transform ${timecardExpanded ? 'rotate-180' : ''}`} 
-                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Breakdown List */}
-            {timecardExpanded && timecardBreakdown.length > 0 && (
-              <div className="space-y-2">
-                {timecardBreakdown.map((item, i) => (
-                  <div 
-                    key={i}
-                    className="flex items-center justify-between p-4 rounded-2xl transition-all"
-                    style={{
-                      background: 'rgba(255,255,255,0.4)',
-                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
-                    }}
-                  >
-                    <div className="flex items-center gap-4">
-                      <span 
-                        className="text-sm w-16"
-                        style={{ color: '#b5a599' }}
-                      >
-                        {item.date}
-                      </span>
-                      <span 
-                        className="w-2 h-2 rounded-full"
-                        style={{ 
-                          background: item.type === 'scheduled' ? '#c4b5ab' 
-                            : item.type === 'out' ? '#d4a574' 
-                            : item.type === 'in' ? '#7eb89a' 
-                            : '#a48bc4'
-                        }}
-                      />
-                      <div>
-                        <p className="font-medium" style={{ color: '#8b7d72' }}>{item.name}</p>
-                        <p className="text-sm" style={{ color: '#b5a599' }}>
-                          {item.time}
-                          {item.note && <span className="ml-2">· {item.note}</span>}
-                        </p>
-                      </div>
-                    </div>
-                    <span 
-                      className="font-medium"
-                      style={{ 
-                        color: item.hours < 0 ? '#d4a574' : '#8b7d72'
+        {/* Schedule Tab */}
+        {activeTab === 'schedule' && (
+          <div className="space-y-3">
+            {classes.length > 0 ? (
+              classes
+                .sort((a, b) => {
+                  const dayOrder = { M: 1, T: 2, W: 3, R: 4, F: 5, S: 6, U: 7 };
+                  return (dayOrder[a.day] || 0) - (dayOrder[b.day] || 0) || a.start_time - b.start_time;
+                })
+                .map((classItem) => {
+                  const hour = Math.floor(classItem.start_time);
+                  const minutes = Math.round((classItem.start_time % 1) * 60);
+                  const timeStr = `${hour}:${minutes.toString().padStart(2, '0')}`;
+                  
+                  return (
+                    <div 
+                      key={classItem.id}
+                      onClick={() => navigate(createPageUrl('ClassDetail') + `?id=${classItem.id}`)}
+                      className="flex items-center justify-between p-5 rounded-2xl transition-all cursor-pointer hover:scale-[1.01]"
+                      style={{
+                        background: 'rgba(255,255,255,0.4)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
                       }}
                     >
-                      {item.hours > 0 ? '+' : ''}{item.hours}
-                    </span>
-                  </div>
-                ))}
+                      <div className="flex items-center gap-5">
+                        <span 
+                          className="text-lg w-8 text-center font-light"
+                          style={{ color: '#b5a599' }}
+                        >
+                          {classItem.day}
+                        </span>
+                        <span 
+                          className="w-2 h-2 rounded-full"
+                          style={{ background: '#c4b5ab' }}
+                        />
+                        <div>
+                          <p className="font-medium" style={{ color: '#8b7d72' }}>{classItem.title}</p>
+                          <p className="text-sm" style={{ color: '#b5a599' }}>
+                            {timeStr}
+                          </p>
+                        </div>
+                      </div>
+                      <span 
+                        className="font-medium"
+                        style={{ color: '#b5a599' }}
+                      >
+                        +{classItem.duration || 1}
+                      </span>
+                    </div>
+                  );
+                })
+            ) : (
+              <div className="text-center py-12" style={{ color: '#b5a599' }}>
+                No classes assigned
               </div>
             )}
-
-            {timecardExpanded && timecardBreakdown.length === 0 && (
-              <div className="text-center py-8" style={{ color: '#b5a599' }}>
-                No scheduled classes found
-              </div>
-            )}
-
-            {/* Approve Button */}
-            <div className="flex justify-center pt-4">
-              <button 
-                className="px-8 py-3 rounded-2xl text-sm font-medium transition-all hover:scale-[1.02]"
-                style={{
-                  background: 'linear-gradient(145deg, rgba(200,170,156,0.9) 0%, rgba(185,155,140,0.85) 100%)',
-                  color: '#fff',
-                  boxShadow: '0 8px 24px -8px rgba(180,150,140,0.4), inset 0 1px 1px rgba(255,255,255,0.2)',
-                }}
-              >
-                Approve Timecard
-              </button>
-            </div>
           </div>
         )}
 
