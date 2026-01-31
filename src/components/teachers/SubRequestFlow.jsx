@@ -489,8 +489,8 @@ Thanks!
                 <div className="space-y-3">
                   {[
                     { status: 'done', text: 'Request submitted' },
-                    { status: 'active', text: `${selectedSub?.name?.split(' ')[0] || 'Sub'} notified via email` },
-                    { status: 'pending', text: 'Waiting for response' },
+                    { status: 'done', text: `${selectedSub?.name?.split(' ')[0] || 'Sub'} notified via email` },
+                    { status: 'active', text: 'Waiting for response' },
                     { status: 'pending', text: 'Schedule updated automatically' },
                   ].map((step, i) => (
                     <div key={i} className="flex items-center gap-3">
