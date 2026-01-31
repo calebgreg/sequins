@@ -1,18 +1,33 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-const SubRequestFlow = ({ onClose, classes = [], teacherName, suggestedSub }) => {
-  const [stage, setStage] = useState('input'); // input, thinking, suggestion, confirmed, sending, error
+const SubRequestFlow = ({ onClose, classes = [], teacherName }) => {
+  const [stage, setStage] = useState('input'); // input, thinking, suggestion, picking, confirmed, sending, error
   const [inputValue, setInputValue] = useState('');
   const [dots, setDots] = useState('');
   const [emailError, setEmailError] = useState(null);
+  const [selectedSubIndex, setSelectedSubIndex] = useState(0);
 
-  // Default sub info (in production, this would come from AI matching)
-  const subTeacher = suggestedSub || {
-    name: 'Maria Lopez',
-    email: 'maria@example.com', // Replace with actual email from Teacher entity
-    initials: 'ML',
-  };
+  // Fetch all teachers
+  const { data: allTeachers = [] } = useQuery({
+    queryKey: ['teachers'],
+    queryFn: () => base44.entities.Teacher.list(),
+  });
+
+  // Filter out the requesting teacher and get available subs
+  const availableSubs = allTeachers
+    .filter(t => t.name !== teacherName && t.email)
+    .map(t => ({
+      id: t.id,
+      name: t.name,
+      email: t.email,
+      initials: t.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??',
+      styles: t.styles || [],
+    }));
+
+  const selectedSub = availableSubs[selectedSubIndex] || availableSubs[0];
+  const otherSubsCount = Math.max(0, availableSubs.length - 1);
 
   // Simulate Gene thinking
   useEffect(() => {
@@ -39,12 +54,18 @@ const SubRequestFlow = ({ onClose, classes = [], teacherName, suggestedSub }) =>
   };
 
   const handleConfirm = async () => {
+    if (!selectedSub) {
+      setEmailError('No available substitute teachers found');
+      setStage('error');
+      return;
+    }
+
     setStage('sending');
     setEmailError(null);
 
     const emailSubject = `Sub Request: Can you cover a class?`;
     const emailBody = `
-Hi ${subTeacher.name.split(' ')[0]},
+Hi ${selectedSub.name.split(' ')[0]},
 
 ${teacherName || 'A teacher'} needs a sub and you've been recommended as the best match.
 
@@ -57,7 +78,7 @@ Thanks!
     `.trim();
 
     const response = await base44.functions.invoke('sendNylasEmail', {
-      to: subTeacher.email,
+      to: selectedSub.email,
       subject: emailSubject,
       body: emailBody,
     });
@@ -68,6 +89,11 @@ Thanks!
       setEmailError(response.data?.error || 'Failed to send email');
       setStage('error');
     }
+  };
+
+  const handleSelectSub = (index) => {
+    setSelectedSubIndex(index);
+    setStage('suggestion');
   };
 
   const handleKeyDown = (e) => {
@@ -234,7 +260,7 @@ Thanks!
           )}
 
           {/* Suggestion State */}
-          {stage === 'suggestion' && (
+          {stage === 'suggestion' && selectedSub && (
             <div className="space-y-5">
               {/* User message */}
               <div className="flex justify-end">
@@ -270,7 +296,7 @@ Thanks!
                       Got it — I found your class.
                     </p>
                     <p className="mt-3 leading-relaxed" style={{ color: '#6b5d52' }}>
-                      3 teachers can cover this. <strong>Maria L.</strong> has taught this class twice before and usually responds in about 12 minutes.
+                      {availableSubs.length} teacher{availableSubs.length !== 1 ? 's' : ''} can cover this. <strong>{selectedSub.name.split(' ')[0]} {selectedSub.name.split(' ')[1]?.[0] || ''}.</strong> is recommended as the best match.
                     </p>
                   </div>
 
@@ -290,12 +316,12 @@ Thanks!
                           boxShadow: '0 2px 8px rgba(126,184,154,0.15)',
                         }}
                       >
-                        <span className="text-base font-medium" style={{ color: '#7eb89a' }}>ML</span>
+                        <span className="text-base font-medium" style={{ color: '#7eb89a' }}>{selectedSub.initials}</span>
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium" style={{ color: '#5a7d6a' }}>Maria Lopez</p>
+                        <p className="font-medium" style={{ color: '#5a7d6a' }}>{selectedSub.name}</p>
                         <p className="text-sm" style={{ color: '#7eb89a' }}>
-                          Recommended • Available • 12 min avg response
+                          Recommended • Available
                         </p>
                       </div>
                       <div 
@@ -308,12 +334,101 @@ Thanks!
                   </div>
 
                   {/* Other options hint */}
-                  <button 
-                    className="text-sm transition-colors hover:opacity-70"
-                    style={{ color: '#b5a599' }}
-                  >
-                    See 2 other available teachers →
-                  </button>
+                  {otherSubsCount > 0 && (
+                    <button 
+                      onClick={() => setStage('picking')}
+                      className="text-sm transition-colors hover:opacity-70"
+                      style={{ color: '#b5a599' }}
+                    >
+                      See {otherSubsCount} other available teacher{otherSubsCount !== 1 ? 's' : ''} →
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Picking State - Show all available teachers */}
+          {stage === 'picking' && (
+            <div className="space-y-5">
+              {/* User message */}
+              <div className="flex justify-end">
+                <div 
+                  className="px-5 py-3 rounded-2xl rounded-br-lg max-w-[85%]"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(200,170,156,0.25) 0%, rgba(185,155,140,0.2) 100%)',
+                    color: '#7a6d62',
+                  }}
+                >
+                  {inputValue}
+                </div>
+              </div>
+
+              {/* Gene response */}
+              <div className="flex items-start gap-3">
+                <div 
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-1"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(180,160,190,0.2) 0%, rgba(160,140,170,0.15) 100%)',
+                  }}
+                >
+                  <span style={{ color: '#9a8aad', fontSize: '14px' }}>✦</span>
+                </div>
+                <div className="flex-1 space-y-3">
+                  <p className="text-sm mb-2" style={{ color: '#8b7d72' }}>
+                    Pick a teacher to contact:
+                  </p>
+
+                  {/* All available teachers */}
+                  <div className="space-y-2 max-h-[240px] overflow-y-auto">
+                    {availableSubs.map((sub, index) => (
+                      <button
+                        key={sub.id}
+                        onClick={() => handleSelectSub(index)}
+                        className="w-full rounded-2xl p-4 transition-all hover:scale-[1.01] text-left"
+                        style={{
+                          background: index === selectedSubIndex 
+                            ? 'linear-gradient(145deg, rgba(126,184,154,0.1) 0%, rgba(140,190,165,0.08) 100%)'
+                            : 'rgba(255,255,255,0.5)',
+                          border: index === selectedSubIndex 
+                            ? '1px solid rgba(126,184,154,0.2)'
+                            : '1px solid transparent',
+                        }}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div 
+                            className="w-10 h-10 rounded-xl flex items-center justify-center"
+                            style={{
+                              background: 'rgba(255,255,255,0.8)',
+                              boxShadow: '0 2px 8px rgba(180,150,140,0.1)',
+                            }}
+                          >
+                            <span className="text-sm font-medium" style={{ color: index === selectedSubIndex ? '#7eb89a' : '#a8998e' }}>
+                              {sub.initials}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium" style={{ color: index === selectedSubIndex ? '#5a7d6a' : '#6b5d52' }}>
+                              {sub.name}
+                            </p>
+                            {sub.styles.length > 0 && (
+                              <p className="text-xs" style={{ color: '#b5a599' }}>
+                                {sub.styles.slice(0, 3).join(' • ')}
+                              </p>
+                            )}
+                          </div>
+                          {index === selectedSubIndex && (
+                            <div 
+                              className="w-5 h-5 rounded-full flex items-center justify-center"
+                              style={{ background: 'rgba(126,184,154,0.2)' }}
+                            >
+                              <span style={{ color: '#7eb89a', fontSize: '10px' }}>✓</span>
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -353,7 +468,7 @@ Thanks!
                   }}
                 >
                   <p className="font-medium mb-2" style={{ color: '#5a7d6a' }}>
-                    Done. Reaching out to Maria now.
+                    Done. Reaching out to {selectedSub?.name?.split(' ')[0] || 'them'} now.
                   </p>
                   <p className="text-sm leading-relaxed" style={{ color: '#7a9a88' }}>
                     I'll email you when she confirms. If she can't do it, I'll automatically ask Emma or James next.
@@ -374,7 +489,7 @@ Thanks!
                 <div className="space-y-3">
                   {[
                     { status: 'done', text: 'Request submitted' },
-                    { status: 'active', text: 'Maria notified via email' },
+                    { status: 'active', text: `${selectedSub?.name?.split(' ')[0] || 'Sub'} notified via email` },
                     { status: 'pending', text: 'Waiting for response' },
                     { status: 'pending', text: 'Schedule updated automatically' },
                   ].map((step, i) => (
@@ -440,7 +555,7 @@ Thanks!
             </button>
           )}
 
-          {stage === 'suggestion' && (
+          {(stage === 'suggestion' || stage === 'picking') && selectedSub && (
             <div className="space-y-3">
               <button
                 onClick={handleConfirm}
@@ -451,14 +566,17 @@ Thanks!
                   boxShadow: '0 8px 24px -8px rgba(126,184,154,0.4), inset 0 1px 1px rgba(255,255,255,0.2)',
                 }}
               >
-                Yes, ask {subTeacher.name.split(' ')[0]} first
+                Yes, ask {selectedSub.name.split(' ')[0]} first
               </button>
-              <button
-                className="w-full py-3 rounded-xl text-sm transition-colors"
-                style={{ color: '#b5a599' }}
-              >
-                Let me pick someone else
-              </button>
+              {stage === 'picking' && (
+                <button
+                  onClick={() => setStage('suggestion')}
+                  className="w-full py-3 rounded-xl text-sm transition-colors"
+                  style={{ color: '#b5a599' }}
+                >
+                  Back
+                </button>
+              )}
             </div>
           )}
 
