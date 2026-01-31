@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 
-const SubRequestFlow = ({ onClose, classes = [], teacherName }) => {
-  const [stage, setStage] = useState('input'); // input, thinking, suggestion, confirmed
+const SubRequestFlow = ({ onClose, classes = [], teacherName, suggestedSub }) => {
+  const [stage, setStage] = useState('input'); // input, thinking, suggestion, confirmed, sending, error
   const [inputValue, setInputValue] = useState('');
   const [dots, setDots] = useState('');
+  const [emailError, setEmailError] = useState(null);
+
+  // Default sub info (in production, this would come from AI matching)
+  const subTeacher = suggestedSub || {
+    name: 'Maria Lopez',
+    email: 'maria@example.com', // Replace with actual email from Teacher entity
+    initials: 'ML',
+  };
 
   // Simulate Gene thinking
   useEffect(() => {
@@ -29,8 +38,36 @@ const SubRequestFlow = ({ onClose, classes = [], teacherName }) => {
     }
   };
 
-  const handleConfirm = () => {
-    setStage('confirmed');
+  const handleConfirm = async () => {
+    setStage('sending');
+    setEmailError(null);
+
+    const emailSubject = `Sub Request: Can you cover a class?`;
+    const emailBody = `
+Hi ${subTeacher.name.split(' ')[0]},
+
+${teacherName || 'A teacher'} needs a sub and you've been recommended as the best match.
+
+Request: ${inputValue}
+
+Can you cover this class? Just reply to this email to let us know.
+
+Thanks!
+— Gene (Studio Assistant)
+    `.trim();
+
+    const response = await base44.functions.invoke('sendNylasEmail', {
+      to: subTeacher.email,
+      subject: emailSubject,
+      body: emailBody,
+    });
+
+    if (response.data?.success) {
+      setStage('confirmed');
+    } else {
+      setEmailError(response.data?.error || 'Failed to send email');
+      setStage('error');
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -319,7 +356,7 @@ const SubRequestFlow = ({ onClose, classes = [], teacherName }) => {
                     Done. Reaching out to Maria now.
                   </p>
                   <p className="text-sm leading-relaxed" style={{ color: '#7a9a88' }}>
-                    I'll text you when she confirms. If she can't do it, I'll automatically ask Emma or James next.
+                    I'll email you when she confirms. If she can't do it, I'll automatically ask Emma or James next.
                   </p>
                 </div>
               </div>
@@ -337,7 +374,7 @@ const SubRequestFlow = ({ onClose, classes = [], teacherName }) => {
                 <div className="space-y-3">
                   {[
                     { status: 'done', text: 'Request submitted' },
-                    { status: 'active', text: 'Maria notified via text' },
+                    { status: 'active', text: 'Maria notified via email' },
                     { status: 'pending', text: 'Waiting for response' },
                     { status: 'pending', text: 'Schedule updated automatically' },
                   ].map((step, i) => (
@@ -414,13 +451,44 @@ const SubRequestFlow = ({ onClose, classes = [], teacherName }) => {
                   boxShadow: '0 8px 24px -8px rgba(126,184,154,0.4), inset 0 1px 1px rgba(255,255,255,0.2)',
                 }}
               >
-                Yes, ask Maria first
+                Yes, ask {subTeacher.name.split(' ')[0]} first
               </button>
               <button
                 className="w-full py-3 rounded-xl text-sm transition-colors"
                 style={{ color: '#b5a599' }}
               >
                 Let me pick someone else
+              </button>
+            </div>
+          )}
+
+          {stage === 'sending' && (
+            <div className="w-full py-4 rounded-2xl text-sm font-medium text-center" style={{ color: '#a8998e' }}>
+              Sending email...
+            </div>
+          )}
+
+          {stage === 'error' && (
+            <div className="space-y-3">
+              <div className="text-sm text-center text-red-500 mb-2">
+                {emailError}
+              </div>
+              <button
+                onClick={handleConfirm}
+                className="w-full py-4 rounded-2xl text-sm font-medium transition-all hover:scale-[1.01]"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(200,170,156,0.9) 0%, rgba(185,155,140,0.85) 100%)',
+                  color: '#fff',
+                }}
+              >
+                Try again
+              </button>
+              <button
+                onClick={onClose}
+                className="w-full py-3 rounded-xl text-sm transition-colors"
+                style={{ color: '#b5a599' }}
+              >
+                Cancel
               </button>
             </div>
           )}
