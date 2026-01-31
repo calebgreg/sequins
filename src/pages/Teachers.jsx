@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { createPageUrl } from '@/utils';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import StaffCard from '../components/teachers/StaffCard';
@@ -23,6 +25,7 @@ export default function Teachers() {
   const [createTeamModalOpen, setCreateTeamModalOpen] = useState(false);
   const [addToTeamModalOpen, setAddToTeamModalOpen] = useState(false);
 
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: teachers = [] } = useQuery({
@@ -115,8 +118,8 @@ export default function Teachers() {
   }, []);
 
   const handleCardClick = useCallback((person) => {
-    // Navigate to teacher detail or profile
-  }, []);
+    navigate(createPageUrl('TeacherDetails') + `?id=${person.id}`);
+  }, [navigate]);
 
   const handleAddStaff = useCallback((newStaffData) => {
     createTeacherMutation.mutate(newStaffData);

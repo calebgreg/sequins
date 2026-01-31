@@ -62,6 +62,7 @@ import Tasks from './pages/Tasks';
 import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
+import TeacherDetails from './pages/TeacherDetails';
 import __Layout from './Layout.jsx';
 
 
@@ -81,6 +82,7 @@ export const PAGES = {
     "TeacherStudio": TeacherStudio,
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
+    "TeacherDetails": TeacherDetails,
 }
 
 export const pagesConfig = {
