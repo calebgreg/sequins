@@ -150,11 +150,24 @@ export default function Teachers() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: '#faf9f7' }}>
       {/* Header */}
-      <div className="px-8 py-5 border-b border-[#e5e5e5] flex items-center justify-between">
-        <div className="text-xs text-[#6b7280]">Org chart</div>
-        <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#e5e5e5] bg-white text-sm text-[#6b7280] hover:bg-[#f9fafb]">
+      <div 
+        className="px-8 py-5 flex items-center justify-between"
+        style={{
+          background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+          borderBottom: '1px solid rgba(255, 200, 200, 0.3)',
+        }}
+      >
+        <div className="text-xs" style={{ color: '#8a8478' }}>Org chart</div>
+        <button 
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm transition-all hover:opacity-80"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.6)',
+            color: '#8a8478',
+            border: '1px solid rgba(255, 200, 200, 0.3)',
+          }}
+        >
           Full screen
         </button>
       </div>
@@ -197,12 +210,23 @@ export default function Teachers() {
       )}
 
       {/* Teams Section */}
-      <div className="px-8 py-12 border-t border-[#e5e5e5] mt-8">
+      <div className="px-8 py-12 mt-8" style={{ borderTop: '1px solid rgba(255, 200, 200, 0.3)' }}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-[15px] font-semibold text-[#1a1a1a]">Teams</h2>
+          <h2 
+            className="text-[15px] font-bold tracking-tight"
+            style={{
+              color: 'transparent',
+              backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+            }}
+          >
+            Teams
+          </h2>
           <Button
             onClick={() => setCreateTeamModalOpen(true)}
-            className="text-sm bg-[#1a1a1a] hover:bg-black text-white"
+            className="text-sm text-white rounded-full px-5"
+            style={{ backgroundColor: '#1a1a1a' }}
           >
             <Plus className="w-4 h-4 mr-1" />
             Create Team
@@ -229,13 +253,28 @@ export default function Teachers() {
           {/* Ghost Card for adding new team */}
           <div
             onClick={() => setCreateTeamModalOpen(true)}
-            className="bg-transparent rounded-xl border-2 border-dashed border-[#e5e5e5] p-5 min-w-[200px] cursor-pointer hover:opacity-100 opacity-50 transition-all flex flex-col items-center justify-center hover:bg-[#f9fafb]"
-            style={{ minHeight: '118px' }}
+            className="rounded-2xl border-2 border-dashed p-5 min-w-[200px] cursor-pointer transition-all flex flex-col items-center justify-center hover:opacity-100 opacity-60"
+            style={{ 
+              minHeight: '118px',
+              borderColor: 'rgba(200, 160, 160, 0.4)',
+              backgroundColor: 'transparent',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(254, 247, 247, 0.6)';
+              e.currentTarget.style.borderColor = '#c4a0a0';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.borderColor = 'rgba(200, 160, 160, 0.4)';
+            }}
           >
-            <div className="w-10 h-10 rounded-lg border-2 border-dashed border-[#d1d5db] flex items-center justify-center mb-3 text-[#9ca3af]">
+            <div 
+              className="w-10 h-10 rounded-lg border-2 border-dashed flex items-center justify-center mb-3"
+              style={{ borderColor: '#c4a0a0', color: '#c4a0a0' }}
+            >
               <Plus size={20} />
             </div>
-            <div className="text-xs text-[#9ca3af] font-medium">Add team</div>
+            <div className="text-xs font-medium" style={{ color: '#8a8478' }}>Add team</div>
           </div>
         </div>
       </div>
