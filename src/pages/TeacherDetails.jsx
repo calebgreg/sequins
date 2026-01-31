@@ -595,14 +595,26 @@ const TeacherDetails = () => {
             <div className="flex justify-center">
               <button 
                 onClick={() => setSubRequestOpen(true)}
-                className="px-8 py-3 rounded-2xl text-sm font-medium transition-all hover:scale-[1.02]"
+                className="px-10 py-4 rounded-2xl text-base font-bold tracking-tight transition-all hover:scale-[1.02]"
                 style={{
-                  background: 'linear-gradient(145deg, rgba(200,170,156,0.9) 0%, rgba(185,155,140,0.85) 100%)',
-                  color: '#fff',
-                  boxShadow: '0 8px 24px -8px rgba(180,150,140,0.4), inset 0 1px 1px rgba(255,255,255,0.2)',
+                  background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+                  boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+                  border: '1px solid rgba(255, 220, 210, 0.5)',
+                  backdropFilter: 'blur(8px)',
                 }}
               >
-                New Sub Request
+                <span
+                  style={{
+                    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    color: 'transparent',
+                    textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+                    filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+                  }}
+                >
+                  New Sub Request
+                </span>
               </button>
             </div>
           </div>
@@ -661,14 +673,26 @@ const TeacherDetails = () => {
             {/* Add Note Button */}
             <div className="flex justify-center pt-4">
               <button 
-                className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all"
+                className="px-10 py-4 rounded-2xl text-base font-bold tracking-tight transition-all hover:scale-[1.02]"
                 style={{
-                  background: 'rgba(255,255,255,0.5)',
-                  color: '#a8998e',
-                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+                  background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+                  boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+                  border: '1px solid rgba(255, 220, 210, 0.5)',
+                  backdropFilter: 'blur(8px)',
                 }}
               >
-                Add Note
+                <span
+                  style={{
+                    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    color: 'transparent',
+                    textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+                    filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+                  }}
+                >
+                  Add Note
+                </span>
               </button>
             </div>
           </div>
