@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import SubRequestFlow from '../components/teachers/SubRequestFlow';
 
 const TeacherDetails = () => {
   const [activeTab, setActiveTab] = useState('timecard');
@@ -635,106 +636,11 @@ const TeacherDetails = () => {
 
         {/* Sub Request Modal */}
         {subRequestOpen && (
-          <div 
-            className="fixed inset-0 flex items-center justify-center z-50 p-4"
-            style={{ background: 'rgba(180,170,160,0.3)', backdropFilter: 'blur(8px)' }}
-          >
-            <div 
-              className="max-w-md w-full rounded-3xl p-8"
-              style={{
-                background: 'linear-gradient(165deg, #fef7f7 0%, #faf5f3 50%, #fcf8f7 100%)',
-                boxShadow: '0 25px 80px -20px rgba(150,130,120,0.35)',
-              }}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-medium" style={{ color: '#8b7d72' }}>Request a Sub</h2>
-                <button 
-                  onClick={() => setSubRequestOpen(false)}
-                  className="p-2 rounded-lg transition-colors hover:bg-black/5"
-                  style={{ color: '#b5a599' }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm mb-2" style={{ color: '#a8998e' }}>Class</label>
-                  <select 
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                    style={{
-                      background: 'rgba(255,255,255,0.6)',
-                      border: '1px solid rgba(200,180,170,0.2)',
-                      color: '#8b7d72',
-                    }}
-                  >
-                    {classes.map(c => (
-                      <option key={c.id} value={c.id}>{c.title} — {c.day} {c.start_time}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-2" style={{ color: '#a8998e' }}>Date</label>
-                  <input 
-                    type="date"
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                    style={{
-                      background: 'rgba(255,255,255,0.6)',
-                      border: '1px solid rgba(200,180,170,0.2)',
-                      color: '#8b7d72',
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-2" style={{ color: '#a8998e' }}>Note (optional)</label>
-                  <textarea 
-                    placeholder="Any context for the sub..."
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-                    style={{
-                      background: 'rgba(255,255,255,0.6)',
-                      border: '1px solid rgba(200,180,170,0.2)',
-                      color: '#8b7d72',
-                    }}
-                  />
-                </div>
-
-                <div 
-                  className="p-4 rounded-xl"
-                  style={{ background: 'rgba(164,139,196,0.1)' }}
-                >
-                  <p className="text-sm" style={{ color: '#8b7d9a' }}>
-                    ✦ Gene will find qualified subs and handle everything
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-8">
-                <button 
-                  onClick={() => setSubRequestOpen(false)}
-                  className="flex-1 px-5 py-3 rounded-xl text-sm font-medium"
-                  style={{
-                    background: 'rgba(255,255,255,0.5)',
-                    color: '#a8998e',
-                  }}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="flex-1 px-5 py-3 rounded-xl text-sm font-medium"
-                  style={{
-                    background: 'linear-gradient(145deg, rgba(200,170,156,0.9) 0%, rgba(185,155,140,0.85) 100%)',
-                    color: '#fff',
-                    boxShadow: '0 4px 16px rgba(180,150,140,0.3)',
-                  }}
-                >
-                  Submit
-                </button>
-              </div>
-            </div>
-          </div>
+          <SubRequestFlow 
+            onClose={() => setSubRequestOpen(false)}
+            classes={classes}
+            teacherName={teacher?.name}
+          />
         )}
       </div>
     </div>
