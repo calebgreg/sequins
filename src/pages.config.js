@@ -59,10 +59,10 @@ import Settings from './pages/Settings';
 import StaffDirectory from './pages/StaffDirectory';
 import Students from './pages/Students';
 import Tasks from './pages/Tasks';
+import TeacherDetails from './pages/TeacherDetails';
 import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
-import TeacherDetails from './pages/TeacherDetails';
 import __Layout from './Layout.jsx';
 
 
@@ -79,10 +79,10 @@ export const PAGES = {
     "StaffDirectory": StaffDirectory,
     "Students": Students,
     "Tasks": Tasks,
+    "TeacherDetails": TeacherDetails,
     "TeacherStudio": TeacherStudio,
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
-    "TeacherDetails": TeacherDetails,
 }
 
 export const pagesConfig = {

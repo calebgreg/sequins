@@ -70,11 +70,30 @@ const TeacherDetails = () => {
     }
   };
 
-  const timecardBreakdown = classes.map((c, i) => ({
-    date: c.day,
+  const formatTime = (time) => {
+    const hours = Math.floor(time);
+    const minutes = (time % 1) * 60;
+    const ampm = hours >= 12 ? 'p' : 'a';
+    const displayHour = hours > 12 ? hours - 12 : hours;
+    return `${displayHour}:${minutes.toString().padStart(2, '0')}${ampm}`;
+  };
+
+  const dayMapShort = {
+    M: 'Mon',
+    T: 'Tue',
+    W: 'Wed',
+    R: 'Thu',
+    F: 'Fri',
+    S: 'Sat',
+    U: 'Sun',
+  };
+
+  const timecardBreakdown = classes.map((c) => ({
+    id: c.id,
+    date: dayMapShort[c.day] || c.day,
     type: 'scheduled',
     name: c.title,
-    time: `${Math.floor(c.start_time)}:${(c.start_time % 1) * 60 || '00'}`,
+    time: formatTime(c.start_time),
     hours: c.duration || 1,
   }));
 
@@ -380,7 +399,7 @@ const TeacherDetails = () => {
                 className="flex items-center gap-2 mx-auto text-sm transition-colors hover:opacity-70"
                 style={{ color: '#b5a599' }}
               >
-                {timecardExpanded ? 'Hide' : 'Show'} breakdown
+                {timecardExpanded ? 'Hide' : 'Show'} schedule
                 <svg 
                   className={`w-4 h-4 transition-transform ${timecardExpanded ? 'rotate-180' : ''}`} 
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -394,9 +413,10 @@ const TeacherDetails = () => {
             {timecardExpanded && timecardBreakdown.length > 0 && (
               <div className="space-y-2">
                 {timecardBreakdown.map((item, i) => (
-                  <div 
+                  <Link 
+                    to={createPageUrl('ClassDetail') + `?id=${item.id}`}
                     key={i}
-                    className="flex items-center justify-between p-4 rounded-2xl transition-all"
+                    className="flex items-center justify-between p-4 rounded-2xl transition-all hover:scale-[1.01] cursor-pointer"
                     style={{
                       background: 'rgba(255,255,255,0.4)',
                       boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
@@ -426,22 +446,23 @@ const TeacherDetails = () => {
                         </p>
                       </div>
                     </div>
-                    <span 
-                      className="font-medium"
-                      style={{ 
-                        color: item.hours < 0 ? '#d4a574' : '#8b7d72'
-                      }}
+                    <svg 
+                      className="w-4 h-4 flex-shrink-0"
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                      style={{ color: '#d4c4ba' }}
                     >
-                      {item.hours > 0 ? '+' : ''}{item.hours}
-                    </span>
-                  </div>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
                 ))}
               </div>
             )}
 
             {timecardExpanded && timecardBreakdown.length === 0 && (
               <div className="text-center py-8" style={{ color: '#b5a599' }}>
-                No scheduled classes found
+                No classes scheduled
               </div>
             )}
 
