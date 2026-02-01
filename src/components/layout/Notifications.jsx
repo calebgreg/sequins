@@ -7,11 +7,18 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Notifications({ currentUser }) {
+const colors = {
+  etchLight: '#c4a0a0',
+  etchDark: '#8a7070',
+  muted: '#8a8478',
+};
+
+export default function Notifications({ currentUser, collapsed = false }) {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
 
