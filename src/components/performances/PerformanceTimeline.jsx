@@ -1,25 +1,28 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { format, differenceInDays, addDays, startOfDay, parseISO, isSameDay, isPast, isToday } from 'date-fns';
-import { motion, AnimatePresence } from "framer-motion";
-import { CalendarDays, Sparkles, Flag, CheckCircle2, Circle, Clock, ArrowRight, Calendar as CalendarIcon, Edit2, PartyPopper, Trophy } from 'lucide-react';
+import React, { useState } from 'react';
+import { format, differenceInDays, startOfDay, parseISO, isSameDay, isPast, isToday } from 'date-fns';
+import { motion } from "framer-motion";
+import { Sparkles, Edit2, ChevronDown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+
+// Design tokens
+const colors = {
+  muted: '#8a8478',
+  etchLight: '#c4a0a0',
+  etchDark: '#8a7070',
+};
 
 export default function PerformanceTimeline({ milestones = [], showDate, onMilestoneUpdate }) {
+    const [expanded, setExpanded] = useState(true);
     const today = startOfDay(new Date());
     const showDay = showDate ? startOfDay(parseISO(showDate)) : null;
     
-    // Sort milestones by date and filter out explicit "Show Day" entries to avoid redundancy
     const sortedMilestones = [...(milestones || [])]
         .filter(m => m.name?.toLowerCase() !== 'show day' && (!showDay || !isSameDay(parseISO(m.due_date), showDay)))
-        .sort((a, b) => {
-            return new Date(a.due_date) - new Date(b.due_date);
-        });
+        .sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
 
     const totalDays = showDay ? differenceInDays(showDay, today) : 0;
     
-    // Calculate progress percentage for the main track
     const startDate = sortedMilestones.length > 0 
         ? startOfDay(parseISO(sortedMilestones[0].due_date)) 
         : today;
@@ -29,113 +32,181 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
     const daysPassed = differenceInDays(today, effectiveStart);
     const progressPercent = Math.max(0, Math.min(100, (daysPassed / totalSpan) * 100));
 
-    // --- COMPACT EMPTY STATE ---
+    // Empty state
     if (!showDay || sortedMilestones.length === 0) {
         return (
-            <div className="h-[180px] w-full rounded-[24px] overflow-hidden relative group border border-rose-100">
-                {/* Glassmorphic Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-white to-rose-50/50">
-                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md"></div>
+            <div 
+                className="rounded-3xl p-8 text-center"
+                style={{
+                    background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 8px 24px -8px rgba(180,150,140,0.15)',
+                }}
+            >
+                <div 
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                    style={{
+                        background: 'rgba(255,255,255,0.6)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                    }}
+                >
+                    <Sparkles className="w-6 h-6" style={{ color: '#a48bc4' }} />
                 </div>
-
-                {/* Content */}
-                <div className="relative z-10 h-full flex items-center justify-center text-center px-6 gap-6">
-                    <motion.div 
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="w-16 h-16 bg-white/60 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/60 shadow-sm shrink-0"
-                    >
-                        <Sparkles className="w-8 h-8 text-rose-300" strokeWidth={1.5} />
-                    </motion.div>
-                    
-                    <div className="text-left">
-                        <h3 className="font-serif text-lg mb-1 text-rose-950 font-medium">Your Production Journey</h3>
-                        <p className="text-rose-800/60 max-w-sm text-sm font-light leading-snug">
-                            Set your show date to begin the adventure.
-                        </p>
-                    </div>
-                </div>
+                <h3 
+                    className="text-lg font-bold tracking-tight mb-1"
+                    style={{ 
+                        color: 'transparent',
+                        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                    }}
+                >
+                    Your Production Journey
+                </h3>
+                <p className="text-sm" style={{ color: '#b5a599' }}>
+                    Set your show date to begin the adventure.
+                </p>
             </div>
         );
     }
 
     return (
-        <div className="w-full bg-white/40 backdrop-blur-xl rounded-[24px] border border-white/60 shadow-sm overflow-hidden flex flex-col relative">
+        <div 
+            className="rounded-3xl overflow-hidden"
+            style={{
+                background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 15px 50px -15px rgba(180,150,140,0.15)',
+            }}
+        >
             {/* Header */}
-            <div className="px-6 py-3 flex justify-between items-center border-b border-rose-100/30 bg-white/30 h-14">
+            <div className="px-6 py-4 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-400 to-pink-500 flex items-center justify-center text-white shadow-md shadow-rose-200/50">
-                        <Flag className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="flex items-baseline gap-2">
-                        <h3 className="font-serif text-rose-950 text-sm font-semibold">Road to Opening Night</h3>
-                        <span className="text-[10px] text-rose-400 font-medium bg-rose-50 px-1.5 py-0.5 rounded-md">
-                            {format(showDay, 'MMM d, yyyy')}
-                        </span>
-                    </div>
-                </div>
-                
-                <div className="flex items-center">
-                    <div className="text-xs font-medium text-rose-600 bg-white/50 px-2 py-1 rounded-full border border-rose-100">
-                        {totalDays} days left
-                    </div>
-                </div>
-            </div>
-
-            {/* Scrollable Timeline Area */}
-            <div className="relative px-6 overflow-x-auto min-h-[260px] flex items-center custom-scrollbar">
-                
-                {/* Connecting Line Container - CENTERED */}
-                <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-0.5 bg-rose-100 rounded-full z-0 min-w-[700px]">
-                    {/* Progress Fill */}
-                    <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progressPercent}%` }}
-                        transition={{ duration: 1.5, ease: "easeInOut" }}
-                        className="h-full bg-gradient-to-r from-rose-300 to-pink-500 rounded-full relative"
+                    <div 
+                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(164,139,196,0.1) 100%)',
+                            boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.5)',
+                        }}
                     >
-                        {/* Current Day Indicator */}
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-white border-[3px] border-pink-500 rounded-full shadow-md z-10" />
-                    </motion.div>
-                </div>
-
-                {/* Milestones Container */}
-                <div className="relative z-10 flex gap-0 min-w-[700px] w-full items-center">
-                    {sortedMilestones.map((milestone, idx) => (
-                        <MilestoneCard
-                            key={milestone.id}
-                            milestone={milestone}
-                            today={today}
-                            onUpdate={(updatedMilestone) => {
-                                const newList = sortedMilestones.map(m => 
-                                    m.id === updatedMilestone.id ? updatedMilestone : m
-                                );
-                                onMilestoneUpdate(newList);
+                        <Sparkles className="w-5 h-5" style={{ color: '#a48bc4' }} />
+                    </div>
+                    <div>
+                        <h3 
+                            className="text-lg font-bold tracking-tight"
+                            style={{ 
+                                color: 'transparent',
+                                backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
                             }}
-                            index={idx}
-                        />
-                    ))}
+                        >
+                            Road to Opening Night
+                        </h3>
+                        <p className="text-xs" style={{ color: '#b5a599' }}>
+                            {format(showDay, 'MMMM d, yyyy')}
+                        </p>
+                    </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                    <span 
+                        className="text-sm font-medium px-4 py-2 rounded-full"
+                        style={{
+                            background: totalDays <= 7 ? 'rgba(212,165,116,0.15)' : 'rgba(126,184,154,0.15)',
+                            color: totalDays <= 7 ? '#d4a574' : '#7eb89a',
+                        }}
+                    >
+                        {totalDays} days left
+                    </span>
+                    <button 
+                        onClick={() => setExpanded(!expanded)}
+                        className="p-2 rounded-lg transition-colors hover:bg-white/30"
+                        style={{ color: '#b5a599' }}
+                    >
+                        <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                    </button>
+                </div>
+            </div>
 
-                    {/* Show Day Finale - Elegant */}
-                    <div className="relative h-[220px] w-[100px] flex items-center justify-center group ml-8">
-                         {/* Glow Effect behind */}
-                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-rose-200 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
-                         
-                         {/* Main Badge */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-gradient-to-b from-white to-rose-50 flex items-center justify-center text-rose-500 shadow-[0_8px_30px_-6px_rgba(244,63,94,0.2)] border border-rose-100 z-20 group-hover:scale-105 transition-transform duration-500">
-                            <Sparkles className="w-6 h-6" strokeWidth={1.5} />
+            {/* Timeline Content */}
+            {expanded && (
+                <div className="px-6 pb-6">
+                    {/* Progress Bar */}
+                    <div className="relative mb-8">
+                        <div 
+                            className="h-1.5 rounded-full"
+                            style={{ background: 'rgba(200,180,170,0.2)' }}
+                        >
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progressPercent}%` }}
+                                transition={{ duration: 1.5, ease: "easeInOut" }}
+                                className="h-full rounded-full relative"
+                                style={{ background: `linear-gradient(90deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)` }}
+                            >
+                                <div 
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full border-[3px]"
+                                    style={{ 
+                                        background: '#fff',
+                                        borderColor: colors.etchDark,
+                                        boxShadow: '0 2px 8px rgba(138,112,112,0.3)',
+                                    }}
+                                />
+                            </motion.div>
                         </div>
-                        
-                        {/* Label */}
-                         <div className="absolute top-[68%] text-center w-full">
-                            <div className="font-serif text-sm font-bold text-rose-900 leading-tight">Opening<br/>Night</div>
-                            {showDay && (
-                                <div className="text-[10px] font-medium text-rose-400 mt-1">{format(showDay, 'MMM d')}</div>
-                            )}
+                    </div>
+
+                    {/* Milestones Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {sortedMilestones.map((milestone, idx) => (
+                            <MilestoneCard
+                                key={milestone.id}
+                                milestone={milestone}
+                                today={today}
+                                onUpdate={(updatedMilestone) => {
+                                    const newList = sortedMilestones.map(m => 
+                                        m.id === updatedMilestone.id ? updatedMilestone : m
+                                    );
+                                    onMilestoneUpdate(newList);
+                                }}
+                                index={idx}
+                            />
+                        ))}
+
+                        {/* Opening Night Card */}
+                        <div 
+                            className="rounded-2xl p-4 text-center"
+                            style={{
+                                background: 'linear-gradient(145deg, rgba(164,139,196,0.15) 0%, rgba(164,139,196,0.08) 100%)',
+                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.5)',
+                            }}
+                        >
+                            <div 
+                                className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2"
+                                style={{
+                                    background: 'rgba(255,255,255,0.6)',
+                                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                                }}
+                            >
+                                <Sparkles className="w-5 h-5" style={{ color: '#a48bc4' }} />
+                            </div>
+                            <p 
+                                className="text-sm font-bold"
+                                style={{ 
+                                    color: 'transparent',
+                                    backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                }}
+                            >
+                                Opening Night
+                            </p>
+                            <p className="text-xs mt-1" style={{ color: '#a48bc4' }}>
+                                {format(showDay, 'MMM d')}
+                            </p>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }
@@ -145,16 +216,6 @@ function MilestoneCard({ milestone, today, onUpdate, index }) {
     const isPastDate = isPast(dueDate) && !isToday(dueDate);
     const isTodayDate = isToday(dueDate);
     
-    // Alternating Logic
-    const isTop = index % 2 === 0;
-
-    // Status Logic
-    const isCompleted = isPastDate; 
-
-    const nodeColor = isCompleted ? "bg-rose-200 border-rose-100" : 
-                     isTodayDate ? "bg-rose-500 border-rose-200" : 
-                     "bg-white border-rose-200";
-
     const [isEditing, setIsEditing] = useState(false);
     const [tempDate, setTempDate] = useState(milestone.due_date);
 
@@ -165,57 +226,85 @@ function MilestoneCard({ milestone, today, onUpdate, index }) {
 
     return (
         <motion.div 
-            initial={{ opacity: 0, y: isTop ? 10 : -10 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="relative h-[220px] w-[130px] shrink-0 group"
+            className={`
+                relative rounded-2xl p-4 transition-all group
+                ${isPastDate ? 'opacity-60' : 'hover:scale-[1.02]'}
+            `}
+            style={{
+                background: isPastDate 
+                    ? 'rgba(200,180,170,0.1)' 
+                    : isTodayDate 
+                        ? 'linear-gradient(145deg, rgba(212,165,116,0.15) 0%, rgba(212,165,116,0.08) 100%)'
+                        : 'rgba(255,255,255,0.5)',
+                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+            }}
         >
-            {/* CENTRAL NODE - Always vertically centered */}
-            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-[3px] z-20 transition-all duration-500 ${nodeColor} shadow-sm group-hover:scale-125 bg-white`} />
-            
-            {/* VERTICAL CONNECTOR LINE */}
-            <div className={`absolute left-1/2 -translate-x-px w-0.5 bg-rose-100/80 z-0 ${isTop ? 'bottom-1/2 mb-1.5 h-6' : 'top-1/2 mt-1.5 h-6'}`} />
-
-            {/* CARD CONTENT - Alternates Top/Bottom */}
-            <div className={`absolute left-2 right-2 flex flex-col items-center ${isTop ? 'bottom-[58%]' : 'top-[58%]'}`}>
-                <div className={`
-                    relative p-2.5 rounded-xl border backdrop-blur-md shadow-sm transition-all duration-300 w-full
-                    ${isCompleted ? 'bg-rose-50/40 border-rose-100/40 opacity-80' : 'bg-white/70 border-white/60 hover:shadow-md hover:scale-105 hover:bg-white/90'}
-                    `}>
-                    <div className="flex justify-between items-start mb-1 gap-1">
-                        <div className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${isCompleted ? 'bg-rose-100/50 text-rose-400 line-through decoration-rose-300' : 'bg-rose-50 text-rose-500'}`}>
-                            {format(dueDate, 'MMM d')}
+            <div className="flex items-start justify-between mb-2">
+                <span 
+                    className={`text-xs font-medium px-2 py-1 rounded-lg ${isPastDate ? 'line-through' : ''}`}
+                    style={{ 
+                        background: isPastDate ? 'rgba(200,180,170,0.15)' : isTodayDate ? 'rgba(212,165,116,0.2)' : 'rgba(200,180,170,0.15)',
+                        color: isPastDate ? '#b5a599' : isTodayDate ? '#d4a574' : '#8b7d72',
+                    }}
+                >
+                    {format(dueDate, 'MMM d')}
+                </span>
+                
+                <Popover open={isEditing} onOpenChange={setIsEditing}>
+                    <PopoverTrigger asChild>
+                        <button 
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-white/50"
+                            style={{ color: '#b5a599' }}
+                        >
+                            <Edit2 className="w-3 h-3" />
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                        className="w-auto p-4 rounded-2xl z-50"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(253,238,236,0.98) 0%, rgba(252,243,240,0.98) 100%)',
+                            boxShadow: '0 20px 60px -20px rgba(180,150,140,0.4)',
+                            border: '1px solid rgba(255, 200, 200, 0.3)',
+                        }}
+                    >
+                        <div className="space-y-3">
+                            <h4 className="font-medium text-sm" style={{ color: '#8b7d72' }}>Reschedule</h4>
+                            <input 
+                                type="date" 
+                                value={tempDate}
+                                onChange={(e) => setTempDate(e.target.value)}
+                                className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none"
+                                style={{ 
+                                    background: 'rgba(255,255,255,0.6)',
+                                    color: '#6b5d52',
+                                    border: '1px solid rgba(200,180,170,0.2)',
+                                }}
+                            />
+                            <button 
+                                onClick={handleSave} 
+                                className="w-full py-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+                                style={{
+                                    background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                                    color: '#fff',
+                                    boxShadow: '0 4px 12px -2px rgba(138,112,112,0.3)',
+                                }}
+                            >
+                                Update
+                            </button>
                         </div>
-                        
-                        <Popover open={isEditing} onOpenChange={setIsEditing}>
-                            <PopoverTrigger asChild>
-                                <button className="text-gray-300 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100">
-                                    <Edit2 className="w-2.5 h-2.5" />
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-3 bg-white/95 backdrop-blur-xl border-rose-100 shadow-xl rounded-xl z-50">
-                                <div className="space-y-2">
-                                    <h4 className="font-medium text-xs text-rose-900">Reschedule</h4>
-                                    <input 
-                                        type="date" 
-                                        value={tempDate}
-                                        onChange={(e) => setTempDate(e.target.value)}
-                                        className="w-full bg-rose-50 border border-rose-100 rounded px-2 py-1 text-xs text-rose-900 focus:outline-none focus:ring-1 focus:ring-rose-200"
-                                    />
-                                    <Button size="sm" onClick={handleSave} className="w-full h-7 text-xs bg-rose-500 hover:bg-rose-600 text-white rounded">
-                                        Update
-                                    </Button>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                    
-                    <div className="font-bold text-xs text-gray-700 leading-tight line-clamp-3 text-center" title={milestone.name}>
-                        {milestone.name}
-                    </div>
-                </div>
+                    </PopoverContent>
+                </Popover>
             </div>
             
+            <p 
+                className="text-sm font-medium leading-tight"
+                style={{ color: isPastDate ? '#b5a599' : '#8b7d72' }}
+            >
+                {milestone.name}
+            </p>
         </motion.div>
     );
 }
