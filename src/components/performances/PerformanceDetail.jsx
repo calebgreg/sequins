@@ -3,22 +3,52 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { 
     ArrowLeft, Calendar, MapPin, Plus, GripVertical, 
-    Music, Users, AlertTriangle, Mic2, Footprints,
-    PlayCircle, Timer, Trash2, Shirt, Lightbulb, PenTool
+    Music, Users, Timer, Trash2, Shirt, Lightbulb, PenTool, Footprints, ChevronDown
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { format } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
 import RoutineDetailSheet from './RoutineDetailSheet';
 import PerformanceTimeline from './PerformanceTimeline';
 
-// --- Conflict Helper ---
-// Checks if any student in routine A is also in routine B
+// Design tokens
+const colors = {
+  ink: '#1a1a1a',
+  muted: '#8a8478',
+  etchLight: '#c4a0a0',
+  etchDark: '#8a7070',
+};
+
+// Etched text component
+const EtchedText = ({ children, size = 'md', className = '' }) => {
+  const sizes = {
+    sm: 'text-sm',
+    md: 'text-lg',
+    lg: 'text-2xl',
+    xl: 'text-4xl',
+  };
+  
+  return (
+    <span
+      className={`${sizes[size]} font-bold tracking-tight ${className}`}
+      style={{
+        color: 'transparent',
+        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+        filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+      }}
+    >
+      {children}
+    </span>
+  );
+};
+
+// Conflict Helper
 const findConflicts = (routineA, routineB) => {
     if (!routineA || !routineB) return [];
     const studentsA = routineA.performers || [];
@@ -32,12 +62,12 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     const [formData, setFormData] = useState({});
     const [selectedRoutine, setSelectedRoutine] = useState(null);
     const [selectedSection, setSelectedSection] = useState('general');
+    const [runSheetExpanded, setRunSheetExpanded] = useState(true);
     const queryClient = useQueryClient();
 
-    // Optimistic milestones state to prevent "glitchy" snapping
     const [optimisticMilestones, setOptimisticMilestones] = useState(null);
 
-    // 1. Fetch Performance Data
+    // Fetch Performance Data
     const { data: performance } = useQuery({
         queryKey: ['performance', performanceId],
         queryFn: () => base44.entities.Performance.list().then(list => list.find(p => p.id === performanceId))
@@ -48,14 +78,9 @@ export default function PerformanceDetail({ performanceId, onBack }) {
             setFormData({
                 title: performance.title || '',
                 date: performance.date || '',
-                venue: performance.venue || null // venue is now an object or null
+                venue: performance.venue || null
             });
-            // Initial display value for venue input
             setVenueSearch(performance.venue?.venue_name || performance.venue || ''); 
-            
-            // Sync milestones only if we don't have pending optimistic updates or if server data changed meaningfully
-            // Actually, we should always sync from server, but our optimistic update will override locally first.
-            // When server responds, it should match.
             setOptimisticMilestones(performance.timeline_milestones);
         }
     }, [performance]);
@@ -66,7 +91,6 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
 
-    // Debounce logic for venue search
     useEffect(() => {
         const timer = setTimeout(async () => {
             if (venueSearch.length > 2 && showSuggestions) {
@@ -94,10 +118,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
         try {
             const { data: details } = await base44.functions.invoke('googlePlacesDetails', { place_id: placeId });
             const updatedVenue = details;
-            setFormData(prev => ({
-                ...prev,
-                venue: updatedVenue
-            }));
+            setFormData(prev => ({ ...prev, venue: updatedVenue }));
             updatePerformance.mutate({ ...performance, venue: updatedVenue });
             toast.success("Venue details linked!");
         } catch (err) {
@@ -106,20 +127,12 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     };
 
     const handleVenueBlur = () => {
-        // Delay to allow handleVenueSelect to fire first if clicking a suggestion
         setTimeout(() => {
             if (showSuggestions) {
-                // If suggestions are still open (meaning we didn't click one), close them
                 setShowSuggestions(false);
             }
             
             const currentVenueName = performance.venue?.venue_name || (typeof performance.venue === 'string' ? performance.venue : '');
-            
-            // Only save if the text is different from what's saved AND we aren't in the middle of selecting a suggestion (which closes suggestions)
-            // But checking showSuggestions here inside timeout might be tricky if select closed it.
-            // Simplified: If the input text doesn't match the saved venue name/obj, save it as a manual entry.
-            // If handleVenueSelect fired, it would have updated performance.venue, so we compare against that (but performance prop might not be updated yet).
-            // Actually, we should rely on formData which is optimistic.
             
             if (venueSearch !== currentVenueName) {
                 const manualVenue = { venue_name: venueSearch };
@@ -129,7 +142,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
         }, 200);
     };
 
-    // 2. Fetch Routines
+    // Fetch Routines
     const { data: routines = [] } = useQuery({
         queryKey: ['routines', performanceId],
         queryFn: async () => {
@@ -138,20 +151,13 @@ export default function PerformanceDetail({ performanceId, onBack }) {
         }
     });
 
-    // 3. Fetch Students (for name resolution and conflict checking visual)
+    // Fetch Students
     const { data: students = [] } = useQuery({
         queryKey: ['all_students'],
         queryFn: () => base44.entities.Student.list()
     });
 
-    // 4. Fetch Tasks
-    const { data: tasks = [] } = useQuery({
-        queryKey: ['tasks', performanceId],
-        queryFn: () => base44.entities.FamilyTask.list().then(list => list.filter(t => t.performance_id === performanceId))
-    });
-
-    // --- Mutations ---
-
+    // Mutations
     const updatePerformance = useMutation({
         mutationFn: (data) => base44.entities.Performance.update(performanceId, data),
         onSuccess: () => {
@@ -166,7 +172,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
             title: title,
             duration_seconds: 180,
             order_index: routines.length + 1,
-            performers: [] // Empty start
+            performers: []
         }),
         onSuccess: () => {
             setNewRoutineTitle('');
@@ -184,8 +190,7 @@ export default function PerformanceDetail({ performanceId, onBack }) {
         onSuccess: () => queryClient.invalidateQueries(['routines', performanceId])
     });
 
-    // --- Handlers ---
-
+    // Handlers
     const handleTitleBlur = () => {
         if (performance && formData.title !== performance.title) {
             updatePerformance.mutate({ ...performance, title: formData.title });
@@ -205,8 +210,6 @@ export default function PerformanceDetail({ performanceId, onBack }) {
         const [reorderedItem] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, reorderedItem);
 
-        // Optimistic UI update could happen here, but for simplicity we'll just fire updates
-        // In a real app, you'd batch this or use a more sophisticated ordering system
         items.forEach((item, index) => {
             if (item.order_index !== index + 1) {
                 updateRoutine.mutate({ id: item.id, order_index: index + 1 });
@@ -225,184 +228,304 @@ export default function PerformanceDetail({ performanceId, onBack }) {
     const totalDurationSeconds = routines.reduce((acc, r) => acc + (r.duration_seconds || 0), 0);
     const totalDurationFormatted = `${Math.floor(totalDurationSeconds / 60)}m ${totalDurationSeconds % 60}s`;
 
-    if (!performance) return <div className="p-8 text-center">Loading Quarterback View...</div>;
+    if (!performance) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ background: '#ffffff' }}>
+                <div className="text-center">
+                    <div className="w-12 h-12 rounded-full border-2 border-[#c4a0a0] border-t-transparent animate-spin mx-auto mb-4" />
+                    <p style={{ color: '#8b7d72' }}>Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-    <div className="space-y-6">
-        {/* --- Quarterback Header & Timeline --- */}
-        <div className="flex flex-col gap-6">
-            <div className="relative w-full rounded-[32px] shadow-2xl group overflow-hidden text-white">
-                {/* Background Image */}
-                <div 
-                    className="absolute inset-0 z-0 bg-cover bg-center"
-                    style={{ 
-                        backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692b7ce31c9c985decfff75a/4500517ed_Gemini_Generated_Image_2u5n1l2u5n1l2u5n.png)',
-                    }}
-                />
-                <div className="absolute inset-0 bg-black/20 z-0" />
+        <div 
+            className="min-h-screen relative overflow-hidden"
+            style={{ 
+                fontFamily: "'DM Sans', -apple-system, sans-serif",
+                background: '#ffffff',
+            }}
+        >
+            {/* Ambient background shapes */}
+            <div 
+                className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+            />
+            <div 
+                className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+            />
+
+            <div className="relative max-w-4xl mx-auto px-8 py-12">
                 
-                <div className="relative z-10 p-8">
-                    <div className="flex items-center justify-between mb-6">
-                        <button 
-                            onClick={onBack}
-                            className="flex items-center text-white/60 hover:text-white transition-colors text-sm font-medium uppercase tracking-wider"
-                        >
-                            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Events
-                        </button>
-                        <Button
-                            onClick={() => navigate(`/performances?mode=producer&id=${performanceId}`)}
-                            className="bg-white/10 hover:bg-white/20 text-white rounded-full h-9 shadow-lg shadow-white/5 transition-all text-xs flex items-center gap-2 border border-white/10"
-                        >
-                            <PenTool className="w-3 h-3" /> Enter Backstage
-                        </Button>
-                    </div>
+                {/* Breadcrumb */}
+                <div className="flex items-center gap-2 text-sm mb-8" style={{ color: '#c4b5ab' }}>
+                    <button onClick={onBack} className="cursor-pointer hover:text-[#a89585] transition-colors flex items-center gap-1">
+                        <ArrowLeft className="w-4 h-4" />
+                        Performances
+                    </button>
+                    <span>›</span>
+                    <span style={{ color: '#8b7d72' }}>{performance.title}</span>
+                </div>
 
-                    <div className="flex flex-col gap-4">
-                        <Input 
-                            value={formData.title || ''}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            onBlur={handleTitleBlur}
-                            className="text-4xl md:text-5xl font-serif bg-transparent border-none text-white px-0 focus-visible:ring-0 placeholder:text-white/50 h-auto p-0 shadow-none"
-                            placeholder="Event Title"
-                        />
-                        
-                        <div className="flex flex-wrap gap-4 text-sm text-white/70">
-                            <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/20 transition-colors">
-                                <Calendar className="w-4 h-4 text-indigo-300" />
-                                <input 
-                                    type="date" 
-                                    value={formData.date || ''} 
-                                    onChange={handleDateChange}
-                                    className="bg-transparent border-none text-white focus:outline-none p-0 cursor-pointer font-medium uppercase tracking-wide text-xs"
-                                />
-                            </div>
+                {/* Main Profile Card - Frosted Glass */}
+                <div 
+                    className="relative rounded-3xl p-8 mb-8"
+                    style={{
+                        background: 'linear-gradient(145deg, rgba(253,238,236,0.85) 0%, rgba(250,232,228,0.7) 30%, rgba(248,235,230,0.6) 70%, rgba(252,243,240,0.75) 100%)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), inset 0 -1px 2px rgba(200,180,170,0.15), 0 20px 60px -20px rgba(180,150,140,0.2)',
+                        backdropFilter: 'blur(20px)',
+                    }}
+                >
+                    {/* Inner glow */}
+                    <div 
+                        className="absolute inset-0 rounded-3xl pointer-events-none"
+                        style={{
+                            background: 'radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 50%)',
+                        }}
+                    />
+
+                    <div className="relative flex flex-col md:flex-row items-start gap-8">
+                        {/* Icon */}
+                        <div 
+                            className="w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
+                            style={{
+                                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                                boxShadow: '0 8px 32px -8px rgba(180,150,140,0.25), inset 0 1px 1px rgba(255,255,255,1)',
+                            }}
+                        >
+                            <span className="text-3xl">🎭</span>
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 pt-2">
+                            <Input 
+                                value={formData.title || ''}
+                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                onBlur={handleTitleBlur}
+                                className="text-4xl font-bold tracking-tight bg-transparent border-none px-0 focus-visible:ring-0 placeholder:text-[#c4b5ab] h-auto p-0 shadow-none"
+                                placeholder="Event Title"
+                                style={{ 
+                                    color: 'transparent',
+                                    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                }}
+                            />
                             
-                            <div className="relative flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/20 transition-colors">
-                                <MapPin className="w-4 h-4 text-pink-300" />
-                                <input 
-                                    value={venueSearch} 
-                                    placeholder="Set Venue"
-                                    onChange={(e) => {
-                                        setVenueSearch(e.target.value);
-                                        setShowSuggestions(true);
+                            {/* Meta Tags */}
+                            <div className="flex flex-wrap gap-3 mt-4">
+                                <div 
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.5)',
+                                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 1px 3px rgba(180,150,140,0.1)',
                                     }}
-                                    onFocus={() => setShowSuggestions(true)}
-                                    onBlur={handleVenueBlur}
-                                    className="bg-transparent border-none text-white focus:outline-none w-32 placeholder:text-white/50 font-medium uppercase tracking-wide text-xs"
-                                />
-                                {showSuggestions && (suggestions.length > 0 || isFetchingSuggestions) && (
-                                    <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-lg shadow-xl text-gray-800 z-50 overflow-hidden text-sm">
-                                        {isFetchingSuggestions && <div className="p-3 text-gray-400 text-xs">Loading...</div>}
-                                        {suggestions.map((s) => (
-                                            <div 
-                                                key={s.place_id}
-                                                onMouseDown={() => handleVenueSelect(s.place_id, s.description)}
-                                                className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
-                                            >
-                                                <div className="font-bold text-[#333333]">{s.main_text}</div>
-                                                <div className="text-xs text-gray-500 truncate">{s.secondary_text}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                                >
+                                    <Calendar className="w-4 h-4" style={{ color: '#a48bc4' }} />
+                                    <input 
+                                        type="date" 
+                                        value={formData.date || ''} 
+                                        onChange={handleDateChange}
+                                        className="bg-transparent border-none focus:outline-none p-0 cursor-pointer text-sm"
+                                        style={{ color: '#8b7d72' }}
+                                    />
+                                </div>
+                                
+                                <div 
+                                    className="relative flex items-center gap-2 px-4 py-2 rounded-full"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.5)',
+                                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 1px 3px rgba(180,150,140,0.1)',
+                                    }}
+                                >
+                                    <MapPin className="w-4 h-4" style={{ color: '#d4a574' }} />
+                                    <input 
+                                        value={venueSearch} 
+                                        placeholder="Set venue..."
+                                        onChange={(e) => {
+                                            setVenueSearch(e.target.value);
+                                            setShowSuggestions(true);
+                                        }}
+                                        onFocus={() => setShowSuggestions(true)}
+                                        onBlur={handleVenueBlur}
+                                        className="bg-transparent border-none focus:outline-none w-32 placeholder:text-[#c4b5ab] text-sm"
+                                        style={{ color: '#8b7d72' }}
+                                    />
+                                    {showSuggestions && (suggestions.length > 0 || isFetchingSuggestions) && (
+                                        <div 
+                                            className="absolute top-full left-0 mt-2 w-72 rounded-2xl z-50 overflow-hidden"
+                                            style={{
+                                                background: 'linear-gradient(145deg, rgba(253,238,236,0.98) 0%, rgba(252,243,240,0.98) 100%)',
+                                                boxShadow: '0 20px 60px -20px rgba(180,150,140,0.4)',
+                                                border: '1px solid rgba(255, 200, 200, 0.3)',
+                                            }}
+                                        >
+                                            {isFetchingSuggestions && <div className="p-3 text-xs" style={{ color: '#b5a599' }}>Loading...</div>}
+                                            {suggestions.map((s) => (
+                                                <div 
+                                                    key={s.place_id}
+                                                    onMouseDown={() => handleVenueSelect(s.place_id, s.description)}
+                                                    className="p-3 cursor-pointer transition-colors hover:bg-white/50"
+                                                    style={{ borderBottom: '1px solid rgba(200,180,170,0.15)' }}
+                                                >
+                                                    <div className="font-medium" style={{ color: '#8b7d72' }}>{s.main_text}</div>
+                                                    <div className="text-xs truncate" style={{ color: '#b5a599' }}>{s.secondary_text}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
 
-                            <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                                <Timer className="w-4 h-4 text-pink-300" />
-                                <span className="font-medium uppercase tracking-wide text-xs">Run Time: {totalDurationFormatted}</span>
+                                <div 
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.5)',
+                                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 1px 3px rgba(180,150,140,0.1)',
+                                    }}
+                                >
+                                    <Timer className="w-4 h-4" style={{ color: '#7eb89a' }} />
+                                    <span className="text-sm" style={{ color: '#8b7d72' }}>{totalDurationFormatted}</span>
+                                </div>
                             </div>
+                        </div>
+
+                        {/* Quick Stats */}
+                        <div className="text-right pt-2">
+                            <div className="mb-4">
+                                <p className="text-sm mb-1" style={{ color: '#b5a599' }}>Routines</p>
+                                <p className="text-4xl font-light" style={{ color: '#8b7d72' }}>
+                                    {routines.length}
+                                </p>
+                            </div>
+                            <Button
+                                onClick={() => navigate(`/performances?mode=producer&id=${performanceId}`)}
+                                className="rounded-xl px-5 py-2 text-sm font-medium transition-all hover:scale-[1.02]"
+                                style={{
+                                    background: 'rgba(255,255,255,0.6)',
+                                    color: '#8b7d72',
+                                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+                                }}
+                            >
+                                <PenTool className="w-3 h-3 mr-2" /> Backstage
+                            </Button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Timeline Section */}
-            <div className="w-full">
-                <PerformanceTimeline 
-                    milestones={optimisticMilestones || performance?.timeline_milestones} 
-                    showDate={performance?.date}
-                    onMilestoneUpdate={async (updatedMilestones) => {
-                        // 0. Optimistic Update (Immediate Feedback)
-                        setOptimisticMilestones(updatedMilestones);
+                {/* Timeline Section */}
+                <div className="mb-8">
+                    <PerformanceTimeline 
+                        milestones={optimisticMilestones || performance?.timeline_milestones} 
+                        showDate={performance?.date}
+                        onMilestoneUpdate={async (updatedMilestones) => {
+                            setOptimisticMilestones(updatedMilestones);
+                            updatePerformance.mutate({ 
+                                ...performance, 
+                                timeline_milestones: updatedMilestones 
+                            });
 
-                        // 1. Update Performance Entity
-                        updatePerformance.mutate({ 
-                            ...performance, 
-                            timeline_milestones: updatedMilestones 
-                        });
-
-                        // 2. Update Linked Family Tasks
-                        const updates = [];
-                        updatedMilestones.forEach(ms => {
-                            if (ms.tasks) {
-                                ms.tasks.forEach(t => {
-                                    if (t.family_task_id) {
-                                        updates.push(
-                                            base44.entities.FamilyTask.update(t.family_task_id, { 
-                                                due_date: ms.due_date 
-                                            }).catch(err => console.error("Failed to update task", t.family_task_id, err))
-                                        );
-                                    }
-                                });
+                            const updates = [];
+                            updatedMilestones.forEach(ms => {
+                                if (ms.tasks) {
+                                    ms.tasks.forEach(t => {
+                                        if (t.family_task_id) {
+                                            updates.push(
+                                                base44.entities.FamilyTask.update(t.family_task_id, { 
+                                                    due_date: ms.due_date 
+                                                }).catch(err => console.error("Failed to update task", t.family_task_id, err))
+                                            );
+                                        }
+                                    });
+                                }
+                            });
+                            
+                            if (updates.length > 0) {
+                                try {
+                                    await Promise.all(updates);
+                                    queryClient.invalidateQueries(['tasks', performanceId]);
+                                    toast.success("Timeline & tasks updated!");
+                                } catch (e) {
+                                    console.error("Error updating tasks", e);
+                                }
                             }
-                        });
-                        
-                        if (updates.length > 0) {
-                            try {
-                                await Promise.all(updates);
-                                queryClient.invalidateQueries(['tasks', performanceId]);
-                                toast.success("Timeline & tasks updated!");
-                            } catch (e) {
-                                console.error("Error updating tasks", e);
-                            }
-                        }
+                        }}
+                    />
+                </div>
+
+                {/* Run Sheet Card - Frosted */}
+                <div 
+                    className="rounded-3xl p-8"
+                    style={{
+                        background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 15px 50px -15px rgba(180,150,140,0.15)',
                     }}
-                />
-            </div>
-            </div>
-
-            {/* --- Main Workspace --- */}
-            <div className="max-w-6xl mx-auto">
-
-                {/* Run Sheet (The Quarterback View) */}
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-serif text-[#333333] flex items-center gap-2">
-                            Run Sheet <Badge className="bg-gray-100 text-gray-500">{routines.length} Acts</Badge>
-                        </h2>
+                >
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 className="text-xl font-medium" style={{ color: '#8b7d72' }}>Run Sheet</h2>
+                            <p className="text-sm mt-1" style={{ color: '#b5a599' }}>{routines.length} acts · {totalDurationFormatted} total</p>
+                        </div>
                         
                         {/* Quick Add Routine */}
                         <form onSubmit={handleAddRoutine} className="flex gap-2">
-                            <Input 
-                                value={newRoutineTitle}
-                                onChange={(e) => setNewRoutineTitle(e.target.value)}
-                                placeholder="Add new routine..."
-                                className="bg-white border-gray-200 w-64 rounded-xl"
-                            />
-                            <Button type="submit" disabled={!newRoutineTitle.trim()} className="rounded-xl">
+                            <div 
+                                className="rounded-xl p-1"
+                                style={{
+                                    background: 'linear-gradient(145deg, rgba(255,255,255,0.7) 0%, rgba(255,252,250,0.5) 100%)',
+                                    boxShadow: 'inset 0 2px 4px rgba(180,150,140,0.08), 0 1px 2px rgba(255,255,255,0.8)',
+                                }}
+                            >
+                                <Input 
+                                    value={newRoutineTitle}
+                                    onChange={(e) => setNewRoutineTitle(e.target.value)}
+                                    placeholder="Add routine..."
+                                    className="border-none shadow-none focus-visible:ring-0 h-9 text-sm bg-transparent w-40"
+                                    style={{ color: '#6b5d52' }}
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={!newRoutineTitle.trim()}
+                                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105 disabled:opacity-40"
+                                style={{
+                                    background: newRoutineTitle.trim() 
+                                        ? 'linear-gradient(145deg, #8b7d72 0%, #6b5d52 100%)'
+                                        : 'rgba(180,170,160,0.3)',
+                                    color: '#fff',
+                                    boxShadow: newRoutineTitle.trim() 
+                                        ? '0 4px 12px -2px rgba(107,93,82,0.3)'
+                                        : 'none',
+                                }}
+                            >
                                 <Plus className="w-4 h-4" />
-                            </Button>
+                            </button>
                         </form>
                     </div>
 
-                    <div className="bg-transparent rounded-[32px] p-2">
-                        <div className="px-6 py-3 grid grid-cols-12 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">
-                            <div className="col-span-1 text-center">#</div>
-                            <div className="col-span-6">Routine Details</div>
-                            <div className="col-span-3">Status</div>
-                            <div className="col-span-2 text-right">Duration</div>
-                        </div>
+                    {/* Toggle */}
+                    <button 
+                        onClick={() => setRunSheetExpanded(!runSheetExpanded)}
+                        className="flex items-center gap-2 mb-4 text-sm transition-colors hover:opacity-70"
+                        style={{ color: '#b5a599' }}
+                    >
+                        {runSheetExpanded ? 'Hide' : 'Show'} routines
+                        <ChevronDown 
+                            className={`w-4 h-4 transition-transform ${runSheetExpanded ? 'rotate-180' : ''}`} 
+                        />
+                    </button>
 
+                    {runSheetExpanded && (
                         <DragDropContext onDragEnd={handleDragEnd}>
                             <Droppable droppableId="run-sheet">
                                 {(provided) => (
                                     <div 
                                         {...provided.droppableProps}
                                         ref={provided.innerRef}
-                                        className="space-y-4"
+                                        className="space-y-3"
                                     >
                                         {routines.map((routine, index) => {
-                                            // Conflict Check: Look at previous routine
                                             const prevRoutine = index > 0 ? routines[index - 1] : null;
                                             const conflicts = prevRoutine ? findConflicts(prevRoutine, routine) : [];
                                             const hasConflict = conflicts.length > 0;
@@ -418,154 +541,107 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                                                 setSelectedSection('general');
                                                             }}
                                                             className={`
-                                                                relative rounded-3xl border transition-all duration-300 group cursor-pointer overflow-hidden
-                                                                ${snapshot.isDragging 
-                                                                    ? 'bg-white/90 shadow-[0_20px_40px_-12px_rgba(244,63,94,0.3)] scale-105 z-50 border-rose-200 ring-1 ring-rose-100' 
-                                                                    : 'bg-gradient-to-br from-white/90 via-rose-50/50 to-rose-100/40 backdrop-blur-xl border-white/60 shadow-[0_4px_20px_-4px_rgba(244,63,94,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(244,63,94,0.15)] hover:border-rose-200/50 hover:to-rose-100/60'
-                                                                }
+                                                                relative rounded-2xl p-4 transition-all cursor-pointer hover:scale-[1.01]
+                                                                ${snapshot.isDragging ? 'rotate-1 scale-105 z-50' : ''}
                                                             `}
+                                                            style={{
+                                                                ...provided.draggableProps.style,
+                                                                background: snapshot.isDragging 
+                                                                    ? 'rgba(255,255,255,0.95)'
+                                                                    : 'rgba(255,255,255,0.5)',
+                                                                boxShadow: snapshot.isDragging 
+                                                                    ? '0 20px 40px -10px rgba(180,150,140,0.3), inset 0 1px 1px rgba(255,255,255,1)'
+                                                                    : 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                                                            }}
                                                         >
-                                                            {/* Glassmorphic Shine Effect */}
-                                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                                                            {/* Conflict Alert Line - Removed to avoid clipping, moved to status column */}
-
-                                                            <div className="grid grid-cols-12 items-center p-3">
+                                                            <div className="flex items-center gap-4">
                                                                 {/* Handle & Number */}
-                                                                <div className="col-span-1 flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                                                    <div {...provided.dragHandleProps} className="text-gray-300 cursor-grab active:cursor-grabbing hover:text-gray-500">
+                                                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                                                    <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing" style={{ color: '#c4b5ab' }}>
                                                                         <GripVertical className="w-4 h-4" />
                                                                     </div>
-                                                                    <span className="font-mono font-bold text-gray-400 text-lg">{index + 1}</span>
+                                                                    <span className="font-mono font-bold text-lg w-6" style={{ color: '#b5a599' }}>{index + 1}</span>
                                                                 </div>
 
                                                                 {/* Details */}
-                                                                <div className="col-span-6 pr-4 border-r border-gray-100/50">
-                                                                    <div 
-                                                                        className="font-bold text-[#333333] text-base group-hover:text-indigo-600 transition-colors"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            setSelectedRoutine(routine);
-                                                                            setSelectedSection('general');
-                                                                        }}
-                                                                    >
-                                                                        {routine.title}
-                                                                    </div>
-                                                                    <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
-                                                                        <div 
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                setSelectedRoutine(routine);
-                                                                                setSelectedSection('music');
-                                                                            }}
-                                                                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md cursor-pointer transition-colors ${
-                                                                                routine.song_title 
-                                                                                    ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' 
-                                                                                    : 'text-gray-300 hover:text-gray-400 hover:bg-gray-100'
-                                                                            }`}
-                                                                        >
-                                                                            <Music className="w-3 h-3" /> 
-                                                                            {routine.song_title ? routine.song_title : <span className="italic">No music set</span>}
-                                                                        </div>
-                                                                        
-                                                                        <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                                                                        
-                                                                        <div 
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                setSelectedRoutine(routine);
-                                                                                setSelectedSection('performers');
-                                                                            }}
-                                                                            className="flex items-center gap-1 cursor-pointer hover:text-indigo-600 transition-colors"
-                                                                        >
-                                                                            <Users className="w-3 h-3" /> {routine.performers?.length || 0}
-                                                                        </div>
-
+                                                                <div className="flex-1">
+                                                                    <div className="font-medium" style={{ color: '#8b7d72' }}>{routine.title}</div>
+                                                                    <div className="flex items-center gap-3 mt-1 text-xs" style={{ color: '#b5a599' }}>
+                                                                        <span className="flex items-center gap-1">
+                                                                            <Music className="w-3 h-3" />
+                                                                            {routine.song_title || 'No music'}
+                                                                        </span>
+                                                                        <span className="flex items-center gap-1">
+                                                                            <Users className="w-3 h-3" />
+                                                                            {routine.performers?.length || 0}
+                                                                        </span>
                                                                         {hasConflict && (
-                                                                            <>
-                                                                                <span className="w-1 h-1 bg-rose-300/50 rounded-full" />
-                                                                                <div className="flex items-center gap-1 text-rose-600 font-medium bg-rose-50/80 px-2 py-0.5 rounded-full border border-rose-100 shadow-sm text-[10px]">
-                                                                                    <Timer className="w-3 h-3" />
-                                                                                    <span>Quick Change ({conflicts.length})</span>
-                                                                                </div>
-                                                                            </>
+                                                                            <span 
+                                                                                className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+                                                                                style={{ background: 'rgba(212,165,116,0.15)', color: '#d4a574' }}
+                                                                            >
+                                                                                <Timer className="w-3 h-3" />
+                                                                                Quick Change
+                                                                            </span>
                                                                         )}
                                                                     </div>
                                                                 </div>
 
-                                                                {/* Status */}
-                                                                <div className="col-span-3 px-4">
-                                                                    <div className="flex gap-2">
-                                                                         {/* Music Icon */}
-                                                                         <div 
-                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
-                                                                                routine.song_title 
-                                                                                    ? 'bg-white/80 text-indigo-500 border-indigo-100 shadow-indigo-100/30' 
-                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
-                                                                             }`}
-                                                                             title={routine.song_title ? "Music Set" : "No music"}
-                                                                             onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('music'); }}
-                                                                         >
-                                                                             <Music className="w-3.5 h-3.5" />
-                                                                         </div>
-                                                                         
-                                                                         {/* Costume Icon */}
-                                                                         <div 
-                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
-                                                                                routine.costume_details 
-                                                                                    ? 'bg-white/80 text-rose-500 border-rose-100 shadow-rose-100/30' 
-                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
-                                                                             }`} 
-                                                                             title={routine.costume_details ? "Costumes Detailed" : "No costume details"}
-                                                                             onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('costumes'); }}
-                                                                         >
-                                                                             <Shirt className="w-3.5 h-3.5" />
-                                                                         </div>
-
-                                                                         {/* Lighting Icon */}
-                                                                         <div 
-                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
-                                                                                routine.lighting_notes 
-                                                                                    ? 'bg-white/80 text-yellow-500 border-yellow-100 shadow-yellow-100/30' 
-                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
-                                                                             }`} 
-                                                                             title={routine.lighting_notes ? "Lighting Notes" : "No lighting details"}
-                                                                             onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('lighting'); }}
-                                                                         >
-                                                                             <Lightbulb className="w-3.5 h-3.5" />
-                                                                         </div>
-
-                                                                         {/* Choreography/Notes Icon */}
-                                                                         <div 
-                                                                             className={`p-2 rounded-xl cursor-pointer hover:scale-105 transition-all shadow-sm border ${
-                                                                                routine.notes 
-                                                                                    ? 'bg-white/80 text-purple-500 border-purple-100 shadow-purple-100/30' 
-                                                                                    : 'bg-white/40 text-gray-300 border-transparent'
-                                                                             }`} 
-                                                                             title={routine.notes ? "Choreography Notes" : "No notes"}
-                                                                             onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('choreography'); }}
-                                                                         >
-                                                                             <Footprints className="w-3.5 h-3.5" />
-                                                                         </div>
+                                                                {/* Status Icons */}
+                                                                <div className="flex gap-2">
+                                                                    <div 
+                                                                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                                                            routine.song_title ? 'bg-[rgba(164,139,196,0.15)]' : 'bg-[rgba(200,180,170,0.1)]'
+                                                                        }`}
+                                                                        style={{ color: routine.song_title ? '#a48bc4' : '#c4b5ab' }}
+                                                                        onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('music'); }}
+                                                                    >
+                                                                        <Music className="w-3.5 h-3.5" />
                                                                     </div>
-
+                                                                    <div 
+                                                                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                                                            routine.costume_details ? 'bg-[rgba(200,170,156,0.15)]' : 'bg-[rgba(200,180,170,0.1)]'
+                                                                        }`}
+                                                                        style={{ color: routine.costume_details ? '#c8aa9c' : '#c4b5ab' }}
+                                                                        onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('costumes'); }}
+                                                                    >
+                                                                        <Shirt className="w-3.5 h-3.5" />
+                                                                    </div>
+                                                                    <div 
+                                                                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                                                            routine.lighting_notes ? 'bg-[rgba(212,165,116,0.15)]' : 'bg-[rgba(200,180,170,0.1)]'
+                                                                        }`}
+                                                                        style={{ color: routine.lighting_notes ? '#d4a574' : '#c4b5ab' }}
+                                                                        onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('lighting'); }}
+                                                                    >
+                                                                        <Lightbulb className="w-3.5 h-3.5" />
+                                                                    </div>
+                                                                    <div 
+                                                                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                                                            routine.notes ? 'bg-[rgba(126,184,154,0.15)]' : 'bg-[rgba(200,180,170,0.1)]'
+                                                                        }`}
+                                                                        style={{ color: routine.notes ? '#7eb89a' : '#c4b5ab' }}
+                                                                        onClick={(e) => { e.stopPropagation(); setSelectedRoutine(routine); setSelectedSection('choreography'); }}
+                                                                    >
+                                                                        <Footprints className="w-3.5 h-3.5" />
+                                                                    </div>
                                                                 </div>
 
-                                                                {/* Actions & Time */}
-                                                                <div className="col-span-2 text-right flex items-center justify-end gap-3">
-                                                                    <span className="font-mono text-sm text-gray-500">
+                                                                {/* Duration & Delete */}
+                                                                <div className="flex items-center gap-3">
+                                                                    <span className="font-mono text-sm" style={{ color: '#b5a599' }}>
                                                                         {Math.floor(routine.duration_seconds / 60)}:{(routine.duration_seconds % 60).toString().padStart(2, '0')}
                                                                     </span>
-                                                                    <Button 
-                                                                        variant="ghost" 
-                                                                        size="icon" 
-                                                                        className="h-8 w-8 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    <button 
+                                                                        className="w-8 h-8 rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                                                                        style={{ color: '#c8aa9c' }}
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             if (confirm("Delete this routine?")) deleteRoutine.mutate(routine.id);
                                                                         }}
                                                                     >
                                                                         <Trash2 className="w-4 h-4" />
-                                                                    </Button>
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -578,13 +654,13 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                 )}
                             </Droppable>
                         </DragDropContext>
-                        
-                        {routines.length === 0 && (
-                            <div className="py-12 text-center text-gray-400 text-sm">
-                                Drag and drop routines here to build your show.
-                            </div>
-                        )}
-                    </div>
+                    )}
+                    
+                    {routines.length === 0 && runSheetExpanded && (
+                        <div className="py-12 text-center" style={{ color: '#b5a599' }}>
+                            Add routines to build your show
+                        </div>
+                    )}
                 </div>
 
                 <RoutineDetailSheet 
@@ -594,7 +670,6 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                     allStudents={students}
                     selectedSection={selectedSection}
                 />
-
             </div>
         </div>
     );
