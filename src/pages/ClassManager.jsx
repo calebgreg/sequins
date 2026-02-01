@@ -66,6 +66,7 @@ export default function ClassManager() {
   const [isAutoAssignOpen, setIsAutoAssignOpen] = useState(false);
   const [attendanceClass, setAttendanceClass] = useState(null);
   const [selectedDay, setSelectedDay] = useState('M');
+  const [viewMode, setViewMode] = useState('room'); // 'room' or 'teacher'
   const scrollContainerRef = useRef(null);
 
   const { data: classes = [] } = useQuery({
@@ -151,19 +152,48 @@ export default function ClassManager() {
           </div>
         </div>
 
-        <Button 
-          onClick={() => setIsImportOpen(true)}
-          size="sm"
-          className="rounded-full px-5 gap-2 font-semibold"
-          style={{ 
-            backgroundColor: colors.ink, 
-            color: '#fff',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          }}
-        >
-          <Plus className="w-4 h-4" />
-          Import
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* View Mode Toggle */}
+          <div 
+            className="flex items-center p-1 rounded-full"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+          >
+            <button
+              onClick={() => setViewMode('room')}
+              className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
+              style={{
+                backgroundColor: viewMode === 'room' ? colors.ink : 'transparent',
+                color: viewMode === 'room' ? '#fff' : colors.muted,
+              }}
+            >
+              Studios
+            </button>
+            <button
+              onClick={() => setViewMode('teacher')}
+              className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
+              style={{
+                backgroundColor: viewMode === 'teacher' ? colors.ink : 'transparent',
+                color: viewMode === 'teacher' ? '#fff' : colors.muted,
+              }}
+            >
+              Teachers
+            </button>
+          </div>
+
+          <Button 
+            onClick={() => setIsImportOpen(true)}
+            size="sm"
+            className="rounded-full px-5 gap-2 font-semibold"
+            style={{ 
+              backgroundColor: colors.ink, 
+              color: '#fff',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            }}
+          >
+            <Plus className="w-4 h-4" />
+            Import
+          </Button>
+        </div>
       </div>
 
       {/* Schedule Grid */}
@@ -197,35 +227,64 @@ export default function ClassManager() {
       ) : (
         <div className="flex-1 overflow-hidden">
           <div className="h-full flex flex-col">
-            {/* Sticky Header Row - Rooms */}
+            {/* Sticky Header Row - Rooms or Teachers */}
             <div className="flex-shrink-0 px-6 py-3" style={{ backgroundColor: colors.paper }}>
               <div className="flex">
                 <div className="w-20 flex-shrink-0" />
-                {rooms.length === 0 ? (
-                  <div 
-                    className="flex-1 text-center py-6 rounded-2xl"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-                      border: '1px dashed rgba(200, 160, 160, 0.4)',
-                    }}
-                  >
-                    <p className="text-sm" style={{ color: colors.muted }}>No rooms configured. Set up rooms in Settings.</p>
-                  </div>
-                ) : (
-                  rooms.map(room => (
-                    <div key={room.id} className="flex-1 px-2">
-                      <div 
-                        className="rounded-2xl px-4 py-3 text-center"
-                        style={{
-                          background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-                          boxShadow: `inset 0 2px 8px ${colors.frostShadow}, 0 1px 3px rgba(0,0,0,0.04)`,
-                          border: '1px solid rgba(255, 200, 200, 0.3)',
-                        }}
-                      >
-                        <EtchedText size="sm">{room.name}</EtchedText>
-                      </div>
+                {viewMode === 'room' ? (
+                  rooms.length === 0 ? (
+                    <div 
+                      className="flex-1 text-center py-6 rounded-2xl"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+                        border: '1px dashed rgba(200, 160, 160, 0.4)',
+                      }}
+                    >
+                      <p className="text-sm" style={{ color: colors.muted }}>No rooms configured. Set up rooms in Settings.</p>
                     </div>
-                  ))
+                  ) : (
+                    rooms.map(room => (
+                      <div key={room.id} className="flex-1 px-2">
+                        <div 
+                          className="rounded-2xl px-4 py-3 text-center"
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+                            boxShadow: `inset 0 2px 8px ${colors.frostShadow}, 0 1px 3px rgba(0,0,0,0.04)`,
+                            border: '1px solid rgba(255, 200, 200, 0.3)',
+                          }}
+                        >
+                          <EtchedText size="sm">{room.name}</EtchedText>
+                        </div>
+                      </div>
+                    ))
+                  )
+                ) : (
+                  teachers.length === 0 ? (
+                    <div 
+                      className="flex-1 text-center py-6 rounded-2xl"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+                        border: '1px dashed rgba(200, 160, 160, 0.4)',
+                      }}
+                    >
+                      <p className="text-sm" style={{ color: colors.muted }}>No teachers configured. Add staff first.</p>
+                    </div>
+                  ) : (
+                    teachers.map(teacher => (
+                      <div key={teacher.id} className="flex-1 px-2">
+                        <div 
+                          className="rounded-2xl px-4 py-3 text-center"
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+                            boxShadow: `inset 0 2px 8px ${colors.frostShadow}, 0 1px 3px rgba(0,0,0,0.04)`,
+                            border: '1px solid rgba(255, 200, 200, 0.3)',
+                          }}
+                        >
+                          <EtchedText size="sm">{teacher.name?.split(' ')[0]}</EtchedText>
+                        </div>
+                      </div>
+                    ))
+                  )
                 )}
               </div>
             </div>
@@ -240,9 +299,9 @@ export default function ClassManager() {
                       <EtchedText size="sm">{formatTime(hour)}</EtchedText>
                     </div>
 
-                    {/* Room Columns */}
-                    {rooms.map(room => (
-                      <div key={room.id} className="flex-1 px-2 relative" style={{ borderLeft: `1px solid ${colors.border}` }}>
+                    {/* Room or Teacher Columns */}
+                    {(viewMode === 'room' ? rooms : teachers).map(item => (
+                      <div key={item.id} className="flex-1 px-2 relative" style={{ borderLeft: `1px solid ${colors.border}` }}>
                         {/* Empty cell for grid structure */}
                       </div>
                     ))}
@@ -253,37 +312,61 @@ export default function ClassManager() {
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="flex h-full">
                     <div className="w-20 flex-shrink-0" />
-                    {rooms.map((room, roomIndex) => (
-                      <div key={room.id} className="flex-1 px-2 relative pointer-events-auto">
-                        {dayClasses
-                          .filter(cls => cls.room === room.name)
-                          .map(cls => {
-                            const style = getClassStyle(cls);
-                            return (
-                              <Link
-                                key={cls.id}
-                                to={`${createPageUrl('ClassDetail')}?id=${cls.id}`}
-                                className="absolute left-2 right-2 rounded-2xl p-4 transition-all cursor-pointer overflow-hidden block hover:scale-[1.02]"
-                                style={{
-                                  ...style,
-                                  background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
-                                  backdropFilter: 'blur(8px)',
-                                  WebkitBackdropFilter: 'blur(8px)',
-                                  border: '1px solid rgba(255, 200, 200, 0.4)',
-                                  boxShadow: '0 4px 16px rgba(180, 120, 120, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
-                                }}
-                              >
-                                <EtchedText size="md" className="block truncate">{cls.title}</EtchedText>
-                                <div className="text-xs mt-1 truncate" style={{ color: colors.muted }}>{cls.teacher}</div>
-                                <div className="flex items-center gap-1 mt-2 text-xs" style={{ color: colors.muted }}>
-                                  <Users className="w-3 h-3" />
-                                  {cls.student_names?.length || 0} students
-                                </div>
-                              </Link>
-                            );
-                          })}
-                      </div>
-                    ))}
+                    {viewMode === 'room' ? (
+                      rooms.map((room) => (
+                        <div key={room.id} className="flex-1 px-2 relative pointer-events-auto">
+                          {dayClasses
+                            .filter(cls => cls.room === room.name)
+                            .map(cls => {
+                              const style = getClassStyle(cls);
+                              return (
+                                <Link
+                                  key={cls.id}
+                                  to={`${createPageUrl('ClassDetail')}?id=${cls.id}`}
+                                  className="absolute left-2 right-2 rounded-2xl p-4 transition-all cursor-pointer overflow-hidden block hover:scale-[1.02]"
+                                  style={{
+                                    ...style,
+                                    background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
+                                    backdropFilter: 'blur(8px)',
+                                    WebkitBackdropFilter: 'blur(8px)',
+                                    border: '1px solid rgba(255, 200, 200, 0.4)',
+                                    boxShadow: '0 4px 16px rgba(180, 120, 120, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
+                                  }}
+                                >
+                                  <EtchedText size="md" className="block truncate">{cls.title}</EtchedText>
+                                </Link>
+                              );
+                            })}
+                        </div>
+                      ))
+                    ) : (
+                      teachers.map((teacher) => (
+                        <div key={teacher.id} className="flex-1 px-2 relative pointer-events-auto">
+                          {dayClasses
+                            .filter(cls => cls.teacher === teacher.name)
+                            .map(cls => {
+                              const style = getClassStyle(cls);
+                              return (
+                                <Link
+                                  key={cls.id}
+                                  to={`${createPageUrl('ClassDetail')}?id=${cls.id}`}
+                                  className="absolute left-2 right-2 rounded-2xl p-4 transition-all cursor-pointer overflow-hidden block hover:scale-[1.02]"
+                                  style={{
+                                    ...style,
+                                    background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
+                                    backdropFilter: 'blur(8px)',
+                                    WebkitBackdropFilter: 'blur(8px)',
+                                    border: '1px solid rgba(255, 200, 200, 0.4)',
+                                    boxShadow: '0 4px 16px rgba(180, 120, 120, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
+                                  }}
+                                >
+                                  <EtchedText size="md" className="block truncate">{cls.title}</EtchedText>
+                                </Link>
+                              );
+                            })}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
