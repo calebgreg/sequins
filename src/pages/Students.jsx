@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
-import { Search, Filter, Plus, Download, Mail, MoreHorizontal, User, Phone, MapPin, Users, Edit, ArrowRight, Activity, CreditCard, ChevronDown } from 'lucide-react';
+import { Plus, Download, Mail, User, Phone, Edit, ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent } from "@/components/ui/card";
 import { createPageUrl } from '../utils';
 import { Link, useLocation } from 'react-router-dom';
 import StudentProfileView from '../components/teacher/StudentProfileView';
@@ -18,6 +14,46 @@ import StudentFormModal from '../components/crm/StudentFormModal';
 import MessageStudentModal from '../components/crm/MessageStudentModal';
 import NaturalLanguageSearch from '../components/crm/NaturalLanguageSearch';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Design tokens
+const colors = {
+  ink: '#1a1a1a',
+  paper: '#faf9f7',
+  warm: '#f5f3ef',
+  muted: '#8a8478',
+  border: '#e8e6e1',
+  frost: '#fef7f7',
+  frostShadow: 'rgba(180, 120, 120, 0.08)',
+  frostDeep: 'rgba(180, 120, 120, 0.05)',
+  etchLight: '#c4a0a0',
+  etchDark: '#8a7070',
+};
+
+// Etched text component
+const EtchedText = ({ children, size = 'md', className = '' }) => {
+  const sizes = {
+    sm: 'text-sm',
+    md: 'text-lg',
+    lg: 'text-2xl',
+    xl: 'text-3xl',
+  };
+  
+  return (
+    <span
+      className={`${sizes[size]} font-bold tracking-tight ${className}`}
+      style={{
+        color: 'transparent',
+        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+        filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+      }}
+    >
+      {children}
+    </span>
+  );
+};
 
 export default function Students() {
   const location = useLocation();
@@ -252,55 +288,78 @@ export default function Students() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F4F6] p-6 md:p-12 font-sans text-[#333333]">
-      {/* SVG Filter for Liquid Glass Effect */}
-      <svg width="0" height="0" className="absolute">
-        <filter id="liquid-glass-students">
-          <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="1" result="turbulence" />
-          <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="2" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </svg>
-      
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen p-6 md:p-8 font-sans" style={{ backgroundColor: colors.paper }}>
+      <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* Top Header & Stats */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        {/* Frosted Header */}
+        <div 
+          className="px-6 py-5 rounded-3xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6"
+          style={{
+            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 200, 200, 0.3)',
+            boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
+          }}
+        >
           <div>
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-               <Link to={createPageUrl('Home')} className="hover:text-[#333333]">Dashboard</Link>
+            <div className="flex items-center gap-2 text-sm mb-1" style={{ color: colors.muted }}>
+               <Link to={createPageUrl('Home')} className="hover:opacity-70 transition-opacity">Dashboard</Link>
                <span>/</span>
-               <span className="text-[#333333]">CRM</span>
+               <span style={{ color: colors.etchDark }}>CRM</span>
             </div>
-            <h1 className="text-4xl font-serif text-[#333333]">Student Directory</h1>
+            <EtchedText size="xl">Student Directory</EtchedText>
           </div>
           
-          <div className="flex flex-wrap gap-4 w-full lg:w-auto">
-             <Card className="bg-white border-none shadow-sm rounded-2xl w-32">
-               <CardContent className="p-4 text-center">
-                 <div className="text-2xl font-serif text-[#333333]">{activeStudents}</div>
-                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">Active</div>
-               </CardContent>
-             </Card>
-             <Card className="bg-white border-none shadow-sm rounded-2xl w-32">
-               <CardContent className="p-4 text-center">
-                 <div className="text-2xl font-serif text-[#333333]">{prospects}</div>
-                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">Prospects</div>
-               </CardContent>
-             </Card>
+          <div className="flex flex-wrap gap-3 w-full lg:w-auto">
+             <div 
+               className="rounded-2xl px-5 py-3 text-center min-w-[100px]"
+               style={{
+                 background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
+                 boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+               }}
+             >
+               <EtchedText size="lg">{activeStudents}</EtchedText>
+               <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.muted }}>Active</div>
+             </div>
+             <div 
+               className="rounded-2xl px-5 py-3 text-center min-w-[100px]"
+               style={{
+                 background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
+                 boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+               }}
+             >
+               <EtchedText size="lg">{prospects}</EtchedText>
+               <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.muted }}>Prospects</div>
+             </div>
              <Button 
                onClick={handleCreate}
-               className="h-auto bg-[#333333] text-white rounded-2xl px-6 hover:bg-black shadow-lg transition-transform hover:scale-105"
+               className="h-auto rounded-2xl px-6 transition-all hover:scale-105"
+               style={{ 
+                 backgroundColor: colors.ink, 
+                 color: '#fff',
+                 boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+               }}
              >
                <div className="flex flex-col items-center gap-1 py-2">
-                 <Plus className="w-6 h-6" />
-                 <span className="text-xs font-bold uppercase tracking-wider">New Student</span>
+                 <Plus className="w-5 h-5" />
+                 <span className="text-[10px] font-bold uppercase tracking-wider">New Student</span>
                </div>
              </Button>
           </div>
         </div>
 
         {/* Toolbar */}
-        <div className="bg-white p-6 rounded-[32px] shadow-sm space-y-6">
+        <div 
+          className="p-5 rounded-3xl space-y-5"
+          style={{
+            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 200, 200, 0.3)',
+            boxShadow: `inset 0 2px 12px ${colors.frostShadow}, 0 4px 24px ${colors.frostDeep}`,
+          }}
+        >
           {/* Top: Search Area */}
           <div className="w-full">
               <NaturalLanguageSearch 
@@ -314,56 +373,90 @@ export default function Students() {
             
             <div className="flex flex-wrap items-center gap-2">
                {/* Primary View Toggle */}
-               <div className="flex gap-1 bg-[#F4F4F6] p-1 rounded-full mr-2">
+               <div 
+                 className="flex gap-1 p-1 rounded-full mr-2"
+                 style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+               >
                  <button 
                    onClick={() => setView('list')}
-                   className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${view === 'list' ? 'bg-pink-50/30 backdrop-blur-[20px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)] border-b border-pink-100/40 ring-1 ring-pink-200/20 text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
-                   style={view === 'list' ? {filter: 'url(#liquid-glass-students)'} : {}}
+                   className="rounded-full px-4 py-1.5 text-xs font-semibold transition-all"
+                   style={{
+                     backgroundColor: view === 'list' ? colors.ink : 'transparent',
+                     color: view === 'list' ? '#fff' : colors.muted,
+                     boxShadow: view === 'list' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                   }}
                  >
                    Students
                  </button>
                  <button 
                    onClick={() => setView('families')}
-                   className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${view === 'families' ? 'bg-pink-50/30 backdrop-blur-[20px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)] border-b border-pink-100/40 ring-1 ring-pink-200/20 text-[#333333]' : 'text-gray-400 hover:text-[#333333]'}`}
-                   style={view === 'families' ? {filter: 'url(#liquid-glass-students)'} : {}}
+                   className="rounded-full px-4 py-1.5 text-xs font-semibold transition-all"
+                   style={{
+                     backgroundColor: view === 'families' ? colors.ink : 'transparent',
+                     color: view === 'families' ? '#fff' : colors.muted,
+                     boxShadow: view === 'families' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                   }}
                  >
                    Families
                  </button>
                </div>
 
                {/* Divider */}
-               <div className="w-px h-6 bg-gray-100 hidden sm:block mx-1"></div>
+               <div className="w-px h-6 hidden sm:block mx-1" style={{ backgroundColor: 'rgba(200,180,170,0.2)' }}></div>
 
                {/* Quick Filters */}
                <button 
                  onClick={() => setStatusFilter(current => current === 'active' ? 'all' : 'active')}
-                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${statusFilter === 'active' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300 hover:text-[#333333]'}`}
+                 className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
+                 style={{
+                   backgroundColor: statusFilter === 'active' ? colors.ink : 'rgba(255,255,255,0.6)',
+                   color: statusFilter === 'active' ? '#fff' : colors.muted,
+                   boxShadow: statusFilter === 'active' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                 }}
                >
                  Active
                </button>
                <button 
                  onClick={() => setStatusFilter(current => current === 'prospect' ? 'all' : 'prospect')}
-                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${statusFilter === 'prospect' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300 hover:text-[#333333]'}`}
+                 className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
+                 style={{
+                   backgroundColor: statusFilter === 'prospect' ? colors.ink : 'rgba(255,255,255,0.6)',
+                   color: statusFilter === 'prospect' ? '#fff' : colors.muted,
+                   boxShadow: statusFilter === 'prospect' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                 }}
                >
                  Prospects
                </button>
                <button 
                  onClick={() => setBillingFilter(current => current === 'auto_pay' ? 'all' : 'auto_pay')}
-                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${billingFilter === 'auto_pay' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300 hover:text-[#333333]'}`}
+                 className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
+                 style={{
+                   backgroundColor: billingFilter === 'auto_pay' ? colors.ink : 'rgba(255,255,255,0.6)',
+                   color: billingFilter === 'auto_pay' ? '#fff' : colors.muted,
+                   boxShadow: billingFilter === 'auto_pay' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                 }}
                >
                  Auto-Pay
                </button>
                <button 
                  onClick={() => setBillingFilter(current => current === 'manual' ? 'all' : 'manual')}
-                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${billingFilter === 'manual' ? 'bg-[#333333] text-white border-[#333333] shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300 hover:text-[#333333]'}`}
+                 className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
+                 style={{
+                   backgroundColor: billingFilter === 'manual' ? colors.ink : 'rgba(255,255,255,0.6)',
+                   color: billingFilter === 'manual' ? '#fff' : colors.muted,
+                   boxShadow: billingFilter === 'manual' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                 }}
                >
                  Manual
                </button>
             </div>
 
-            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#333333] hover:bg-gray-50 rounded-full w-10 h-10 flex-shrink-0">
-               <Download className="w-5 h-5" />
-            </Button>
+            <button 
+              className="p-2.5 rounded-full transition-all hover:scale-105"
+              style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+            >
+               <Download className="w-4 h-4" style={{ color: colors.etchDark }} />
+            </button>
           </div>
         </div>
 
@@ -380,58 +473,92 @@ export default function Students() {
                 className="grid grid-cols-1 gap-4"
               >
                 {filteredStudents.length === 0 ? (
-                  <div className="text-center py-20 text-gray-400">No students found matching your search.</div>
+                  <div 
+                    className="text-center py-20 rounded-3xl"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+                      color: colors.muted,
+                      border: '1px solid rgba(255, 200, 200, 0.3)',
+                    }}
+                  >
+                    No students found matching your search.
+                  </div>
                 ) : (
-                  <div className="bg-white rounded-[32px] shadow-sm overflow-hidden">
+                  <div 
+                    className="rounded-3xl overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
+                      border: '1px solid rgba(255, 200, 200, 0.3)',
+                      boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
+                    }}
+                  >
                     {/* Mobile Card View (hidden on lg and up) */}
-                    <div className="block lg:hidden space-y-4 p-4 bg-[#F4F4F6]">
+                    <div className="block lg:hidden space-y-3 p-4" style={{ backgroundColor: colors.paper }}>
                       {filteredStudents.map((student) => (
-                         <Card key={student.id} className="border-none shadow-sm rounded-2xl cursor-pointer" onClick={() => setSelectedStudent(student)}>
-                            <CardContent className="p-4">
-                               <div className="flex justify-between items-start mb-4">
+                         <div 
+                           key={student.id} 
+                           className="rounded-2xl p-4 cursor-pointer transition-all hover:scale-[1.01]"
+                           style={{
+                             background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                             boxShadow: '0 4px 16px -4px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)',
+                             border: '1px solid rgba(255, 200, 200, 0.2)',
+                           }}
+                           onClick={() => setSelectedStudent(student)}
+                         >
+                               <div className="flex justify-between items-start mb-3">
                                   <div className="flex items-center gap-3">
-                                     <Avatar className="w-10 h-10 border-2 border-white shadow-sm">
-                                        <AvatarFallback className="bg-[#333333] text-white font-serif">{student.name.charAt(0)}</AvatarFallback>
+                                     <Avatar 
+                                       className="w-10 h-10"
+                                       style={{
+                                         boxShadow: '0 2px 8px rgba(180,150,140,0.2)',
+                                         border: '2px solid rgba(255,255,255,0.8)',
+                                       }}
+                                     >
+                                        <AvatarFallback style={{ background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, color: '#fff' }}>{student.name.charAt(0)}</AvatarFallback>
                                      </Avatar>
                                      <div>
-                                        <div className="font-medium text-[#333333]">{student.name}</div>
-                                        <div className="text-xs text-gray-400">{student.age} yrs • {student.level}</div>
+                                        <EtchedText size="sm">{student.name}</EtchedText>
+                                        <div className="text-xs" style={{ color: colors.muted }}>{student.age} yrs • {student.level}</div>
                                      </div>
                                   </div>
-                                  <Badge variant="secondary" className={`capitalize font-normal text-xs ${student.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-gray-100'}`}>
+                                  <span 
+                                    className="px-2 py-1 rounded-full text-[10px] font-semibold capitalize"
+                                    style={{
+                                      backgroundColor: student.status === 'active' ? 'rgba(134, 239, 172, 0.3)' : 'rgba(200,180,170,0.2)',
+                                      color: student.status === 'active' ? '#166534' : colors.muted,
+                                    }}
+                                  >
                                      {student.status}
-                                  </Badge>
+                                  </span>
                                </div>
                                
-                               <div className="flex flex-wrap gap-2 mb-4">
+                               <div className="flex flex-wrap gap-1.5 mb-3">
                                   {student.billing_method === 'auto_pay' && (
-                                     <Badge variant="outline" className="text-[10px] border-indigo-200 text-indigo-600 bg-indigo-50">Auto-Pay</Badge>
+                                     <span className="px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ backgroundColor: 'rgba(199, 210, 254, 0.4)', color: '#4338ca' }}>Auto-Pay</span>
                                   )}
                                   {student.tags?.slice(0, 3).map((tag, i) => (
-                                     <Badge key={i} variant="secondary" className="text-[10px] bg-[#333333] text-white font-normal border-none">{tag}</Badge>
+                                     <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ backgroundColor: colors.ink, color: '#fff' }}>{tag}</span>
                                   ))}
                                </div>
 
-                               <div className="flex items-center justify-between text-sm text-gray-500 pt-3 border-t border-gray-100">
+                               <div className="flex items-center justify-between text-sm pt-3" style={{ borderTop: '1px solid rgba(200,180,170,0.15)', color: colors.muted }}>
                                   {student.parent_email ? (
                                      <div className="flex items-center gap-1.5 truncate max-w-[200px]">
                                         <Mail className="w-3 h-3" /> <span className="truncate">{student.parent_email}</span>
                                      </div>
                                   ) : <span>No contact</span>}
                                   <div className="flex items-center gap-2">
-                                      <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        className="h-7 w-7 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50"
+                                      <button 
+                                        className="p-1.5 rounded-full transition-all"
+                                        style={{ backgroundColor: 'rgba(199, 210, 254, 0.3)' }}
                                         onClick={(e) => handleMessage(e, student)}
                                       >
-                                        <Mail className="w-4 h-4" />
-                                      </Button>
-                                      <ArrowRight className="w-4 h-4 text-gray-300" />
+                                        <Mail className="w-3.5 h-3.5" style={{ color: '#4338ca' }} />
+                                      </button>
+                                      <ArrowRight className="w-4 h-4" style={{ color: colors.border }} />
                                   </div>
                                </div>
-                            </CardContent>
-                         </Card>
+                         </div>
                       ))}
                     </div>
 
@@ -439,12 +566,12 @@ export default function Students() {
                     <div className="hidden lg:block overflow-x-auto">
                       <table className="w-full text-left border-collapse">
                         <thead>
-                          <tr className="border-b border-gray-100 text-xs uppercase text-gray-400 tracking-wider font-bold">
-                            <th className="p-4 md:p-6 font-medium">Student Name</th>
-                            <th className="p-4 md:p-6 font-medium">Status</th>
-                            <th className="p-4 md:p-6 font-medium hidden sm:table-cell">Level / Age</th>
-                            <th className="p-4 md:p-6 font-medium hidden lg:table-cell">Parent Contact</th>
-                            <th className="p-4 md:p-6 font-medium text-right">Actions</th>
+                          <tr style={{ borderBottom: '1px solid rgba(200,180,170,0.15)' }}>
+                            <th className="p-5 text-[10px] uppercase tracking-wider font-bold" style={{ color: colors.muted }}>Student Name</th>
+                            <th className="p-5 text-[10px] uppercase tracking-wider font-bold" style={{ color: colors.muted }}>Status</th>
+                            <th className="p-5 text-[10px] uppercase tracking-wider font-bold hidden sm:table-cell" style={{ color: colors.muted }}>Level / Age</th>
+                            <th className="p-5 text-[10px] uppercase tracking-wider font-bold hidden lg:table-cell" style={{ color: colors.muted }}>Parent Contact</th>
+                            <th className="p-5 text-[10px] uppercase tracking-wider font-bold text-right" style={{ color: colors.muted }}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -453,83 +580,92 @@ export default function Students() {
                               key={student.id}
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
-                              className="group hover:bg-[#F4F4F6] transition-colors cursor-pointer border-b border-gray-50 last:border-0"
+                              className="group transition-colors cursor-pointer"
+                              style={{ borderBottom: '1px solid rgba(200,180,170,0.1)' }}
+                              whileHover={{ backgroundColor: 'rgba(255,255,255,0.5)' }}
                               onClick={() => setSelectedStudent(student)}
                             >
-                              <td className="p-4 md:p-6">
+                              <td className="p-5">
                                 <div className="flex items-center gap-4">
-                                  <Avatar className="w-10 h-10 border-2 border-white shadow-sm">
-                                    <AvatarFallback className="bg-[#333333] text-white font-serif">{student.name.charAt(0)}</AvatarFallback>
+                                  <Avatar 
+                                    className="w-10 h-10"
+                                    style={{
+                                      boxShadow: '0 2px 8px rgba(180,150,140,0.2)',
+                                      border: '2px solid rgba(255,255,255,0.8)',
+                                    }}
+                                  >
+                                    <AvatarFallback style={{ background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, color: '#fff' }}>{student.name.charAt(0)}</AvatarFallback>
                                   </Avatar>
                                   <div>
-                                    <div className="font-medium text-[#333333]">{student.name}</div>
-                                    {student.joined_date && <div className="text-xs text-gray-400">Joined {student.joined_date}</div>}
+                                    <EtchedText size="sm">{student.name}</EtchedText>
+                                    {student.joined_date && <div className="text-xs" style={{ color: colors.muted }}>Joined {student.joined_date}</div>}
                                   </div>
                                 </div>
                               </td>
-                              <td className="p-4 md:p-6">
-                                <Badge variant="secondary" className={`
-                                  capitalize font-normal
-                                  ${student.status === 'active' ? 'bg-green-50 text-green-700' : 
-                                    student.status === 'prospect' ? 'bg-yellow-50 text-yellow-700' : 'bg-gray-100 text-gray-500'}
-                                `}>
+                              <td className="p-5">
+                                <span 
+                                  className="px-3 py-1 rounded-full text-[10px] font-semibold capitalize"
+                                  style={{
+                                    backgroundColor: student.status === 'active' ? 'rgba(134, 239, 172, 0.3)' : 
+                                      student.status === 'prospect' ? 'rgba(253, 224, 71, 0.3)' : 'rgba(200,180,170,0.2)',
+                                    color: student.status === 'active' ? '#166534' : 
+                                      student.status === 'prospect' ? '#854d0e' : colors.muted,
+                                  }}
+                                >
                                   {student.status}
-                                </Badge>
+                                </span>
                               </td>
-                              <td className="p-4 md:p-6 hidden sm:table-cell">
-                                <div className="text-sm text-[#333333] capitalize">{student.level}</div>
-                                <div className="text-xs text-gray-400">{student.age} years old</div>
+                              <td className="p-5 hidden sm:table-cell">
+                                <div className="text-sm capitalize" style={{ color: colors.ink }}>{student.level}</div>
+                                <div className="text-xs" style={{ color: colors.muted }}>{student.age} years old</div>
                                 </td>
-                                <td className="p-4 md:p-6 hidden lg:table-cell">
+                                <td className="p-5 hidden lg:table-cell">
                                 <div className="flex flex-col gap-1">
                                   <div className="flex flex-wrap gap-1 mb-1">
                                      {student.billing_method === 'auto_pay' && (
-                                        <Badge variant="outline" className="text-[10px] border-indigo-200 text-indigo-600 bg-indigo-50">Auto-Pay</Badge>
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ backgroundColor: 'rgba(199, 210, 254, 0.4)', color: '#4338ca' }}>Auto-Pay</span>
                                      )}
                                      {student.tags?.slice(0, 3).map((tag, i) => (
-                                      <Badge key={i} variant="secondary" className="text-[10px] bg-[#333333] text-white font-normal border-none">
+                                      <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ backgroundColor: colors.ink, color: '#fff' }}>
                                         {tag}
-                                      </Badge>
+                                      </span>
                                     ))}
                                   </div>
                                   {student.parent_email ? (
-                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <div className="flex items-center gap-2 text-sm" style={{ color: colors.muted }}>
                                       <Mail className="w-3 h-3" /> {student.parent_email}
                                     </div>
-                                  ) : <span className="text-xs text-gray-300">No email</span>}
+                                  ) : <span className="text-xs" style={{ color: colors.border }}>No email</span>}
                                   {student.phone && (
-                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <div className="flex items-center gap-2 text-sm" style={{ color: colors.muted }}>
                                       <Phone className="w-3 h-3" /> {student.phone}
                                     </div>
                                   )}
                                 </div>
                               </td>
-                              <td className="p-4 md:p-6 text-right">
+                              <td className="p-5 text-right">
                                 <div className="flex items-center justify-end gap-2">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
+                                  <button 
                                     title="Message Student"
-                                    className="h-8 w-8 text-indigo-500 bg-indigo-50/50 hover:bg-indigo-100 hover:text-indigo-700 shadow-sm border border-indigo-100"
+                                    className="h-8 w-8 rounded-full flex items-center justify-center transition-all hover:scale-105"
+                                    style={{ backgroundColor: 'rgba(199, 210, 254, 0.4)' }}
                                     onClick={(e) => handleMessage(e, student)}
                                   >
-                                    <Mail className="w-4 h-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 text-gray-400 hover:text-[#333333] hover:bg-white shadow-sm"
+                                    <Mail className="w-4 h-4" style={{ color: '#4338ca' }} />
+                                  </button>
+                                  <button 
+                                    className="h-8 w-8 rounded-full flex items-center justify-center transition-all hover:scale-105"
+                                    style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
                                     onClick={(e) => handleEdit(e, student)}
                                   >
-                                    <Edit className="w-4 h-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 text-gray-400 hover:text-[#333333] hover:bg-white shadow-sm"
+                                    <Edit className="w-4 h-4" style={{ color: colors.etchDark }} />
+                                  </button>
+                                  <button 
+                                    className="h-8 w-8 rounded-full flex items-center justify-center transition-all hover:scale-105"
+                                    style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
                                   >
-                                    <ArrowRight className="w-4 h-4" />
-                                  </Button>
+                                    <ArrowRight className="w-4 h-4" style={{ color: colors.etchDark }} />
+                                  </button>
                                 </div>
                               </td>
                             </motion.tr>
@@ -548,15 +684,22 @@ export default function Students() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="bg-white rounded-[32px] shadow-sm overflow-hidden">
+                <div 
+                  className="rounded-3xl overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
+                    border: '1px solid rgba(255, 200, 200, 0.3)',
+                    boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
+                  }}
+                >
                    <div className="overflow-x-auto">
                       <table className="w-full text-left border-collapse">
                          <thead>
-                           <tr className="border-b border-gray-100 text-xs uppercase text-gray-400 tracking-wider font-bold">
-                             <th className="p-4 md:p-6 font-medium">Family Name</th>
-                             <th className="p-4 md:p-6 font-medium">Students</th>
-                             <th className="p-4 md:p-6 font-medium hidden lg:table-cell">Contact Info</th>
-                             <th className="p-4 md:p-6 font-medium text-right">Actions</th>
+                           <tr style={{ borderBottom: '1px solid rgba(200,180,170,0.15)' }}>
+                             <th className="p-5 text-[10px] uppercase tracking-wider font-bold" style={{ color: colors.muted }}>Family Name</th>
+                             <th className="p-5 text-[10px] uppercase tracking-wider font-bold" style={{ color: colors.muted }}>Students</th>
+                             <th className="p-5 text-[10px] uppercase tracking-wider font-bold hidden lg:table-cell" style={{ color: colors.muted }}>Contact Info</th>
+                             <th className="p-5 text-[10px] uppercase tracking-wider font-bold text-right" style={{ color: colors.muted }}>Actions</th>
                            </tr>
                          </thead>
                          <tbody>
@@ -571,75 +714,80 @@ export default function Students() {
                                   animate={{ opacity: 1 }}
                                   transition={{ delay: i * 0.05 }}
                                   onClick={() => setSelectedFamily(family)}
-                                  className="group hover:bg-[#F4F4F6] transition-colors cursor-pointer border-b border-gray-50 last:border-0"
+                                  className="group transition-colors cursor-pointer"
+                                  style={{ borderBottom: '1px solid rgba(200,180,170,0.1)' }}
+                                  whileHover={{ backgroundColor: 'rgba(255,255,255,0.5)' }}
                                >
-                                  <td className="p-4 md:p-6 align-top">
-                                     <div className="font-serif text-lg text-[#333333] mb-1">{familyName}</div>
-                                     <div className="flex items-center gap-2 text-sm text-gray-500">
+                                  <td className="p-5 align-top">
+                                     <EtchedText size="md" className="block mb-1">{familyName}</EtchedText>
+                                     <div className="flex items-center gap-2 text-sm" style={{ color: colors.muted }}>
                                         <User className="w-3.5 h-3.5 opacity-70" />
                                         <span>{family.parent_name}</span>
                                      </div>
                                   </td>
-                                  <td className="p-4 md:p-6 align-top">
+                                  <td className="p-5 align-top">
                                      <div className="flex flex-col gap-2">
                                         {family.students.map(s => (
                                            <div key={s.id} className="flex items-center gap-2">
-                                              <Avatar className="w-6 h-6 border border-white shadow-sm">
-                                                 <AvatarFallback className="bg-[#333333] text-white text-[10px] font-serif">{s.name.charAt(0)}</AvatarFallback>
+                                              <Avatar 
+                                                className="w-6 h-6"
+                                                style={{
+                                                  boxShadow: '0 1px 4px rgba(180,150,140,0.2)',
+                                                  border: '1px solid rgba(255,255,255,0.8)',
+                                                }}
+                                              >
+                                                 <AvatarFallback className="text-[10px]" style={{ background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, color: '#fff' }}>{s.name.charAt(0)}</AvatarFallback>
                                               </Avatar>
-                                              <span className="text-sm text-[#333333]">{s.name}</span>
-                                              <span className="text-xs text-gray-400">({s.age} yrs • {s.level})</span>
+                                              <span className="text-sm" style={{ color: colors.ink }}>{s.name}</span>
+                                              <span className="text-xs" style={{ color: colors.muted }}>({s.age} yrs • {s.level})</span>
                                            </div>
                                         ))}
                                      </div>
                                   </td>
-                                  <td className="p-4 md:p-6 hidden lg:table-cell align-top">
+                                  <td className="p-5 hidden lg:table-cell align-top">
                                      <div className="flex flex-col gap-1.5">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                           <Mail className="w-3.5 h-3.5 text-gray-400" />
+                                        <div className="flex items-center gap-2 text-sm" style={{ color: colors.muted }}>
+                                           <Mail className="w-3.5 h-3.5" style={{ color: colors.etchDark }} />
                                            <span>{family.email}</span>
                                         </div>
                                         {family.phone && (
-                                           <div className="flex items-center gap-2 text-sm text-gray-600">
-                                              <Phone className="w-3.5 h-3.5 text-gray-400" />
+                                           <div className="flex items-center gap-2 text-sm" style={{ color: colors.muted }}>
+                                              <Phone className="w-3.5 h-3.5" style={{ color: colors.etchDark }} />
                                               <span>{family.phone}</span>
                                            </div>
                                         )}
                                      </div>
                                   </td>
-                                  <td className="p-4 md:p-6 text-right align-top">
+                                  <td className="p-5 text-right align-top">
                                      <div className="flex items-center justify-end gap-2">
-                                        <Button 
-                                           variant="ghost" 
-                                           size="icon" 
-                                           className="h-8 w-8 text-indigo-500 bg-indigo-50/50 hover:bg-indigo-100 hover:text-indigo-700 shadow-sm border border-indigo-100"
+                                        <button 
+                                           className="h-8 w-8 rounded-full flex items-center justify-center transition-all hover:scale-105"
+                                           style={{ backgroundColor: 'rgba(199, 210, 254, 0.4)' }}
                                            onClick={(e) => {
                                               e.stopPropagation();
                                               if (family.students[0]) handleMessage(e, family.students[0]);
                                            }}
                                            title="Message Family"
                                         >
-                                           <Mail className="w-4 h-4" />
-                                        </Button>
-                                        <Button 
-                                           variant="ghost" 
-                                           size="icon" 
-                                           className="h-8 w-8 text-gray-400 hover:text-[#333333] hover:bg-white shadow-sm"
+                                           <Mail className="w-4 h-4" style={{ color: '#4338ca' }} />
+                                        </button>
+                                        <button 
+                                           className="h-8 w-8 rounded-full flex items-center justify-center transition-all hover:scale-105"
+                                           style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
                                            onClick={(e) => {
                                               e.stopPropagation();
                                               if (family.students[0]) handleEdit(e, family.students[0]);
                                            }}
                                            title="Edit Family Details"
                                         >
-                                           <Edit className="w-4 h-4" />
-                                        </Button>
-                                        <Button 
-                                           variant="ghost" 
-                                           size="icon" 
-                                           className="h-8 w-8 text-gray-400 hover:text-[#333333] hover:bg-white shadow-sm"
+                                           <Edit className="w-4 h-4" style={{ color: colors.etchDark }} />
+                                        </button>
+                                        <button 
+                                           className="h-8 w-8 rounded-full flex items-center justify-center transition-all hover:scale-105"
+                                           style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
                                         >
-                                           <ArrowRight className="w-4 h-4" />
-                                        </Button>
+                                           <ArrowRight className="w-4 h-4" style={{ color: colors.etchDark }} />
+                                        </button>
                                      </div>
                                   </td>
                                </motion.tr>
