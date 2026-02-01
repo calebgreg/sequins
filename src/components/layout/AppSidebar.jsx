@@ -248,12 +248,13 @@ export default function AppSidebar({ className = "", onSearchClick }) {
           ))}
         </nav>
 
-        {/* Bottom - Avatar */}
+        {/* Bottom - Avatar with collapse toggle */}
         <div 
           className={`flex items-center gap-3 mt-4 pt-4 relative ${collapsed ? 'justify-center px-3' : 'px-5'}`} 
           style={{ borderTop: '1px solid rgba(200,180,170,0.15)' }}
         >
           <Avatar 
+            onClick={() => setCollapsed(!collapsed)}
             className="w-10 h-10 cursor-pointer hover:scale-105 transition-all flex-shrink-0"
             style={{
               boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2)',
