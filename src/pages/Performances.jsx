@@ -3,33 +3,62 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { base44 } from "@/api/base44Client";
 import { 
-    Calendar, MapPin, Clock, Users, Music, MoveVertical, 
-    Plus, Search, ChevronRight, Play, Settings, AlertCircle,
-    MoreHorizontal, Mic2, Star, Trophy, Sparkles, PenTool
+    Calendar, MapPin, Clock, Users, Music, 
+    Plus, Search, ChevronRight, Star, Trophy, PenTool
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import PerformanceDetail from '../components/performances/PerformanceDetail';
-
 import ProducerWorkspace from '../components/performances/ProducerWorkspace';
+
+// Design tokens matching TeacherDetails
+const colors = {
+  ink: '#1a1a1a',
+  paper: '#faf9f7',
+  muted: '#8a8478',
+  etchLight: '#c4a0a0',
+  etchDark: '#8a7070',
+};
+
+// Etched text component
+const EtchedText = ({ children, size = 'md', className = '' }) => {
+  const sizes = {
+    sm: 'text-sm',
+    md: 'text-lg',
+    lg: 'text-2xl',
+    xl: 'text-4xl',
+  };
+  
+  return (
+    <span
+      className={`${sizes[size]} font-bold tracking-tight ${className}`}
+      style={{
+        color: 'transparent',
+        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+        filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+      }}
+    >
+      {children}
+    </span>
+  );
+};
 
 export default function PerformancesPage() {
     const [selectedPerformanceId, setSelectedPerformanceId] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // URL Param Handling for Deep Links
     const modeParam = searchParams.get('mode');
     const idParam = searchParams.get('id');
 
-    const [view, setView] = useState(modeParam === 'producer' ? 'producer' : 'list'); // 'list' | 'producer'
+    const [view, setView] = useState(modeParam === 'producer' ? 'producer' : 'list');
     const [searchQuery, setSearchQuery] = useState('');
+    const [activeColumn, setActiveColumn] = useState('planning');
     
-    // If URL has ID and we are in producer mode, pass it to the workspace
-    // If URL has ID but NOT producer mode, select it for detail view
     React.useEffect(() => {
         if (modeParam === 'producer') {
             setView('producer');
@@ -42,11 +71,10 @@ export default function PerformancesPage() {
 
     const queryClient = useQueryClient();
 
-    // Fetch Performances
     const { data: performances = [], isLoading } = useQuery({
         queryKey: ['performances'],
         queryFn: () => base44.entities.Performance.list('-date'),
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 5 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
     });
@@ -90,11 +118,10 @@ export default function PerformancesPage() {
     );
 
     const columns = {
-        planning: { label: 'Planning', color: 'bg-amber-50 border-amber-100 text-amber-900' },
-        rehearsal: { label: 'Rehearsal', color: 'bg-blue-50 border-blue-100 text-blue-900' },
-        showtime: { label: 'Showtime', color: 'bg-purple-50 border-purple-100 text-purple-900' },
-        completed: { label: 'Completed', color: 'bg-green-50 border-green-100 text-green-900' },
-        archived: { label: 'Archived', color: 'bg-gray-50 border-gray-100 text-gray-900' }
+        planning: { label: 'Planning', icon: '✎' },
+        rehearsal: { label: 'Rehearsal', icon: '♪' },
+        showtime: { label: 'Showtime', icon: '★' },
+        completed: { label: 'Completed', icon: '✓' },
     };
 
     if (selectedPerformanceId) {
@@ -111,7 +138,6 @@ export default function PerformancesPage() {
             <ProducerWorkspace 
                 performanceId={modeParam === 'producer' ? idParam : null}
                 onCancel={() => {
-                    // Clear URL params on cancel
                     setSearchParams({});
                     setView('list');
                 }}
@@ -124,125 +150,271 @@ export default function PerformancesPage() {
         );
     }
 
+    const activeColumnItems = filteredPerformances.filter(p => p.status === activeColumn);
+
     return (
-        <div className="max-w-[1600px] mx-auto space-y-8 p-4 md:p-0">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                <div>
-                    <h1 className="text-4xl font-serif text-[#333333] mb-2">Performances</h1>
-                    <p className="text-gray-500 max-w-lg">
-                        The command center for your recitals, competitions, and showcases. 
-                        Manage run sheets, costumes, and logistics in one place.
-                    </p>
-                </div>
-                <div className="flex gap-3">
-                    <Button 
-                        onClick={() => setView('producer')}
-                        className="bg-[#333333] hover:bg-black text-white rounded-full px-8 h-12 shadow-lg shadow-gray-200 transition-all hover:scale-105 group"
+        <div 
+            className="min-h-screen relative overflow-hidden"
+            style={{ 
+                fontFamily: "'DM Sans', -apple-system, sans-serif",
+                background: '#ffffff',
+            }}
+        >
+            {/* Ambient background shapes */}
+            <div 
+                className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+            />
+            <div 
+                className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+            />
+
+            <div className="relative max-w-4xl mx-auto px-8 py-12">
+                
+                {/* Header Card - Frosted Glass */}
+                <div 
+                    className="relative rounded-3xl p-8 mb-8"
+                    style={{
+                        background: 'linear-gradient(145deg, rgba(253,238,236,0.85) 0%, rgba(250,232,228,0.7) 30%, rgba(248,235,230,0.6) 70%, rgba(252,243,240,0.75) 100%)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), inset 0 -1px 2px rgba(200,180,170,0.15), 0 20px 60px -20px rgba(180,150,140,0.2)',
+                        backdropFilter: 'blur(20px)',
+                    }}
+                >
+                    {/* Inner glow */}
+                    <div 
+                        className="absolute inset-0 rounded-3xl pointer-events-none"
+                        style={{
+                            background: 'radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 50%)',
+                        }}
+                    />
+
+                    <div className="relative flex flex-col md:flex-row items-start justify-between gap-6">
+                        <div>
+                            <EtchedText size="xl">Performances</EtchedText>
+                            <p className="text-base mt-2 max-w-lg" style={{ color: '#a8998e' }}>
+                                The command center for your recitals, competitions, and showcases.
+                            </p>
+                        </div>
+                        
+                        <Button 
+                            onClick={() => setView('producer')}
+                            className="rounded-2xl px-8 py-6 text-base font-bold tracking-tight transition-all hover:scale-[1.02]"
+                            style={{
+                                background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+                                boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+                                border: '1px solid rgba(255, 220, 210, 0.5)',
+                            }}
+                        >
+                            <span
+                                style={{
+                                    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                    color: 'transparent',
+                                }}
+                            >
+                                <PenTool className="w-4 h-4 mr-2 inline" /> 
+                                Enter Backstage
+                            </span>
+                        </Button>
+                    </div>
+
+                    {/* Search */}
+                    <div 
+                        className="relative mt-6 rounded-2xl p-1"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(255,255,255,0.7) 0%, rgba(255,252,250,0.5) 100%)',
+                            boxShadow: 'inset 0 2px 4px rgba(180,150,140,0.08), 0 1px 2px rgba(255,255,255,0.8)',
+                        }}
                     >
-                        <PenTool className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" /> 
-                        Enter Backstage
-                    </Button>
+                        <div className="flex items-center gap-2 px-4">
+                            <Search className="w-4 h-4" style={{ color: '#b5a599' }} />
+                            <Input 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search events..."
+                                className="border-none shadow-none focus-visible:ring-0 flex-1 min-w-0 h-10 text-sm bg-transparent"
+                                style={{ color: '#6b5d52' }}
+                            />
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            {/* Filter/Search Bar */}
-            <div className="flex items-center gap-2 bg-white p-1 rounded-full shadow-sm border border-gray-100 w-full max-w-xs self-start">
-                <Search className="w-4 h-4 text-gray-400 ml-3" />
-                <Input 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search events..."
-                    className="border-none shadow-none focus-visible:ring-0 flex-1 min-w-0 h-8 text-sm bg-transparent"
-                />
-            </div>
+                {/* Tab Navigation - Pill Style */}
+                <div className="flex justify-center mb-8">
+                    <div 
+                        className="inline-flex items-center gap-1 p-1.5 rounded-2xl"
+                        style={{
+                            background: 'rgba(240,230,225,0.5)',
+                            boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.1)',
+                        }}
+                    >
+                        {Object.entries(columns).map(([id, col]) => {
+                            const count = filteredPerformances.filter(p => p.status === id).length;
+                            return (
+                                <button
+                                    key={id}
+                                    onClick={() => setActiveColumn(id)}
+                                    className="px-5 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
+                                    style={{
+                                        background: activeColumn === id 
+                                            ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
+                                            : 'transparent',
+                                        color: activeColumn === id ? '#8b7d72' : '#b5a599',
+                                        boxShadow: activeColumn === id 
+                                            ? '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)'
+                                            : 'none',
+                                    }}
+                                >
+                                    <span>{col.label}</span>
+                                    {count > 0 && (
+                                        <span 
+                                            className="text-xs px-2 py-0.5 rounded-full"
+                                            style={{ 
+                                                background: activeColumn === id ? 'rgba(200,170,156,0.2)' : 'rgba(200,170,156,0.15)',
+                                                color: activeColumn === id ? '#8b7d72' : '#b5a599',
+                                            }}
+                                        >
+                                            {count}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
 
-
-
-            {/* Kanban Board */}
-            <div className="overflow-x-auto pb-8">
+                {/* Performance Cards */}
                 {isLoading ? (
-                    <div className="py-20 text-center text-gray-400">Loading events...</div>
+                    <div className="text-center py-20" style={{ color: '#b5a599' }}>Loading events...</div>
                 ) : (
                     <DragDropContext onDragEnd={onDragEnd}>
-                        <div className="flex gap-6 min-w-[1200px]">
-                            {Object.entries(columns).map(([columnId, columnDef]) => {
-                                const columnItems = filteredPerformances.filter(p => p.status === columnId);
-                                
-                                return (
-                                    <div key={columnId} className="flex-1 min-w-[300px] flex flex-col">
-                                        <div className={`mb-4 p-3 rounded-xl border flex items-center justify-between ${columnDef.color}`}>
-                                            <span className="font-bold uppercase tracking-wider text-xs">{columnDef.label}</span>
-                                            <Badge variant="secondary" className="bg-white/50 border-none">{columnItems.length}</Badge>
+                        <Droppable droppableId={activeColumn}>
+                            {(provided, snapshot) => (
+                                <div
+                                    {...provided.droppableProps}
+                                    ref={provided.innerRef}
+                                    className={`space-y-4 min-h-[300px] rounded-3xl p-4 transition-colors ${
+                                        snapshot.isDraggingOver ? 'bg-[rgba(253,238,236,0.3)]' : ''
+                                    }`}
+                                >
+                                    {activeColumnItems.length === 0 ? (
+                                        <div 
+                                            className="text-center py-16 rounded-2xl"
+                                            style={{
+                                                background: 'rgba(255,255,255,0.4)',
+                                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                                            }}
+                                        >
+                                            <p style={{ color: '#b5a599' }}>No performances in {columns[activeColumn].label.toLowerCase()}</p>
                                         </div>
-
-                                        <Droppable droppableId={columnId}>
-                                            {(provided, snapshot) => (
-                                                <div
-                                                    {...provided.droppableProps}
-                                                    ref={provided.innerRef}
-                                                    className={`flex-1 rounded-2xl transition-colors min-h-[500px] p-2 ${
-                                                        snapshot.isDraggingOver ? 'bg-gray-50/80 ring-2 ring-indigo-100' : 'bg-transparent'
-                                                    }`}
-                                                >
-                                                    {columnItems.map((perf, index) => (
-                                                        <Draggable key={perf.id} draggableId={perf.id} index={index}>
-                                                            {(provided, snapshot) => (
-                                                                <div
-                                                                    ref={provided.innerRef}
-                                                                    {...provided.draggableProps}
-                                                                    {...provided.dragHandleProps}
-                                                                    onClick={() => setSelectedPerformanceId(perf.id)}
-                                                                    className={`
-                                                                        relative mb-4 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all cursor-grab active:cursor-grabbing group overflow-hidden
-                                                                        ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-2xl ring-2 ring-white/50 z-50' : ''}
-                                                                    `}
-                                                                    style={provided.draggableProps.style}
-                                                                >
-                                                                    {/* Background Image */}
-                                                                    <div 
-                                                                        className="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                                                                        style={{ 
-                                                                            backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692b7ce31c9c985decfff75a/4500517ed_Gemini_Generated_Image_2u5n1l2u5n1l2u5n.png)',
+                                    ) : (
+                                        activeColumnItems.map((perf, index) => (
+                                            <Draggable key={perf.id} draggableId={perf.id} index={index}>
+                                                {(provided, snapshot) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        onClick={() => setSelectedPerformanceId(perf.id)}
+                                                        className={`
+                                                            relative rounded-2xl p-6 transition-all cursor-pointer hover:scale-[1.01]
+                                                            ${snapshot.isDragging ? 'rotate-1 scale-105 z-50' : ''}
+                                                        `}
+                                                        style={{
+                                                            ...provided.draggableProps.style,
+                                                            background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                                                            boxShadow: snapshot.isDragging 
+                                                                ? '0 20px 60px -15px rgba(180,150,140,0.4), inset 0 1px 1px rgba(255,255,255,0.7)'
+                                                                : 'inset 0 1px 1px rgba(255,255,255,0.7), 0 8px 24px -8px rgba(180,150,140,0.15)',
+                                                        }}
+                                                    >
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center gap-3 mb-2">
+                                                                    <span 
+                                                                        className="text-xs font-medium uppercase tracking-wider"
+                                                                        style={{ color: '#b5a599' }}
+                                                                    >
+                                                                        {format(new Date(perf.date), 'MMM d, yyyy')}
+                                                                    </span>
+                                                                    <span 
+                                                                        className="w-6 h-6 rounded-lg flex items-center justify-center"
+                                                                        style={{
+                                                                            background: perf.type === 'competition' 
+                                                                                ? 'rgba(212,165,116,0.15)' 
+                                                                                : 'rgba(164,139,196,0.15)',
                                                                         }}
-                                                                    />
-                                                                    <div className="absolute inset-0 bg-black/10 z-0 group-hover:bg-black/0 transition-colors" />
-
-                                                                    <div className="relative z-10">
-                                                                        <div className="flex justify-between items-start mb-3">
-                                                                            <div className="text-[10px] font-bold uppercase tracking-wider text-white/70">
-                                                                                {format(new Date(perf.date), 'MMM d, yyyy')}
-                                                                            </div>
-                                                                            <div className="p-1.5 bg-white/10 backdrop-blur-md rounded-full text-white border border-white/20">
-                                                                                {perf.type === 'competition' ? <Trophy className="w-3 h-3" /> : <Star className="w-3 h-3" />}
-                                                                            </div>
-                                                                        </div>
-                                                                        
-                                                                        <h3 className="font-serif text-lg text-white mb-3 leading-snug group-hover:text-white/90 transition-colors h-14 line-clamp-2 drop-shadow-md">
-                                                                            {perf.title}
-                                                                        </h3>
-
-                                                                        <div className="flex items-center gap-2 text-xs text-white/70">
-                                                                            <MapPin className="w-3 h-3 text-white/50" />
-                                                                            <span className="truncate">
-                                                                                {perf.venue?.venue_name || (typeof perf.venue === 'string' ? perf.venue : 'No venue set')}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
+                                                                    >
+                                                                        {perf.type === 'competition' 
+                                                                            ? <Trophy className="w-3 h-3" style={{ color: '#d4a574' }} />
+                                                                            : <Star className="w-3 h-3" style={{ color: '#a48bc4' }} />
+                                                                        }
+                                                                    </span>
                                                                 </div>
-                                                            )}
-                                                        </Draggable>
-                                                    ))}
-                                                    {provided.placeholder}
-                                                </div>
-                                            )}
-                                        </Droppable>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                                                
+                                                                <h3 
+                                                                    className="text-xl font-bold tracking-tight mb-2"
+                                                                    style={{ 
+                                                                        color: 'transparent',
+                                                                        backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                                                                        backgroundClip: 'text',
+                                                                        WebkitBackgroundClip: 'text',
+                                                                    }}
+                                                                >
+                                                                    {perf.title}
+                                                                </h3>
+
+                                                                <div className="flex items-center gap-2 text-sm" style={{ color: '#a8998e' }}>
+                                                                    <MapPin className="w-3.5 h-3.5" style={{ color: '#c4b5ab' }} />
+                                                                    <span>
+                                                                        {perf.venue?.venue_name || (typeof perf.venue === 'string' ? perf.venue : 'No venue set')}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <ChevronRight className="w-5 h-5 flex-shrink-0" style={{ color: '#d4c4ba' }} />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))
+                                    )}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
                     </DragDropContext>
                 )}
+
+                {/* Add Performance Button */}
+                <div className="flex justify-center pt-8">
+                    <button 
+                        onClick={() => setView('producer')}
+                        className="px-10 py-4 rounded-2xl text-base font-bold tracking-tight transition-all hover:scale-[1.02]"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+                            boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+                            border: '1px solid rgba(255, 220, 210, 0.5)',
+                            backdropFilter: 'blur(8px)',
+                        }}
+                    >
+                        <span
+                            style={{
+                                backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                color: 'transparent',
+                                textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+                                filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+                            }}
+                        >
+                            <Plus className="w-4 h-4 mr-2 inline" />
+                            New Performance
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
     );
