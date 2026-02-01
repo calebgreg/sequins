@@ -188,22 +188,13 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                                 <div 
                                     className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full z-10"
                                     style={{ 
-                                        background: `linear-gradient(135deg, ${colors.accent} 0%, #8b6eb8 100%)`,
-                                        boxShadow: `0 0 20px ${colors.accent}40, 0 2px 8px rgba(164,139,196,0.4)`,
+                                        background: `linear-gradient(135deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                                        boxShadow: `0 0 16px rgba(196,160,160,0.4), 0 2px 8px rgba(138,112,112,0.3)`,
                                     }}
                                 />
                                 
                                 {/* Card below */}
                                 <div className="absolute top-[58%] mt-4 text-center">
-                                    <div 
-                                        className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2"
-                                        style={{
-                                            background: `linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(164,139,196,0.1) 100%)`,
-                                            boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.5)',
-                                        }}
-                                    >
-                                        <Sparkles className="w-5 h-5" style={{ color: colors.accent }} />
-                                    </div>
                                     <p 
                                         className="text-sm font-bold whitespace-nowrap"
                                         style={{ 
@@ -215,7 +206,7 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                                     >
                                         Opening Night
                                     </p>
-                                    <p className="text-xs mt-0.5" style={{ color: colors.accent }}>
+                                    <p className="text-xs mt-0.5" style={{ color: colors.muted }}>
                                         {format(showDay, 'MMM d')}
                                     </p>
                                 </div>
