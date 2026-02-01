@@ -117,7 +117,7 @@ export default function ClassManager() {
   };
 
   return (
-    <div className="fixed inset-0 flex flex-col" style={{ backgroundColor: colors.paper }}>
+    <div className="flex flex-col min-h-[calc(100vh-4rem)]" style={{ backgroundColor: colors.paper }}>
       {/* Frosted Header */}
       <div 
         className="px-6 py-4 flex-shrink-0 flex items-center justify-between"
