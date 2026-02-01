@@ -135,18 +135,13 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
 
             {/* Timeline Content */}
             {expanded && (
-                <div 
-                    ref={scrollRef}
-                    className="relative overflow-x-auto px-6 pb-6"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                    <style>{`.timeline-scroll::-webkit-scrollbar { display: none; }`}</style>
-                    
-                    {/* Timeline Track */}
-                    <div className="relative min-w-max">
-                        {/* The horizontal line - centered vertically */}
-                        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] rounded-full" style={{ background: 'rgba(200,180,170,0.25)' }}>
-                            {/* Progress fill */}
+                <div className="px-6 pb-6">
+                    {/* Progress Bar */}
+                    <div className="relative mb-6">
+                        <div 
+                            className="h-1.5 rounded-full"
+                            style={{ background: 'rgba(200,180,170,0.2)' }}
+                        >
                             <motion.div 
                                 initial={{ width: 0 }}
                                 animate={{ width: `${progressPercent}%` }}
@@ -154,9 +149,8 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                                 className="h-full rounded-full relative"
                                 style={{ background: `linear-gradient(90deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)` }}
                             >
-                                {/* Current position dot */}
                                 <div 
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 rounded-full border-2"
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3.5 h-3.5 rounded-full border-2"
                                     style={{ 
                                         background: '#fff',
                                         borderColor: colors.etchDark,
@@ -165,52 +159,47 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
                                 />
                             </motion.div>
                         </div>
+                    </div>
 
-                        {/* Milestones Container */}
-                        <div className="relative flex items-center" style={{ minHeight: '280px' }}>
-                            {sortedMilestones.map((milestone, idx) => (
-                                <MilestoneNode
-                                    key={milestone.id}
-                                    milestone={milestone}
-                                    index={idx}
-                                    onUpdate={(updated) => {
-                                        const newList = sortedMilestones.map(m => 
-                                            m.id === updated.id ? updated : m
-                                        );
-                                        onMilestoneUpdate(newList);
-                                    }}
-                                />
-                            ))}
+                    {/* Milestones Grid */}
+                    <div className="flex flex-wrap gap-3">
+                        {sortedMilestones.map((milestone, idx) => (
+                            <MilestoneCard
+                                key={milestone.id}
+                                milestone={milestone}
+                                index={idx}
+                                onUpdate={(updated) => {
+                                    const newList = sortedMilestones.map(m => 
+                                        m.id === updated.id ? updated : m
+                                    );
+                                    onMilestoneUpdate(newList);
+                                }}
+                            />
+                        ))}
 
-                            {/* Opening Night Node */}
-                            <div className="relative flex-shrink-0 w-28 flex flex-col items-center justify-center">
-                                {/* Connector dot on the line */}
-                                <div 
-                                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full z-10"
-                                    style={{ 
-                                        background: `linear-gradient(135deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
-                                        boxShadow: `0 0 16px rgba(196,160,160,0.4), 0 2px 8px rgba(138,112,112,0.3)`,
-                                    }}
-                                />
-                                
-                                {/* Card below */}
-                                <div className="absolute top-[58%] mt-4 text-center">
-                                    <p 
-                                        className="text-sm font-bold whitespace-nowrap"
-                                        style={{ 
-                                            color: 'transparent',
-                                            backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
-                                            backgroundClip: 'text',
-                                            WebkitBackgroundClip: 'text',
-                                        }}
-                                    >
-                                        Opening Night
-                                    </p>
-                                    <p className="text-xs mt-0.5" style={{ color: colors.muted }}>
-                                        {format(showDay, 'MMM d')}
-                                    </p>
-                                </div>
-                            </div>
+                        {/* Opening Night Card */}
+                        <div 
+                            className="flex-1 min-w-[140px] max-w-[180px] rounded-2xl p-4 text-center"
+                            style={{
+                                background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
+                                boxShadow: '0 8px 24px -8px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+                                border: '1px solid rgba(196,160,160,0.2)',
+                            }}
+                        >
+                            <p 
+                                className="text-sm font-bold"
+                                style={{ 
+                                    color: 'transparent',
+                                    backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                }}
+                            >
+                                Opening Night
+                            </p>
+                            <p className="text-xs mt-1" style={{ color: colors.muted }}>
+                                {format(showDay, 'MMM d')}
+                            </p>
                         </div>
                     </div>
                 </div>
