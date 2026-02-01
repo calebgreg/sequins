@@ -6,12 +6,9 @@ import {
   GraduationCap, 
   CreditCard, 
   Settings, 
-  Sparkles,
   Briefcase,
-  Search,
   CheckSquare,
-  Mic2,
-  Bell
+  Mic2
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useLocation } from 'react-router-dom';
@@ -52,23 +49,9 @@ export default function AppSidebar({ className = "", onSearchClick }) {
     queryFn: () => base44.auth.me().catch(() => null),
     retry: false
   });
-  
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser) return [];
-      return await base44.entities.Notification.filter({ 
-        recipient_email: currentUser.email,
-        is_read: false
-      });
-    },
-    enabled: !!currentUser,
-    refetchInterval: 30000
-  });
 
   const location = useLocation();
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
-  const unreadCount = notifications.length;
 
   const navItems = [
     { path: '/Home', icon: LayoutDashboard, label: 'Dashboard' },
@@ -79,7 +62,6 @@ export default function AppSidebar({ className = "", onSearchClick }) {
     { path: '/Teachers', icon: Users, label: 'Staff' },
     { path: '/Performances', icon: Mic2, label: 'Shows' },
     { path: '/Billing', icon: CreditCard, label: 'Billing' },
-    { path: '/Features', icon: Sparkles, label: 'Features' },
     { path: '/Settings', icon: Settings, label: 'Settings' },
   ];
 
@@ -158,8 +140,6 @@ export default function AppSidebar({ className = "", onSearchClick }) {
           style={{ background: 'radial-gradient(ellipse at 30% 10%, rgba(255,255,255,0.4) 0%, transparent 50%)' }}
         />
 
-
-
         {/* Logo */}
         <div className={`mb-6 flex-shrink-0 flex items-center relative ${collapsed ? 'justify-center px-0' : 'px-5'}`}>
           <div 
@@ -179,68 +159,7 @@ export default function AppSidebar({ className = "", onSearchClick }) {
         </div>
 
         {/* Nav Items */}
-        <nav className="flex-1 flex flex-col gap-1 w-full px-3 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] relative">
-          
-          {/* Search */}
-          {collapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={onSearchClick}
-                  className="flex items-center justify-center w-12 h-12 mx-auto rounded-xl transition-all hover:bg-white/30"
-                  style={{ background: 'rgba(255,255,255,0.4)' }}
-                >
-                  <Search className="w-[18px] h-[18px]" style={{ color: colors.muted }} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="rounded-xl border-none ml-2" style={{ background: 'linear-gradient(145deg, rgba(253,238,236,0.98) 0%, rgba(252,243,240,0.98) 100%)', color: '#8b7d72' }}>
-                Search ⌘K
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <button
-              onClick={onSearchClick}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white/30"
-              style={{ background: 'rgba(255,255,255,0.4)' }}
-            >
-              <Search className="w-[18px] h-[18px] flex-shrink-0" style={{ color: colors.muted }} />
-              <span className="text-sm font-bold tracking-tight flex-1 text-left" style={mutedTextStyle}>Search</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ color: '#a89585', background: 'rgba(200,180,170,0.15)' }}>⌘K</span>
-            </button>
-          )}
-
-          {/* Notifications */}
-          {collapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="relative flex items-center justify-center w-12 h-12 mx-auto rounded-xl transition-all hover:bg-white/30">
-                  <Bell className="w-[18px] h-[18px]" style={{ color: unreadCount > 0 ? '#d4a574' : colors.muted }} />
-                  {unreadCount > 0 && (
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full" style={{ background: '#d4a574' }} />
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="rounded-xl border-none ml-2" style={{ background: 'linear-gradient(145deg, rgba(253,238,236,0.98) 0%, rgba(252,243,240,0.98) 100%)', color: '#8b7d72' }}>
-                Notifications {unreadCount > 0 && `(${unreadCount})`}
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <button className="relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white/30">
-              <Bell className="w-[18px] h-[18px] flex-shrink-0" style={{ color: unreadCount > 0 ? '#d4a574' : colors.muted }} />
-              <span className="text-sm font-bold tracking-tight flex-1 text-left" style={unreadCount > 0 ? { ...mutedTextStyle, backgroundImage: 'linear-gradient(180deg, #d4a574 0%, #c49060 100%)' } : mutedTextStyle}>
-                Notifications
-              </span>
-              {unreadCount > 0 && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: 'rgba(212,165,116,0.15)', color: '#d4a574' }}>
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-          )}
-
-          <div className="w-full h-px my-2" style={{ background: 'rgba(200,180,170,0.15)' }} />
-
-          {/* Nav Links */}
+        <nav className="flex-1 flex flex-col gap-1 w-full px-3 relative">
           {navItems.map((item) => (
             <NavItem key={item.path} item={item} active={isActive(item.path)} />
           ))}
