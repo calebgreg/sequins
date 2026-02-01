@@ -39,12 +39,23 @@ export default function Teachers() {
   });
 
   const createTeacherMutation = useMutation({
-    mutationFn: (data) => base44.entities.Teacher.create(data),
-    onSuccess: () => {
+    mutationFn: async (data) => {
+      const teacher = await base44.entities.Teacher.create(data);
+      // If email provided, send invite to join the app
+      if (data.email) {
+        try {
+          await base44.users.inviteUser(data.email, 'user');
+        } catch (inviteError) {
+          console.warn('Could not send invite:', inviteError);
+        }
+      }
+      return teacher;
+    },
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['teachers'] });
       setAddModalOpen(false);
       setAddReportsTo(null);
-      toast.success('Staff member added');
+      toast.success(variables.email ? 'Staff member added & invite sent' : 'Staff member added');
     },
   });
 
