@@ -144,7 +144,7 @@ export default function AppSidebar({ className = "", onSearchClick }) {
   return (
     <TooltipProvider delayDuration={0}>
       <div 
-        className={`relative flex flex-col py-6 m-4 h-[calc(100dvh-32px)] sticky top-4 overflow-hidden transition-all duration-200 ${className}`}
+        className={`group relative flex flex-col py-6 m-4 h-[calc(100dvh-32px)] sticky top-4 overflow-hidden transition-all duration-200 ${className}`}
         style={{
           width: collapsed ? 80 : 220,
           background: 'linear-gradient(180deg, rgba(253,238,236,0.95) 0%, rgba(250,232,228,0.9) 50%, rgba(252,243,240,0.95) 100%)',
