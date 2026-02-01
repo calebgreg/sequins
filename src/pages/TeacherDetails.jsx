@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import SubRequestFlow from '../components/teachers/SubRequestFlow';
+import AddNoteModal from '../components/teachers/AddNoteModal';
 
 const TeacherDetails = () => {
   const [activeTab, setActiveTab] = useState('timecard');
   const [timecardExpanded, setTimecardExpanded] = useState(true);
   const [subRequestOpen, setSubRequestOpen] = useState(false);
+  const [addNoteOpen, setAddNoteOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Get teacher ID from URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -42,6 +45,39 @@ const TeacherDetails = () => {
     queryFn: () => base44.entities.DanceClass.filter({ teacher: teacher?.name }),
     enabled: !!teacher?.name,
   });
+
+  // Fetch notes for this teacher
+  const { data: teacherNotes = [] } = useQuery({
+    queryKey: ['teacherNotes', teacherId],
+    queryFn: () => base44.entities.TeacherNote.filter({ teacher_id: teacherId }),
+    enabled: !!teacherId,
+  });
+
+  // Fetch current user
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  // Create note mutation
+  const createNoteMutation = useMutation({
+    mutationFn: (noteData) => base44.entities.TeacherNote.create(noteData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacherNotes', teacherId] });
+      setAddNoteOpen(false);
+    },
+  });
+
+  const handleSaveNote = (content) => {
+    const today = new Date().toISOString().split('T')[0];
+    createNoteMutation.mutate({
+      teacher_id: teacherId,
+      teacher_name: teacher?.name,
+      content,
+      author_name: currentUser?.full_name || 'Unknown',
+      date: today,
+    });
+  };
 
   // Calculate hours
   const getInitials = (name) => {
@@ -104,14 +140,36 @@ const TeacherDetails = () => {
     person: s.suggested_subs?.[0] || 'TBD',
   }));
 
+  // Build timeline from notes + sub requests
+  const formatDateShort = (dateStr) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const getAuthorInitials = (name) => {
+    if (!name) return '';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0]} ${parts[1][0]}.`;
+    }
+    return name;
+  };
+
   const timeline = [
-    { date: 'Jan 25', type: 'note', author: 'Studio', content: 'Great work this month!' },
-    ...(subRequests.slice(0, 2).map(s => ({
-      date: s.date,
+    ...teacherNotes.map(n => ({
+      date: formatDateShort(n.date),
+      rawDate: n.date,
+      type: 'note',
+      author: getAuthorInitials(n.author_name),
+      content: n.content,
+    })),
+    ...subRequests.slice(0, 5).map(s => ({
+      date: formatDateShort(s.date || s.created_date),
+      rawDate: s.date || s.created_date,
       type: 'sub',
       content: `Sub request: ${s.class_name} - ${s.status}`,
-    }))),
-  ];
+    })),
+  ].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
 
   if (teacherLoading) {
     return (
@@ -673,6 +731,7 @@ const TeacherDetails = () => {
             {/* Add Note Button */}
             <div className="flex justify-center pt-4">
               <button 
+                onClick={() => setAddNoteOpen(true)}
                 className="px-10 py-4 rounded-2xl text-base font-bold tracking-tight transition-all hover:scale-[1.02]"
                 style={{
                   background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
@@ -706,6 +765,14 @@ const TeacherDetails = () => {
             teacherName={teacher?.name}
           />
         )}
+
+        {/* Add Note Modal */}
+        <AddNoteModal
+          isOpen={addNoteOpen}
+          onClose={() => setAddNoteOpen(false)}
+          onSave={handleSaveNote}
+          saving={createNoteMutation.isPending}
+        />
       </div>
     </div>
   );
