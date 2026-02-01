@@ -11,6 +11,7 @@ import AttendanceModal from '../components/manager/AttendanceModal';
 import AutoAssignModal from '../components/manager/AutoAssignModal';
 
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6am to 9pm
+const HOUR_HEIGHT = 60; // pixels per hour
 const DAYS = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
 const DAY_NAMES = { M: 'Mon', T: 'Tue', W: 'Wed', R: 'Thu', F: 'Fri', S: 'Sat', U: 'Sun' };
 
@@ -96,8 +97,8 @@ export default function ClassManager() {
       const currentHour = now.getHours();
       const currentMinutes = now.getMinutes();
       
-      // Calculate scroll position: each hour is 80px tall
-      const scrollPosition = ((currentHour - 6) * 80) + ((currentMinutes / 60) * 80);
+      // Calculate scroll position
+      const scrollPosition = ((currentHour - 6) * HOUR_HEIGHT) + ((currentMinutes / 60) * HOUR_HEIGHT);
       
       scrollContainerRef.current.scrollTop = Math.max(0, scrollPosition);
     }
@@ -108,8 +109,8 @@ export default function ClassManager() {
   const getClassStyle = (cls) => {
     const startHour = cls.start_time;
     const duration = cls.duration;
-    const top = ((startHour - 6) * 80) + 'px';
-    const height = (duration * 80) + 'px';
+    const top = ((startHour - 6) * HOUR_HEIGHT) + 'px';
+    const height = (duration * HOUR_HEIGHT) + 'px';
     return { top, height };
   };
 
@@ -293,7 +294,7 @@ export default function ClassManager() {
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-6">
               <div className="relative">
                 {HOURS.map((hour) => (
-                  <div key={hour} className="flex" style={{ height: '80px', borderTop: `1px solid ${colors.border}` }}>
+                  <div key={hour} className="flex" style={{ height: `${HOUR_HEIGHT}px`, borderTop: `1px solid ${colors.border}` }}>
                     {/* Time Label */}
                     <div className="w-20 flex-shrink-0 pr-4 pt-1 text-right">
                       <EtchedText size="sm">{formatTime(hour)}</EtchedText>
@@ -350,7 +351,7 @@ export default function ClassManager() {
                                 <Link
                                   key={cls.id}
                                   to={`${createPageUrl('ClassDetail')}?id=${cls.id}`}
-                                  className="absolute left-2 right-2 rounded-2xl p-4 transition-all cursor-pointer overflow-hidden block hover:scale-[1.02]"
+                                  className="absolute left-2 right-2 rounded-2xl p-3 transition-all cursor-pointer overflow-hidden block hover:scale-[1.02] flex items-center justify-center"
                                   style={{
                                     ...style,
                                     background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
@@ -360,7 +361,7 @@ export default function ClassManager() {
                                     boxShadow: '0 4px 16px rgba(180, 120, 120, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
                                   }}
                                 >
-                                  <EtchedText size="md" className="block truncate">{cls.title}</EtchedText>
+                                  <EtchedText size="sm" className="block truncate text-center">{cls.title}</EtchedText>
                                 </Link>
                               );
                             })}
