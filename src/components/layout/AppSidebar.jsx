@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
   Calendar, 
@@ -7,12 +7,13 @@ import {
   CreditCard, 
   Settings, 
   Sparkles,
-  LogOut,
   Briefcase,
   Search,
   CheckSquare,
-  Mic2
-  } from 'lucide-react';
+  Mic2,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
@@ -20,8 +21,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import Notifications from './Notifications';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Design tokens matching our aesthetic
+const colors = {
+  etchLight: '#c4a0a0',
+  etchDark: '#8a7070',
+  muted: '#8a8478',
+};
 
 export default function AppSidebar({ className = "", onSearchClick }) {
+  const [collapsed, setCollapsed] = useState(false);
+  
   const { data: currentUser } = useQuery({
       queryKey: ['me'],
       queryFn: () => base44.auth.me().catch(() => null),
@@ -29,98 +40,251 @@ export default function AppSidebar({ className = "", onSearchClick }) {
   });
   const location = useLocation();
   
-  // Helper to check active state
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   const navItems = [
     { path: '/Home', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/TeacherStudio', icon: Briefcase, label: 'Teacher Studio' },
+    { path: '/TeacherStudio', icon: Briefcase, label: 'Studio' },
     { path: '/Tasks', icon: CheckSquare, label: 'Tasks' },
     { path: '/ClassManager', icon: Calendar, label: 'Schedule' },
     { path: '/Students', icon: GraduationCap, label: 'Students' },
     { path: '/Teachers', icon: Users, label: 'Staff' },
-    { path: '/Performances', icon: Mic2, label: 'Performances' },
+    { path: '/Performances', icon: Mic2, label: 'Shows' },
     { path: '/Billing', icon: CreditCard, label: 'Billing' },
     { path: '/Features', icon: Sparkles, label: 'Features' },
     { path: '/Settings', icon: Settings, label: 'Settings' },
   ];
 
   return (
-    <div className={`bg-[#333333] text-white flex flex-col items-center py-8 rounded-[20px] m-4 h-[calc(100dvh-32px)] sticky top-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${className}`}>
+    <motion.div 
+      initial={false}
+      animate={{ width: collapsed ? 80 : 200 }}
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      className={`relative flex flex-col py-6 m-4 h-[calc(100dvh-32px)] sticky top-4 overflow-hidden ${className}`}
+      style={{
+        background: 'linear-gradient(180deg, rgba(253,248,246,0.95) 0%, rgba(250,242,238,0.9) 50%, rgba(248,240,235,0.95) 100%)',
+        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 20px 60px -20px rgba(180,150,140,0.25)',
+        backdropFilter: 'blur(20px)',
+        borderRadius: '24px',
+        border: '1px solid rgba(255,255,255,0.5)',
+      }}
+    >
+      {/* Inner glow */}
+      <div 
+        className="absolute inset-0 rounded-3xl pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 30% 10%, rgba(255,255,255,0.5) 0%, transparent 50%)',
+        }}
+      />
+
+      {/* Collapse Toggle */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-3 top-8 z-20 w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110"
+        style={{
+          background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+          boxShadow: '0 4px 12px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+          border: '1px solid rgba(200,180,170,0.2)',
+        }}
+      >
+        {collapsed ? (
+          <ChevronRight className="w-3.5 h-3.5" style={{ color: colors.etchDark }} />
+        ) : (
+          <ChevronLeft className="w-3.5 h-3.5" style={{ color: colors.etchDark }} />
+        )}
+      </button>
+
       {/* Logo */}
-      <div className="mb-12 flex-shrink-0">
-        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-          <span className="font-serif text-[#333333] text-xl font-bold">S</span>
+      <div className={`mb-8 flex-shrink-0 flex items-center ${collapsed ? 'justify-center px-0' : 'px-5'}`}>
+        <div 
+          className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+          style={{
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+            boxShadow: '0 8px 24px -8px rgba(180,150,140,0.25), inset 0 1px 1px rgba(255,255,255,1)',
+          }}
+        >
+          <span 
+            className="text-xl font-bold"
+            style={{ 
+              color: 'transparent',
+              backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+            }}
+          >
+            S
+          </span>
         </div>
+        <AnimatePresence>
+          {!collapsed && (
+            <motion.span
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="ml-3 text-lg font-semibold tracking-tight"
+              style={{ 
+                color: 'transparent',
+                backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+              }}
+            >
+              Studio
+            </motion.span>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Nav Items */}
-      <nav className="flex-1 flex flex-col gap-6 w-full px-4 items-center">
+      <nav className="flex-1 flex flex-col gap-1.5 w-full px-3 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
         <TooltipProvider delayDuration={0}>
           
-          {/* Global Search Trigger */}
+          {/* Search */}
           <Tooltip>
-             <TooltipTrigger asChild>
-                <button
-                   onClick={onSearchClick}
-                   className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 group relative text-gray-400 hover:bg-white/10 hover:text-white"
-                >
-                   <div className="flex flex-col items-center">
-                      <Search className="w-5 h-5" />
-                      <span className="text-[9px] mt-0.5 font-mono opacity-50">⌘K</span>
-                   </div>
-                </button>
-             </TooltipTrigger>
-             <TooltipContent side="right" className="bg-[#333333] text-white border-gray-700 ml-2 font-sans">
-                <p>Search & Commands</p>
-             </TooltipContent>
+            <TooltipTrigger asChild>
+              <button
+                onClick={onSearchClick}
+                className={`relative rounded-xl flex items-center transition-all duration-200 group ${collapsed ? 'justify-center w-12 h-12 mx-auto' : 'w-full px-4 py-3'}`}
+                style={{
+                  background: 'rgba(255,255,255,0.4)',
+                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                }}
+              >
+                <Search className="w-[18px] h-[18px] flex-shrink-0" style={{ color: colors.muted }} />
+                <AnimatePresence>
+                  {!collapsed && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="flex items-center justify-between flex-1 ml-3"
+                    >
+                      <span className="text-sm" style={{ color: colors.muted }}>Search</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ color: colors.muted, background: 'rgba(200,180,170,0.15)' }}>⌘K</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
+            </TooltipTrigger>
+            {collapsed && (
+              <TooltipContent side="right" className="rounded-xl border-none ml-2" style={{ background: 'linear-gradient(145deg, rgba(253,238,236,0.98) 0%, rgba(252,243,240,0.98) 100%)', color: '#8b7d72' }}>
+                <p>Search ⌘K</p>
+              </TooltipContent>
+            )}
           </Tooltip>
 
-          <div className="w-8 h-px bg-white/10" />
-
-          <div className="mb-2">
-             <Notifications currentUser={currentUser} />
+          {/* Notifications */}
+          <div className={`my-2 ${collapsed ? 'flex justify-center' : ''}`}>
+            <Notifications currentUser={currentUser} collapsed={collapsed} />
           </div>
 
-          <div className="w-8 h-px bg-white/10" />
+          <div className="w-full h-px my-2" style={{ background: 'rgba(200,180,170,0.15)' }} />
 
-          {navItems.map((item) => (
-            <Tooltip key={item.path}>
-              <TooltipTrigger asChild>
-                <Link to={item.path}>
-                  <button
-                    className={`
-                      w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 group relative
-                      ${isActive(item.path)
-                        ? 'bg-white text-[#333333] shadow-lg scale-105' 
-                        : 'text-gray-400 hover:bg-white/10 hover:text-white'}
-                    `}
-                  >
-                    <item.icon className="w-5 h-5" />
-                    {isActive(item.path) && (
-                      <span className="absolute -right-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-white/50 rounded-l-full blur-[2px]" />
-                    )}
-                  </button>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="bg-[#333333] text-white border-gray-700 ml-2 font-sans">
-                <p>{item.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
+          {/* Nav Links */}
+          {navItems.map((item) => {
+            const active = isActive(item.path);
+            return (
+              <Tooltip key={item.path}>
+                <TooltipTrigger asChild>
+                  <Link to={item.path}>
+                    <button
+                      className={`
+                        relative rounded-xl flex items-center transition-all duration-200 group
+                        ${collapsed ? 'justify-center w-12 h-12 mx-auto' : 'w-full px-4 py-3'}
+                        ${active ? 'scale-[1.02]' : 'hover:scale-[1.01]'}
+                      `}
+                      style={{
+                        background: active 
+                          ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)'
+                          : 'transparent',
+                        boxShadow: active 
+                          ? '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)'
+                          : 'none',
+                      }}
+                    >
+                      <item.icon 
+                        className="w-[18px] h-[18px] flex-shrink-0 transition-colors" 
+                        style={{ 
+                          color: active ? colors.etchDark : colors.muted,
+                        }} 
+                      />
+                      <AnimatePresence>
+                        {!collapsed && (
+                          <motion.span
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            transition={{ duration: 0.15 }}
+                            className="ml-3 text-sm font-medium"
+                            style={{ 
+                              color: active ? colors.etchDark : colors.muted,
+                            }}
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                      
+                      {/* Active indicator */}
+                      {active && (
+                        <motion.div
+                          layoutId="activeIndicator"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full"
+                          style={{ background: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)` }}
+                        />
+                      )}
+                    </button>
+                  </Link>
+                </TooltipTrigger>
+                {collapsed && (
+                  <TooltipContent side="right" className="rounded-xl border-none ml-2" style={{ background: 'linear-gradient(145deg, rgba(253,238,236,0.98) 0%, rgba(252,243,240,0.98) 100%)', color: '#8b7d72' }}>
+                    <p>{item.label}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            );
+          })}
         </TooltipProvider>
       </nav>
 
-      {/* Bottom Actions */}
-      <div className="flex flex-col gap-6 items-center w-full px-4">
-        <div className="w-full h-px bg-white/10 w-8" />
-
-        <Avatar className="w-10 h-10 border-2 border-white/10 cursor-pointer hover:border-white hover:scale-105 transition-all">
-          <AvatarFallback className="bg-[#F2DCDD] text-[#333333] font-serif font-medium">
-            S
+      {/* Bottom - Avatar */}
+      <div className={`flex items-center gap-3 mt-4 pt-4 ${collapsed ? 'justify-center px-3' : 'px-5'}`} style={{ borderTop: '1px solid rgba(200,180,170,0.15)' }}>
+        <Avatar 
+          className="w-10 h-10 cursor-pointer hover:scale-105 transition-all flex-shrink-0"
+          style={{
+            boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2)',
+            border: '2px solid rgba(255,255,255,0.8)',
+          }}
+        >
+          <AvatarFallback 
+            className="font-medium"
+            style={{ 
+              background: 'linear-gradient(145deg, #f4e8e4 0%, #ecdad4 100%)',
+              color: colors.etchDark,
+            }}
+          >
+            {currentUser?.full_name?.charAt(0) || 'S'}
           </AvatarFallback>
         </Avatar>
+        <AnimatePresence>
+          {!collapsed && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              className="flex-1 min-w-0"
+            >
+              <p className="text-sm font-medium truncate" style={{ color: '#8b7d72' }}>
+                {currentUser?.full_name || 'Studio'}
+              </p>
+              <p className="text-xs truncate" style={{ color: colors.muted }}>
+                {currentUser?.role || 'Owner'}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }
