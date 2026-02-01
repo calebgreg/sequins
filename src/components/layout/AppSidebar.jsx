@@ -11,9 +11,7 @@ import {
   Search,
   CheckSquare,
   Mic2,
-  Bell,
-  ChevronLeft,
-  ChevronRight
+  Bell
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useLocation } from 'react-router-dom';
