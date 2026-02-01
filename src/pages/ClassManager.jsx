@@ -294,11 +294,19 @@ export default function ClassManager() {
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-6">
               <div className="relative">
                 {HOURS.map((hour) => (
-                  <div key={hour} className="flex" style={{ height: `${HOUR_HEIGHT}px` }}>
+                  <div key={hour} className="flex relative" style={{ height: `${HOUR_HEIGHT}px` }}>
                     {/* Time Label */}
-                    <div className="w-20 flex-shrink-0 pr-4 pt-1 text-right">
-                      <EtchedText size="sm">{formatTime(hour)}</EtchedText>
+                    <div className="w-20 flex-shrink-0 pr-4 -mt-2 text-right">
+                      <span className="text-[11px] font-medium" style={{ color: colors.muted, opacity: 0.6 }}>
+                        {formatTime(hour)}
+                      </span>
                     </div>
+
+                    {/* Subtle horizontal line */}
+                    <div 
+                      className="absolute left-20 right-0 top-0 h-px"
+                      style={{ background: `linear-gradient(90deg, transparent 0%, ${colors.border} 5%, ${colors.border} 95%, transparent 100%)`, opacity: 0.4 }}
+                    />
 
                     {/* Room or Teacher Columns */}
                     {(viewMode === 'room' ? rooms : teachers).map(item => (
