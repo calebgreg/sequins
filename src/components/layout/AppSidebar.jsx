@@ -160,10 +160,10 @@ export default function AppSidebar({ className = "", onSearchClick }) {
           style={{ background: 'radial-gradient(ellipse at 30% 10%, rgba(255,255,255,0.4) 0%, transparent 50%)' }}
         />
 
-        {/* Collapse Toggle */}
+        {/* Collapse Toggle - only show on hover */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-8 z-20 w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110"
+          className="absolute -right-3 top-8 z-20 w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110 opacity-0 group-hover:opacity-100"
           style={{
             background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
             boxShadow: '0 4px 12px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
