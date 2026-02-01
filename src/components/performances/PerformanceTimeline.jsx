@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { format, differenceInDays, startOfDay, parseISO, isSameDay, isPast, isToday } from 'date-fns';
 import { motion } from "framer-motion";
 import { Sparkles, Edit2, ChevronDown } from 'lucide-react';
