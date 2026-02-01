@@ -27,7 +27,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const colors = {
   etchLight: '#c4a0a0',
   etchDark: '#8a7070',
-  muted: '#8a8478',
+  muted: '#b5a599',
 };
 
 export default function AppSidebar({ className = "", onSearchClick }) {
@@ -62,18 +62,18 @@ export default function AppSidebar({ className = "", onSearchClick }) {
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       className={`relative flex flex-col py-6 m-4 h-[calc(100dvh-32px)] sticky top-4 overflow-hidden ${className}`}
       style={{
-        background: 'linear-gradient(180deg, rgba(253,248,246,0.95) 0%, rgba(250,242,238,0.9) 50%, rgba(248,240,235,0.95) 100%)',
-        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 20px 60px -20px rgba(180,150,140,0.25)',
+        background: 'linear-gradient(180deg, rgba(253,238,236,0.95) 0%, rgba(250,232,228,0.9) 50%, rgba(252,243,240,0.95) 100%)',
+        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), inset 0 -1px 2px rgba(200,180,170,0.1), 0 20px 60px -20px rgba(180,150,140,0.25)',
         backdropFilter: 'blur(20px)',
         borderRadius: '24px',
-        border: '1px solid rgba(255,255,255,0.5)',
+        border: '1px solid rgba(255,220,210,0.3)',
       }}
     >
       {/* Inner glow */}
       <div 
         className="absolute inset-0 rounded-3xl pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at 30% 10%, rgba(255,255,255,0.5) 0%, transparent 50%)',
+          background: 'radial-gradient(ellipse at 30% 10%, rgba(255,255,255,0.4) 0%, transparent 50%)',
         }}
       />
 
@@ -151,7 +151,7 @@ export default function AppSidebar({ className = "", onSearchClick }) {
                   boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
                 }}
               >
-                <Search className="w-[18px] h-[18px] flex-shrink-0" style={{ color: colors.muted }} />
+                <Search className="w-[18px] h-[18px] flex-shrink-0" style={{ color: colors.muted, filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))' }} />
                 <AnimatePresence>
                   {!collapsed && (
                     <motion.div
@@ -160,8 +160,20 @@ export default function AppSidebar({ className = "", onSearchClick }) {
                       exit={{ opacity: 0, x: -10 }}
                       className="flex items-center justify-between flex-1 ml-3"
                     >
-                      <span className="text-sm" style={{ color: colors.muted }}>Search</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ color: colors.muted, background: 'rgba(200,180,170,0.15)' }}>⌘K</span>
+                      <span 
+                        className="text-sm font-bold tracking-tight"
+                        style={{ 
+                          color: 'transparent',
+                          backgroundImage: 'linear-gradient(180deg, #c4b5ab 0%, #a89585 100%)',
+                          backgroundClip: 'text',
+                          WebkitBackgroundClip: 'text',
+                          textShadow: '0 2px 3px rgba(255,255,255,0.7)',
+                          filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+                        }}
+                      >
+                        Search
+                      </span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ color: '#a89585', background: 'rgba(200,180,170,0.15)' }}>⌘K</span>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -207,6 +219,7 @@ export default function AppSidebar({ className = "", onSearchClick }) {
                         className="w-[18px] h-[18px] flex-shrink-0 transition-colors" 
                         style={{ 
                           color: active ? colors.etchDark : colors.muted,
+                          filter: active ? 'drop-shadow(0 1px 0 rgba(255,255,255,0.7))' : 'none',
                         }} 
                       />
                       <AnimatePresence>
@@ -216,9 +229,16 @@ export default function AppSidebar({ className = "", onSearchClick }) {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -10 }}
                             transition={{ duration: 0.15 }}
-                            className="ml-3 text-sm font-medium"
+                            className="ml-3 text-sm font-bold tracking-tight"
                             style={{ 
-                              color: active ? colors.etchDark : colors.muted,
+                              color: 'transparent',
+                              backgroundImage: active 
+                                ? `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`
+                                : `linear-gradient(180deg, #c4b5ab 0%, #a89585 100%)`,
+                              backgroundClip: 'text',
+                              WebkitBackgroundClip: 'text',
+                              textShadow: '0 2px 3px rgba(255,255,255,0.7)',
+                              filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
                             }}
                           >
                             {item.label}
