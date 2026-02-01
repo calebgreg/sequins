@@ -122,12 +122,14 @@ export default function AppSidebar({ className = "", onSearchClick }) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.2 }}
-              className="ml-3 text-lg font-semibold tracking-tight"
+              className="ml-3 text-lg font-bold tracking-tight"
               style={{ 
                 color: 'transparent',
                 backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
+                textShadow: '0 2px 3px rgba(255,255,255,0.7)',
+                filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
               }}
             >
               Studio
