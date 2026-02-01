@@ -772,6 +772,7 @@ const TeacherDetails = () => {
           onClose={() => setAddNoteOpen(false)}
           onSave={handleSaveNote}
           saving={createNoteMutation.isPending}
+          teacherName={teacher?.name}
         />
       </div>
     </div>
