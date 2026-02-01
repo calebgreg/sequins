@@ -289,8 +289,12 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                     <div className="relative flex flex-col md:flex-row items-start gap-8">
                         {/* Info */}
                         <div className="flex-1 pt-2">
-                            <h1 
-                                className="text-4xl font-bold tracking-tight mb-1"
+                            <input 
+                                value={formData.title || ''}
+                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                onBlur={handleTitleBlur}
+                                placeholder="Event Title"
+                                className="text-4xl font-bold tracking-tight bg-transparent border-none px-0 focus:outline-none placeholder:text-[#c4b5ab] w-full"
                                 style={{ 
                                     color: 'transparent',
                                     backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
@@ -299,16 +303,6 @@ export default function PerformanceDetail({ performanceId, onBack }) {
                                     textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
                                     filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
                                 }}
-                            >
-                                {formData.title || 'Untitled Event'}
-                            </h1>
-                            <Input 
-                                value={formData.title || ''}
-                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                onBlur={handleTitleBlur}
-                                className="text-lg bg-transparent border-none px-0 focus-visible:ring-0 placeholder:text-[#c4b5ab] h-auto p-0 shadow-none sr-only"
-                                placeholder="Event Title"
-                                style={{ color: '#8b7d72' }}
                             />
                             
                             {/* Meta Tags */}
