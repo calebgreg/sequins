@@ -208,11 +208,10 @@ export default function PerformanceTimeline({ milestones = [], showDate, onMiles
     );
 }
 
-function MilestoneNode({ milestone, index, onUpdate }) {
+function MilestoneCard({ milestone, index, onUpdate }) {
     const dueDate = parseISO(milestone.due_date);
     const isPastDate = isPast(dueDate) && !isToday(dueDate);
     const isTodayDate = isToday(dueDate);
-    const isTop = index % 2 === 0;
     
     const [isEditing, setIsEditing] = useState(false);
     const [tempDate, setTempDate] = useState(milestone.due_date);
@@ -223,120 +222,92 @@ function MilestoneNode({ milestone, index, onUpdate }) {
     };
 
     return (
-        <div className="relative flex-shrink-0 w-32 flex flex-col items-center justify-center">
-            {/* Connector dot on the line */}
-            <div 
-                className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full z-10 transition-transform hover:scale-125"
-                style={{ 
-                    background: isPastDate 
-                        ? 'rgba(200,180,170,0.4)' 
-                        : isTodayDate 
-                            ? '#d4a574'
-                            : '#fff',
-                    border: `2px solid ${isPastDate ? 'rgba(200,180,170,0.3)' : colors.etchLight}`,
-                    boxShadow: isTodayDate ? '0 0 12px rgba(212,165,116,0.5)' : '0 1px 4px rgba(180,150,140,0.2)',
-                }}
-            />
-            
-            {/* Vertical connector line */}
-            <div 
-                className={`absolute left-1/2 -translate-x-1/2 w-px ${isTop ? 'bottom-1/2 mb-1.5 h-8' : 'top-1/2 mt-1.5 h-8'}`}
-                style={{ background: `linear-gradient(${isTop ? '0deg' : '180deg'}, rgba(200,180,170,0.3) 0%, transparent 100%)` }}
-            />
-
-            {/* Card - alternates top/bottom */}
-            <motion.div 
-                initial={{ opacity: 0, y: isTop ? 10 : -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.06 }}
-                className={`absolute ${isTop ? 'bottom-[58%] mb-4' : 'top-[58%] mt-4'} w-full px-1 group`}
-            >
-                <div 
-                    className={`
-                        rounded-2xl p-3 transition-all cursor-pointer
-                        ${isPastDate ? 'opacity-50' : 'hover:scale-105'}
-                    `}
-                    style={{
-                        background: isPastDate 
-                            ? 'rgba(240,235,230,0.5)' 
-                            : isTodayDate 
-                                ? 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)'
-                                : 'linear-gradient(145deg, rgba(255,255,255,0.8) 0%, rgba(255,252,250,0.7) 100%)',
-                        boxShadow: isPastDate 
-                            ? 'none' 
-                            : isTodayDate 
-                                ? '0 8px 24px -8px rgba(212,165,116,0.3), inset 0 1px 1px rgba(255,255,255,0.8)'
-                                : 'inset 0 1px 1px rgba(255,255,255,0.8), 0 4px 12px -4px rgba(180,150,140,0.15)',
-                        border: isTodayDate ? '1px solid rgba(212,165,116,0.3)' : '1px solid rgba(255,255,255,0.5)',
+        <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className={`
+                flex-1 min-w-[140px] max-w-[180px] rounded-2xl p-4 transition-all group
+                ${isPastDate ? 'opacity-50' : 'hover:scale-[1.02]'}
+            `}
+            style={{
+                background: isPastDate 
+                    ? 'rgba(240,235,230,0.5)' 
+                    : isTodayDate 
+                        ? 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)'
+                        : 'rgba(255,255,255,0.5)',
+                boxShadow: isPastDate 
+                    ? 'none' 
+                    : isTodayDate 
+                        ? '0 8px 24px -8px rgba(212,165,116,0.3), inset 0 1px 1px rgba(255,255,255,0.8)'
+                        : 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                border: isTodayDate ? '1px solid rgba(212,165,116,0.3)' : 'none',
+            }}
+        >
+            {/* Date + Edit */}
+            <div className="flex items-center justify-between mb-2">
+                <span 
+                    className={`text-xs font-bold tracking-wide uppercase ${isPastDate ? 'line-through' : ''}`}
+                    style={{ 
+                        color: isPastDate ? '#c4b5ab' : isTodayDate ? '#d4a574' : colors.etchLight,
                     }}
                 >
-                    {/* Date badge */}
-                    <div className="flex items-center justify-between mb-1.5">
-                        <span 
-                            className={`text-[10px] font-bold tracking-wide uppercase ${isPastDate ? 'line-through' : ''}`}
-                            style={{ 
-                                color: isPastDate ? '#c4b5ab' : isTodayDate ? '#d4a574' : colors.etchLight,
-                            }}
+                    {format(dueDate, 'MMM d')}
+                </span>
+                
+                <Popover open={isEditing} onOpenChange={setIsEditing}>
+                    <PopoverTrigger asChild>
+                        <button 
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-white/50"
+                            style={{ color: colors.muted }}
                         >
-                            {format(dueDate, 'MMM d')}
-                        </span>
-                        
-                        <Popover open={isEditing} onOpenChange={setIsEditing}>
-                            <PopoverTrigger asChild>
-                                <button 
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-white/50"
-                                    style={{ color: colors.muted }}
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <Edit2 className="w-2.5 h-2.5" />
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent 
-                                className="w-auto p-4 rounded-2xl z-50"
+                            <Edit2 className="w-3 h-3" />
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                        className="w-auto p-4 rounded-2xl z-50"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(253,238,236,0.98) 0%, rgba(252,243,240,0.98) 100%)',
+                            boxShadow: '0 20px 60px -20px rgba(180,150,140,0.4)',
+                            border: '1px solid rgba(255, 200, 200, 0.3)',
+                        }}
+                    >
+                        <div className="space-y-3">
+                            <h4 className="font-medium text-sm" style={{ color: '#8b7d72' }}>Reschedule</h4>
+                            <input 
+                                type="date" 
+                                value={tempDate}
+                                onChange={(e) => setTempDate(e.target.value)}
+                                className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none"
+                                style={{ 
+                                    background: 'rgba(255,255,255,0.6)',
+                                    color: '#6b5d52',
+                                    border: '1px solid rgba(200,180,170,0.2)',
+                                }}
+                            />
+                            <button 
+                                onClick={handleSave} 
+                                className="w-full py-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
                                 style={{
-                                    background: 'linear-gradient(145deg, rgba(253,238,236,0.98) 0%, rgba(252,243,240,0.98) 100%)',
-                                    boxShadow: '0 20px 60px -20px rgba(180,150,140,0.4)',
-                                    border: '1px solid rgba(255, 200, 200, 0.3)',
+                                    background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                                    color: '#fff',
+                                    boxShadow: '0 4px 12px -2px rgba(138,112,112,0.3)',
                                 }}
                             >
-                                <div className="space-y-3">
-                                    <h4 className="font-medium text-sm" style={{ color: '#8b7d72' }}>Reschedule</h4>
-                                    <input 
-                                        type="date" 
-                                        value={tempDate}
-                                        onChange={(e) => setTempDate(e.target.value)}
-                                        className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none"
-                                        style={{ 
-                                            background: 'rgba(255,255,255,0.6)',
-                                            color: '#6b5d52',
-                                            border: '1px solid rgba(200,180,170,0.2)',
-                                        }}
-                                    />
-                                    <button 
-                                        onClick={handleSave} 
-                                        className="w-full py-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
-                                        style={{
-                                            background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
-                                            color: '#fff',
-                                            boxShadow: '0 4px 12px -2px rgba(138,112,112,0.3)',
-                                        }}
-                                    >
-                                        Update
-                                    </button>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                    
-                    {/* Milestone name */}
-                    <p 
-                        className="text-xs font-semibold leading-tight text-center"
-                        style={{ color: isPastDate ? '#c4b5ab' : '#8b7d72' }}
-                    >
-                        {milestone.name}
-                    </p>
-                </div>
-            </motion.div>
-        </div>
+                                Update
+                            </button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+            </div>
+            
+            {/* Milestone name */}
+            <p 
+                className="text-sm font-medium leading-tight"
+                style={{ color: isPastDate ? '#c4b5ab' : '#8b7d72' }}
+            >
+                {milestone.name}
+            </p>
+        </motion.div>
     );
 }
