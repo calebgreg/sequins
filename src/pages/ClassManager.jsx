@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Plus, Calendar, User, Sparkles, Users, ChevronDown, Clock } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import ImportScheduleModal from '../components/manager/ImportScheduleModal';
 import StudentRecommender from '../components/manager/StudentRecommender';
 import AttendanceModal from '../components/manager/AttendanceModal';
 import AutoAssignModal from '../components/manager/AutoAssignModal';
+import DailyBriefing from '../components/manager/DailyBriefing';
 
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6am to 9pm
 const HOUR_HEIGHT = 60; // pixels per hour
@@ -106,15 +107,6 @@ export default function ClassManager() {
   }, [selectedDay, classes.length]);
 
   const dayClasses = classes.filter(c => c.day === selectedDay);
-
-  // Daily summary calculations
-  const totalClasses = dayClasses.length;
-  const totalHours = dayClasses.reduce((sum, c) => sum + (c.duration || 1), 0);
-  const totalStudents = new Set(dayClasses.flatMap(c => c.student_names || [])).size;
-  const uniqueTeachers = new Set(dayClasses.map(c => c.teacher).filter(Boolean)).size;
-  const roomUtilization = rooms.length > 0 
-    ? Math.round((new Set(dayClasses.map(c => c.room).filter(Boolean)).size / rooms.length) * 100)
-    : 0;
 
   const getClassStyle = (cls) => {
     const startHour = cls.start_time;
