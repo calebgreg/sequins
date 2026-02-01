@@ -142,7 +142,7 @@ const TeacherDetails = () => {
       className="min-h-screen relative overflow-hidden"
       style={{ 
         fontFamily: "'DM Sans', -apple-system, sans-serif",
-        background: 'linear-gradient(165deg, #fef7f7 0%, #faf5f3 25%, #f9f6f4 50%, #faf4f2 75%, #fcf8f7 100%)',
+        background: '#ffffff',
       }}
     >
       {/* Ambient background shapes */}
