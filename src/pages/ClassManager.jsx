@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Plus, Calendar, User, Sparkles, Users } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, User, Sparkles, Users, ChevronDown, Clock } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import ImportScheduleModal from '../components/manager/ImportScheduleModal';
 import StudentRecommender from '../components/manager/StudentRecommender';
@@ -68,6 +68,7 @@ export default function ClassManager() {
   const [attendanceClass, setAttendanceClass] = useState(null);
   const [selectedDay, setSelectedDay] = useState('M');
   const [viewMode, setViewMode] = useState('room'); // 'room' or 'teacher'
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
   const scrollContainerRef = useRef(null);
 
   const { data: classes = [] } = useQuery({
@@ -105,6 +106,15 @@ export default function ClassManager() {
   }, [selectedDay, classes.length]);
 
   const dayClasses = classes.filter(c => c.day === selectedDay);
+
+  // Daily summary calculations
+  const totalClasses = dayClasses.length;
+  const totalHours = dayClasses.reduce((sum, c) => sum + (c.duration || 1), 0);
+  const totalStudents = new Set(dayClasses.flatMap(c => c.student_names || [])).size;
+  const uniqueTeachers = new Set(dayClasses.map(c => c.teacher).filter(Boolean)).size;
+  const roomUtilization = rooms.length > 0 
+    ? Math.round((new Set(dayClasses.map(c => c.room).filter(Boolean)).size / rooms.length) * 100)
+    : 0;
 
   const getClassStyle = (cls) => {
     const startHour = cls.start_time;
@@ -196,6 +206,76 @@ export default function ClassManager() {
           </Button>
         </div>
       </div>
+
+      {/* Collapsible Daily Summary */}
+      {classes.length > 0 && (
+        <div 
+          className="mx-6 mt-4 rounded-2xl overflow-hidden transition-all"
+          style={{
+            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.9) 0%, rgba(252, 238, 235, 0.85) 100%)',
+            border: '1px solid rgba(255, 200, 200, 0.3)',
+            boxShadow: '0 2px 12px rgba(180, 120, 120, 0.06)',
+          }}
+        >
+          {/* Summary Header - Always Visible */}
+          <button
+            onClick={() => setSummaryExpanded(!summaryExpanded)}
+            className="w-full px-5 py-3 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-6">
+              <span className="text-sm font-medium" style={{ color: colors.muted }}>
+                {DAY_NAMES[selectedDay]}
+              </span>
+              <div className="flex items-center gap-4">
+                <span className="text-sm" style={{ color: colors.etchDark }}>
+                  <span className="font-semibold">{totalClasses}</span> classes
+                </span>
+                <span style={{ color: colors.border }}>·</span>
+                <span className="text-sm" style={{ color: colors.etchDark }}>
+                  <span className="font-semibold">{totalHours}</span> hrs
+                </span>
+                <span style={{ color: colors.border }}>·</span>
+                <span className="text-sm" style={{ color: colors.etchDark }}>
+                  <span className="font-semibold">{totalStudents}</span> students
+                </span>
+              </div>
+            </div>
+            <ChevronDown 
+              className={`w-4 h-4 transition-transform ${summaryExpanded ? 'rotate-180' : ''}`} 
+              style={{ color: colors.muted }} 
+            />
+          </button>
+
+          {/* Expanded Details */}
+          {summaryExpanded && (
+            <div 
+              className="px-5 pb-4 pt-2 grid grid-cols-2 md:grid-cols-4 gap-4"
+              style={{ borderTop: '1px solid rgba(200, 180, 170, 0.15)' }}
+            >
+              <div className="text-center p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.5)' }}>
+                <div className="text-2xl font-light" style={{ color: colors.etchDark }}>{uniqueTeachers}</div>
+                <div className="text-xs" style={{ color: colors.muted }}>Teachers</div>
+              </div>
+              <div className="text-center p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.5)' }}>
+                <div className="text-2xl font-light" style={{ color: colors.etchDark }}>{roomUtilization}%</div>
+                <div className="text-xs" style={{ color: colors.muted }}>Room Usage</div>
+              </div>
+              <div className="text-center p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.5)' }}>
+                <div className="text-2xl font-light" style={{ color: colors.etchDark }}>
+                  {dayClasses.length > 0 ? formatTime(Math.min(...dayClasses.map(c => c.start_time))) : '—'}
+                </div>
+                <div className="text-xs" style={{ color: colors.muted }}>First Class</div>
+              </div>
+              <div className="text-center p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.5)' }}>
+                <div className="text-2xl font-light" style={{ color: colors.etchDark }}>
+                  {dayClasses.length > 0 ? formatTime(Math.max(...dayClasses.map(c => c.start_time + (c.duration || 1)))) : '—'}
+                </div>
+                <div className="text-xs" style={{ color: colors.muted }}>Last Class</div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Schedule Grid */}
       {classes.length === 0 ? (
