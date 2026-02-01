@@ -14,7 +14,6 @@ const colors = {
 
 export default function PerformanceTimeline({ milestones = [], showDate, onMilestoneUpdate }) {
     const [expanded, setExpanded] = useState(true);
-    const scrollRef = useRef(null);
     const today = startOfDay(new Date());
     const showDay = showDate ? startOfDay(parseISO(showDate)) : null;
     
