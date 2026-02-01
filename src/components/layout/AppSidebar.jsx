@@ -58,8 +58,8 @@ export default function AppSidebar({ className = "", onSearchClick }) {
   return (
     <motion.div 
       initial={false}
-      animate={{ width: collapsed ? 80 : 200 }}
-      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      animate={{ width: collapsed ? 80 : 220 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className={`relative flex flex-col py-6 m-4 h-[calc(100dvh-32px)] sticky top-4 overflow-hidden ${className}`}
       style={{
         background: 'linear-gradient(180deg, rgba(253,238,236,0.95) 0%, rgba(250,232,228,0.9) 50%, rgba(252,243,240,0.95) 100%)',
@@ -115,13 +115,13 @@ export default function AppSidebar({ className = "", onSearchClick }) {
             S
           </span>
         </div>
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {!collapsed && (
             <motion.span
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1 }}
               className="ml-3 text-lg font-bold tracking-tight"
               style={{ 
                 color: 'transparent',
@@ -154,12 +154,12 @@ export default function AppSidebar({ className = "", onSearchClick }) {
                 }}
               >
                 <Search className="w-[18px] h-[18px] flex-shrink-0" style={{ color: colors.muted, filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))' }} />
-                <AnimatePresence>
+                <AnimatePresence mode="wait">
                   {!collapsed && (
                     <motion.div
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
                       className="flex items-center justify-between flex-1 ml-3"
                     >
                       <span 
@@ -224,13 +224,13 @@ export default function AppSidebar({ className = "", onSearchClick }) {
                           filter: active ? 'drop-shadow(0 1px 0 rgba(255,255,255,0.7))' : 'none',
                         }} 
                       />
-                      <AnimatePresence>
+                      <AnimatePresence mode="wait">
                         {!collapsed && (
                           <motion.span
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -10 }}
-                            transition={{ duration: 0.15 }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.1 }}
                             className="ml-3 text-sm font-bold tracking-tight"
                             style={{ 
                               color: 'transparent',
@@ -289,12 +289,12 @@ export default function AppSidebar({ className = "", onSearchClick }) {
             {currentUser?.full_name?.charAt(0) || 'S'}
           </AvatarFallback>
         </Avatar>
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {!collapsed && (
             <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="flex-1 min-w-0"
             >
               <p className="text-sm font-medium truncate" style={{ color: '#8b7d72' }}>
