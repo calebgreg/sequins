@@ -324,7 +324,7 @@ export default function ClassManager() {
                                 <Link
                                   key={cls.id}
                                   to={`${createPageUrl('ClassDetail')}?id=${cls.id}`}
-                                  className="absolute left-2 right-2 rounded-2xl p-4 transition-all cursor-pointer overflow-hidden block hover:scale-[1.02]"
+                                  className="absolute left-2 right-2 rounded-2xl p-3 transition-all cursor-pointer overflow-hidden block hover:scale-[1.02] flex items-center justify-center"
                                   style={{
                                     ...style,
                                     background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
@@ -334,7 +334,7 @@ export default function ClassManager() {
                                     boxShadow: '0 4px 16px rgba(180, 120, 120, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
                                   }}
                                 >
-                                  <EtchedText size="md" className="block truncate">{cls.title}</EtchedText>
+                                  <EtchedText size="sm" className="block truncate text-center">{cls.title}</EtchedText>
                                 </Link>
                               );
                             })}
