@@ -15,6 +15,7 @@ import { useSearchParams } from 'react-router-dom';
 export default function Settings() {
   const [searchParams, setSearchParams] = useSearchParams();
   const showWizard = searchParams.get('wizard') === 'rooms';
+  const showBillingWizard = searchParams.get('wizard') === 'billing';
 
   if (showWizard) {
     return <RoomSetupWizard onComplete={() => setSearchParams({})} />;
