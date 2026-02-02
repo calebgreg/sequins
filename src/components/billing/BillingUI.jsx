@@ -251,20 +251,20 @@ export function BillingOverview({ onSelectFamily }) {
       : families.filter(f => f.status === 'overdue' || f.status === 'failed');
 
   return (
-    <div className="min-h-screen p-8" style={{ backgroundColor: colors.paper }}>
+    <div className="min-h-screen p-4 md:p-8" style={{ backgroundColor: colors.paper }}>
       <div className="max-w-5xl mx-auto">
         
         {/* Header */}
-        <div className="flex items-end justify-between mb-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 md:mb-10">
           <div>
             <p className="text-sm font-medium mb-1" style={{ color: colors.muted }}>
               {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </p>
-            <h1 className="text-4xl font-bold" style={{ color: colors.ink, letterSpacing: '-0.02em' }}>Billing</h1>
+            <h1 className="text-3xl md:text-4xl font-bold" style={{ color: colors.ink, letterSpacing: '-0.02em' }}>Billing</h1>
           </div>
           <Link
             to={createPageUrl('RunBilling')}
-            className="flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white transition-all hover:opacity-90"
+            className="flex items-center justify-center gap-2 px-5 md:px-6 py-2.5 md:py-3 rounded-full font-semibold text-white transition-all hover:opacity-90 text-sm md:text-base"
             style={{ backgroundColor: colors.ink }}
           >
             <Play className="w-4 h-4 fill-current" />
@@ -274,16 +274,16 @@ export function BillingOverview({ onSelectFamily }) {
 
         {/* Stats Cards - Frosted Glass Style */}
         <div 
-          className="rounded-3xl p-8 mb-8"
+          className="rounded-2xl md:rounded-3xl p-4 md:p-8 mb-6 md:mb-8"
           style={{ 
             backgroundColor: '#fef7f7',
             boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
           }}
         >
-          <div className="text-center mb-6">
-            <p className="text-sm mb-2" style={{ color: colors.muted }}>{families.length} families</p>
+          <div className="text-center mb-4 md:mb-6">
+            <p className="text-sm mb-1 md:mb-2" style={{ color: colors.muted }}>{families.length} families</p>
             <p 
-              className="text-5xl font-bold tracking-tight"
+              className="text-3xl md:text-5xl font-bold tracking-tight"
               style={{ 
                 color: 'transparent',
                 backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
@@ -297,26 +297,26 @@ export function BillingOverview({ onSelectFamily }) {
             </p>
           </div>
 
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-center gap-2 md:gap-3">
             <div 
-              className="px-6 py-4 rounded-2xl text-center min-w-[100px]"
+              className="px-3 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl text-center flex-1 max-w-[120px]"
               style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
             >
-              <p className="text-2xl font-bold" style={{ color: colors.ink }}>${stats.collected.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+              <p className="text-lg md:text-2xl font-bold" style={{ color: colors.ink }}>${stats.collected.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
               <p className="text-xs mt-0.5" style={{ color: colors.muted }}>collected</p>
             </div>
             <div 
-              className="px-6 py-4 rounded-2xl text-center min-w-[100px]"
+              className="px-3 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl text-center flex-1 max-w-[120px]"
               style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
             >
-              <p className="text-2xl font-bold" style={{ color: colors.ink }}>${stats.pending.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+              <p className="text-lg md:text-2xl font-bold" style={{ color: colors.ink }}>${stats.pending.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
               <p className="text-xs mt-0.5" style={{ color: colors.muted }}>pending</p>
             </div>
             <div 
-              className="px-6 py-4 rounded-2xl text-center min-w-[100px]"
+              className="px-3 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl text-center flex-1 max-w-[120px]"
               style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
             >
-              <p className="text-2xl font-bold" style={{ color: colors.ink }}>${stats.overdue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+              <p className="text-lg md:text-2xl font-bold" style={{ color: colors.ink }}>${stats.overdue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
               <p className="text-xs mt-0.5" style={{ color: colors.muted }}>outstanding</p>
             </div>
           </div>
@@ -325,7 +325,7 @@ export function BillingOverview({ onSelectFamily }) {
 
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-4 md:mb-6 overflow-x-auto pb-2">
           {[
             { id: 'all', label: 'All families', count: families.length },
             { id: 'pending', label: 'Pending', count: families.filter(f => f.status === 'pending' || f.status === 'sent' || f.status === 'draft').length },
@@ -351,61 +351,72 @@ export function BillingOverview({ onSelectFamily }) {
         {/* Family List */}
         <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           {filtered.length === 0 ? (
-            <div className="p-12 text-center" style={{ color: colors.muted }}>
+            <div className="p-8 md:p-12 text-center" style={{ color: colors.muted }}>
               No families found
             </div>
           ) : filtered.map((family, i) => (
             <button
               key={family.email}
               onClick={() => onSelectFamily(family)}
-              className="w-full flex items-center gap-4 px-6 py-4 text-left transition-colors hover:bg-gray-50"
+              className="w-full flex flex-col md:flex-row md:items-center gap-2 md:gap-4 px-4 md:px-6 py-4 text-left transition-colors hover:bg-gray-50"
               style={{ borderTop: i > 0 ? `1px solid ${colors.border}` : undefined }}
             >
-              {/* Avatar */}
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold"
-                style={{ backgroundColor: colors.warm, color: colors.ink }}
-              >
-                {family.displayName[0]?.toUpperCase()}
-              </div>
-              
-              {/* Name & Students */}
-              <div className="flex-1 min-w-0 flex items-center">
-                <p className="font-semibold w-44" style={{ color: colors.ink }}>{family.displayName}</p>
-                <p className="text-sm" style={{ color: colors.muted }}>
-                  {family.studentFirstNames}
-                </p>
-              </div>
-              
-              {/* Autopay indicator */}
-              {family.autopay && (
-                <div className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: colors.warm, color: colors.muted }}>
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Auto
+              {/* Top row on mobile: Avatar, Name, Arrow */}
+              <div className="flex items-center gap-3 w-full md:w-auto md:flex-1 md:min-w-0">
+                {/* Avatar */}
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0"
+                  style={{ backgroundColor: colors.warm, color: colors.ink }}
+                >
+                  {family.displayName[0]?.toUpperCase()}
                 </div>
-              )}
-              
-              {/* Amount */}
-              <Money amount={family.amount} />
-              
-              {/* Status */}
-              <div className="w-32 flex justify-end">
-                <StatusChip 
-                  status={family.status} 
-                  detail={
-                    family.status === 'paid' ? family.paidDate :
-                    family.status === 'overdue' ? `${family.daysPastDue}d` :
-                    family.status === 'failed' ? 'Retry' : undefined
-                  }
-                />
+                
+                {/* Name & Students */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold truncate" style={{ color: colors.ink }}>{family.displayName}</p>
+                  <p className="text-sm truncate" style={{ color: colors.muted }}>
+                    {family.studentFirstNames}
+                  </p>
+                </div>
+
+                {/* Arrow - visible on mobile at end of top row */}
+                <svg className="w-5 h-5 md:hidden shrink-0" style={{ color: colors.muted }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                </svg>
               </div>
-              
-              {/* Arrow */}
-              <svg className="w-5 h-5" style={{ color: colors.muted }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-              </svg>
+
+              {/* Bottom row on mobile: Amount, Status, Autopay */}
+              <div className="flex items-center gap-3 ml-13 md:ml-0 pl-[52px] md:pl-0">
+                {/* Autopay indicator */}
+                {family.autopay && (
+                  <div className="hidden md:flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: colors.warm, color: colors.muted }}>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Auto
+                  </div>
+                )}
+                
+                {/* Amount */}
+                <Money amount={family.amount} />
+                
+                {/* Status */}
+                <div className="md:w-32 flex justify-end">
+                  <StatusChip 
+                    status={family.status} 
+                    detail={
+                      family.status === 'paid' ? family.paidDate :
+                      family.status === 'overdue' ? `${family.daysPastDue}d` :
+                      family.status === 'failed' ? 'Retry' : undefined
+                    }
+                  />
+                </div>
+                
+                {/* Arrow - hidden on mobile, visible on desktop */}
+                <svg className="w-5 h-5 hidden md:block" style={{ color: colors.muted }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
             </button>
           ))}
         </div>
@@ -904,22 +915,23 @@ export function ParentBillView({ parentEmail }) {
 // ============================================
 
 const ViewSwitcher = ({ view, onViewChange }) => (
-  <div className="fixed top-4 right-4 z-50 flex gap-1 p-1 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
+  <div className="fixed top-4 right-4 z-50 flex gap-1 p-1 rounded-full max-w-[calc(100%-2rem)] overflow-x-auto" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
     {[
-      { id: 'overview', label: 'Admin: Overview' },
-      { id: 'detail', label: 'Admin: Family' },
-      { id: 'parent', label: 'Parent View' },
+      { id: 'overview', label: 'Overview', labelShort: 'Overview' },
+      { id: 'detail', label: 'Admin: Family', labelShort: 'Family' },
+      { id: 'parent', label: 'Parent View', labelShort: 'Parent' },
     ].map(v => (
       <button
         key={v.id}
         onClick={() => onViewChange(v.id)}
-        className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+        className="px-2 md:px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap"
         style={{ 
           backgroundColor: view === v.id ? '#fff' : 'transparent',
           color: view === v.id ? '#000' : '#fff',
         }}
       >
-        {v.label}
+        <span className="hidden md:inline">{v.label}</span>
+        <span className="md:hidden">{v.labelShort}</span>
       </button>
     ))}
   </div>
