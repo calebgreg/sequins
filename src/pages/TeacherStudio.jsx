@@ -27,10 +27,10 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
   const displayClasses = myClasses.length > 0 ? myClasses : classes;
 
   return (
-    <div className="space-y-6">
-      <div className="mb-8">
+    <div className="space-y-4 md:space-y-6">
+      <div className="mb-6 md:mb-8">
         <h1 
-          className="text-3xl font-bold tracking-tight"
+          className="text-2xl md:text-3xl font-bold tracking-tight"
           style={{ 
             color: 'transparent',
             backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
@@ -51,39 +51,39 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
             onClick={() => onSelectClass(cls)}
-            className="rounded-2xl p-5 flex items-center justify-between cursor-pointer transition-all hover:scale-[1.01]"
+            className="rounded-2xl p-4 md:p-5 flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] md:hover:scale-[1.01]"
             style={{
               background: 'rgba(255,255,255,0.5)',
               boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 16px -8px rgba(180,150,140,0.15)',
             }}
           >
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
               <div 
-                className="w-14 h-14 rounded-xl flex items-center justify-center"
+                className="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{
                   background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
                   boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
                 }}
               >
-                <span className="text-lg font-medium" style={{ color: '#c9a99c' }}>
+                <span className="text-base md:text-lg font-medium" style={{ color: '#c9a99c' }}>
                   {cls.title.charAt(0)}
                 </span>
               </div>
               
-              <div>
-                <h3 className="font-medium" style={{ color: '#8b7d72' }}>{cls.title}</h3>
-                <p className="text-sm mt-0.5" style={{ color: '#b5a599' }}>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-medium truncate" style={{ color: '#8b7d72' }}>{cls.title}</h3>
+                <p className="text-xs md:text-sm mt-0.5 truncate" style={{ color: '#b5a599' }}>
                   {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {cls.duration || 1}hr · {cls.student_names?.length || 0} students
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
+            <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+              <div className="hidden sm:flex -space-x-2">
                 {cls.student_names?.slice(0, 3).map((name, i) => (
                   <div 
                     key={i} 
-                    className="w-8 h-8 rounded-full flex items-center justify-center border-2 border-white"
+                    className="w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center border-2 border-white"
                     style={{ background: 'rgba(244,206,206,0.4)' }}
                   >
                     <span className="text-xs" style={{ color: '#a8998e' }}>{name.charAt(0)}</span>
