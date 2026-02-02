@@ -221,46 +221,64 @@ export default function StudentCommunicationTab({ student, className = "" }) {
     };
 
     return (
-        <div className={`grid grid-cols-1 lg:grid-cols-12 gap-6 ${className || 'h-[600px]'}`}>
-            {/* Left: History & Context (4 cols) */}
+        <div className={`grid grid-cols-1 lg:grid-cols-12 gap-4 ${className || 'min-h-[500px]'}`}>
+            {/* Left: History (4 cols) */}
             <div className="lg:col-span-4 flex flex-col gap-4">
-                <div className="bg-white rounded-[24px] p-6 shadow-sm flex-1 flex flex-col overflow-hidden">
+                <div 
+                    className="rounded-2xl p-5 flex-1 flex flex-col overflow-hidden"
+                    style={{
+                        background: 'linear-gradient(145deg, rgba(253,238,236,0.6) 0%, rgba(250,232,228,0.4) 100%)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                    }}
+                >
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-serif text-lg text-[#333333] flex items-center gap-2">
-                            <History className="w-4 h-4" /> Message History
+                        <h3 className="text-base font-medium flex items-center gap-2" style={{ color: '#8b7d72' }}>
+                            <History className="w-4 h-4" /> History
                         </h3>
-                        <Badge variant="secondary" className="bg-[#F4F4F6] text-gray-500">
+                        <span 
+                            className="text-xs px-2 py-0.5 rounded-full"
+                            style={{ background: 'rgba(255,255,255,0.5)', color: '#b5a599' }}
+                        >
                             {messages.length}
-                        </Badge>
+                        </span>
                     </div>
 
                     <ScrollArea className="flex-1 -mx-2 px-2">
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             {messages.length === 0 && (
-                                <div className="text-center text-gray-400 py-10 text-sm">
-                                    No communication history yet.
+                                <div className="text-center py-8" style={{ color: '#b5a599' }}>
+                                    <span className="text-xl block mb-2">✉</span>
+                                    No messages yet
                                 </div>
                             )}
                             {messages.map((msg) => (
-                                <div key={msg.id} className="group flex flex-col gap-1 p-3 rounded-xl hover:bg-[#F4F4F6] transition-colors border border-transparent hover:border-gray-100">
+                                <div 
+                                    key={msg.id} 
+                                    className="flex flex-col gap-1 p-3 rounded-xl transition-all hover:scale-[1.01]"
+                                    style={{ background: 'rgba(255,255,255,0.5)' }}
+                                >
                                     <div className="flex justify-between items-start">
-                                        <div className="font-medium text-sm text-[#333333] truncate pr-2">
+                                        <div className="font-medium text-sm truncate pr-2" style={{ color: '#8b7d72' }}>
                                             {msg.subject || '(No Subject)'}
                                         </div>
-                                        <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                                        <span className="text-[10px] whitespace-nowrap" style={{ color: '#c4b5ab' }}>
                                             {format(new Date(msg.created_date), 'MMM d')}
                                         </span>
                                     </div>
-                                    <div className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                                    <div className="text-xs line-clamp-2 leading-relaxed" style={{ color: '#a8998e' }}>
                                         {msg.content}
                                     </div>
                                     <div className="flex items-center gap-2 mt-1">
-                                        {msg.direction === 'outbound' ? (
-                                            <Badge variant="outline" className="text-[9px] h-4 px-1 bg-blue-50 text-blue-600 border-blue-100">Sent</Badge>
-                                        ) : (
-                                            <Badge variant="outline" className="text-[9px] h-4 px-1 bg-green-50 text-green-600 border-green-100">Received</Badge>
-                                        )}
-                                        <span className="text-[10px] text-gray-300 capitalize">{msg.channel}</span>
+                                        <span 
+                                            className="text-[9px] px-1.5 py-0.5 rounded-full"
+                                            style={{
+                                                background: msg.direction === 'outbound' ? 'rgba(100,150,200,0.15)' : 'rgba(126,184,154,0.15)',
+                                                color: msg.direction === 'outbound' ? '#6090b5' : '#7eb89a',
+                                            }}
+                                        >
+                                            {msg.direction === 'outbound' ? 'Sent' : 'Received'}
+                                        </span>
+                                        <span className="text-[10px] capitalize" style={{ color: '#d4c4ba' }}>{msg.channel}</span>
                                     </div>
                                 </div>
                             ))}
@@ -271,139 +289,181 @@ export default function StudentCommunicationTab({ student, className = "" }) {
 
             {/* Right: Composer (8 cols) */}
             <div className="lg:col-span-8 flex flex-col gap-4">
-                <div className="bg-white rounded-[32px] p-8 shadow-sm flex-1 flex flex-col relative overflow-hidden">
-                    {/* Background decoration */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                <div 
+                    className="rounded-2xl p-6 flex-1 flex flex-col relative overflow-hidden"
+                    style={{
+                        background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 15px 50px -15px rgba(180,150,140,0.15)',
+                    }}
+                >
+                    {/* Inner glow */}
+                    <div 
+                        className="absolute inset-0 rounded-2xl pointer-events-none"
+                        style={{
+                            background: 'radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.3) 0%, transparent 50%)',
+                        }}
+                    />
 
                     <div className="relative z-10 flex flex-col h-full">
-                        <div className="flex justify-between items-start mb-6">
-                            <div>
-                                <h3 className="font-serif text-2xl text-[#333333] mb-1">Composer</h3>
-                            </div>
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-lg font-medium" style={{ color: '#8b7d72' }}>Compose Message</h3>
                             
-                            {/* AI Cheat Codes */}
-                            <div className="flex gap-2">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                            {/* AI Buttons */}
+                            <div className="flex gap-1.5">
+                                <button 
                                     onClick={() => generateDraft('praise')}
                                     disabled={isGenerating}
-                                    className="rounded-full border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all hover:scale-105 disabled:opacity-50"
+                                    style={{
+                                        background: 'rgba(164,139,196,0.15)',
+                                        color: '#8b7d9a',
+                                    }}
                                 >
-                                    <Sparkles className="w-3 h-3 mr-1" /> Praise
-                                </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                                    <Sparkles className="w-3 h-3" /> Praise
+                                </button>
+                                <button 
                                     onClick={() => generateDraft('retention')}
                                     disabled={isGenerating}
-                                    className="rounded-full border-pink-100 text-pink-600 hover:bg-pink-50"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all hover:scale-105 disabled:opacity-50"
+                                    style={{
+                                        background: 'rgba(200,170,156,0.15)',
+                                        color: '#c8aa9c',
+                                    }}
                                 >
-                                    <Heart className="w-3 h-3 mr-1" /> Retention
-                                </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                                    <Heart className="w-3 h-3" /> Check-in
+                                </button>
+                                <button 
                                     onClick={() => generateDraft('upsell')}
                                     disabled={isGenerating}
-                                    className="rounded-full border-emerald-100 text-emerald-600 hover:bg-emerald-50"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all hover:scale-105 disabled:opacity-50"
+                                    style={{
+                                        background: 'rgba(126,184,154,0.15)',
+                                        color: '#7eb89a',
+                                    }}
                                 >
-                                    <TrendingUp className="w-3 h-3 mr-1" /> Upsell
-                                </Button>
+                                    <TrendingUp className="w-3 h-3" /> Upsell
+                                </button>
                             </div>
                         </div>
 
-                        <div className="space-y-4 flex-1 flex flex-col">
-                            <div className="space-y-2">
-                                <Input 
-                                    placeholder="Subject line..." 
-                                    value={subject}
-                                    onChange={(e) => setSubject(e.target.value)}
-                                    className="font-medium border-gray-100 bg-[#F9FAFB] focus:bg-white transition-all text-lg h-12 rounded-xl"
-                                />
-                            </div>
+                        <div className="space-y-3 flex-1 flex flex-col">
+                            <input 
+                                placeholder="Subject line..." 
+                                value={subject}
+                                onChange={(e) => setSubject(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl text-base font-medium transition-all focus:outline-none focus:ring-2"
+                                style={{
+                                    background: 'rgba(255,255,255,0.6)',
+                                    border: '1px solid rgba(200,180,170,0.2)',
+                                    color: '#8b7d72',
+                                }}
+                            />
                             
                             <div className="relative flex-1">
-                                <Textarea 
-                                    placeholder="Write your message here... or use the AI buttons above to draft something magic." 
+                                <textarea 
+                                    placeholder="Write your message here..." 
                                     value={messageBody}
                                     onChange={(e) => setMessageBody(e.target.value)}
-                                    className="h-full min-h-[200px] border-gray-100 bg-[#F9FAFB] focus:bg-white transition-all resize-none p-4 text-base rounded-xl leading-relaxed"
+                                    className="w-full h-full min-h-[160px] px-4 py-3 rounded-xl text-sm transition-all resize-none leading-relaxed focus:outline-none focus:ring-2"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.6)',
+                                        border: '1px solid rgba(200,180,170,0.2)',
+                                        color: '#8b7d72',
+                                    }}
                                 />
                                 {isGenerating && (
-                                    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-xl z-20">
+                                    <div 
+                                        className="absolute inset-0 flex items-center justify-center rounded-xl z-20"
+                                        style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(4px)' }}
+                                    >
                                         <div className="flex flex-col items-center gap-2">
-                                            <Sparkles className="w-8 h-8 text-indigo-500 animate-spin" />
-                                            <span className="text-indigo-600 font-medium animate-pulse">Drafting magic...</span>
+                                            <Sparkles className="w-6 h-6 animate-spin" style={{ color: '#8b7d9a' }} />
+                                            <span className="text-sm font-medium animate-pulse" style={{ color: '#8b7d9a' }}>Drafting...</span>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="pt-2 space-y-4">
-                                {/* Broadcast Toggles */}
-                                <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-2 mr-1">Broadcast To:</span>
+                            <div className="space-y-3">
+                                {/* Channel Toggles */}
+                                <div 
+                                    className="flex items-center gap-2 p-2 rounded-xl"
+                                    style={{ background: 'rgba(255,255,255,0.4)' }}
+                                >
+                                    <span className="text-[10px] font-bold uppercase tracking-wider ml-2 mr-1" style={{ color: '#c4b5ab' }}>Send via:</span>
                                     
                                     <button
                                         onClick={() => toggleChannel('email')}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                                            channels.email 
-                                            ? 'bg-blue-100 text-blue-700 shadow-sm ring-2 ring-blue-500/20' 
-                                            : 'bg-white text-gray-400 hover:bg-gray-100'
-                                        }`}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                                        style={{
+                                            background: channels.email ? 'rgba(100,150,200,0.2)' : 'rgba(255,255,255,0.5)',
+                                            color: channels.email ? '#6090b5' : '#b5a599',
+                                            boxShadow: channels.email ? 'inset 0 1px 1px rgba(255,255,255,0.8)' : 'none',
+                                        }}
                                     >
-                                        <Mail className="w-4 h-4" /> Email
+                                        <Mail className="w-3.5 h-3.5" /> Email
                                     </button>
 
                                     <button
                                         onClick={() => toggleChannel('sms')}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                                            channels.sms 
-                                            ? 'bg-purple-100 text-purple-700 shadow-sm ring-2 ring-purple-500/20' 
-                                            : 'bg-white text-gray-400 hover:bg-gray-100'
-                                        }`}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                                        style={{
+                                            background: channels.sms ? 'rgba(164,139,196,0.2)' : 'rgba(255,255,255,0.5)',
+                                            color: channels.sms ? '#8b7d9a' : '#b5a599',
+                                            boxShadow: channels.sms ? 'inset 0 1px 1px rgba(255,255,255,0.8)' : 'none',
+                                        }}
                                     >
-                                        <Smartphone className="w-4 h-4" /> Text / SMS
+                                        <Smartphone className="w-3.5 h-3.5" /> SMS
                                     </button>
 
                                     <button
                                         onClick={() => toggleChannel('portal')}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                                            channels.portal 
-                                            ? 'bg-orange-100 text-orange-700 shadow-sm ring-2 ring-orange-500/20' 
-                                            : 'bg-white text-gray-400 hover:bg-gray-100'
-                                        }`}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                                        style={{
+                                            background: channels.portal ? 'rgba(212,165,116,0.2)' : 'rgba(255,255,255,0.5)',
+                                            color: channels.portal ? '#d4a574' : '#b5a599',
+                                            boxShadow: channels.portal ? 'inset 0 1px 1px rgba(255,255,255,0.8)' : 'none',
+                                        }}
                                     >
-                                        <Bell className="w-4 h-4" /> Family Room
+                                        <Bell className="w-3.5 h-3.5" /> Portal
                                     </button>
                                 </div>
 
                                 <div className="flex justify-between items-center">
-                                    <div className="text-xs text-gray-400">
-                                        <span className="font-medium">Pro Tip:</span> Personalize the AI drafts before sending!
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <Button 
-                                            variant="ghost" 
-                                            onClick={() => { setSubject(''); setMessageBody(''); }}
-                                            className="text-gray-400 hover:text-red-500"
-                                        >
-                                            Clear
-                                        </Button>
-                                        <Button 
-                                            onClick={handleSend} 
-                                            disabled={sendMessageMutation.isPending || !subject || !messageBody || (!channels.email && !channels.sms && !channels.portal)}
-                                            className="bg-[#333333] text-white hover:bg-black rounded-full px-8 shadow-lg hover:shadow-xl transition-all"
+                                    <button 
+                                        onClick={() => { setSubject(''); setMessageBody(''); }}
+                                        className="text-xs transition-colors hover:opacity-70"
+                                        style={{ color: '#c4b5ab' }}
+                                    >
+                                        Clear
+                                    </button>
+                                    <button 
+                                        onClick={handleSend} 
+                                        disabled={sendMessageMutation.isPending || !subject || !messageBody || (!channels.email && !channels.sms && !channels.portal)}
+                                        className="px-6 py-2.5 rounded-xl text-sm font-bold tracking-tight transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                                        style={{
+                                            background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+                                            boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+                                            border: '1px solid rgba(255, 220, 210, 0.5)',
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                                                backgroundClip: 'text',
+                                                WebkitBackgroundClip: 'text',
+                                                color: 'transparent',
+                                            }}
+                                            className="flex items-center gap-2"
                                         >
                                             {sendMessageMutation.isPending ? (
-                                                <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                                                <RefreshCw className="w-4 h-4 animate-spin" style={{ color: '#8a7070' }} />
                                             ) : (
-                                                <Send className="w-4 h-4 mr-2" />
+                                                <Send className="w-4 h-4" style={{ color: '#8a7070' }} />
                                             )}
-                                            Send Broadcast
-                                        </Button>
-                                    </div>
+                                            Send
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
