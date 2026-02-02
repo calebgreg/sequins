@@ -88,7 +88,11 @@ export default function Students() {
   const { data: classes = [] } = useQuery({
     queryKey: ['classes'],
     queryFn: () => base44.entities.DanceClass.list(),
-    enabled: !!aiFilter?.class_filters // Only fetch if we need to filter by class
+  });
+
+  const { data: routines = [] } = useQuery({
+    queryKey: ['allRoutines'],
+    queryFn: () => base44.entities.PerformanceRoutine.list(),
   });
 
   // Handle direct student links via URL
