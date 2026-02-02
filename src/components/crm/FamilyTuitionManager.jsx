@@ -41,22 +41,7 @@ export default function FamilyTuitionManager({ family }) {
         queryFn: () => base44.entities.TuitionRule.list(),
     });
 
-    // Legacy entities for backwards compatibility
-    const { data: tuitionPlans = [] } = useQuery({
-        queryKey: ['tuition_plans'],
-        queryFn: () => base44.entities.TuitionPlan.list(),
-    });
 
-    // Mutation to assign plan
-    const updateStudentPlanMutation = useMutation({
-        mutationFn: async ({ studentId, planId }) => {
-            return base44.entities.Student.update(studentId, { tuition_plan_id: planId });
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries(['students']);
-            toast.success("Tuition plan updated");
-        }
-    });
 
     // --- Calculation Logic using TuitionRules ---
     const calculation = useMemo(() => {
