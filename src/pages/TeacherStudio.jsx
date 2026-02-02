@@ -295,20 +295,52 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
   // Notes View
   if (mode === 'notes') {
      return (
-       <div className="flex flex-col h-full bg-[#F4F4F6]">
-         <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]">
-           <div className="flex items-center gap-6">
-             <Button variant="ghost" size="icon" onClick={() => setMode('dashboard')} className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80">
-               <ArrowLeft className="w-5 h-5" />
-             </Button>
-             <div>
-               <h2 className="font-serif text-3xl text-[#333333]">Class Notes</h2>
-               <p className="text-gray-400 font-serif text-lg">Dictate or type notes for {classData.title}</p>
-             </div>
+       <div 
+         className="flex flex-col min-h-screen relative overflow-hidden"
+         style={{ 
+           fontFamily: "'DM Sans', -apple-system, sans-serif",
+           background: '#ffffff',
+         }}
+       >
+         <div 
+           className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+           style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+         />
+         <div className="relative px-8 py-8 flex items-center gap-4">
+           <button 
+             onClick={() => setMode('dashboard')} 
+             className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+             style={{
+               background: 'rgba(255,255,255,0.6)',
+               boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+               color: '#b5a599',
+             }}
+           >
+             <ArrowLeft className="w-5 h-5" />
+           </button>
+           <div>
+             <h2 
+               className="text-2xl font-bold tracking-tight"
+               style={{
+                 backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                 backgroundClip: 'text',
+                 WebkitBackgroundClip: 'text',
+                 color: 'transparent',
+               }}
+             >
+               Class Notes
+             </h2>
+             <p className="text-sm" style={{ color: '#b5a599' }}>Dictate or type notes for {classData.title}</p>
            </div>
          </div>
-         <div className="flex-1 px-8 pb-8 flex flex-col max-w-4xl mx-auto w-full">
-           <div className="bg-white rounded-[32px] p-8 shadow-sm h-full">
+         <div className="relative flex-1 px-8 pb-8 flex flex-col max-w-4xl mx-auto w-full">
+           <div 
+             className="rounded-3xl p-8 h-full"
+             style={{
+               background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+               boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 15px 50px -15px rgba(180,150,140,0.15)',
+             }}
+           >
               <VoiceNoteIntake 
                 classData={classData} 
                 students={students}
