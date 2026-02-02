@@ -657,39 +657,77 @@ export default function FamilyProfileView({ family, onBack }) {
                                         <div className="xl:col-span-1 flex flex-col gap-6 overflow-hidden">
                                             {/* Key Metrics */}
                                             <div className="grid grid-cols-2 gap-4 flex-shrink-0">
-                                                 <div className="p-4 rounded-[24px] bg-white border border-gray-100 shadow-sm">
-                                                     <div className="text-[10px] uppercase font-bold text-gray-400 mb-1">Open Balance</div>
-                                                     <div className="text-2xl font-serif text-[#333333]">${balanceDue.toLocaleString()}</div>
+                                                 <div 
+                                                     className="p-4 rounded-2xl"
+                                                     style={{
+                                                         background: 'rgba(255,255,255,0.6)',
+                                                         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                                                         border: '1px solid rgba(200,180,170,0.2)',
+                                                     }}
+                                                 >
+                                                     <div className="text-[10px] uppercase font-bold mb-1" style={{ color: '#b5a599' }}>Open Balance</div>
+                                                     <div className="text-2xl font-bold" style={{ color: balanceDue > 0 ? '#c87070' : '#8b7d72' }}>${balanceDue.toLocaleString()}</div>
                                                  </div>
-                                                 <div className="p-4 rounded-[24px] bg-white border border-gray-100 shadow-sm">
-                                                     <div className="text-[10px] uppercase font-bold text-gray-400 mb-1">LTV</div>
-                                                     <div className="text-2xl font-serif text-[#333333]">${lifetimeValue.toLocaleString()}</div>
+                                                 <div 
+                                                     className="p-4 rounded-2xl"
+                                                     style={{
+                                                         background: 'rgba(255,255,255,0.6)',
+                                                         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                                                         border: '1px solid rgba(200,180,170,0.2)',
+                                                     }}
+                                                 >
+                                                     <div className="text-[10px] uppercase font-bold mb-1" style={{ color: '#b5a599' }}>LTV</div>
+                                                     <div className="text-2xl font-bold" style={{ color: '#8b7d72' }}>${lifetimeValue.toLocaleString()}</div>
                                                  </div>
                                             </div>
 
                                             {/* Invoice History List */}
-                                            <div className="flex-1 overflow-hidden bg-white rounded-[32px] border border-gray-100 shadow-sm p-6 flex flex-col">
+                                            <div 
+                                                className="flex-1 overflow-hidden rounded-2xl p-6 flex flex-col"
+                                                style={{
+                                                    background: 'rgba(255,255,255,0.6)',
+                                                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                                                    border: '1px solid rgba(200,180,170,0.2)',
+                                                }}
+                                            >
                                                  <div className="flex items-center justify-between mb-4 flex-shrink-0">
-                                                     <h3 className="text-lg font-serif text-[#333333]">Invoice History</h3>
-                                                     <Badge variant="secondary" className="bg-gray-50 text-gray-500">{invoices.length}</Badge>
+                                                     <h3 className="text-lg font-bold" style={{ color: '#8b7d72' }}>Invoice History</h3>
+                                                     <span 
+                                                         className="text-xs px-2 py-0.5 rounded-full"
+                                                         style={{ background: 'rgba(255,255,255,0.5)', color: '#b5a599' }}
+                                                     >
+                                                         {invoices.length}
+                                                     </span>
                                                  </div>
                                                  <div className="space-y-2 overflow-y-auto flex-1 pr-2 -mr-2">
                                                     {invoices.length === 0 ? (
-                                                        <div className="text-center py-10 text-gray-400">No invoices found.</div>
+                                                        <div className="text-center py-10" style={{ color: '#b5a599' }}>No invoices found.</div>
                                                     ) : (
                                                         invoices.map(inv => (
-                                                            <div key={inv.id} className="group flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border border-gray-50 hover:border-gray-100">
+                                                            <div 
+                                                                key={inv.id} 
+                                                                className="group flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer hover:scale-[1.01]"
+                                                                style={{ 
+                                                                    background: 'rgba(255,255,255,0.5)',
+                                                                    border: '1px solid rgba(200,180,170,0.15)',
+                                                                }}
+                                                            >
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${inv.status === 'paid' ? 'bg-green-500' : inv.status === 'overdue' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+                                                                    <div 
+                                                                        className="w-2 h-2 rounded-full flex-shrink-0"
+                                                                        style={{ 
+                                                                            background: inv.status === 'paid' ? '#7eb89a' : inv.status === 'overdue' ? '#c87070' : '#d4a574'
+                                                                        }}
+                                                                    />
                                                                     <div className="min-w-0">
-                                                                        <div className="font-medium text-sm text-[#333333] truncate max-w-[120px]">{inv.title}</div>
-                                                                        <div className="text-[10px] text-gray-400">
+                                                                        <div className="font-medium text-sm truncate max-w-[120px]" style={{ color: '#8b7d72' }}>{inv.title}</div>
+                                                                        <div className="text-[10px]" style={{ color: '#b5a599' }}>
                                                                             {format(new Date(inv.issue_date), 'MMM d')}
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-right flex-shrink-0">
-                                                                    <div className="font-serif font-medium text-sm">${inv.total_amount}</div>
+                                                                    <div className="font-bold text-sm" style={{ color: '#8b7d72' }}>${inv.total_amount}</div>
                                                                 </div>
                                                             </div>
                                                         ))
