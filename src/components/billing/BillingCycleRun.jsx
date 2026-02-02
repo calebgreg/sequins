@@ -155,6 +155,19 @@ export default function BillingCycleRun({ isOpen, onOpenChange }) {
             }
          });
 
+         // 4. Apply Family Billing Adjustments (from FamilyTuitionManager)
+         const familyEntity = familyEntities.find(f => f.parent_email === family.email);
+         const adjustments = familyEntity?.billing_adjustments || [];
+         adjustments.forEach(adj => {
+            familyTotal += adj.amount; // already signed (negative for discounts)
+            familyItems.push({
+               description: adj.description,
+               amount: adj.amount,
+               student_name: adj.student_name || 'Family',
+               type: adj.type
+            });
+         });
+
          family.total = Math.max(0, familyTotal);
          family.lineItems = familyItems;
       });
