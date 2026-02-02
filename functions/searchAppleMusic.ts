@@ -26,6 +26,8 @@ Deno.serve(async (req) => {
         // Catalog search only requires developer token, no user token needed
         const appleMusicApiUrl = `https://api.music.apple.com/v1/catalog/us/search?term=${encodeURIComponent(query)}&types=songs&limit=5`;
         
+        console.log('Making request to Apple Music with token:', developerToken.substring(0, 50) + '...');
+        
         const response = await fetch(appleMusicApiUrl, {
             headers: {
                 'Authorization': `Bearer ${developerToken}`,
@@ -34,8 +36,9 @@ Deno.serve(async (req) => {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Apple Music API error:', errorText);
-            return Response.json({ error: `Apple Music API error: ${response.statusText}` }, { status: response.status });
+            console.error('Apple Music API error status:', response.status);
+            console.error('Apple Music API error body:', errorText);
+            return Response.json({ error: `Apple Music API error: ${response.statusText}`, details: errorText }, { status: response.status });
         }
 
         const data = await response.json();
