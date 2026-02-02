@@ -632,13 +632,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
         </button>
       </div>
 
-      <SubRequestModal 
-        isOpen={isSubRequestOpen}
-        onOpenChange={setIsSubRequestOpen}
-        classData={classData}
-        teacherName={currentTeacherName}
-        availableClasses={[]} 
-      />
+
     </div>
   );
       };
