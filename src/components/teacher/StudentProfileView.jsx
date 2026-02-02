@@ -87,41 +87,7 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
 
   return (
     <div className="flex flex-col h-full bg-[#F4F4F6] overflow-hidden">
-      {/* Header */}
-      <div className="flex-shrink-0 px-6 py-3 flex items-center justify-between bg-[#F4F4F6] border-b border-gray-200/50 shadow-sm">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onBack} 
-            className="bg-white rounded-full w-10 h-10 shadow-sm text-[#333333] hover:bg-white/80 transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          {/* Name removed to avoid redundancy with hero card */}
-        </div>
-        
-        <div className="flex items-center gap-2">
-           {onViewFamily && (
-              <Button 
-                  onClick={onViewFamily}
-                  variant="ghost"
-                  className="rounded-full text-gray-500 hover:text-[#333333] hover:bg-white gap-2 h-10 px-4"
-              >
-                  <Users className="w-4 h-4" /> Family Profile
-              </Button>
-           )}
-           <Button 
-              onClick={() => setIsNewEntryOpen(true)} 
-              variant="outline" 
-              className="rounded-full border-gray-200 bg-white text-[#333333] gap-2 font-serif hover:bg-[#F2DCDD] hover:border-[#F2DCDD] transition-colors h-10 px-4"
-           >
-              <Quote className="w-4 h-4" /> Log Journal
-           </Button>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4">
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 pt-4">
         <div className="max-w-6xl mx-auto space-y-4">
           
           {/* Hero Profile Card - Compact */}
