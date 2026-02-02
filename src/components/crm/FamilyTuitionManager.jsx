@@ -44,127 +44,91 @@ export default function FamilyTuitionManager({ family }) {
 
 
 
-    // --- Calculation Logic using TuitionRules ---
+    // --- Calculation Logic using calculateTuition (same as BillingUI) ---
     const calculation = useMemo(() => {
         let lines = [];
         let subtotal = 0;
         let totalSavings = 0;
         let potentialRevenue = 0;
 
-        // Sort rules by priority (higher first)
-        const activeRules = tuitionRules.filter(r => r.active !== false).sort((a, b) => (b.priority || 0) - (a.priority || 0));
-        
-        // Get specific rule types
-        const basePricingRule = activeRules.find(r => r.type === 'base_pricing');
-        const classExceptionRules = activeRules.filter(r => r.type === 'class_exception');
-        const packageRules = activeRules.filter(r => r.type === 'package');
-        const discountRulesFromTuition = activeRules.filter(r => r.type === 'discount');
-        const feeRules = activeRules.filter(r => r.type === 'fee');
+        // Convert rules to the format calculateTuition expects (same as BillingUI)
+        const rulesForCalc = tuitionRules.filter(r => r.active !== false).map(r => ({
+            ...r,
+            condition: r.conditions?.length > 0 ? { type: 'and', conditions: r.conditions.map(c => ({
+                type: c.field,
+                op: c.operator,
+                value: c.field === 'class_count' || c.field === 'duration' || c.field === 'student_index' ? Number(c.value) : c.value,
+                contains: c.value,
+                equals: c.value,
+                has: c.value,
+            })) } : { type: 'always' },
+        }));
 
-        // 1. Calculate Tuition per Student using TuitionRules ONLY
-        familyStudents.forEach(student => {
+        // Calculate per student using the same engine as BillingUI
+        familyStudents.forEach((student, idx) => {
             const studentClasses = classes.filter(c => c.student_names?.includes(student.name));
             
-            let amount = 0;
-            let breakdown = [];
-            let description = '';
+            if (studentClasses.length === 0) return;
 
-            // Use TuitionRules to calculate
-            let classTotal = 0;
-            
-            // Determine per-class rate from base_pricing rule
-            const baseRate = basePricingRule?.value?.amount || 0;
-            
-            studentClasses.forEach(cls => {
-                // Check for class-specific exceptions first
-                const exception = classExceptionRules.find(r => 
-                    r.note?.toLowerCase().includes(cls.title?.toLowerCase())
-                );
-                
-                if (exception && exception.value?.amount) {
-                    classTotal += exception.value.amount;
-                    breakdown.push(`${cls.title}: $${exception.value.amount} (special)`);
-                } else if (baseRate > 0) {
-                    // Use base pricing rule rate
-                    classTotal += baseRate;
-                    breakdown.push(`${cls.title}: $${baseRate}`);
-                } else if (cls.tuition_cost) {
-                    // Fallback to class-level cost
-                    classTotal += cls.tuition_cost;
-                    breakdown.push(`${cls.title}: $${cls.tuition_cost}`);
-                }
-            });
-            
-            amount = classTotal;
-            description = `${studentClasses.length} classes × $${baseRate || 'varies'}`;
+            // Build input for calculateTuition
+            const input = {
+                student: {
+                    name: student.name,
+                    indexInFamily: idx + 1,
+                    gender: student.gender,
+                },
+                family: {
+                    tags: student.tags || [],
+                },
+                classes: studentClasses.map(c => ({
+                    className: c.title,
+                    duration: (c.duration || 1) * 60,
+                    category: c.style,
+                })),
+            };
 
-            potentialRevenue += amount;
-            
-            lines.push({
-                type: 'tuition',
-                student_name: student.name,
-                description: description,
-                details: breakdown.join(', '),
-                amount: amount,
-                standardCost: amount
-            });
-            subtotal += amount;
-        });
+            if (rulesForCalc.length > 0) {
+                const result = calculateTuition(input, rulesForCalc);
+                
+                // Add class line items
+                result.classes.forEach(cls => {
+                    lines.push({
+                        type: 'tuition',
+                        student_name: student.name,
+                        description: cls.description,
+                        amount: cls.amount,
+                        standardCost: cls.amount
+                    });
+                    subtotal += cls.amount;
+                    potentialRevenue += cls.amount;
+                });
 
-        // 2. Apply discount rules from TuitionRules
-        discountRulesFromTuition.forEach(rule => {
-            if (rule.value) {
-                let discountAmount = 0;
-                const target = rule.value.target || 'total';
-                
-                if (rule.value.percent) {
-                    discountAmount = subtotal * (rule.value.percent / 100);
-                } else if (rule.value.amount) {
-                    discountAmount = rule.value.amount;
-                }
-                
-                if (discountAmount > 0) {
+                // Add discounts from the engine
+                result.discounts.forEach(d => {
                     lines.push({
                         type: 'discount',
-                        student_name: 'Family',
-                        description: rule.note || 'Discount',
-                        amount: -discountAmount
+                        student_name: student.name,
+                        description: d.description,
+                        amount: d.amount
                     });
-                    subtotal -= discountAmount;
-                    totalSavings += discountAmount;
-                }
-            }
-        });
+                    subtotal += d.amount; // d.amount is already negative
+                    totalSavings += Math.abs(d.amount);
+                });
 
-        // 3. Apply fee rules from TuitionRules
-        feeRules.forEach(rule => {
-            if (rule.value?.amount) {
-                const perType = rule.value.per || 'student';
-                
-                if (perType === 'family') {
+                // Add fees from the engine
+                result.fees.forEach(f => {
                     lines.push({
                         type: 'fee',
-                        student_name: 'Family',
-                        description: rule.note || 'Fee',
-                        amount: rule.value.amount
+                        student_name: student.name,
+                        description: f.description,
+                        amount: f.amount
                     });
-                    subtotal += rule.value.amount;
-                } else {
-                    // Per student
-                    familyStudents.forEach(student => {
-                        lines.push({
-                            type: 'fee',
-                            student_name: student.name,
-                            description: rule.note || 'Fee',
-                            amount: rule.value.amount
-                        });
-                        subtotal += rule.value.amount;
-                    });
-                }
+                    subtotal += f.amount;
+                });
             }
         });
 
-        // 4. Manual Items
+        // Add Manual Items
         manualItems.forEach(item => {
             const val = parseFloat(item.amount) || 0;
             const signedAmount = item.type === 'discount' ? -Math.abs(val) : Math.abs(val);
