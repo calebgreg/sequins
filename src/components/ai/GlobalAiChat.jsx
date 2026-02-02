@@ -419,7 +419,7 @@ export default function GlobalAiChat() {
 
 // Export a wrapper that provides the context properly
 export function GlobalAiChatProvider({ children }) {
-    const [selectedStudents, setSelectedStudents] = useState([]);
+    const [selectedStudents, setSelectedStudents] = React.useState([]);
     const clearSelection = () => setSelectedStudents([]);
 
     return (
