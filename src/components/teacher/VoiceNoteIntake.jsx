@@ -59,62 +59,29 @@ export default function VoiceNoteIntake({ classData, students, teacherName, onNo
   const handleAnalyze = async () => {
     if (!transcript.trim()) return;
     setIsProcessing(true);
+    setClassInsights(null);
 
     try {
-      // Filter students in this class to help the AI match names
+      // Fetch recent notes for students in this class for historical context
       const classStudents = students.filter(s => classData.student_names?.includes(s.name));
-      const studentNames = classStudents.map(s => s.name).join(', ');
+      const recentNotesPromises = classStudents.slice(0, 10).map(s => fetchStudentHistory(s.name, 3));
+      const recentNotesArrays = await Promise.all(recentNotesPromises);
+      const recentNotes = recentNotesArrays.flat();
 
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `
-          You are an expert dance education assistant. 
-          Analyze the following voice dictation from a teacher after a ${classData.title} class.
-          
-          Context:
-          - Teacher: ${teacherName}
-          - Students in class: ${studentNames}
-          
-          Task:
-          1. Identify specific feedback for individual students.
-          2. Identify general class feedback (assign to "Class Summary").
-          3. Categorize each note (Technique, Behavior, Progress, General).
-          4. Determine sentiment (Positive, Neutral, Constructive).
-          
-          Dictation:
-          "${transcript}"
-          
-          Return JSON:
-          {
-            "notes": [
-              {
-                "student_name": "Name (or 'Class Summary')",
-                "content": "Refined, professional note text",
-                "category": "technique" | "behavior" | "progress" | "general",
-                "sentiment": "positive" | "neutral" | "constructive"
-              }
-            ]
-          }
-        `,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            notes: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  student_name: { type: "string" },
-                  content: { type: "string" },
-                  category: { type: "string", enum: ["technique", "behavior", "progress", "general"] },
-                  sentiment: { type: "string", enum: ["positive", "neutral", "constructive"] }
-                }
-              }
-            }
-          }
-        }
+      // Use the powerful AI processing layer
+      const res = await processBulkNotes({
+        transcript,
+        classData,
+        students,
+        teacherName,
+        recentNotes,
       });
 
       if (res?.notes) {
+        // Store class insights for display
+        if (res.class_insights) {
+          setClassInsights(res.class_insights);
+        }
         onNotesProcessed(res.notes);
         setTranscript('');
       }
