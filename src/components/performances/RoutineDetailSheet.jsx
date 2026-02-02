@@ -291,7 +291,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                 artist: formData.artist
             });
 
-            if (data.spotify_link || data.apple_music_link) {
+            if (data.apple_music_link || data.album_artwork_url) {
                 const newLinks = {
                     apple_music_link: data.apple_music_link || formData.apple_music_link,
                     album_artwork_url: data.album_artwork_url || formData.album_artwork_url,
