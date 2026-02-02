@@ -537,17 +537,19 @@ export default function Students() {
                                        className="w-10 h-10 cursor-pointer transition-all duration-150"
                                        style={{
                                          boxShadow: isSelected 
-                                           ? `0 0 12px 3px rgba(196, 160, 160, 0.6), 0 0 20px 6px rgba(196, 160, 160, 0.3), inset 0 2px 4px rgba(0,0,0,0.2)`
+                                           ? `0 0 16px 4px rgba(255, 180, 120, 0.7), 0 0 30px 8px rgba(255, 160, 100, 0.4)`
                                            : '0 2px 8px rgba(180,150,140,0.2)',
-                                         border: isSelected ? '2px solid rgba(255,255,255,0.9)' : '2px solid rgba(255,255,255,0.8)',
-                                         transform: isSelected ? 'translateY(2px) scale(0.95)' : 'translateY(0) scale(1)',
+                                         border: '2px solid rgba(255,255,255,0.8)',
+                                         transform: isSelected ? 'translateY(1px) scale(0.97)' : 'translateY(0) scale(1)',
                                        }}
                                      >
                                         <AvatarFallback 
                                           style={{ 
-                                            background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
+                                            background: isSelected 
+                                              ? `linear-gradient(145deg, #e8a87c 0%, #d4836a 100%)`
+                                              : `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
                                             color: '#fff',
-                                            textShadow: isSelected ? '0 0 8px rgba(255,255,255,0.8)' : 'none',
+                                            textShadow: isSelected ? '0 0 12px rgba(255,255,255,0.9), 0 0 20px rgba(255,220,180,0.6)' : 'none',
                                           }}
                                         >
                                           {student.name.charAt(0)}
@@ -633,17 +635,19 @@ export default function Students() {
                                     className="w-10 h-10 cursor-pointer transition-all duration-150"
                                     style={{
                                       boxShadow: isSelected 
-                                        ? `0 0 12px 3px rgba(196, 160, 160, 0.6), 0 0 20px 6px rgba(196, 160, 160, 0.3), inset 0 2px 4px rgba(0,0,0,0.2)`
+                                        ? `0 0 16px 4px rgba(255, 180, 120, 0.7), 0 0 30px 8px rgba(255, 160, 100, 0.4)`
                                         : '0 2px 8px rgba(180,150,140,0.2)',
-                                      border: isSelected ? '2px solid rgba(255,255,255,0.9)' : '2px solid rgba(255,255,255,0.8)',
-                                      transform: isSelected ? 'translateY(2px) scale(0.95)' : 'translateY(0) scale(1)',
+                                      border: '2px solid rgba(255,255,255,0.8)',
+                                      transform: isSelected ? 'translateY(1px) scale(0.97)' : 'translateY(0) scale(1)',
                                     }}
                                   >
                                     <AvatarFallback 
                                       style={{ 
-                                        background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
+                                        background: isSelected 
+                                          ? `linear-gradient(145deg, #e8a87c 0%, #d4836a 100%)`
+                                          : `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
                                         color: '#fff',
-                                        textShadow: isSelected ? '0 0 8px rgba(255,255,255,0.8)' : 'none',
+                                        textShadow: isSelected ? '0 0 12px rgba(255,255,255,0.9), 0 0 20px rgba(255,220,180,0.6)' : 'none',
                                       }}
                                     >
                                       {student.name.charAt(0)}
