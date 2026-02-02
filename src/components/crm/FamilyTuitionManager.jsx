@@ -277,54 +277,23 @@ export default function FamilyTuitionManager({ family }) {
                     {familyStudents.map(student => {
                         const studentLines = calculation.lines.filter(l => l.student_name === student.name && l.type === 'tuition');
                         const enrolledClasses = classes.filter(c => c.student_names?.includes(student.name));
-                        const currentPlan = tuitionPlans.find(p => p.id === student.tuition_plan_id);
                         
                         return (
                             <div key={student.id} className="relative">
                                 {/* Connector Line */}
                                 <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gray-100 -z-10" />
                                 
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-[#333333] text-white flex items-center justify-center font-serif text-sm border-4 border-white shadow-sm z-10">
-                                            {student.name.charAt(0)}
-                                        </div>
-                                        <span className="font-bold text-[#333333]">{student.name}</span>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-8 h-8 rounded-full bg-[#333333] text-white flex items-center justify-center font-serif text-sm border-4 border-white shadow-sm z-10">
+                                        {student.name.charAt(0)}
                                     </div>
-                                    <Select 
-                                        value={student.tuition_plan_id || 'none'} 
-                                        onValueChange={(val) => updateStudentPlanMutation.mutate({ 
-                                            studentId: student.id, 
-                                            planId: val === 'none' ? null : val 
-                                        })}
-                                    >
-                                        <SelectTrigger className="h-7 text-xs border-gray-200 bg-white w-[140px] rounded-lg">
-                                            <SelectValue placeholder="Select Plan" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="none">Calculated (Default)</SelectItem>
-                                            {tuitionPlans.map(p => (
-                                                <SelectItem key={p.id} value={p.id}>
-                                                    <div className="flex items-center gap-2">
-                                                        {p.name} <Badge variant="secondary" className="text-[10px] h-4 px-1">${p.amount}</Badge>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <span className="font-bold text-[#333333]">{student.name}</span>
                                 </div>
 
                                 <div className="ml-10 bg-white border border-gray-100 rounded-2xl p-4 shadow-sm group hover:border-indigo-200 transition-colors">
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="text-sm font-medium text-gray-700">
-                                            {currentPlan ? (
-                                                <div className="flex items-center gap-2 text-indigo-600">
-                                                    <Crown className="w-3 h-3" />
-                                                    {currentPlan.name}
-                                                </div>
-                                            ) : (
-                                                <span>Standard Calculation</span>
-                                            )}
+                                            {studentLines[0]?.description || 'Tuition'}
                                         </div>
                                         <div className="font-bold text-[#333333]">
                                             ${studentLines.reduce((sum, l) => sum + l.amount, 0).toFixed(2)}
@@ -347,19 +316,12 @@ export default function FamilyTuitionManager({ family }) {
                                                 return (
                                                     <div key={cls.id} className="flex justify-between">
                                                         <span>{cls.title}</span>
-                                                        <span className={currentPlan ? "line-through opacity-50" : ""}>
-                                                            ${classRate.toFixed(2)}
-                                                        </span>
+                                                        <span>${classRate.toFixed(2)}</span>
                                                     </div>
                                                 );
                                             })
                                         ) : (
                                             <div className="italic">No active classes</div>
-                                        )}
-                                        {currentPlan && enrolledClasses.length > 0 && (
-                                            <div className="pt-2 mt-2 border-t border-gray-50 text-green-600 flex items-center gap-1">
-                                                <Check className="w-3 h-3" /> Covered by membership
-                                            </div>
                                         )}
                                     </div>
                                 </div>
