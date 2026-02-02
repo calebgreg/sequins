@@ -140,23 +140,51 @@ export default function FamilyProfileView({ family, onBack }) {
     }
 
     return (
-        <div className="flex flex-col h-full bg-[#F4F4F6] min-h-screen font-sans text-[#333333]">
-            {/* Minimalist Top Bar */}
-            <div className="px-4 md:px-8 py-4 md:py-6 flex flex-col md:flex-row items-start md:items-center justify-between sticky top-0 z-20 bg-[#F4F4F6]/90 backdrop-blur-xl border-b border-white/50 gap-4">
+        <div 
+            className="flex flex-col h-full min-h-screen relative overflow-hidden"
+            style={{ 
+                fontFamily: "'DM Sans', -apple-system, sans-serif",
+                background: '#ffffff',
+            }}
+        >
+            {/* Ambient background shapes */}
+            <div 
+                className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+            />
+            <div 
+                className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+            />
+
+            {/* Header */}
+            <div className="relative px-4 md:px-8 py-4 md:py-6 flex flex-col md:flex-row items-start md:items-center justify-between sticky top-0 z-20 gap-4">
                 <div className="flex items-center gap-4 md:gap-6 w-full md:w-auto">
                     <button 
                         onClick={onBack} 
-                        className="group flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm hover:scale-110 transition-all duration-300 flex-shrink-0"
+                        className="flex items-center justify-center w-10 h-10 rounded-full transition-all hover:scale-105"
+                        style={{
+                            background: 'rgba(255,255,255,0.6)',
+                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                        }}
                     >
-                        <ArrowLeft className="w-4 h-4 text-gray-400 group-hover:text-[#333333]" />
+                        <ArrowLeft className="w-4 h-4" style={{ color: '#8b7d72' }} />
                     </button>
                     <div className="min-w-0">
-                        <h1 className="text-2xl md:text-3xl font-serif text-[#333333] tracking-tight truncate">
+                        <h1 
+                            className="text-2xl md:text-3xl font-bold tracking-tight truncate"
+                            style={{ 
+                                color: 'transparent',
+                                backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                            }}
+                        >
                             The {family.parent_name.split(' ').pop()} Family
                         </h1>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] md:text-xs font-medium text-gray-400 mt-1 uppercase tracking-wider">
-                            <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> <span className="hidden sm:inline">Account ID:</span> #{family.students[0]?.id?.slice(0,6) || 'N/A'}</span>
-                            <span className="w-1 h-1 bg-gray-300 rounded-full hidden sm:block" />
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] md:text-xs font-medium mt-1 uppercase tracking-wider" style={{ color: '#b5a599' }}>
+                            <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> <span className="hidden sm:inline">Account:</span> #{family.students[0]?.id?.slice(0,6) || 'N/A'}</span>
+                            <span className="w-1 h-1 rounded-full hidden sm:block" style={{ background: '#d4c4ba' }} />
                             <span className="hidden sm:inline">Since {family.students[0]?.joined_date ? format(new Date(family.students[0].joined_date), 'yyyy') : format(new Date(), 'yyyy')}</span>
                         </div>
                     </div>
@@ -164,20 +192,28 @@ export default function FamilyProfileView({ family, onBack }) {
 
                 <div className="flex items-center justify-between w-full md:w-auto gap-3">
                     <div className="flex flex-col items-start md:items-end mr-2 md:mr-4">
-                        <span className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wider">Balance</span>
-                        <span className={`text-lg md:text-xl font-serif ${balanceDue > 0 ? 'text-red-500' : 'text-green-600'}`}>
+                        <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider" style={{ color: '#b5a599' }}>Balance</span>
+                        <span className="text-lg md:text-xl font-light" style={{ color: balanceDue > 0 ? '#c87070' : '#7eb89a' }}>
                             ${balanceDue.toLocaleString()}
                         </span>
                     </div>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button className="rounded-full bg-[#333333] text-white hover:bg-black px-4 md:px-6 shadow-lg shadow-gray-200 gap-2 text-xs md:text-sm h-10">
-                                Actions <MoreHorizontal className="w-4 h-4" />
-                            </Button>
+                            <button 
+                                className="px-4 md:px-6 py-2.5 rounded-xl text-xs md:text-sm font-bold tracking-tight transition-all hover:scale-[1.02] flex items-center gap-2"
+                                style={{
+                                    background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+                                    boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+                                    border: '1px solid rgba(255, 220, 210, 0.5)',
+                                }}
+                            >
+                                <span style={{ color: '#8a7070' }}>Actions</span>
+                                <MoreHorizontal className="w-4 h-4" style={{ color: '#8a7070' }} />
+                            </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2">
-                            <DropdownMenuLabel className="text-xs text-gray-400 uppercase tracking-wider">Family Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel className="text-xs uppercase tracking-wider" style={{ color: '#b5a599' }}>Family Actions</DropdownMenuLabel>
                             <DropdownMenuItem onClick={handleAddStudent} className="rounded-xl cursor-pointer">
                                 <Plus className="w-4 h-4 mr-2" /> Add Sibling
                             </DropdownMenuItem>
@@ -192,28 +228,46 @@ export default function FamilyProfileView({ family, onBack }) {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col p-4 md:p-8 pt-2 gap-4 md:gap-6 max-w-[1600px] mx-auto w-full">
+            <div className="relative flex-1 overflow-hidden flex flex-col p-4 md:p-8 pt-2 gap-4 md:gap-6 max-w-[1600px] mx-auto w-full">
                 
                 {/* Header Info & Nav Row */}
                 <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 md:gap-6 pb-2">
                     {/* Compact Parent Info */}
-                    <div className="flex items-center gap-4 bg-white p-2 pr-6 rounded-2xl md:rounded-full shadow-sm border border-gray-100/50 w-full xl:w-auto">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#333333] flex items-center justify-center text-white text-base md:text-lg font-serif shadow-md flex-shrink-0">
+                    <div 
+                        className="flex items-center gap-4 p-2 pr-6 rounded-2xl md:rounded-full w-full xl:w-auto"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(253,238,236,0.85) 0%, rgba(250,232,228,0.7) 100%)',
+                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                        }}
+                    >
+                        <div 
+                            className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-base md:text-lg flex-shrink-0"
+                            style={{
+                                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                                boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+                                color: '#c9a99c',
+                            }}
+                        >
                             {family.parent_name.charAt(0)}
                         </div>
                         <div className="min-w-0 flex-1">
                              <div className="flex items-center gap-2 flex-wrap">
-                                <h2 className="font-serif text-[#333333] truncate">{family.parent_name}</h2>
-                                <Badge variant="secondary" className="text-[10px] h-5 bg-gray-100 text-gray-500 flex-shrink-0">Parent</Badge>
+                                <h2 className="font-medium truncate" style={{ color: '#8b7d72' }}>{family.parent_name}</h2>
+                                <span 
+                                    className="text-[10px] h-5 px-2 rounded-full flex items-center flex-shrink-0"
+                                    style={{ background: 'rgba(255,255,255,0.5)', color: '#9a8b80' }}
+                                >
+                                    Parent
+                                </span>
                              </div>
-                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400">
-                                 <a href={`mailto:${family.email}`} className="hover:text-indigo-600 flex items-center gap-1 transition-colors truncate max-w-full">
+                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs" style={{ color: '#a8998e' }}>
+                                 <a href={`mailto:${family.email}`} className="hover:opacity-70 flex items-center gap-1 transition-colors truncate max-w-full">
                                      <Mail className="w-3 h-3 flex-shrink-0" /> {family.email}
                                  </a>
                                  {family.phone && (
                                     <>
-                                        <span className="w-0.5 h-0.5 rounded-full bg-gray-300 hidden sm:block" />
-                                        <a href={`tel:${family.phone}`} className="hover:text-indigo-600 flex items-center gap-1 transition-colors">
+                                        <span className="w-0.5 h-0.5 rounded-full hidden sm:block" style={{ background: '#d4c4ba' }} />
+                                        <a href={`tel:${family.phone}`} className="hover:opacity-70 flex items-center gap-1 transition-colors">
                                             <Phone className="w-3 h-3 flex-shrink-0" /> {family.phone}
                                         </a>
                                     </>
@@ -222,18 +276,28 @@ export default function FamilyProfileView({ family, onBack }) {
                         </div>
                     </div>
 
-                    {/* Horizontal Nav Tabs */}
-                    <nav className="flex items-center bg-white p-1.5 rounded-2xl md:rounded-full shadow-sm border border-gray-100/50 overflow-x-auto max-w-full no-scrollbar">
+                    {/* Horizontal Nav Tabs - Pill Style */}
+                    <nav 
+                        className="flex items-center gap-1 p-1.5 rounded-2xl overflow-x-auto max-w-full no-scrollbar"
+                        style={{
+                            background: 'rgba(240,230,225,0.5)',
+                            boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.1)',
+                        }}
+                    >
                         {navItems.map(item => (
                             <button
                                 key={item.id}
                                 onClick={() => setActiveSection(item.id)}
-                                className={`
-                                    flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-xl md:rounded-full transition-all duration-300 text-sm font-medium whitespace-nowrap
-                                    ${activeSection === item.id 
-                                        ? 'bg-[#333333] text-white shadow-md' 
-                                        : 'text-gray-500 hover:bg-gray-50 hover:text-[#333333]'}
-                                `}
+                                className="flex items-center gap-2 px-4 md:px-5 py-2 rounded-xl transition-all text-sm font-medium whitespace-nowrap"
+                                style={{
+                                    background: activeSection === item.id 
+                                        ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
+                                        : 'transparent',
+                                    color: activeSection === item.id ? '#8b7d72' : '#b5a599',
+                                    boxShadow: activeSection === item.id 
+                                        ? '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)'
+                                        : 'none',
+                                }}
                             >
                                 <item.icon className="w-4 h-4" />
                                 {item.label}
@@ -243,9 +307,20 @@ export default function FamilyProfileView({ family, onBack }) {
                 </div>
 
                 {/* Main Content Area */}
-                <div className="flex-1 bg-white rounded-3xl md:rounded-[40px] shadow-sm border border-gray-100/50 overflow-hidden flex flex-col relative w-full">
-                    {/* Decorative background blobs */}
-                    <div className="absolute top-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-gradient-to-br from-[#F2DCDD]/20 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                <div 
+                    className="flex-1 rounded-3xl overflow-hidden flex flex-col relative w-full"
+                    style={{
+                        background: 'linear-gradient(145deg, rgba(253,238,236,0.5) 0%, rgba(250,232,228,0.3) 50%, rgba(252,243,240,0.4) 100%)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                    }}
+                >
+                    {/* Inner glow */}
+                    <div 
+                        className="absolute inset-0 rounded-3xl pointer-events-none"
+                        style={{
+                            background: 'radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 50%)',
+                        }}
+                    />
                     
                     <div className="flex-1 overflow-y-auto p-4 md:p-8 relative z-10">
                         <AnimatePresence mode="wait">
@@ -261,39 +336,63 @@ export default function FamilyProfileView({ family, onBack }) {
                                 >
                                     {/* Students Horizontal Scroll */}
                                     <section>
-                                        <div className="flex items-center justify-between mb-6">
-                                            <h3 className="text-xl font-serif text-[#333333]">Students</h3>
-                                            <Button variant="ghost" size="sm" onClick={handleAddStudent} className="text-gray-400 hover:text-[#333333]">
-                                                <Plus className="w-4 h-4 mr-1" /> Add
-                                            </Button>
+                                        <div className="flex items-center justify-between mb-5">
+                                            <h3 className="text-lg font-medium" style={{ color: '#8b7d72' }}>Students</h3>
+                                            <button 
+                                                onClick={handleAddStudent} 
+                                                className="flex items-center gap-1 text-xs font-medium transition-all hover:opacity-70"
+                                                style={{ color: '#b5a599' }}
+                                            >
+                                                <Plus className="w-4 h-4" /> Add
+                                            </button>
                                         </div>
-                                        <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
+                                        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
                                             {family.students.map((student, i) => (
                                                 <div 
                                                     key={student.id} 
                                                     onClick={() => handleEditStudent(student)}
-                                                    className="min-w-[280px] bg-white border border-gray-100 rounded-[28px] p-5 shadow-sm hover:shadow-lg transition-all cursor-pointer group hover:-translate-y-1"
+                                                    className="min-w-[240px] rounded-2xl p-5 transition-all cursor-pointer group hover:scale-[1.02]"
+                                                    style={{
+                                                        background: 'rgba(255,255,255,0.6)',
+                                                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                                                    }}
                                                 >
                                                     <div className="flex items-start justify-between mb-4">
-                                                        <Avatar className="w-14 h-14 border-4 border-[#F4F4F6] shadow-inner">
-                                                            <AvatarFallback className="bg-[#333333] text-white font-serif">{student.name.charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                        <Badge className={`${student.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'} border-none`}>
+                                                        <div 
+                                                            className="w-12 h-12 rounded-xl flex items-center justify-center text-lg"
+                                                            style={{
+                                                                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                                                                boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+                                                                color: '#c9a99c',
+                                                            }}
+                                                        >
+                                                            {student.name.charAt(0)}
+                                                        </div>
+                                                        <span 
+                                                            className="text-[10px] px-2 py-0.5 rounded-full"
+                                                            style={{
+                                                                background: student.status === 'active' ? 'rgba(126,184,154,0.15)' : 'rgba(180,181,169,0.15)',
+                                                                color: student.status === 'active' ? '#7eb89a' : '#b5a599',
+                                                            }}
+                                                        >
                                                             {student.status}
-                                                        </Badge>
+                                                        </span>
                                                     </div>
-                                                    <div className="mb-4">
-                                                        <h4 className="font-serif text-lg text-[#333333] group-hover:text-indigo-900 transition-colors">{student.name}</h4>
-                                                        <p className="text-sm text-gray-400">{student.age} years • {student.level}</p>
+                                                    <div className="mb-3">
+                                                        <h4 className="font-medium" style={{ color: '#8b7d72' }}>{student.name}</h4>
+                                                        <p className="text-sm" style={{ color: '#b5a599' }}>{student.age} years • {student.level}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         {student.billing_method === 'auto_pay' && (
-                                                            <div className="px-2 py-1 bg-indigo-50 rounded-lg text-[10px] font-bold text-indigo-600 uppercase tracking-wide">
+                                                            <span 
+                                                                className="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide"
+                                                                style={{ background: 'rgba(164,139,196,0.15)', color: '#8b7d9a' }}
+                                                            >
                                                                 Auto Pay
-                                                            </div>
+                                                            </span>
                                                         )}
-                                                        <div className="w-full h-px bg-gray-100 flex-1" />
-                                                        <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#333333] transition-colors" />
+                                                        <div className="flex-1" />
+                                                        <ArrowRight className="w-4 h-4" style={{ color: '#d4c4ba' }} />
                                                     </div>
                                                 </div>
                                             ))}
@@ -301,66 +400,83 @@ export default function FamilyProfileView({ family, onBack }) {
                                             {/* Add Student Card */}
                                             <button 
                                                 onClick={handleAddStudent}
-                                                className="min-w-[100px] rounded-[28px] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:text-[#333333] hover:border-[#333333] transition-all bg-[#F4F4F6]/50"
+                                                className="min-w-[80px] rounded-2xl flex flex-col items-center justify-center transition-all hover:scale-105"
+                                                style={{
+                                                    border: '2px dashed rgba(200,180,170,0.4)',
+                                                    color: '#b5a599',
+                                                }}
                                             >
-                                                <Plus className="w-6 h-6 mb-2" />
-                                                <span className="text-xs font-bold uppercase tracking-wider">Add</span>
+                                                <Plus className="w-5 h-5 mb-1" />
+                                                <span className="text-[10px] font-bold uppercase tracking-wider">Add</span>
                                             </button>
                                         </div>
                                     </section>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 items-start">
-                                        {/* Financial Health Card - Takes 1 slot in 2-col grid */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 items-start">
+                                        {/* Financial Health Card */}
                                         <section 
-                                            className="bg-[#333333] rounded-[32px] p-6 text-white relative overflow-hidden group cursor-pointer transition-all hover:shadow-xl h-[500px] flex flex-col" 
+                                            className="rounded-2xl p-6 relative overflow-hidden cursor-pointer transition-all hover:scale-[1.01] h-[450px] flex flex-col" 
                                             onClick={() => setActiveSection('billing')}
+                                            style={{
+                                                background: 'linear-gradient(145deg, rgba(164,139,196,0.15) 0%, rgba(180,160,200,0.1) 100%)',
+                                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.5)',
+                                            }}
                                         >
                                             {/* Header */}
                                             <div className="flex justify-between items-start mb-6">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="p-2 bg-white/10 rounded-lg">
-                                                        <Wallet className="w-4 h-4 text-white" />
+                                                    <div 
+                                                        className="w-8 h-8 rounded-lg flex items-center justify-center"
+                                                        style={{ background: 'rgba(164,139,196,0.2)' }}
+                                                    >
+                                                        <Wallet className="w-4 h-4" style={{ color: '#8b7d9a' }} />
                                                     </div>
-                                                    <span className="text-sm font-bold uppercase tracking-widest text-white/70">Financial Health</span>
+                                                    <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#8b7d9a' }}>Financial Health</span>
                                                 </div>
                                                 {isAutoPay ? (
-                                                    <Badge className="bg-green-500/20 text-green-400 border-none hover:bg-green-500/30 gap-1.5 pl-1.5 pr-2.5">
-                                                        <CheckCircle2 className="w-3.5 h-3.5" /> Auto-Pay Active
-                                                    </Badge>
+                                                    <span 
+                                                        className="text-[10px] px-2 py-1 rounded-full flex items-center gap-1"
+                                                        style={{ background: 'rgba(126,184,154,0.2)', color: '#7eb89a' }}
+                                                    >
+                                                        <CheckCircle2 className="w-3 h-3" /> Auto-Pay
+                                                    </span>
                                                 ) : (
-                                                    <Badge variant="secondary" className="bg-white/10 text-gray-300 border-none hover:bg-white/20 gap-1.5 pl-1.5 pr-2.5">
-                                                        <AlertCircle className="w-3.5 h-3.5" /> Manual Billing
-                                                    </Badge>
+                                                    <span 
+                                                        className="text-[10px] px-2 py-1 rounded-full flex items-center gap-1"
+                                                        style={{ background: 'rgba(212,165,116,0.2)', color: '#d4a574' }}
+                                                    >
+                                                        <AlertCircle className="w-3 h-3" /> Manual
+                                                    </span>
                                                 )}
                                             </div>
 
                                             {/* Main Grid */}
-                                            <div className="grid grid-cols-2 gap-x-8 gap-y-6 mb-6 flex-1 content-start">
+                                            <div className="grid grid-cols-2 gap-x-6 gap-y-4 mb-6 flex-1 content-start">
                                                 {/* Balance Block */}
                                                 <div className="col-span-2 sm:col-span-1">
-                                                    <div className="text-xs text-white/50 mb-1">Current Balance</div>
-                                                    <div className={`text-5xl font-serif mb-2 ${balanceDue > 0 ? 'text-red-400' : 'text-white'}`}>
+                                                    <div className="text-xs mb-1" style={{ color: '#a8a0b5' }}>Current Balance</div>
+                                                    <div className="text-4xl font-light mb-2" style={{ color: balanceDue > 0 ? '#c87070' : '#8b7d72' }}>
                                                         ${balanceDue.toLocaleString()}
                                                     </div>
-                                                    <div className="text-sm text-white/40">
-                                                        {balanceDue > 0 ? 'Payment required' : 'No outstanding dues'}
+                                                    <div className="text-sm" style={{ color: '#a8a0b5' }}>
+                                                        {balanceDue > 0 ? 'Payment required' : 'All clear'}
                                                     </div>
                                                 </div>
 
                                                 {/* Stats Column */}
-                                                <div className="col-span-2 sm:col-span-1 space-y-6 pt-2">
-                                                    <div className="flex justify-between items-center pb-3 border-b border-white/10">
-                                                        <span className="text-sm text-white/50">Lifetime Value</span>
-                                                        <span className="font-serif text-xl">${lifetimeValue.toLocaleString()}</span>
+                                                <div className="col-span-2 sm:col-span-1 space-y-4 pt-2">
+                                                    <div className="flex justify-between items-center pb-3" style={{ borderBottom: '1px solid rgba(164,139,196,0.15)' }}>
+                                                        <span className="text-sm" style={{ color: '#a8a0b5' }}>Lifetime Value</span>
+                                                        <span className="text-xl font-light" style={{ color: '#8b7d72' }}>${lifetimeValue.toLocaleString()}</span>
                                                     </div>
-                                                    <div className="flex justify-between items-center pb-3 border-b border-white/10">
-                                                        <span className="text-sm text-white/50">Last Payment</span>
+                                                    <div className="flex justify-between items-center pb-3" style={{ borderBottom: '1px solid rgba(164,139,196,0.15)' }}>
+                                                        <span className="text-sm" style={{ color: '#a8a0b5' }}>Last Payment</span>
                                                         <div className="text-right">
-                                                            <div className="font-serif text-base">
+                                                            <div className="font-light" style={{ color: '#8b7d72' }}>
                                                                 {lastPayment ? `$${lastPayment.amount}` : '-'}
                                                             </div>
                                                             {lastPayment && (
-                                                                <div className="text-xs text-white/40">
+                                                                <div className="text-xs" style={{ color: '#a8a0b5' }}>
                                                                     {format(new Date(lastPayment.date), 'MMM d')}
                                                                 </div>
                                                             )}
@@ -370,56 +486,78 @@ export default function FamilyProfileView({ family, onBack }) {
                                             </div>
 
                                             {/* Action Footer */}
-                                            <div className="flex gap-4 mt-auto">
-                                                <Button 
+                                            <div className="flex gap-3 mt-auto">
+                                                <button 
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setActiveSection('billing');
                                                     }}
-                                                    className="flex-1 bg-white text-[#333333] hover:bg-gray-100 rounded-2xl font-bold h-12 text-sm"
+                                                    className="flex-1 py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
+                                                    style={{
+                                                        background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
+                                                        boxShadow: '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)',
+                                                        color: '#8b7d72',
+                                                    }}
                                                 >
                                                     View Ledger
-                                                </Button>
-                                                <Button 
+                                                </button>
+                                                <button 
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setIsInvoiceModalOpen(true);
                                                     }}
-                                                    className="flex-1 bg-white/10 text-white hover:bg-white/20 rounded-2xl font-bold h-12 text-sm border border-white/5"
+                                                    className="flex-1 py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+                                                    style={{
+                                                        background: 'rgba(164,139,196,0.15)',
+                                                        color: '#8b7d9a',
+                                                    }}
                                                 >
-                                                    <Plus className="w-4 h-4 mr-2" /> New Charge
-                                                </Button>
+                                                    <Plus className="w-4 h-4" /> New Charge
+                                                </button>
                                             </div>
                                         </section>
 
                                         {/* Slot 2: Family Schedule */}
-                                        <div className="h-[500px]">
+                                        <div className="h-[450px]">
                                             <FamilySchedule family={family} />
                                         </div>
 
                                         {/* Slot 3: Tasks */}
-                                        <div className="h-[500px]">
+                                        <div className="h-[450px]">
                                             <FamilyTasks familyEmail={family.email} currentUser={currentUser} />
                                         </div>
 
                                         {/* Slot 4: Staff Notes */}
-                                        <div className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm flex flex-col h-[500px]">
+                                        <div 
+                                            className="rounded-2xl p-6 flex flex-col h-[450px]"
+                                            style={{
+                                                background: 'rgba(255,255,255,0.4)',
+                                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                                            }}
+                                        >
                                             <div className="flex items-center justify-between mb-4 flex-shrink-0">
-                                                <h3 className="text-lg font-serif text-[#333333]">Staff Notes</h3>
-                                                <Badge variant="secondary" className="bg-gray-100 text-gray-500">{notes.length}</Badge>
+                                                <h3 className="text-lg font-medium" style={{ color: '#8b7d72' }}>Staff Notes</h3>
+                                                <span 
+                                                    className="text-xs px-2 py-0.5 rounded-full"
+                                                    style={{ background: 'rgba(255,255,255,0.5)', color: '#b5a599' }}
+                                                >
+                                                    {notes.length}
+                                                </span>
                                             </div>
 
                                             {/* Input Area */}
-                                            <div className="mb-6 flex-shrink-0">
+                                            <div className="mb-4 flex-shrink-0">
                                                 <form onSubmit={handleAddNote} className="relative">
                                                     <textarea 
                                                         value={newNote}
                                                         onChange={(e) => setNewNote(e.target.value)}
                                                         placeholder={`Add a note or ask @${aiName}...`}
-                                                        className={`
-                                                            w-full bg-[#F4F4F6] rounded-2xl p-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#333333]/10 resize-none min-h-[80px] transition-colors
-                                                            ${newNote.includes('@') ? 'bg-indigo-50/30 text-indigo-900 placeholder:text-indigo-300' : ''}
-                                                        `}
+                                                        className="w-full rounded-xl p-4 pr-12 text-sm focus:outline-none focus:ring-2 resize-none min-h-[70px] transition-colors"
+                                                        style={{
+                                                            background: newNote.includes('@') ? 'rgba(164,139,196,0.1)' : 'rgba(255,255,255,0.6)',
+                                                            border: '1px solid rgba(200,180,170,0.2)',
+                                                            color: '#8b7d72',
+                                                        }}
                                                         disabled={isAiProcessing}
                                                         onKeyDown={(e) => {
                                                             if (e.key === 'Enter' && !e.shiftKey) {
@@ -431,13 +569,14 @@ export default function FamilyProfileView({ family, onBack }) {
                                                     <button 
                                                         type="submit"
                                                         disabled={!newNote.trim() || createNoteMutation.isPending || isAiProcessing}
-                                                        className={`
-                                                            absolute bottom-3 right-3 p-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all
-                                                            ${newNote.includes('@') ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-[#333333] hover:bg-black text-white'}
-                                                        `}
+                                                        className="absolute bottom-3 right-3 p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                                        style={{
+                                                            background: newNote.includes('@') ? 'rgba(164,139,196,0.3)' : 'rgba(200,170,156,0.3)',
+                                                            color: newNote.includes('@') ? '#8b7d9a' : '#c8aa9c',
+                                                        }}
                                                     >
                                                         {(createNoteMutation.isPending || isAiProcessing) ? (
-                                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                            <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
                                                         ) : (
                                                             newNote.includes('@') ? <Sparkles className="w-4 h-4" /> : <Send className="w-4 h-4" />
                                                         )}
@@ -446,31 +585,36 @@ export default function FamilyProfileView({ family, onBack }) {
                                             </div>
 
                                             {/* Notes Feed */}
-                                            <div className="flex-1 overflow-y-auto space-y-4 pr-2 -mr-2">
+                                            <div className="flex-1 overflow-y-auto space-y-3 pr-2 -mr-2">
                                                 {notes.length === 0 ? (
-                                                    <div className="h-full flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-2xl">
-                                                        <StickyNote className="w-8 h-8 mb-2 opacity-50" />
+                                                    <div 
+                                                        className="h-full flex flex-col items-center justify-center rounded-xl"
+                                                        style={{ border: '2px dashed rgba(200,180,170,0.3)', color: '#b5a599' }}
+                                                    >
+                                                        <StickyNote className="w-6 h-6 mb-2 opacity-50" />
                                                         <p className="text-sm">No notes yet</p>
                                                     </div>
                                                 ) : (
                                                     notes.map((note) => (
-                                                        <div key={note.id} className="group flex gap-4">
-                                                            <div className="flex flex-col items-center gap-1">
-                                                                <Avatar className="w-8 h-8 border border-gray-100">
-                                                                    <AvatarFallback className="bg-gray-100 text-gray-500 text-xs">
-                                                                        {note.author_name?.charAt(0) || 'S'}
-                                                                    </AvatarFallback>
-                                                                </Avatar>
-                                                                <div className="w-px h-full bg-gray-100 group-last:hidden" />
+                                                        <div 
+                                                            key={note.id} 
+                                                            className="flex gap-3 p-4 rounded-xl"
+                                                            style={{ background: 'rgba(255,255,255,0.5)' }}
+                                                        >
+                                                            <div 
+                                                                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs"
+                                                                style={{ background: 'rgba(200,170,156,0.15)', color: '#c8aa9c' }}
+                                                            >
+                                                                {note.author_name?.charAt(0) || 'S'}
                                                             </div>
-                                                            <div className="flex-1 pb-6">
+                                                            <div className="flex-1">
                                                                 <div className="flex items-center gap-2 mb-1">
-                                                                    <span className="font-bold text-sm text-[#333333]">{note.author_name}</span>
-                                                                    <span className="text-xs text-gray-400">• {format(new Date(note.created_date), 'MMM d, h:mm a')}</span>
+                                                                    <span className="font-medium text-sm" style={{ color: '#8b7d72' }}>{note.author_name}</span>
+                                                                    <span className="text-xs" style={{ color: '#c4b5ab' }}>· {format(new Date(note.created_date), 'MMM d')}</span>
                                                                 </div>
-                                                                <div className="bg-gray-50 p-3 rounded-r-2xl rounded-bl-2xl text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                                                <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#8b7d72' }}>
                                                                     {note.content}
-                                                                </div>
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     ))
