@@ -539,24 +539,41 @@ export default function Students() {
                                          transform: isSelected ? 'translateY(1px) scale(0.97)' : 'translateY(0) scale(1)',
                                        }}
                                      >
+                                       {/* Soft outer halo */}
+                                       {isSelected && (
+                                         <div 
+                                           className="absolute inset-[-8px] rounded-full pointer-events-none"
+                                           style={{
+                                             background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,250,245,0.2) 40%, transparent 70%)',
+                                           }}
+                                         />
+                                       )}
+                                       {/* Glowing border ring */}
+                                       {isSelected && (
+                                         <div 
+                                           className="absolute inset-0 rounded-full pointer-events-none"
+                                           style={{
+                                             border: '2px solid rgba(255,255,255,0.95)',
+                                             boxShadow: '0 0 4px 1px rgba(255,255,255,0.8), 0 0 8px 2px rgba(255,250,240,0.5), 0 0 12px 4px rgba(255,245,235,0.3), inset 0 0 4px 1px rgba(255,255,255,0.4)',
+                                           }}
+                                         />
+                                       )}
                                        {/* Main avatar */}
                                        <Avatar 
                                          className="w-10 h-10"
                                          style={{
-                                           boxShadow: isSelected 
-                                             ? '0 0 12px 2px rgba(210,180,170,0.5), 0 0 20px 4px rgba(200,160,150,0.3)'
-                                             : '0 2px 8px rgba(180,150,140,0.2)',
-                                           border: isSelected 
-                                             ? '2px solid rgba(220,190,180,0.9)' 
-                                             : '2px solid rgba(255,255,255,0.8)',
+                                           boxShadow: isSelected ? 'none' : '0 2px 8px rgba(180,150,140,0.2)',
+                                           border: isSelected ? 'none' : '2px solid rgba(255,255,255,0.8)',
                                          }}
                                        >
                                           <AvatarFallback 
                                             style={{ 
-                                              background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
-                                              color: isSelected ? 'rgba(255,240,235,1)' : '#fff',
+                                              background: isSelected 
+                                                ? `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`
+                                                : `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
+                                              color: isSelected ? '#fff' : '#fff',
                                               textShadow: isSelected 
-                                                ? '0 0 8px rgba(255,220,210,0.9), 0 0 16px rgba(230,190,180,0.6)' 
+                                                ? '0 0 2px #fff, 0 0 4px #fff, 0 0 8px rgba(255,255,255,0.8), 0 0 12px rgba(255,250,245,0.6), 0 0 20px rgba(255,245,235,0.4)' 
                                                 : 'none',
                                               fontWeight: '500',
                                             }}
@@ -647,24 +664,41 @@ export default function Students() {
                                       transform: isSelected ? 'translateY(1px) scale(0.97)' : 'translateY(0) scale(1)',
                                     }}
                                   >
+                                    {/* Soft outer halo */}
+                                    {isSelected && (
+                                      <div 
+                                        className="absolute inset-[-8px] rounded-full pointer-events-none"
+                                        style={{
+                                          background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,250,245,0.2) 40%, transparent 70%)',
+                                        }}
+                                      />
+                                    )}
+                                    {/* Glowing border ring */}
+                                    {isSelected && (
+                                      <div 
+                                        className="absolute inset-0 rounded-full pointer-events-none"
+                                        style={{
+                                          border: '2px solid rgba(255,255,255,0.95)',
+                                          boxShadow: '0 0 4px 1px rgba(255,255,255,0.8), 0 0 8px 2px rgba(255,250,240,0.5), 0 0 12px 4px rgba(255,245,235,0.3), inset 0 0 4px 1px rgba(255,255,255,0.4)',
+                                        }}
+                                      />
+                                    )}
                                     {/* Main avatar */}
                                     <Avatar 
                                       className="w-10 h-10"
                                       style={{
-                                        boxShadow: isSelected 
-                                          ? '0 0 12px 2px rgba(210,180,170,0.5), 0 0 20px 4px rgba(200,160,150,0.3)'
-                                          : '0 2px 8px rgba(180,150,140,0.2)',
-                                        border: isSelected 
-                                          ? '2px solid rgba(220,190,180,0.9)' 
-                                          : '2px solid rgba(255,255,255,0.8)',
+                                        boxShadow: isSelected ? 'none' : '0 2px 8px rgba(180,150,140,0.2)',
+                                        border: isSelected ? 'none' : '2px solid rgba(255,255,255,0.8)',
                                       }}
                                     >
                                       <AvatarFallback 
                                         style={{ 
-                                          background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
-                                          color: isSelected ? 'rgba(255,240,235,1)' : '#fff',
+                                          background: isSelected 
+                                            ? `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`
+                                            : `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
+                                          color: isSelected ? '#fff' : '#fff',
                                           textShadow: isSelected 
-                                            ? '0 0 8px rgba(255,220,210,0.9), 0 0 16px rgba(230,190,180,0.6)' 
+                                            ? '0 0 2px #fff, 0 0 4px #fff, 0 0 8px rgba(255,255,255,0.8), 0 0 12px rgba(255,250,245,0.6), 0 0 20px rgba(255,245,235,0.4)' 
                                             : 'none',
                                           fontWeight: '500',
                                         }}
