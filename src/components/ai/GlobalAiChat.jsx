@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { 
     Sparkles, ArrowUp, X, Globe, Calendar, ExternalLink, 
@@ -174,6 +174,7 @@ export default function GlobalAiChat() {
     // Use the shared context for bulk selection
     const { selectedStudents, setSelectedStudents, clearSelection } = useBulkSelection();
     const hasBulkSelection = selectedStudents.length > 0;
+    const queryClient = useQueryClient();
     
     // Get Current User
     const { data: currentUser } = useQuery({
@@ -233,6 +234,8 @@ export default function GlobalAiChat() {
                 }]);
 
                 if (data.success) {
+                    // Refresh students data so UI updates
+                    queryClient.invalidateQueries({ queryKey: ['students'] });
                     clearSelection();
                 }
                 
