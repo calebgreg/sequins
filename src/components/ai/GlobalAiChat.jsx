@@ -153,12 +153,27 @@ const MessageItem = ({ message }) => {
     );
 };
 
+// Create a context to share bulk selection state
+export const BulkSelectionContext = React.createContext({
+    selectedStudents: [],
+    setSelectedStudents: () => {},
+    clearSelection: () => {},
+});
+
+export function useBulkSelection() {
+    return React.useContext(BulkSelectionContext);
+}
+
 export default function GlobalAiChat() {
     const [isOpen, setIsOpen] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const [messages, setMessages] = useState([]);
+    const [selectedStudents, setSelectedStudents] = useState([]);
     const navigate = useNavigate();
+
+    const clearSelection = () => setSelectedStudents([]);
+    const hasBulkSelection = selectedStudents.length > 0;
     
     // Get Current User
     const { data: currentUser } = useQuery({
@@ -204,6 +219,27 @@ export default function GlobalAiChat() {
         setIsThinking(true);
 
         try {
+            // If bulk selection is active, use bulkStudentAction
+            if (hasBulkSelection) {
+                const { data } = await base44.functions.invoke('bulkStudentAction', {
+                    instruction: userText,
+                    studentIds: selectedStudents.map(s => s.id)
+                });
+                
+                setMessages(prev => [...prev, { 
+                    id: Date.now() + 1, 
+                    role: 'assistant', 
+                    content: data.explanation || (data.success ? 'Done!' : 'Something went wrong.')
+                }]);
+
+                if (data.success) {
+                    clearSelection();
+                }
+                
+                setIsThinking(false);
+                return;
+            }
+
             // Call the backend Coordinator "Agent"
             const { data } = await base44.functions.invoke('geneCoordinator', { 
                 prompt: userText, 
@@ -297,39 +333,66 @@ export default function GlobalAiChat() {
                 <div 
                     className={`
                         w-full bg-pink-50/30 backdrop-blur-[20px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)]
-                        border-b border-pink-100/40 ring-1 ring-pink-200/20 rounded-full 
-                        flex items-center gap-2.5 px-3 py-2 transition-all duration-300
+                        border-b border-pink-100/40 ring-1 ring-pink-200/20 
+                        flex flex-col transition-all duration-300
+                        ${hasBulkSelection ? 'rounded-2xl p-3 gap-2' : 'rounded-full px-3 py-2'}
                         ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-90 hover:scale-100 hover:opacity-100'}
                     `}
                     style={{filter: 'url(#liquid-glass)'}}
                 >
-                    <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center shrink-0">
-                        {isThinking ? (
-                            <div className="w-3 h-3 border-2 border-gray-400 border-t-black rounded-full animate-spin" />
-                        ) : (
-                            <Sparkles className="w-3 h-3 text-gray-600" />
-                        )}
-                    </div>
-
-                    <input
-                        ref={inputRef}
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onFocus={handleFocus}
-                        onKeyDown={handleKeyDown}
-                        placeholder=""
-                        className="flex-1 bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none h-full font-medium"
-                    />
-
-                    <div className="flex items-center gap-2">
-                        {inputValue.trim() && (
+                    {/* Bulk Selection Header */}
+                    {hasBulkSelection && (
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span 
+                                    className="px-2.5 py-1 rounded-full text-xs font-semibold bg-black text-white"
+                                >
+                                    {selectedStudents.length}
+                                </span>
+                                <span className="text-sm text-gray-600">
+                                    {selectedStudents.slice(0, 3).map(s => s.name).join(', ')}
+                                    {selectedStudents.length > 3 && `, +${selectedStudents.length - 3} more`}
+                                </span>
+                            </div>
                             <button 
-                                onClick={handleSend}
-                                className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+                                onClick={clearSelection}
+                                className="p-1 rounded-full hover:bg-black/5 transition-colors"
                             >
-                                <ArrowUp className="w-3 h-3" />
+                                <X className="w-4 h-4 text-gray-400" />
                             </button>
-                        )}
+                        </div>
+                    )}
+
+                    {/* Input Row */}
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center shrink-0">
+                            {isThinking ? (
+                                <div className="w-3 h-3 border-2 border-gray-400 border-t-black rounded-full animate-spin" />
+                            ) : (
+                                <Sparkles className="w-3 h-3 text-gray-600" />
+                            )}
+                        </div>
+
+                        <input
+                            ref={inputRef}
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onFocus={handleFocus}
+                            onKeyDown={handleKeyDown}
+                            placeholder={hasBulkSelection ? "What do you want to do?" : ""}
+                            className="flex-1 bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none h-full font-medium"
+                        />
+
+                        <div className="flex items-center gap-2">
+                            {inputValue.trim() && (
+                                <button 
+                                    onClick={handleSend}
+                                    className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+                                >
+                                    <ArrowUp className="w-3 h-3" />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -345,6 +408,23 @@ export default function GlobalAiChat() {
                     </div>
                 )}
             </div>
+            
+            {/* Expose context for bulk selection */}
+            <BulkSelectionContext.Provider value={{ selectedStudents, setSelectedStudents, clearSelection }}>
+                {/* This is intentionally empty - we're using a portal pattern */}
+            </BulkSelectionContext.Provider>
         </div>
+    );
+}
+
+// Export a wrapper that provides the context properly
+export function GlobalAiChatProvider({ children }) {
+    const [selectedStudents, setSelectedStudents] = useState([]);
+    const clearSelection = () => setSelectedStudents([]);
+
+    return (
+        <BulkSelectionContext.Provider value={{ selectedStudents, setSelectedStudents, clearSelection }}>
+            {children}
+        </BulkSelectionContext.Provider>
     );
 }
