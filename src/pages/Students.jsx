@@ -544,7 +544,7 @@ export default function Students() {
                                          <div 
                                            className="absolute inset-[-8px] rounded-full pointer-events-none"
                                            style={{
-                                             background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,250,245,0.2) 40%, transparent 70%)',
+                                             background: 'radial-gradient(circle, rgba(255,200,200,0.35) 0%, rgba(255,220,220,0.15) 40%, transparent 70%)',
                                            }}
                                          />
                                        )}
@@ -553,8 +553,8 @@ export default function Students() {
                                          <div 
                                            className="absolute inset-0 rounded-full pointer-events-none"
                                            style={{
-                                             border: '2px solid rgba(255,255,255,0.95)',
-                                             boxShadow: '0 0 4px 1px rgba(255,255,255,0.8), 0 0 8px 2px rgba(255,250,240,0.5), 0 0 12px 4px rgba(255,245,235,0.3), inset 0 0 4px 1px rgba(255,255,255,0.4)',
+                                             border: '2px solid rgba(255,210,210,0.9)',
+                                             boxShadow: '0 0 4px 1px rgba(255,200,200,0.7), 0 0 8px 2px rgba(255,190,190,0.4), 0 0 12px 4px rgba(255,180,180,0.25), inset 0 0 4px 1px rgba(255,220,220,0.3)',
                                            }}
                                          />
                                        )}
@@ -568,12 +568,10 @@ export default function Students() {
                                        >
                                           <AvatarFallback 
                                             style={{ 
-                                              background: isSelected 
-                                                ? `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`
-                                                : `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
-                                              color: isSelected ? '#fff' : '#fff',
+                                              background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
+                                              color: isSelected ? '#ffeaea' : '#fff',
                                               textShadow: isSelected 
-                                                ? '0 0 2px #fff, 0 0 4px #fff, 0 0 8px rgba(255,255,255,0.8), 0 0 12px rgba(255,250,245,0.6), 0 0 20px rgba(255,245,235,0.4)' 
+                                                ? '0 0 2px #ffdede, 0 0 4px #ffd0d0, 0 0 8px rgba(255,200,200,0.7), 0 0 12px rgba(255,190,190,0.5), 0 0 20px rgba(255,180,180,0.3)' 
                                                 : 'none',
                                               fontWeight: '500',
                                             }}
@@ -669,7 +667,7 @@ export default function Students() {
                                       <div 
                                         className="absolute inset-[-8px] rounded-full pointer-events-none"
                                         style={{
-                                          background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,250,245,0.2) 40%, transparent 70%)',
+                                          background: 'radial-gradient(circle, rgba(255,200,200,0.35) 0%, rgba(255,220,220,0.15) 40%, transparent 70%)',
                                         }}
                                       />
                                     )}
@@ -678,8 +676,8 @@ export default function Students() {
                                       <div 
                                         className="absolute inset-0 rounded-full pointer-events-none"
                                         style={{
-                                          border: '2px solid rgba(255,255,255,0.95)',
-                                          boxShadow: '0 0 4px 1px rgba(255,255,255,0.8), 0 0 8px 2px rgba(255,250,240,0.5), 0 0 12px 4px rgba(255,245,235,0.3), inset 0 0 4px 1px rgba(255,255,255,0.4)',
+                                          border: '2px solid rgba(255,210,210,0.9)',
+                                          boxShadow: '0 0 4px 1px rgba(255,200,200,0.7), 0 0 8px 2px rgba(255,190,190,0.4), 0 0 12px 4px rgba(255,180,180,0.25), inset 0 0 4px 1px rgba(255,220,220,0.3)',
                                         }}
                                       />
                                     )}
@@ -693,12 +691,10 @@ export default function Students() {
                                     >
                                       <AvatarFallback 
                                         style={{ 
-                                          background: isSelected 
-                                            ? `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`
-                                            : `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
-                                          color: isSelected ? '#fff' : '#fff',
+                                          background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
+                                          color: isSelected ? '#ffeaea' : '#fff',
                                           textShadow: isSelected 
-                                            ? '0 0 2px #fff, 0 0 4px #fff, 0 0 8px rgba(255,255,255,0.8), 0 0 12px rgba(255,250,245,0.6), 0 0 20px rgba(255,245,235,0.4)' 
+                                            ? '0 0 2px #ffdede, 0 0 4px #ffd0d0, 0 0 8px rgba(255,200,200,0.7), 0 0 12px rgba(255,190,190,0.5), 0 0 20px rgba(255,180,180,0.3)' 
                                             : 'none',
                                           fontWeight: '500',
                                         }}
