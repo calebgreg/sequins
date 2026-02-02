@@ -119,28 +119,50 @@ export default function FamilyTasks({ familyEmail, currentUser }) {
     };
 
     return (
-        <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
+        <div 
+            className="rounded-2xl flex flex-col h-full overflow-hidden"
+            style={{
+                background: 'rgba(255,255,255,0.4)',
+                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+            }}
+        >
             
             {/* Header / Quick Add Area */}
-            <div className="p-6 pb-2 flex-shrink-0 z-10 bg-white">
+            <div className="p-6 pb-2 flex-shrink-0 z-10" style={{ borderBottom: '1px solid rgba(200,180,170,0.2)' }}>
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                        <div 
+                            className="w-10 h-10 rounded-xl flex items-center justify-center"
+                            style={{
+                                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                                boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+                                color: '#c9a99c',
+                            }}
+                        >
                             <LayoutList className="w-5 h-5" />
                         </div>
-                        <h3 className="font-serif text-lg text-[#333333]">Project Manager</h3>
+                        <h3 className="text-lg font-medium" style={{ color: '#8b7d72' }}>Project Manager</h3>
                     </div>
                     
                     {/* Minimal Filter Tabs */}
-                    <div className="flex bg-gray-50 p-1 rounded-lg">
+                    <div 
+                        className="flex p-1 rounded-xl"
+                        style={{ background: 'rgba(240,230,225,0.5)' }}
+                    >
                         {['all', 'shared', 'internal'].map(f => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`
-                                    px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all
-                                    ${filter === f ? 'bg-white text-[#333333] shadow-sm' : 'text-gray-400 hover:text-gray-600'}
-                                `}
+                                className="px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                                style={{
+                                    background: filter === f 
+                                        ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
+                                        : 'transparent',
+                                    color: filter === f ? '#8b7d72' : '#b5a599',
+                                    boxShadow: filter === f 
+                                        ? '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)'
+                                        : 'none',
+                                }}
                             >
                                 {f}
                             </button>
@@ -150,8 +172,11 @@ export default function FamilyTasks({ familyEmail, currentUser }) {
 
                 {/* Quick Add Input */}
                 <div className="relative group">
-                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 transition-colors duration-300">
-                        {isProcessing ? <Sparkles className="w-5 h-5 animate-pulse text-indigo-500" /> : <Plus className="w-5 h-5" />}
+                    <div 
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-300"
+                        style={{ color: isProcessing ? '#8b7d9a' : '#c4b5ab' }}
+                    >
+                        {isProcessing ? <Sparkles className="w-5 h-5 animate-pulse" /> : <Plus className="w-5 h-5" />}
                     </div>
                     <Input 
                         ref={inputRef}
@@ -160,19 +185,21 @@ export default function FamilyTasks({ familyEmail, currentUser }) {
                         onKeyDown={handleQuickAdd}
                         disabled={isProcessing}
                         placeholder={`Add task or ask @${aiName}...`}
-                        className={`
-                            pl-10 h-12 border-transparent transition-all rounded-xl text-sm
-                            ${quickAddTitle.includes('@') ? 'bg-indigo-50/50 text-indigo-900 focus:bg-indigo-50 focus:border-indigo-200' : 'bg-gray-50 focus:bg-white focus:border-indigo-100'}
-                        `}
+                        className="pl-10 h-12 transition-all rounded-xl text-sm"
+                        style={{
+                            background: quickAddTitle.includes('@') ? 'rgba(164,139,196,0.1)' : 'rgba(255,255,255,0.6)',
+                            border: '1px solid rgba(200,180,170,0.2)',
+                            color: '#8b7d72',
+                        }}
                     />
                 </div>
             </div>
 
             {/* Task List */}
-            <div className="flex-1 overflow-y-auto p-4 pt-0 space-y-2">
+            <div className="flex-1 overflow-y-auto p-4 pt-4 space-y-2">
                 {filteredTasks.length === 0 ? (
-                    <div className="py-12 flex flex-col items-center justify-center text-gray-300 text-center">
-                        <CheckSquare className="w-12 h-12 mb-3 opacity-20" />
+                    <div className="py-12 flex flex-col items-center justify-center text-center" style={{ color: '#b5a599' }}>
+                        <CheckSquare className="w-12 h-12 mb-3 opacity-30" />
                         <p className="text-sm">No tasks yet.</p>
                         <p className="text-xs opacity-60">Type above to get started.</p>
                     </div>
