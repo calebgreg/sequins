@@ -361,7 +361,12 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                             </Badge>
                          );
                     })}
-                </div>
+                    {activeFilter.parsed_criteria_json.performance_filters?.performance_title && (
+                        <Badge variant="secondary" className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 shadow-sm font-normal">
+                            <span className="opacity-50 mr-1">Performance:</span> {activeFilter.parsed_criteria_json.performance_filters.performance_title}
+                        </Badge>
+                    )}
+                    </div>
             )}
 
             {/* Save Modal */}
