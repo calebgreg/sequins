@@ -58,119 +58,139 @@ export default function FamilyTuitionManager({ family }) {
         }
     });
 
-    // --- Calculation Logic ---
+    // --- Calculation Logic using TuitionRules ---
     const calculation = useMemo(() => {
         let lines = [];
         let subtotal = 0;
         let totalSavings = 0;
-        let potentialRevenue = 0; // Track what it *would* be without discounts/plans
+        let potentialRevenue = 0;
 
-        // 1. Tuition per Student
+        // Sort rules by priority (higher first)
+        const activeRules = tuitionRules.filter(r => r.active !== false).sort((a, b) => (b.priority || 0) - (a.priority || 0));
+        
+        // Get specific rule types
+        const basePricingRule = activeRules.find(r => r.type === 'base_pricing');
+        const classExceptionRules = activeRules.filter(r => r.type === 'class_exception');
+        const packageRules = activeRules.filter(r => r.type === 'package');
+        const discountRulesFromTuition = activeRules.filter(r => r.type === 'discount');
+        const feeRules = activeRules.filter(r => r.type === 'fee');
+
+        // 1. Calculate Tuition per Student using TuitionRules
         familyStudents.forEach(student => {
             const studentClasses = classes.filter(c => c.student_names?.includes(student.name));
             const activePlan = tuitionPlans.find(p => p.id === student.tuition_plan_id);
             
             let amount = 0;
-            let standardCost = 0;
             let breakdown = [];
             let description = '';
 
-            // Calculate Standard Cost (a la carte) first for comparison
-            if (settings.pricing_model === 'hourly') {
-                const totalHours = studentClasses.reduce((sum, c) => sum + (c.duration || 1), 0);
-                standardCost = totalHours * 20; // Avg rate assumption for potential comparison
-            } else {
-                standardCost = studentClasses.reduce((sum, c) => sum + (c.tuition_cost || 0), 0);
-            }
-            if (standardCost === 0 && studentClasses.length > 0) standardCost = 0; // Keep accurate
-
-            // Determine Actual Amount based on Plan vs Calculated
+            // Priority 1: If student has an assigned TuitionPlan, use that
             if (activePlan) {
                 amount = activePlan.amount;
                 description = `${activePlan.name} (Membership)`;
                 breakdown.push(`Includes ${activePlan.class_limit === 0 ? 'Unlimited' : activePlan.class_limit} classes`);
-                
-                // Value realized
-                if (standardCost > amount) {
-                    totalSavings += (standardCost - amount);
-                }
             } else {
-                // Calculated
-                if (settings.pricing_model === 'hourly') {
-                    const totalHours = studentClasses.reduce((sum, c) => sum + (c.duration || 1), 0);
-                    const tiers = [...(settings.hourly_rate_tiers || [])].sort((a, b) => b.hours - a.hours);
-                    const tier = tiers.find(t => totalHours >= t.hours) || tiers[tiers.length - 1];
-                    amount = tier ? tier.rate : (totalHours * 15);
-                    description = `Hourly Tuition (${totalHours} hrs)`;
-                    breakdown.push(`${totalHours} hours enrolled`);
-                } else {
-                    amount = standardCost;
-                    description = `Class Tuition (${studentClasses.length} classes)`;
-                    studentClasses.forEach(c => breakdown.push(`${c.title}`));
-                }
+                // Priority 2: Use TuitionRules to calculate
+                
+                // Check for class-specific exceptions first
+                let classTotal = 0;
+                studentClasses.forEach(cls => {
+                    const exception = classExceptionRules.find(r => 
+                        r.note?.toLowerCase().includes(cls.title?.toLowerCase())
+                    );
+                    
+                    if (exception && exception.value?.amount) {
+                        classTotal += exception.value.amount;
+                        breakdown.push(`${cls.title}: $${exception.value.amount} (special)`);
+                    } else if (basePricingRule?.value) {
+                        // Use base pricing
+                        const baseValue = basePricingRule.value;
+                        if (baseValue.method === 'flat') {
+                            classTotal += baseValue.amount || 0;
+                            breakdown.push(`${cls.title}: $${baseValue.amount || 0}`);
+                        } else if (baseValue.method === 'hourly') {
+                            const hours = cls.duration || 1;
+                            classTotal += (baseValue.rate || 0) * hours;
+                            breakdown.push(`${cls.title}: $${(baseValue.rate || 0) * hours}`);
+                        }
+                    } else if (cls.tuition_cost) {
+                        // Fallback to class-level cost if set
+                        classTotal += cls.tuition_cost;
+                        breakdown.push(`${cls.title}: $${cls.tuition_cost}`);
+                    }
+                });
+                
+                amount = classTotal;
+                description = `Standard Calculation`;
             }
 
+            potentialRevenue += amount;
+            
             lines.push({
                 type: 'tuition',
                 student_name: student.name,
                 description: description,
                 details: breakdown.join(', '),
                 amount: amount,
-                standardCost: standardCost
+                standardCost: amount
             });
             subtotal += amount;
-            potentialRevenue += Math.max(amount, standardCost);
         });
 
-        // 2. Discounts (Only apply if NOT on a plan generally, or depending on studio rules. 
-        // For now, let's assume sibling discount applies to the calculated total of 2nd student even if on plan? 
-        // Usually plans exclude further discounts. Let's apply ONLY to non-plan students for safety or strictly 2nd student.)
-        
-        // Let's filter students eligible for discount (usually studios don't double dip plan + sibling discount, but let's be generous for logic)
-        // Simplification: Apply sibling discount to the lowest amounts in the family regardless of plan source
-        
-        const siblingRule = discountRules.find(d => d.category === 'sibling' && d.active);
-        if (siblingRule && familyStudents.length > 1) {
-            const studentTuitions = lines.filter(l => l.type === 'tuition');
-            studentTuitions.sort((a, b) => b.amount - a.amount);
-            
-            for (let i = 1; i < studentTuitions.length; i++) {
-                const baseAmount = studentTuitions[i].amount;
-                const discountAmount = siblingRule.type === 'percent' 
-                    ? (baseAmount * (siblingRule.value / 100)) 
-                    : siblingRule.value;
+        // 2. Apply discount rules from TuitionRules
+        discountRulesFromTuition.forEach(rule => {
+            if (rule.value) {
+                let discountAmount = 0;
+                const target = rule.value.target || 'total';
+                
+                if (rule.value.percent) {
+                    discountAmount = subtotal * (rule.value.percent / 100);
+                } else if (rule.value.amount) {
+                    discountAmount = rule.value.amount;
+                }
                 
                 if (discountAmount > 0) {
                     lines.push({
                         type: 'discount',
-                        student_name: studentTuitions[i].student_name,
-                        description: siblingRule.name,
+                        student_name: 'Family',
+                        description: rule.note || 'Discount',
                         amount: -discountAmount
                     });
                     subtotal -= discountAmount;
                     totalSavings += discountAmount;
                 }
             }
-        }
-
-        // Auto-Apply Promos
-        const promos = discountRules.filter(d => d.apply_automatically && d.category === 'promo' && d.active);
-        promos.forEach(promo => {
-            const discountAmount = promo.type === 'percent' 
-                ? (subtotal * (promo.value / 100)) 
-                : promo.value;
-            
-            lines.push({
-                type: 'discount',
-                student_name: 'Family',
-                description: promo.name,
-                amount: -discountAmount
-            });
-            subtotal -= discountAmount;
-            totalSavings += discountAmount;
         });
 
-        // 3. Manual Items
+        // 3. Apply fee rules from TuitionRules
+        feeRules.forEach(rule => {
+            if (rule.value?.amount) {
+                const perType = rule.value.per || 'student';
+                
+                if (perType === 'family') {
+                    lines.push({
+                        type: 'fee',
+                        student_name: 'Family',
+                        description: rule.note || 'Fee',
+                        amount: rule.value.amount
+                    });
+                    subtotal += rule.value.amount;
+                } else {
+                    // Per student
+                    familyStudents.forEach(student => {
+                        lines.push({
+                            type: 'fee',
+                            student_name: student.name,
+                            description: rule.note || 'Fee',
+                            amount: rule.value.amount
+                        });
+                        subtotal += rule.value.amount;
+                    });
+                }
+            }
+        });
+
+        // 4. Manual Items
         manualItems.forEach(item => {
             const val = parseFloat(item.amount) || 0;
             const signedAmount = item.type === 'discount' ? -Math.abs(val) : Math.abs(val);
@@ -187,7 +207,7 @@ export default function FamilyTuitionManager({ family }) {
         });
 
         return { lines, total: subtotal, savings: totalSavings, potential: potentialRevenue };
-    }, [familyStudents, classes, settings, discountRules, manualItems, tuitionPlans]);
+    }, [familyStudents, classes, tuitionRules, manualItems, tuitionPlans]);
 
 
     // Handlers
