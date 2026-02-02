@@ -258,10 +258,24 @@ export default function Students() {
                 if (cf.day && c.day !== cf.day) match = false;
                 if (cf.style && !c.style?.toLowerCase().includes(cf.style.toLowerCase())) match = false;
                 if (cf.teacher && !c.teacher?.toLowerCase().includes(cf.teacher.toLowerCase())) match = false;
+                if (cf.class_title && !c.title?.toLowerCase().includes(cf.class_title.toLowerCase())) match = false;
                 return match;
             });
             const isEnrolled = matchingClasses.some(c => c.student_names?.includes(s.name));
             if (!isEnrolled) studentMatchesAi = false;
+        }
+
+        // Performance-based Filters
+        if (aiFilter.performance_filters && studentMatchesAi) {
+            const pf = aiFilter.performance_filters;
+            if (pf.performance_id) {
+                const performanceRoutines = routines.filter(r => r.performance_id === pf.performance_id);
+                const performerIds = new Set();
+                performanceRoutines.forEach(r => {
+                    (r.performers || []).forEach(id => performerIds.add(id));
+                });
+                if (!performerIds.has(s.id)) studentMatchesAi = false;
+            }
         }
 
         return studentMatchesAi;
