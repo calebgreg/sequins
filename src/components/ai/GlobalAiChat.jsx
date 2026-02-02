@@ -329,42 +329,55 @@ export default function GlobalAiChat() {
                     </div>
                 )}
 
-                {/* Input Bar */}
+                {/* Input Bar - wraps with bulk selection header when active */}
                 <div 
                     className={`
-                        w-full bg-pink-50/30 backdrop-blur-[20px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)]
-                        border-b border-pink-100/40 ring-1 ring-pink-200/20 
-                        flex flex-col transition-all duration-300
-                        ${hasBulkSelection ? 'rounded-2xl p-3 gap-2' : 'rounded-full px-3 py-2'}
+                        w-full backdrop-blur-[20px] transition-all duration-300
+                        ${hasBulkSelection 
+                            ? 'rounded-[24px] p-4' 
+                            : 'bg-pink-50/30 shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)] border-b border-pink-100/40 ring-1 ring-pink-200/20 rounded-full px-3 py-2'
+                        }
                         ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-90 hover:scale-100 hover:opacity-100'}
                     `}
-                    style={{filter: 'url(#liquid-glass)'}}
+                    style={{
+                        filter: hasBulkSelection ? 'none' : 'url(#liquid-glass)',
+                        ...(hasBulkSelection ? {
+                            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
+                            border: '1px solid rgba(255, 200, 200, 0.4)',
+                            boxShadow: '0 8px 32px rgba(180, 120, 120, 0.2), 0 0 0 1px rgba(255,255,255,0.5) inset',
+                        } : {})
+                    }}
                 >
                     {/* Bulk Selection Header */}
                     {hasBulkSelection && (
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                                <span 
-                                    className="px-2.5 py-1 rounded-full text-xs font-semibold bg-black text-white"
-                                >
+                                <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[#1a1a1a] text-white">
                                     {selectedStudents.length}
                                 </span>
-                                <span className="text-sm text-gray-600">
+                                <span className="text-sm text-[#8a8478]">
                                     {selectedStudents.slice(0, 3).map(s => s.name).join(', ')}
                                     {selectedStudents.length > 3 && `, +${selectedStudents.length - 3} more`}
                                 </span>
                             </div>
                             <button 
                                 onClick={clearSelection}
-                                className="p-1 rounded-full hover:bg-black/5 transition-colors"
+                                className="p-1.5 rounded-full transition-all hover:scale-105"
+                                style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
                             >
-                                <X className="w-4 h-4 text-gray-400" />
+                                <X className="w-4 h-4 text-[#8a7070]" />
                             </button>
                         </div>
                     )}
 
-                    {/* Input Row */}
-                    <div className="flex items-center gap-2.5">
+                    {/* Input Row - The Gene Chat Field */}
+                    <div 
+                        className={`flex items-center gap-2.5 ${hasBulkSelection ? 'px-4 py-3 rounded-xl' : ''}`}
+                        style={hasBulkSelection ? {
+                            backgroundColor: 'rgba(255,255,255,0.7)',
+                            border: '1px solid rgba(200,180,170,0.2)',
+                        } : {}}
+                    >
                         <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center shrink-0">
                             {isThinking ? (
                                 <div className="w-3 h-3 border-2 border-gray-400 border-t-black rounded-full animate-spin" />
@@ -387,9 +400,9 @@ export default function GlobalAiChat() {
                             {inputValue.trim() && (
                                 <button 
                                     onClick={handleSend}
-                                    className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+                                    className={`flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${hasBulkSelection ? 'w-9 h-9 rounded-xl' : 'w-6 h-6 rounded-full'} bg-black text-white`}
                                 >
-                                    <ArrowUp className="w-3 h-3" />
+                                    <ArrowUp className={hasBulkSelection ? "w-4 h-4" : "w-3 h-3"} />
                                 </button>
                             )}
                         </div>
