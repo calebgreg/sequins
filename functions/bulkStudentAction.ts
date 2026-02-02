@@ -109,12 +109,16 @@ Deno.serve(async (req) => {
 
         // Execute the action
         if (llmResponse.action_type === 'update_students' && llmResponse.update_data) {
+            console.log(`[BulkAction] Update data from LLM:`, JSON.stringify(llmResponse.update_data));
             for (const student of selectedStudents) {
                 try {
-                    await base44.entities.Student.update(student.id, llmResponse.update_data);
+                    console.log(`[BulkAction] Updating student ${student.id} with:`, JSON.stringify(llmResponse.update_data));
+                    await base44.asServiceRole.entities.Student.update(student.id, llmResponse.update_data);
+                    console.log(`[BulkAction] Successfully updated student ${student.id}`);
                     results.push({ id: student.id, name: student.name, success: true });
                     successCount++;
                 } catch (err) {
+                    console.error(`[BulkAction] Failed to update student ${student.id}:`, err.message);
                     results.push({ id: student.id, name: student.name, success: false, error: err.message });
                     errorCount++;
                 }
