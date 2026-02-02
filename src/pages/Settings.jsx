@@ -5,6 +5,7 @@ import { ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import GeneralSettings from '../components/settings/GeneralSettings';
 import TuitionBillingWizard from '../components/billing/TuitionBillingWizard';
+import TuitionRulesDisplay from '../components/settings/TuitionRulesDisplay';
 import AppleMusicSettings from '../components/settings/AppleMusicSettings';
 import RoomSetupWizard from '../components/settings/RoomSetupWizard';
 import RoomList from '../components/settings/RoomList';
