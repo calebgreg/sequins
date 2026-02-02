@@ -52,6 +52,7 @@ import ClassDetail from './pages/ClassDetail';
 import ClassManager from './pages/ClassManager';
 import FamilyRoom from './pages/FamilyRoom';
 import Features from './pages/Features';
+import Growth from './pages/Growth';
 import Home from './pages/Home';
 import Performances from './pages/Performances';
 import RunBilling from './pages/RunBilling';
@@ -63,7 +64,6 @@ import TeacherDetails from './pages/TeacherDetails';
 import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
-import Growth from './pages/Growth';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +73,7 @@ export const PAGES = {
     "ClassManager": ClassManager,
     "FamilyRoom": FamilyRoom,
     "Features": Features,
+    "Growth": Growth,
     "Home": Home,
     "Performances": Performances,
     "RunBilling": RunBilling,
@@ -84,7 +85,6 @@ export const PAGES = {
     "TeacherStudio": TeacherStudio,
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
-    "Growth": Growth,
 }
 
 export const pagesConfig = {

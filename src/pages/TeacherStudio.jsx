@@ -163,14 +163,33 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
   const handleSubmitAttendance = async () => {
     setIsSubmitting(true);
     try {
+      const todayDate = new Date().toISOString().split('T')[0];
       const records = Object.entries(attendance).map(([name, status]) => ({
         class_id: classData.id,
         class_name: classData.title,
         student_name: name,
-        date: new Date().toISOString().split('T')[0],
+        date: todayDate,
         status: status
       }));
       await base44.entities.Attendance.bulkCreate(records);
+
+      // Check for students who are attending as a makeup
+      // Find any absence records with this class scheduled as makeup for today
+      const allAttendance = await base44.entities.Attendance.list();
+      const makeupRecords = allAttendance.filter(a => 
+        a.makeup_class_id === classData.id && 
+        a.makeup_date === todayDate &&
+        (a.status === 'absent' || a.status === 'excused')
+      );
+      
+      // Mark those original absences as "made_up"
+      for (const makeupRecord of makeupRecords) {
+        if (attendance[makeupRecord.student_name] === 'present') {
+          await base44.entities.Attendance.update(makeupRecord.id, {
+            status: 'made_up'
+          });
+        }
+      }
 
       // Use the powerful AI attendance analyzer
       const analysis = await analyzeAttendance({
