@@ -557,10 +557,25 @@ export default function TeacherStudio() {
 
 
   return (
-    <div className="min-h-screen bg-[#F4F4F6]">
+    <div 
+      className="min-h-screen relative overflow-hidden"
+      style={{ 
+        fontFamily: "'DM Sans', -apple-system, sans-serif",
+        background: '#ffffff',
+      }}
+    >
+      {/* Ambient background shapes */}
+      <div 
+        className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+      />
+      <div 
+        className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+      />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col relative max-w-[100vw] overflow-x-hidden">
+      <div className="relative flex-1 flex flex-col max-w-[100vw] overflow-x-hidden">
 
         <AnimatePresence mode="wait">
           {!selectedClass ? (
@@ -569,45 +584,51 @@ export default function TeacherStudio() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex-1 p-6 pt-20 md:pt-10 max-w-5xl mx-auto w-full"
+              className="flex-1 p-6 pt-20 md:pt-10 max-w-4xl mx-auto w-full"
             >
               {/* Header Controls */}
-              <div className="flex justify-between items-center mb-12">
+              <div className="flex flex-wrap justify-between items-center gap-4 mb-10">
                  {/* Left: Classes / Admin Toggle */}
-                 <div className="bg-white p-1 rounded-full inline-flex relative shadow-sm border border-gray-100">
+                 <div 
+                   className="inline-flex items-center gap-1 p-1.5 rounded-2xl"
+                   style={{
+                     background: 'rgba(240,230,225,0.5)',
+                     boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.1)',
+                   }}
+                 >
                    {[
                      { id: 'classes', label: 'Classes' },
                      { id: 'admin', label: 'Admin' }
-                   ].map((tab) => {
-                   const isActive = activeTab === tab.id;
-                   return (
+                   ].map((tab) => (
                      <button
                        key={tab.id}
                        onClick={() => setActiveTab(tab.id)}
-                       className={`
-                         relative px-8 py-2.5 rounded-full text-sm font-medium transition-all duration-300 z-10
-                         ${isActive ? 'text-[#333333]' : 'text-gray-500 hover:text-gray-700'}
-                       `}
+                       className="px-6 py-2 rounded-xl text-sm font-medium transition-all"
+                       style={{
+                         background: activeTab === tab.id 
+                           ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
+                           : 'transparent',
+                         color: activeTab === tab.id ? '#8b7d72' : '#b5a599',
+                         boxShadow: activeTab === tab.id 
+                           ? '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)'
+                           : 'none',
+                       }}
                      >
-                       {isActive && (
-                         <motion.div
-                           layoutId="activeMainTab"
-                           className="absolute inset-0 bg-[#F2DCDD] rounded-full"
-                           initial={false}
-                           transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                           style={{ zIndex: -1 }}
-                         />
-                       )}
-                       <span>{tab.label}</span>
+                       {tab.label}
                      </button>
-                   )
-                 })}
+                   ))}
                  </div>
                    
                  {/* Right: View Modes + Quick Actions */}
                  <div className="flex items-center gap-3">
                    {/* View Mode Toggle */}
-                   <div className="bg-white p-1 rounded-full inline-flex relative shadow-sm border border-gray-100">
+                   <div 
+                     className="inline-flex items-center gap-1 p-1.5 rounded-2xl"
+                     style={{
+                       background: 'rgba(240,230,225,0.5)',
+                       boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.1)',
+                     }}
+                   >
                      {[
                        { id: 'list', label: 'List', icon: List },
                        { id: 'week', label: 'Week', icon: LayoutGrid },
@@ -616,20 +637,17 @@ export default function TeacherStudio() {
                        <button
                          key={view.id}
                          onClick={() => setViewMode(view.id)}
-                         className={`
-                           relative px-5 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 transition-colors duration-200 z-10
-                           ${viewMode === view.id ? 'text-[#333333]' : 'text-gray-400 hover:text-gray-700'}
-                         `}
+                         className="px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all"
+                         style={{
+                           background: viewMode === view.id 
+                             ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
+                             : 'transparent',
+                           color: viewMode === view.id ? '#8b7d72' : '#b5a599',
+                           boxShadow: viewMode === view.id 
+                             ? '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)'
+                             : 'none',
+                         }}
                        >
-                         {viewMode === view.id && (
-                           <motion.div
-                             layoutId="activeViewTab"
-                             className="absolute inset-0 bg-gray-100 rounded-full"
-                             initial={false}
-                             transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                             style={{ zIndex: -1 }}
-                           />
-                         )}
                          <view.icon className="w-4 h-4" />
                          <span className="hidden md:inline">{view.label}</span>
                        </button>
@@ -638,9 +656,16 @@ export default function TeacherStudio() {
 
                    {/* Time Management Link */}
                    <Link to={createPageUrl('TeacherTimeManagement')}>
-                     <Button variant="outline" size="icon" className="rounded-full h-11 w-11 border-gray-200">
+                     <button 
+                       className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                       style={{
+                         background: 'rgba(255,255,255,0.6)',
+                         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+                         color: '#b5a599',
+                       }}
+                     >
                        <Clock className="w-4 h-4" />
-                     </Button>
+                     </button>
                    </Link>
                  </div>
               </div>
