@@ -14,7 +14,7 @@ import { format, differenceInMinutes } from 'date-fns';
 import VoiceNoteIntake from '../components/teacher/VoiceNoteIntake';
 import ClassRosterView from '../components/teacher/ClassRosterView';
 import StudentProfileView from '../components/teacher/StudentProfileView';
-import SubRequestModal from '../components/teacher/SubRequestModal';
+import SubRequestFlow from '../components/teachers/SubRequestFlow';
 import { WeekView, MonthView } from '../components/teacher/ScheduleViews';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
