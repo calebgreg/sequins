@@ -230,9 +230,10 @@ export function BillingOverview({ onSelectFamily }) {
         invoiceId: existingInvoice?.id,
         daysPastDue,
         paidDate,
+        billingAdjustments: adjustments,
       };
     });
-  }, [students, classes, tuitionRules, invoices]);
+  }, [students, classes, tuitionRules, invoices, familyEntities]);
 
   const stats = {
     collected: families.filter(f => f.status === 'paid').reduce((s, f) => s + f.amount, 0),
