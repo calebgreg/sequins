@@ -267,24 +267,13 @@ export default function FamilyTuitionManager({ family }) {
                                     
                                     {/* Class/Details List - uses TuitionRules rates */}
                                     <div className="text-xs text-gray-400 space-y-1">
-                                        {enrolledClasses.length > 0 ? (
-                                            enrolledClasses.map(cls => {
-                                                // Get rate from TuitionRules
-                                                const basePricingRule = tuitionRules.find(r => r.type === 'base_pricing' && r.active !== false);
-                                                const classExceptionRule = tuitionRules.find(r => 
-                                                    r.type === 'class_exception' && 
-                                                    r.active !== false && 
-                                                    r.note?.toLowerCase().includes(cls.title?.toLowerCase())
-                                                );
-                                                const classRate = classExceptionRule?.value?.amount || basePricingRule?.value?.amount || cls.tuition_cost || 0;
-                                                
-                                                return (
-                                                    <div key={cls.id} className="flex justify-between">
-                                                        <span>{cls.title}</span>
-                                                        <span>${classRate.toFixed(2)}</span>
-                                                    </div>
-                                                );
-                                            })
+                                        {studentLines.length > 0 ? (
+                                            studentLines.map((line, idx) => (
+                                                <div key={idx} className="flex justify-between">
+                                                    <span>{line.description}</span>
+                                                    <span>${line.amount.toFixed(2)}</span>
+                                                </div>
+                                            ))
                                         ) : (
                                             <div className="italic">No active classes</div>
                                         )}
