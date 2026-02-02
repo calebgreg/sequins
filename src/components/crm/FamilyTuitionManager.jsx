@@ -60,50 +60,42 @@ export default function FamilyTuitionManager({ family }) {
         const discountRulesFromTuition = activeRules.filter(r => r.type === 'discount');
         const feeRules = activeRules.filter(r => r.type === 'fee');
 
-        // 1. Calculate Tuition per Student using TuitionRules
+        // 1. Calculate Tuition per Student using TuitionRules ONLY
         familyStudents.forEach(student => {
             const studentClasses = classes.filter(c => c.student_names?.includes(student.name));
-            const activePlan = tuitionPlans.find(p => p.id === student.tuition_plan_id);
             
             let amount = 0;
             let breakdown = [];
             let description = '';
 
-            // Priority 1: If student has an assigned TuitionPlan, use that
-            if (activePlan) {
-                amount = activePlan.amount;
-                description = `${activePlan.name} (Membership)`;
-                breakdown.push(`Includes ${activePlan.class_limit === 0 ? 'Unlimited' : activePlan.class_limit} classes`);
-            } else {
-                // Priority 2: Use TuitionRules to calculate
-                let classTotal = 0;
+            // Use TuitionRules to calculate
+            let classTotal = 0;
+            
+            // Determine per-class rate from base_pricing rule
+            const baseRate = basePricingRule?.value?.amount || 0;
+            
+            studentClasses.forEach(cls => {
+                // Check for class-specific exceptions first
+                const exception = classExceptionRules.find(r => 
+                    r.note?.toLowerCase().includes(cls.title?.toLowerCase())
+                );
                 
-                // Determine per-class rate from base_pricing rule
-                const baseRate = basePricingRule?.value?.amount || 0;
-                
-                studentClasses.forEach(cls => {
-                    // Check for class-specific exceptions first
-                    const exception = classExceptionRules.find(r => 
-                        r.note?.toLowerCase().includes(cls.title?.toLowerCase())
-                    );
-                    
-                    if (exception && exception.value?.amount) {
-                        classTotal += exception.value.amount;
-                        breakdown.push(`${cls.title}: $${exception.value.amount} (special)`);
-                    } else if (baseRate > 0) {
-                        // Use base pricing rule rate
-                        classTotal += baseRate;
-                        breakdown.push(`${cls.title}: $${baseRate}`);
-                    } else if (cls.tuition_cost) {
-                        // Fallback to class-level cost
-                        classTotal += cls.tuition_cost;
-                        breakdown.push(`${cls.title}: $${cls.tuition_cost}`);
-                    }
-                });
-                
-                amount = classTotal;
-                description = `Standard Calculation (${studentClasses.length} classes × $${baseRate || 'varies'})`;
-            }
+                if (exception && exception.value?.amount) {
+                    classTotal += exception.value.amount;
+                    breakdown.push(`${cls.title}: $${exception.value.amount} (special)`);
+                } else if (baseRate > 0) {
+                    // Use base pricing rule rate
+                    classTotal += baseRate;
+                    breakdown.push(`${cls.title}: $${baseRate}`);
+                } else if (cls.tuition_cost) {
+                    // Fallback to class-level cost
+                    classTotal += cls.tuition_cost;
+                    breakdown.push(`${cls.title}: $${cls.tuition_cost}`);
+                }
+            });
+            
+            amount = classTotal;
+            description = `${studentClasses.length} classes × $${baseRate || 'varies'}`;
 
             potentialRevenue += amount;
             
