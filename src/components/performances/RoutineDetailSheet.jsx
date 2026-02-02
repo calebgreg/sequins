@@ -242,66 +242,126 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-0 bg-[#FDFBF7]">
-                <div className="p-6 pb-2 border-b border-gray-100 bg-white sticky top-0 z-10">
+            <SheetContent 
+                className="w-full sm:max-w-xl overflow-y-auto p-0 border-none"
+                style={{ background: '#ffffff' }}
+            >
+                {/* Ambient background shapes */}
+                <div 
+                    className="fixed top-[-20%] right-[-10%] w-[400px] h-[400px] rounded-full opacity-40 blur-3xl pointer-events-none"
+                    style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+                />
+                <div 
+                    className="fixed bottom-[-30%] left-[-15%] w-[500px] h-[500px] rounded-full opacity-30 blur-3xl pointer-events-none"
+                    style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+                />
+
+                <div 
+                    className="p-6 pb-4 sticky top-0 z-10"
+                    style={{
+                        background: 'linear-gradient(145deg, rgba(253,238,236,0.95) 0%, rgba(250,232,228,0.9) 100%)',
+                        boxShadow: 'inset 0 -1px 1px rgba(200,180,170,0.1)',
+                    }}
+                >
                     <SheetHeader>
-                        <SheetTitle className="text-2xl font-serif text-[#333333]">Edit Routine</SheetTitle>
-                        <SheetDescription>
+                        <SheetTitle 
+                            className="text-2xl font-bold tracking-tight"
+                            style={{ 
+                                color: 'transparent',
+                                backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                            }}
+                        >
+                            Edit Routine
+                        </SheetTitle>
+                        <SheetDescription style={{ color: '#a8998e' }}>
                             Configure details for {formData.title || 'this act'}
                         </SheetDescription>
                     </SheetHeader>
                 </div>
 
-                <div className="p-6 space-y-8">
+                <div className="p-6 space-y-8 relative">
                     {/* Basic Info */}
-                    <div id="section-general" className="space-y-5 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                    <div 
+                        id="section-general" 
+                        className="space-y-5 p-6 rounded-3xl relative overflow-hidden"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                        }}
+                    >
                         <div className="space-y-2">
-                            <Label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Routine Title</Label>
+                            <Label className="text-xs font-bold uppercase tracking-wider" style={{ color: '#b5a599' }}>Routine Title</Label>
                             <Input 
                                 value={formData.title || ''} 
                                 onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                className="text-lg font-medium border-gray-200 bg-[#F9F9FB] focus:bg-white transition-colors h-11"
+                                className="text-lg font-medium h-12 rounded-xl transition-colors"
+                                style={{
+                                    background: 'rgba(255,255,255,0.6)',
+                                    border: '1px solid rgba(200,180,170,0.2)',
+                                    color: '#8b7d72',
+                                }}
                             />
                         </div>
 
                         <div id="section-music" className="grid grid-cols-2 gap-4 scroll-mt-20">
                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2"><Music className="w-3 h-3" /> Song</Label>
+                                <Label className="flex items-center gap-2 text-sm" style={{ color: '#8b7d72' }}><Music className="w-3 h-3" style={{ color: '#c9a99c' }} /> Song</Label>
                                 <Input 
                                     value={formData.song_title || ''} 
                                     onChange={(e) => setFormData({...formData, song_title: e.target.value})}
                                     placeholder="Song Title"
+                                    className="rounded-xl"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.6)',
+                                        border: '1px solid rgba(200,180,170,0.2)',
+                                        color: '#8b7d72',
+                                    }}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2"><Mic className="w-3 h-3" /> Artist</Label>
+                                <Label className="flex items-center gap-2 text-sm" style={{ color: '#8b7d72' }}><Mic className="w-3 h-3" style={{ color: '#c9a99c' }} /> Artist</Label>
                                 <Input 
                                     value={formData.artist || ''} 
                                     onChange={(e) => setFormData({...formData, artist: e.target.value})}
                                     placeholder="Artist Name"
+                                    className="rounded-xl"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.6)',
+                                        border: '1px solid rgba(200,180,170,0.2)',
+                                        color: '#8b7d72',
+                                    }}
                                 />
                             </div>
                         </div>
 
                         {/* Premium Music Card Integration */}
                         {hasValidMusic ? (
-                          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden relative group">
+                          <div 
+                              className="rounded-2xl overflow-hidden relative group"
+                              style={{
+                                  background: 'rgba(255,255,255,0.6)',
+                                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                                  border: '1px solid rgba(200,180,170,0.2)',
+                              }}
+                          >
                               <div className="absolute top-2 right-2 flex gap-1 z-10">
                                    <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-6 w-6 rounded-full bg-white/80 hover:bg-white text-gray-500 shadow-sm backdrop-blur-sm"
+                                      className="h-6 w-6 rounded-full backdrop-blur-sm"
+                                      style={{ background: 'rgba(255,255,255,0.6)', color: '#b5a599' }}
                                       onClick={() => setFormData(prev => ({ ...prev, spotify_link: '', apple_music_link: '' }))}
                                    >
                                       <X className="w-3 h-3" />
                                    </Button>
                               </div>
                               <div className="flex items-center p-4">
-                                  {/* Content Section */}
                                   <div className="flex-1 flex flex-col justify-center">
                                       <div className="mb-3">
-                                          <h4 className="font-bold text-[#333333] leading-tight text-lg line-clamp-1">{formData.song_title || "Unknown Track"}</h4>
-                                          <p className="text-gray-500 text-sm line-clamp-1">{formData.artist || "Unknown Artist"}</p>
+                                          <h4 className="font-bold leading-tight text-lg line-clamp-1" style={{ color: '#8b7d72' }}>{formData.song_title || "Unknown Track"}</h4>
+                                          <p className="text-sm line-clamp-1" style={{ color: '#a8998e' }}>{formData.artist || "Unknown Artist"}</p>
                                       </div>
 
                                       <div className="flex items-center gap-2">
@@ -316,7 +376,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                                   Spotify
                                               </a>
                                           ) : (
-                                              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-400 rounded-full text-xs font-bold select-none cursor-not-allowed grayscale opacity-70">
+                                              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold select-none cursor-not-allowed grayscale opacity-70" style={{ background: 'rgba(200,180,170,0.15)', color: '#b5a599' }}>
                                                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
                                                   Spotify
                                               </div>
@@ -333,7 +393,7 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                                   Apple Music
                                               </a>
                                           ) : (
-                                              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-400 rounded-full text-xs font-bold select-none cursor-not-allowed grayscale opacity-70">
+                                              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold select-none cursor-not-allowed grayscale opacity-70" style={{ background: 'rgba(200,180,170,0.15)', color: '#b5a599' }}>
                                                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.24-.87 3.56-.74c1.52.13 2.67.62 3.4 1.53-2.9 1.5-2.4 5.37.52 6.64-.67 1.83-1.6 3.63-2.56 4.8zm-5.4-15.16c.55-1.74 2.22-3 4.1-3.12.3 2-1.72 4.2-4.1 3.12z"/></svg>
                                                   Apple Music
                                               </div>
@@ -343,20 +403,37 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                               </div>
                           </div>
                         ) : (
-                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 flex flex-col items-center justify-center text-center space-y-3 group hover:border-indigo-100 hover:bg-indigo-50/10 transition-colors">
-                                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 group-hover:scale-110 transition-transform">
-                                    <Music className="w-6 h-6 text-gray-300 group-hover:text-indigo-400" />
+                            <div 
+                                className="rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-3 group transition-colors"
+                                style={{
+                                    background: 'rgba(255,255,255,0.4)',
+                                    border: '2px dashed rgba(200,180,170,0.3)',
+                                }}
+                            >
+                                <div 
+                                    className="w-12 h-12 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
+                                    style={{
+                                        background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                                        boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+                                    }}
+                                >
+                                    <Music className="w-6 h-6" style={{ color: '#c9a99c' }} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-900">No music links yet</p>
-                                    <p className="text-xs text-gray-500 max-w-[200px] mx-auto">Connect Spotify or Apple Music to enable one-click playback.</p>
+                                    <p className="text-sm font-medium" style={{ color: '#8b7d72' }}>No music links yet</p>
+                                    <p className="text-xs max-w-[200px] mx-auto" style={{ color: '#b5a599' }}>Connect Spotify or Apple Music to enable one-click playback.</p>
                                 </div>
                                 <Button 
-                                    variant="outline" 
+                                    variant="ghost" 
                                     size="sm"
                                     onClick={handleFindLinks}
                                     disabled={isSearchingMusic || !formData.song_title}
-                                    className="rounded-full text-xs font-bold bg-white hover:text-indigo-600 hover:border-indigo-200"
+                                    className="rounded-full text-xs font-bold"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.6)',
+                                        color: '#8b7d72',
+                                        border: '1px solid rgba(200,180,170,0.2)',
+                                    }}
                                 >
                                     {isSearchingMusic ? (
                                         <>
@@ -370,19 +447,21 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                 </Button>
 
                                 <div className="pt-2 w-full max-w-sm">
-                                      <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Or paste links manually</div>
+                                      <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#b5a599' }}>Or paste links manually</div>
                                       <div className="grid grid-cols-2 gap-2">
                                           <Input 
                                               value={formData.spotify_link || ''}
                                               onChange={(e) => setFormData({...formData, spotify_link: e.target.value})}
                                               placeholder="Spotify URL"
-                                              className="h-8 text-xs bg-white text-center"
+                                              className="h-8 text-xs text-center rounded-lg"
+                                              style={{ background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(200,180,170,0.2)', color: '#8b7d72' }}
                                           />
                                           <Input 
                                               value={formData.apple_music_link || ''}
                                               onChange={(e) => setFormData({...formData, apple_music_link: e.target.value})}
                                               placeholder="Apple Music URL"
-                                              className="h-8 text-xs bg-white text-center"
+                                              className="h-8 text-xs text-center rounded-lg"
+                                              style={{ background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(200,180,170,0.2)', color: '#8b7d72' }}
                                           />
                                       </div>
                                 </div>
@@ -390,33 +469,44 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                         )}
 
                         <div className="space-y-2">
-                            <Label className="flex items-center gap-2"><Clock className="w-3 h-3" /> Duration</Label>
+                            <Label className="flex items-center gap-2 text-sm" style={{ color: '#8b7d72' }}><Clock className="w-3 h-3" style={{ color: '#c9a99c' }} /> Duration</Label>
                             <div className="flex items-center gap-2">
                                 <Input 
                                     type="number" 
                                     min="0"
                                     value={formData.duration_minutes || 0} 
                                     onChange={(e) => setFormData({...formData, duration_minutes: e.target.value})}
-                                    className="w-20"
+                                    className="w-20 rounded-xl"
+                                    style={{ background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(200,180,170,0.2)', color: '#8b7d72' }}
                                 />
-                                <span className="text-sm text-gray-500">min</span>
+                                <span className="text-sm" style={{ color: '#b5a599' }}>min</span>
                                 <Input 
                                     type="number" 
                                     min="0" 
                                     max="59"
                                     value={formData.duration_seconds_part || 0} 
                                     onChange={(e) => setFormData({...formData, duration_seconds_part: e.target.value})}
-                                    className="w-20"
+                                    className="w-20 rounded-xl"
+                                    style={{ background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(200,180,170,0.2)', color: '#8b7d72' }}
                                 />
-                                <span className="text-sm text-gray-500">sec</span>
+                                <span className="text-sm" style={{ color: '#b5a599' }}>sec</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Grooming & Schedule */}
-                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-                        <h3 className="font-serif text-xl text-[#333333] flex items-center gap-2">
-                            <Scissors className="w-5 h-5 text-gray-400" />
+                    <div 
+                        className="p-6 rounded-3xl space-y-6"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                        }}
+                    >
+                        <h3 
+                            className="text-xl font-bold flex items-center gap-2"
+                            style={{ color: '#8b7d72' }}
+                        >
+                            <Scissors className="w-5 h-5" style={{ color: '#c9a99c' }} />
                             Grooming & Attire
                         </h3>
                         <div id="section-grooming" className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -469,13 +559,25 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                         </div>
                     </div>
 
-                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                    <div 
+                        className="p-6 rounded-3xl space-y-6"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                        }}
+                    >
                         <div className="flex justify-between items-center">
-                            <h3 className="font-serif text-xl text-[#333333] flex items-center gap-2">
-                                <CalendarDays className="w-5 h-5 text-gray-400" />
+                            <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: '#8b7d72' }}>
+                                <CalendarDays className="w-5 h-5" style={{ color: '#c9a99c' }} />
                                 Class Schedule
                             </h3>
-                            <Button size="sm" variant="outline" onClick={addRehearsal}>
+                            <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={addRehearsal}
+                                className="rounded-full"
+                                style={{ background: 'rgba(255,255,255,0.6)', color: '#8b7d72', border: '1px solid rgba(200,180,170,0.2)' }}
+                            >
                                 <Plus className="w-3 h-3 mr-1" /> Add Event
                             </Button>
                         </div>
@@ -552,9 +654,15 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                     </div>
 
                     {/* Tech Details */}
-                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-                        <h3 className="font-serif text-xl text-[#333333] flex items-center gap-2">
-                            <Lightbulb className="w-5 h-5 text-gray-400" />
+                    <div 
+                        className="p-6 rounded-3xl space-y-6"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                        }}
+                    >
+                        <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: '#8b7d72' }}>
+                            <Lightbulb className="w-5 h-5" style={{ color: '#c9a99c' }} />
                             Production Details
                         </h3>
                         
@@ -634,11 +742,24 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                     </div>
 
                     {/* Performers */}
-                    <div id="section-performers" className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                    <div 
+                        id="section-performers" 
+                        className="p-6 rounded-3xl space-y-4"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                        }}
+                    >
                          <div className="flex items-center justify-between">
-                            <h3 className="font-serif text-xl text-[#333333] flex items-center gap-2">
-                                <Users className="w-5 h-5 text-gray-400" />
-                                Cast <Badge variant="secondary" className="rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100">{formData.performers?.length || 0}</Badge>
+                            <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: '#8b7d72' }}>
+                                <Users className="w-5 h-5" style={{ color: '#c9a99c' }} />
+                                Cast 
+                                <span 
+                                    className="text-sm px-2 py-0.5 rounded-full"
+                                    style={{ background: 'rgba(164,139,196,0.15)', color: '#8b7d9a' }}
+                                >
+                                    {formData.performers?.length || 0}
+                                </span>
                             </h3>
                         </div>
                         
@@ -698,7 +819,13 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-gray-100 bg-white sticky bottom-0 z-10 flex items-center justify-between gap-3">
+                <div 
+                    className="p-6 sticky bottom-0 z-10 flex items-center justify-between gap-3"
+                    style={{
+                        background: 'linear-gradient(145deg, rgba(253,238,236,0.95) 0%, rgba(250,232,228,0.9) 100%)',
+                        borderTop: '1px solid rgba(200,180,170,0.2)',
+                    }}
+                >
                      <Button 
                         variant="ghost" 
                         onClick={() => {
@@ -706,15 +833,41 @@ export default function RoutineDetailSheet({ routine, open, onOpenChange, allStu
                                 deleteRoutine.mutate();
                             }
                         }}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="rounded-full"
+                        style={{ color: '#c87070' }}
                     >
                         <Trash2 className="w-4 h-4 mr-2" /> Delete
                     </Button>
                     <div className="flex items-center gap-3">
-                        <Button variant="ghost" onClick={() => onOpenChange(false)} className="rounded-full">Cancel</Button>
-                        <Button onClick={handleSave} className="bg-[#333333] text-white hover:bg-black rounded-full px-6 shadow-lg hover:shadow-xl transition-all">
-                            <Save className="w-4 h-4 mr-2" /> Save Changes
+                        <Button 
+                            variant="ghost" 
+                            onClick={() => onOpenChange(false)} 
+                            className="rounded-full"
+                            style={{ color: '#b5a599' }}
+                        >
+                            Cancel
                         </Button>
+                        <button 
+                            onClick={handleSave}
+                            className="px-6 py-3 rounded-2xl text-sm font-bold tracking-tight transition-all hover:scale-[1.02]"
+                            style={{
+                                background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+                                boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+                                border: '1px solid rgba(255, 220, 210, 0.5)',
+                            }}
+                        >
+                            <span
+                                style={{
+                                    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                    color: 'transparent',
+                                }}
+                                className="flex items-center gap-2"
+                            >
+                                <Save className="w-4 h-4" style={{ color: '#8a7070' }} /> Save Changes
+                            </span>
+                        </button>
                     </div>
                 </div>
             </SheetContent>
