@@ -112,7 +112,7 @@ import StudentNotePrompt from '../components/teacher/StudentNotePrompt';
 
 // --- SUB-COMPONENT: Class Detail View ---
 const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) => {
-  const [mode, setMode] = useState('dashboard'); // 'dashboard', 'roster', 'notes', 'active_class', 'student', 'music', 'lesson_plan', 'student_note_prompt'
+  const [mode, setMode] = useState('dashboard');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [attendance, setAttendance] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,6 +120,25 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
   const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
   const [studentsToPrompt, setStudentsToPrompt] = useState([]);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+
+  // Frosted glass style for cards
+  const cardStyle = {
+    background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 15px 50px -15px rgba(180,150,140,0.15)',
+  };
+  
+  const buttonStyle = {
+    background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+    boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+    border: '1px solid rgba(255, 220, 210, 0.5)',
+  };
+  
+  const textGradient = {
+    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+    backgroundClip: 'text',
+    WebkitBackgroundClip: 'text',
+    color: 'transparent',
+  };
 
   // Initialize attendance
   useEffect(() => {
