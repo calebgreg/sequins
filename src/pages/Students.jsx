@@ -524,13 +524,9 @@ export default function Students() {
                            key={student.id} 
                            className="rounded-2xl p-4 cursor-pointer transition-all hover:scale-[1.01]"
                            style={{
-                             background: isSelected 
-                               ? 'linear-gradient(145deg, rgba(199, 210, 254, 0.3) 0%, rgba(199, 210, 254, 0.2) 100%)'
-                               : 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                             background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
                              boxShadow: '0 4px 16px -4px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)',
-                             border: isSelected 
-                               ? '2px solid rgba(99, 102, 241, 0.4)'
-                               : '1px solid rgba(255, 200, 200, 0.2)',
+                             border: '1px solid rgba(255, 200, 200, 0.2)',
                            }}
                            onClick={() => setSelectedStudent(student)}
                          >
@@ -626,9 +622,8 @@ export default function Students() {
                               className="group transition-colors cursor-pointer"
                               style={{ 
                                 borderBottom: '1px solid rgba(200,180,170,0.1)',
-                                backgroundColor: isSelected ? 'rgba(199, 210, 254, 0.15)' : 'transparent',
                               }}
-                              whileHover={{ backgroundColor: isSelected ? 'rgba(199, 210, 254, 0.25)' : 'rgba(255,255,255,0.5)' }}
+                              whileHover={{ backgroundColor: 'rgba(255,255,255,0.5)' }}
                               onClick={() => setSelectedStudent(student)}
                             >
                               <td className="p-5">
