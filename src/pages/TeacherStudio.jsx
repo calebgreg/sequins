@@ -354,20 +354,20 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
       >
         {/* Ambient background shapes */}
         <div 
-          className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+          className="fixed top-[-20%] right-[-10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
         />
         <div 
-          className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+          className="fixed bottom-[-30%] left-[-15%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
         />
 
         {/* Header */}
-        <div className="relative px-8 py-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="relative px-4 md:px-8 py-6 md:py-8 flex items-center justify-between">
+          <div className="flex items-center gap-3 md:gap-4">
             <button 
               onClick={onBack} 
-              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
               style={{
                 background: 'rgba(255,255,255,0.6)',
                 boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
@@ -377,7 +377,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
               <ChevronLeft className="w-5 h-5" />
             </button>
             <h2 
-              className="text-2xl font-bold tracking-tight"
+              className="text-xl md:text-2xl font-bold tracking-tight truncate"
               style={textGradient}
             >
               {classData.title}
@@ -389,35 +389,35 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
           
           {/* Main Status Card */}
           <div 
-            className="rounded-3xl p-8 mb-6"
+            className="rounded-2xl md:rounded-3xl p-5 md:p-8 mb-4 md:mb-6"
             style={cardStyle}
           >
-            <div className="flex flex-col md:flex-row items-start justify-between gap-6">
-              <div className="flex items-start gap-6">
+            <div className="flex flex-col gap-5 md:gap-6">
+              <div className="flex items-start gap-4 md:gap-6">
                 <div 
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  className="w-14 h-14 md:w-20 md:h-20 rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0"
                   style={{
                     background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
                     boxShadow: '0 8px 32px -8px rgba(180,150,140,0.25), inset 0 1px 1px rgba(255,255,255,1)',
                   }}
                 >
-                  <span className="text-2xl font-medium" style={{ color: '#c9a99c' }}>
+                  <span className="text-xl md:text-2xl font-medium" style={{ color: '#c9a99c' }}>
                     {classData.title.charAt(0)}
                   </span>
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <h3 
-                    className="text-3xl font-bold tracking-tight"
+                    className="text-xl md:text-3xl font-bold tracking-tight truncate"
                     style={textGradient}
                   >
                     {classData.title}
                   </h3>
-                  <p className="text-lg mt-1" style={{ color: '#a8998e' }}>
+                  <p className="text-sm md:text-lg mt-1" style={{ color: '#a8998e' }}>
                     {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} · {classData.duration} hrs
                   </p>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex flex-wrap gap-2 mt-3 md:mt-4">
                     <span 
-                      className="px-4 py-1.5 rounded-full text-sm"
+                      className="px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm"
                       style={{
                         background: 'rgba(255,255,255,0.5)',
                         color: '#9a8b80',
@@ -427,7 +427,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
                       {classData.student_names?.length || 0} Students
                     </span>
                     <span 
-                      className="px-4 py-1.5 rounded-full text-sm"
+                      className="px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm"
                       style={{
                         background: 'rgba(255,255,255,0.5)',
                         color: '#9a8b80',
@@ -442,10 +442,10 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
 
               <button 
                 onClick={() => setMode('active_class')}
-                className="w-full md:w-auto px-8 py-4 rounded-2xl text-base font-bold tracking-tight transition-all hover:scale-[1.02]"
+                className="w-full px-6 md:px-8 py-4 rounded-2xl text-base font-bold tracking-tight transition-all active:scale-[0.98] md:hover:scale-[1.02]"
                 style={buttonStyle}
               >
-                <span style={textGradient} className="flex items-center gap-2">
+                <span style={textGradient} className="flex items-center justify-center gap-2">
                   <Play className="w-4 h-4 fill-current" style={{ color: '#c4a0a0' }} /> Start Class
                 </span>
               </button>
@@ -453,40 +453,40 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
           </div>
 
           {/* Actions Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 md:gap-4">
             {[
-              { icon: CalendarX, label: 'request coverage', onClick: () => setIsSubRequestOpen(true) },
-              { icon: Mic, label: 'log note', onClick: () => setMode('notes') },
-              { icon: Users, label: 'view roster', onClick: () => setMode('roster') },
-              { icon: Sparkles, label: 'lesson plan', onClick: () => setMode('lesson_plan') },
-              { icon: Music, label: 'class music', onClick: () => setMode('music') },
-              { icon: MoreVertical, label: 'more options', onClick: () => {} },
+              { icon: CalendarX, label: 'Coverage', onClick: () => setIsSubRequestOpen(true) },
+              { icon: Mic, label: 'Notes', onClick: () => setMode('notes') },
+              { icon: Users, label: 'Roster', onClick: () => setMode('roster') },
+              { icon: Sparkles, label: 'Lesson', onClick: () => setMode('lesson_plan') },
+              { icon: Music, label: 'Music', onClick: () => setMode('music') },
+              { icon: MoreVertical, label: 'More', onClick: () => {} },
             ].map((action) => (
               <button
                 key={action.label}
                 onClick={action.onClick}
-                className="h-32 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.02]"
+                className="aspect-square md:h-32 md:aspect-auto rounded-xl md:rounded-2xl flex flex-col items-center justify-center gap-2 md:gap-3 transition-all active:scale-[0.95] md:hover:scale-[1.02]"
                 style={{
                   background: 'rgba(255,255,255,0.5)',
                   boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 16px -8px rgba(180,150,140,0.12)',
                 }}
               >
                 <div 
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center"
                   style={{
                     background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
                     boxShadow: '0 4px 12px -4px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,1)',
                   }}
                 >
-                  <action.icon className="w-5 h-5" style={{ color: '#c9a99c' }} />
+                  <action.icon className="w-4 h-4 md:w-5 md:h-5" style={{ color: '#c9a99c' }} />
                 </div>
-                <span className="text-sm font-medium" style={{ color: '#8b7d72' }}>{action.label}</span>
+                <span className="text-xs md:text-sm font-medium" style={{ color: '#8b7d72' }}>{action.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-{isSubRequestOpen && (
+        {isSubRequestOpen && (
           <SubRequestFlow 
             onClose={() => setIsSubRequestOpen(false)}
             classes={[classData]}
