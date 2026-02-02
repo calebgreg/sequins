@@ -121,50 +121,49 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 md:px-8 pb-8">
-        <div className="max-w-5xl mx-auto space-y-8">
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4">
+        <div className="max-w-6xl mx-auto space-y-4">
           
-          {/* Hero Profile Card */}
-          <div className="bg-white rounded-[40px] p-8 md:p-10 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#F2DCDD]/30 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+          {/* Hero Profile Card - Compact */}
+          <div className="bg-white rounded-3xl p-5 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#F2DCDD]/30 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
             
-            <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
+            <div className="relative z-10 flex flex-col md:flex-row gap-5 items-center">
               <div className="flex-shrink-0 relative">
-                 <div className="absolute inset-0 bg-[#F2DCDD] rounded-full blur-md opacity-50 translate-y-2" />
-                 <Avatar className="w-32 h-32 bg-white border-4 border-white shadow-xl relative">
-                  <AvatarFallback className="text-4xl font-serif text-[#333333]">{student.name.charAt(0)}</AvatarFallback>
+                 <Avatar className="w-20 h-20 bg-white border-4 border-white shadow-lg relative">
+                  <AvatarFallback className="text-2xl font-serif text-[#333333]">{student.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-2 -right-2 bg-[#333333] text-white text-xs font-bold px-3 py-1 rounded-full border-4 border-white shadow-sm">
+                <div className="absolute -bottom-1 -right-1 bg-[#333333] text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-sm">
                    {student.level}
                 </div>
               </div>
               
               <div className="flex-1 w-full">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                   <div>
-                    <h1 className="font-serif text-5xl text-[#333333] mb-2">{student.name}</h1>
-                    <div className="flex flex-wrap gap-4 text-gray-400 font-serif text-lg items-center">
-                      <span className="flex items-center gap-2 bg-[#F4F4F6] px-3 py-1 rounded-full text-sm"><Star className="w-4 h-4" /> {student.age} Years Old</span>
-                      <span className="flex items-center gap-2 bg-[#F4F4F6] px-3 py-1 rounded-full text-sm"><Mail className="w-4 h-4" /> {student.parent_email || 'No email'}</span>
+                    <h1 className="font-serif text-3xl text-[#333333] mb-1">{student.name}</h1>
+                    <div className="flex flex-wrap gap-2 text-gray-400 items-center">
+                      <span className="flex items-center gap-1.5 bg-[#F4F4F6] px-2.5 py-0.5 rounded-full text-xs"><Star className="w-3 h-3" /> {student.age} Years Old</span>
+                      <span className="flex items-center gap-1.5 bg-[#F4F4F6] px-2.5 py-0.5 rounded-full text-xs"><Mail className="w-3 h-3" /> {student.parent_email || 'No email'}</span>
                     </div>
                   </div>
                   
                   {/* Quick Stats Mini-Grid */}
-                  <div className="flex gap-4">
-                    <div className="text-center px-4 py-2 bg-[#F4F4F6] rounded-2xl">
-                       <div className="text-3xl font-serif text-[#333333]">{attendanceRate}%</div>
-                       <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Attendance</div>
+                  <div className="flex gap-3">
+                    <div className="text-center px-3 py-1.5 bg-[#F4F4F6] rounded-xl">
+                       <div className="text-2xl font-serif text-[#333333]">{attendanceRate}%</div>
+                       <div className="text-[9px] uppercase tracking-wider text-gray-400 font-bold">Attendance</div>
                     </div>
-                    <div className="text-center px-4 py-2 bg-[#F4F4F6] rounded-2xl">
-                       <div className="text-3xl font-serif text-[#333333]">{streak}</div>
-                       <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Day Streak</div>
+                    <div className="text-center px-3 py-1.5 bg-[#F4F4F6] rounded-xl">
+                       <div className="text-2xl font-serif text-[#333333]">{streak}</div>
+                       <div className="text-[9px] uppercase tracking-wider text-gray-400 font-bold">Day Streak</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Engagement Bar */}
-                <div className="space-y-2">
-                   <div className="flex justify-between text-sm font-medium">
+                <div className="mt-3 space-y-1">
+                   <div className="flex justify-between text-xs font-medium">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -184,15 +183,15 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                       </TooltipProvider>
                       <span className="text-[#333333]">{engagementLabel} ({engagementScore}%)</span>
                    </div>
-                   <Progress value={engagementScore} className="h-2 bg-[#F4F4F6]" indicatorClassName="bg-gradient-to-r from-[#F2DCDD] to-[#E5C0C2]" />
+                   <Progress value={engagementScore} className="h-1.5 bg-[#F4F4F6]" indicatorClassName="bg-gradient-to-r from-[#F2DCDD] to-[#E5C0C2]" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Enhanced Tabs */}
+          {/* Compact Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="bg-transparent p-0 gap-4 mb-8 h-auto w-full flex overflow-x-auto">
+            <TabsList className="bg-transparent p-0 gap-2 mb-4 h-auto w-full flex overflow-x-auto">
                {[
                  { id: 'activity', label: 'Activity & Stats', icon: TrendingUp },
                  { id: 'classes', label: 'Class Schedule', icon: Calendar },
@@ -202,11 +201,11 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                  <TabsTrigger 
                    key={tab.id} 
                    value={tab.id}
-                   className="flex-1 min-w-[160px] rounded-2xl bg-white p-4 h-auto data-[state=active]:bg-[#333333] data-[state=active]:text-white shadow-sm border border-transparent hover:border-gray-200 transition-all group"
+                   className="flex-1 min-w-[120px] rounded-xl bg-white p-2.5 h-auto data-[state=active]:bg-[#333333] data-[state=active]:text-white shadow-sm border border-transparent hover:border-gray-200 transition-all group"
                  >
-                   <div className="flex flex-col items-center gap-3 w-full">
-                      <tab.icon className="w-6 h-6 group-data-[state=active]:text-[#F2DCDD] transition-colors" />
-                      <span className="font-serif text-lg">{tab.label}</span>
+                   <div className="flex flex-col items-center gap-1.5 w-full">
+                      <tab.icon className="w-5 h-5 group-data-[state=active]:text-[#F2DCDD] transition-colors" />
+                      <span className="font-serif text-sm">{tab.label}</span>
                    </div>
                  </TabsTrigger>
                ))}
