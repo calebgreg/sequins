@@ -172,7 +172,13 @@ export default function StudentNotePrompt({
               {currentStudent.name.charAt(0)}
             </div>
             <h3 className="font-serif text-3xl text-[#333333] mb-2">{currentStudent.name}</h3>
-            <p className="text-gray-500 font-serif text-lg">What stood out today?</p>
+            <p className="text-gray-500 font-serif text-lg">{smartPrompt}</p>
+            {recentNotes.length > 0 && recentNotes[0].sentiment === 'constructive' && (
+              <div className="mt-3 flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full">
+                <TrendingUp className="w-4 h-4" />
+                <span>Last note: {recentNotes[0].content.slice(0, 40)}...</span>
+              </div>
+            )}
           </div>
 
           <div className="relative mb-4">
