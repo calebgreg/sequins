@@ -670,7 +670,13 @@ export default function TeacherStudio() {
                  </div>
               </div>
 
-              <div className="min-h-[600px]">
+              <div 
+                className="rounded-3xl p-6 md:p-8"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(253,238,236,0.6) 0%, rgba(250,232,228,0.4) 50%, rgba(252,243,240,0.5) 100%)',
+                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6), 0 15px 50px -15px rgba(180,150,140,0.12)',
+                }}
+              >
                 {viewMode === 'list' && (
                   <ClassListView 
                     classes={classes} 
@@ -691,10 +697,7 @@ export default function TeacherStudio() {
                     classes={classes} 
                     currentTeacherName={currentTeacherName} 
                     filterType={activeTab === 'classes' ? 'class' : 'admin'}
-                    onDateSelect={(date) => {
-                        // Just switch to week view for now as List view is static
-                        // or we could implement a specific Day view later
-                    }}
+                    onDateSelect={(date) => {}}
                   />
                 )}
               </div>
@@ -717,8 +720,6 @@ export default function TeacherStudio() {
           )}
         </AnimatePresence>
       </div>
-
-
     </div>
   );
 }
