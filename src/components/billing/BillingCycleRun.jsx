@@ -24,32 +24,21 @@ export default function BillingCycleRun({ isOpen, onOpenChange }) {
     queryFn: () => base44.entities.Student.list(),
   });
 
-  const { data: plans = [] } = useQuery({
-    queryKey: ['tuition_plans'],
-    queryFn: () => base44.entities.TuitionPlan.list(),
-  });
-
   const { data: classes = [] } = useQuery({
     queryKey: ['classes'],
     queryFn: () => base44.entities.DanceClass.list(),
   });
 
-  const { data: discounts = [] } = useQuery({
-    queryKey: ['discount_rules'],
-    queryFn: () => base44.entities.DiscountRule.list(),
+  const { data: tuitionRules = [] } = useQuery({
+    queryKey: ['tuition_rules'],
+    queryFn: () => base44.entities.TuitionRule.list(),
   });
 
-  const { data: fees = [] } = useQuery({
-    queryKey: ['fee_types'],
-    queryFn: () => base44.entities.FeeType.list(),
-  });
-
-  const { data: settingsList = [] } = useQuery({
-    queryKey: ['studio_settings'],
-    queryFn: () => base44.entities.StudioSettings.list(),
-  });
-
-  const settings = settingsList[0] || { pricing_model: 'per_class', hourly_rate_tiers: [] };
+  // Derived rule sets from TuitionRule
+  const basePricingRule = tuitionRules.find(r => r.type === 'base_pricing' && r.active !== false);
+  const classExceptionRules = tuitionRules.filter(r => r.type === 'class_exception' && r.active !== false);
+  const discountRules = tuitionRules.filter(r => r.type === 'discount' && r.active !== false);
+  const feeRules = tuitionRules.filter(r => r.type === 'fee' && r.active !== false);
 
   // Calculation Logic
   const calculateCycle = () => {
