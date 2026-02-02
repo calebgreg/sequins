@@ -354,17 +354,28 @@ export default function FamilyTuitionManager({ family }) {
                                         </div>
                                     </div>
                                     
-                                    {/* Class/Details List */}
+                                    {/* Class/Details List - uses TuitionRules rates */}
                                     <div className="text-xs text-gray-400 space-y-1">
                                         {enrolledClasses.length > 0 ? (
-                                            enrolledClasses.map(cls => (
-                                                <div key={cls.id} className="flex justify-between">
-                                                    <span>{cls.title}</span>
-                                                    <span className={currentPlan ? "line-through opacity-50" : ""}>
-                                                        ${(cls.tuition_cost || 0).toFixed(2)}
-                                                    </span>
-                                                </div>
-                                            ))
+                                            enrolledClasses.map(cls => {
+                                                // Get rate from TuitionRules
+                                                const basePricingRule = tuitionRules.find(r => r.type === 'base_pricing' && r.active !== false);
+                                                const classExceptionRule = tuitionRules.find(r => 
+                                                    r.type === 'class_exception' && 
+                                                    r.active !== false && 
+                                                    r.note?.toLowerCase().includes(cls.title?.toLowerCase())
+                                                );
+                                                const classRate = classExceptionRule?.value?.amount || basePricingRule?.value?.amount || cls.tuition_cost || 0;
+                                                
+                                                return (
+                                                    <div key={cls.id} className="flex justify-between">
+                                                        <span>{cls.title}</span>
+                                                        <span className={currentPlan ? "line-through opacity-50" : ""}>
+                                                            ${classRate.toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })
                                         ) : (
                                             <div className="italic">No active classes</div>
                                         )}
