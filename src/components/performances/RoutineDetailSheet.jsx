@@ -15,6 +15,147 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
+function AppleMusicCard({ formData, setFormData, isValidApple }) {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const audioRef = React.useRef(null);
+
+    const togglePlay = () => {
+        if (!formData.apple_music_preview_url) return;
+        
+        if (isPlaying) {
+            audioRef.current?.pause();
+        } else {
+            audioRef.current?.play();
+        }
+        setIsPlaying(!isPlaying);
+    };
+
+    React.useEffect(() => {
+        const audio = audioRef.current;
+        if (audio) {
+            audio.onended = () => setIsPlaying(false);
+        }
+        return () => {
+            if (audio) audio.onended = null;
+        };
+    }, []);
+
+    return (
+        <div 
+            className="rounded-2xl overflow-hidden relative group"
+            style={{
+                background: 'rgba(255,255,255,0.6)',
+                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                border: '1px solid rgba(200,180,170,0.2)',
+            }}
+        >
+            {formData.apple_music_preview_url && (
+                <audio ref={audioRef} src={formData.apple_music_preview_url} />
+            )}
+            
+            <div className="absolute top-2 right-2 flex gap-1 z-10">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 rounded-full backdrop-blur-sm"
+                    style={{ background: 'rgba(255,255,255,0.6)', color: '#b5a599' }}
+                    onClick={() => setFormData(prev => ({ 
+                        ...prev, 
+                        apple_music_link: '', 
+                        album_artwork_url: '',
+                        apple_music_preview_url: '',
+                        itunes_buy_link: ''
+                    }))}
+                >
+                    <X className="w-3 h-3" />
+                </Button>
+            </div>
+            
+            <div className="flex items-center gap-4 p-4">
+                {/* Album Art with Play Button */}
+                <div className="relative flex-shrink-0">
+                    {formData.album_artwork_url ? (
+                        <div className="relative w-20 h-20 rounded-xl overflow-hidden shadow-lg">
+                            <img 
+                                src={formData.album_artwork_url} 
+                                alt="Album Art" 
+                                className="w-full h-full object-cover"
+                            />
+                            {formData.apple_music_preview_url && (
+                                <button
+                                    onClick={togglePlay}
+                                    className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+                                >
+                                    {isPlaying ? (
+                                        <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                                            <div className="flex gap-1">
+                                                <div className="w-1 h-4 bg-[#FA243C] rounded-full" />
+                                                <div className="w-1 h-4 bg-[#FA243C] rounded-full" />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                                            <PlayCircle className="w-5 h-5 text-[#FA243C]" />
+                                        </div>
+                                    )}
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <div 
+                            className="w-20 h-20 rounded-xl flex items-center justify-center"
+                            style={{ background: 'rgba(200,180,170,0.15)' }}
+                        >
+                            <Music className="w-8 h-8" style={{ color: '#c9a99c' }} />
+                        </div>
+                    )}
+                </div>
+
+                {/* Track Info */}
+                <div className="flex-1 min-w-0">
+                    <h4 className="font-bold leading-tight text-base line-clamp-1" style={{ color: '#8b7d72' }}>
+                        {formData.song_title || "Unknown Track"}
+                    </h4>
+                    <p className="text-sm line-clamp-1 mb-3" style={{ color: '#a8998e' }}>
+                        {formData.artist || "Unknown Artist"}
+                    </p>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {isValidApple(formData.apple_music_link) && (
+                            <a 
+                                href={formData.apple_music_link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FA243C]/10 hover:bg-[#FA243C]/20 text-[#FA243C] rounded-full text-xs font-bold transition-colors"
+                            >
+                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.24-.87 3.56-.74c1.52.13 2.67.62 3.4 1.53-2.9 1.5-2.4 5.37.52 6.64-.67 1.83-1.6 3.63-2.56 4.8zm-5.4-15.16c.55-1.74 2.22-3 4.1-3.12.3 2-1.72 4.2-4.1 3.12z"/></svg>
+                                Listen
+                            </a>
+                        )}
+                        {formData.itunes_buy_link && (
+                            <a 
+                                href={formData.itunes_buy_link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-colors"
+                                style={{ background: 'rgba(200,180,170,0.15)', color: '#8b7d72' }}
+                            >
+                                <ExternalLink className="w-3 h-3" />
+                                Buy
+                            </a>
+                        )}
+                        {formData.apple_music_preview_url && (
+                            <span className="text-[10px] px-2 py-1 rounded-full" style={{ background: 'rgba(126,184,154,0.15)', color: '#7eb89a' }}>
+                                30s Preview Available
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function GroomingInput({ label, value, image, onChange, onImageUpload, onImageRemove, placeholder }) {
     return (
         <div className="space-y-3">
