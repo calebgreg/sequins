@@ -358,81 +358,77 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                </div>
             </TabsContent>
 
-            {/* NOTES TAB */}
-            <TabsContent value="notes" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                 <div className="md:col-span-1">
-                    <div className="bg-[#F2DCDD] rounded-[32px] p-8 text-[#333333]">
-                       <h3 className="font-serif text-2xl mb-4">Teacher Journal</h3>
-                       <p className="text-sm opacity-80 mb-6">
-                          Private notes about {student.name}'s progress, behavior, and milestones. visible only to staff.
-                       </p>
-                       <Button 
-                          onClick={() => setIsNewEntryOpen(true)}
-                          className="w-full bg-[#333333] text-white hover:bg-black rounded-full font-serif h-12"
-                       >
-                          + New Entry
-                       </Button>
-                    </div>
+            {/* NOTES TAB - Timeline Style */}
+            <TabsContent value="notes" className="space-y-4">
+              <div className="bg-white rounded-2xl p-5 shadow-sm">
+                 <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-serif text-lg text-[#333333]">Journal Timeline</h3>
+                    <Button 
+                       onClick={() => setIsNewEntryOpen(true)}
+                       className="bg-[#F2DCDD] text-[#333333] hover:bg-[#E5C0C2] rounded-full font-serif h-8 px-4 text-xs"
+                    >
+                       + Add Note
+                    </Button>
                  </div>
                  
-                 <div className="md:col-span-2 space-y-4">
-                   {notes.length === 0 ? (
-                     <div className="bg-white p-12 rounded-[32px] text-center border-2 border-dashed border-gray-100">
-                        <Quote className="w-8 h-8 text-gray-200 mx-auto mb-4" />
-                        <p className="text-gray-400 font-serif text-lg">No journal entries yet.</p>
-                     </div>
-                   ) : (
-                     notes.map((note, i) => (
-                       <motion.div 
-                          key={i} 
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.05 }}
-                          className="bg-white p-8 rounded-[32px] shadow-sm relative group"
-                       >
-                          <div className="absolute top-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-gray-50">
-                                <MoreHorizontal className="w-4 h-4 text-gray-400" />
-                             </Button>
-                          </div>
-                          
-                          <div className="flex items-center gap-3 mb-4">
-                             <Badge variant="outline" className={`
-                                uppercase text-[10px] tracking-wider border px-2 py-0.5
-                                ${note.sentiment === 'positive' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' : 
-                                  note.sentiment === 'constructive' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-gray-50 text-gray-500 border-gray-100'}
-                             `}>
-                                {note.category || 'General'}
-                             </Badge>
-                             <span className="text-gray-300 text-xs">•</span>
-                             <span className="text-gray-400 text-xs font-medium uppercase tracking-wide">{format(new Date(note.date), 'MMMM do, yyyy')}</span>
-                          </div>
-                          
-                          <div className="font-serif text-xl text-[#333333] leading-relaxed italic mb-4 opacity-90">
-                             "{note.content}"
-                          </div>
+                 {notes.length === 0 ? (
+                   <div className="py-8 text-center border-2 border-dashed border-gray-100 rounded-xl">
+                      <Quote className="w-6 h-6 text-gray-200 mx-auto mb-2" />
+                      <p className="text-gray-400 text-sm">No journal entries yet.</p>
+                   </div>
+                 ) : (
+                   <div className="space-y-0 relative pl-3">
+                      {/* Connector Line */}
+                      <div className="absolute top-3 bottom-3 left-[15px] w-0.5 bg-gray-100" />
+                      
+                      {notes.map((note, i) => (
+                        <motion.div 
+                           key={i}
+                           initial={{ opacity: 0, x: -20 }}
+                           animate={{ opacity: 1, x: 0 }}
+                           transition={{ delay: i * 0.05 }}
+                           className="relative flex gap-4 py-3 group"
+                        >
+                           <div className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 bg-[#F2DCDD] text-[#8a7070]">
+                              <Quote className="w-3.5 h-3.5" />
+                           </div>
+                           
+                           <div className="flex-1 bg-[#F4F4F6] rounded-xl p-4 hover:bg-[#F2DCDD]/20 transition-colors">
+                              <div className="flex items-center justify-between mb-2">
+                                 <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500 font-medium">
+                                       {format(new Date(note.date), 'MMM d')}
+                                    </span>
+                                    <span className="text-gray-300">·</span>
+                                    <span className="text-xs text-gray-400">{note.teacher_name}</span>
+                                 </div>
+                                 <Badge variant="outline" className={`
+                                    text-[10px] px-2 py-0 h-5
+                                    ${note.sentiment === 'positive' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' : 
+                                      note.sentiment === 'constructive' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-gray-50 text-gray-500 border-gray-100'}
+                                 `}>
+                                    {note.category || 'General'}
+                                 </Badge>
+                              </div>
+                              
+                              <p className="text-sm text-[#333333] leading-relaxed">
+                                 {note.content}
+                              </p>
 
-                          {note.tags && note.tags.length > 0 && (
-                             <div className="flex flex-wrap gap-2 mb-6">
-                                {note.tags.map((tag, t) => (
-                                   <span key={t} className="text-[10px] bg-gray-50 text-gray-500 px-2 py-1 rounded-md border border-gray-100">
-                                      #{tag}
-                                   </span>
-                                ))}
-                             </div>
-                          )}
-                          
-                          <div className="flex items-center gap-3 border-t border-gray-50 pt-4">
-                             <Avatar className="w-6 h-6">
-                                <AvatarFallback className="text-[10px] bg-[#333333] text-white">{note.teacher_name?.charAt(0)}</AvatarFallback>
-                             </Avatar>
-                             <span className="text-xs text-gray-400 font-medium">Logged by {note.teacher_name}</span>
-                          </div>
-                       </motion.div>
-                     ))
-                   )}
-                 </div>
+                              {note.tags && note.tags.length > 0 && (
+                                 <div className="flex flex-wrap gap-1.5 mt-2">
+                                    {note.tags.map((tag, t) => (
+                                       <span key={t} className="text-[10px] bg-white text-gray-500 px-2 py-0.5 rounded-md">
+                                          #{tag}
+                                       </span>
+                                    ))}
+                                 </div>
+                              )}
+                           </div>
+                        </motion.div>
+                      ))}
+                   </div>
+                 )}
               </div>
             </TabsContent>
 
