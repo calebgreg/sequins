@@ -437,6 +437,11 @@ export function FamilyBillingDetail({ family, onBack }) {
     queryFn: () => base44.entities.Invoice.list(),
   });
 
+  const { data: familyEntities = [] } = useQuery({
+    queryKey: ['familyEntities'],
+    queryFn: () => base44.entities.Family.list(),
+  });
+
   // Calculate current bill
   const billData = useMemo(() => {
     if (!family) return null;
