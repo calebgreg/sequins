@@ -212,28 +212,28 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
             </TabsList>
 
             {/* ACTIVITY TAB */}
-            <TabsContent value="activity" className="space-y-6">
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <TabsContent value="activity" className="space-y-4">
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Visual Stats Block */}
-                  <div className="md:col-span-1 space-y-6">
-                     <div className="bg-gradient-to-br from-[#333333] to-black rounded-[32px] p-8 text-white shadow-lg relative overflow-hidden">
-                        <Sparkles className="absolute top-6 right-6 text-[#F2DCDD] opacity-20 w-12 h-12" />
-                        <h3 className="font-serif text-2xl mb-1">Current Streak</h3>
-                        <div className="text-6xl font-serif font-light mb-4">{streak} <span className="text-xl opacity-50">days</span></div>
-                        <p className="text-white/60 text-sm leading-relaxed">
+                  <div className="md:col-span-1 space-y-4">
+                     <div className="bg-gradient-to-br from-[#333333] to-black rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+                        <Sparkles className="absolute top-4 right-4 text-[#F2DCDD] opacity-20 w-8 h-8" />
+                        <h3 className="font-serif text-lg mb-0.5">Current Streak</h3>
+                        <div className="text-4xl font-serif font-light mb-2">{streak} <span className="text-sm opacity-50">days</span></div>
+                        <p className="text-white/60 text-xs leading-relaxed">
                            {student.name} has been consistent lately! Keep up the momentum.
                         </p>
                      </div>
                      
-                     <div className="bg-white rounded-[32px] p-6 shadow-sm">
-                        <h4 className="font-serif text-lg mb-4">Quick Insights</h4>
-                        <div className="space-y-4">
-                           <div className="flex items-center justify-between text-sm">
+                     <div className="bg-white rounded-2xl p-4 shadow-sm">
+                        <h4 className="font-serif text-sm mb-3">Quick Insights</h4>
+                        <div className="space-y-2">
+                           <div className="flex items-center justify-between text-xs">
                               <span className="text-gray-500">On-Time Arrival</span>
                               <span className="font-medium text-green-600">92%</span>
                            </div>
                            <div className="w-full h-px bg-gray-100" />
-                           <div className="flex items-center justify-between text-sm">
+                           <div className="flex items-center justify-between text-xs">
                               <span className="text-gray-500">Style Versatility</span>
                               <span className="font-medium text-[#333333]">Medium</span>
                            </div>
@@ -242,44 +242,41 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                   </div>
 
                   {/* Timeline */}
-                  <div className="md:col-span-2 bg-white rounded-[32px] p-8 shadow-sm min-h-[400px]">
-                     <h3 className="font-serif text-2xl text-[#333333] mb-6">Attendance Timeline</h3>
-                     <div className="space-y-0 relative pl-4">
+                  <div className="md:col-span-2 bg-white rounded-2xl p-5 shadow-sm max-h-[320px] overflow-y-auto">
+                     <h3 className="font-serif text-lg text-[#333333] mb-4">Attendance Timeline</h3>
+                     <div className="space-y-0 relative pl-3">
                         {/* Connector Line */}
-                        <div className="absolute top-4 bottom-4 left-[19px] w-0.5 bg-gray-100" />
+                        <div className="absolute top-3 bottom-3 left-[15px] w-0.5 bg-gray-100" />
                         
-                        {attendance.slice(0, 8).map((record, i) => (
+                        {attendance.slice(0, 6).map((record, i) => (
                            <motion.div 
                               key={i}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: i * 0.05 }}
-                              className="relative flex gap-6 py-4 group"
+                              className="relative flex gap-4 py-2 group"
                            >
                               <div className={`
-                                 relative z-10 w-10 h-10 rounded-full flex items-center justify-center border-4 border-white shadow-sm flex-shrink-0 transition-transform group-hover:scale-110
+                                 relative z-10 w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 transition-transform group-hover:scale-110
                                  ${record.status === 'present' ? 'bg-[#E5F9F0] text-green-600' : 
                                    record.status === 'absent' ? 'bg-[#FFF0F0] text-red-500' : 'bg-gray-100 text-gray-500'}
                               `}>
-                                 {record.status === 'present' ? <CheckCircle2 className="w-5 h-5" /> : 
-                                  record.status === 'absent' ? <AlertCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                                 {record.status === 'present' ? <CheckCircle2 className="w-4 h-4" /> : 
+                                  record.status === 'absent' ? <AlertCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                               </div>
                               
-                              <div className="flex-1 bg-[#F4F4F6] rounded-2xl p-4 hover:bg-[#F2DCDD]/20 transition-colors">
-                                 <div className="flex justify-between items-start mb-1">
-                                    <span className="font-serif text-lg text-[#333333]">{record.class_name}</span>
-                                    <span className="text-xs text-gray-400 font-medium bg-white px-2 py-1 rounded-md shadow-sm">
+                              <div className="flex-1 bg-[#F4F4F6] rounded-xl p-3 hover:bg-[#F2DCDD]/20 transition-colors">
+                                 <div className="flex justify-between items-center mb-0.5">
+                                    <span className="font-serif text-sm text-[#333333]">{record.class_name}</span>
+                                    <span className="text-[10px] text-gray-400 font-medium">
                                        {format(new Date(record.date), 'MMM d')}
                                     </span>
                                  </div>
-                                 <div className="flex items-center gap-2">
-                                    <Badge variant="secondary" className={`capitalize text-xs h-5 px-2 font-normal ${
-                                       record.status === 'present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                    }`}>
-                                       {record.status}
-                                    </Badge>
-                                    {record.notes && <span className="text-xs text-gray-400 italic truncate max-w-[200px]">- {record.notes}</span>}
-                                 </div>
+                                 <Badge variant="secondary" className={`capitalize text-[10px] h-4 px-1.5 font-normal ${
+                                    record.status === 'present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                 }`}>
+                                    {record.status}
+                                 </Badge>
                               </div>
                            </motion.div>
                         ))}
