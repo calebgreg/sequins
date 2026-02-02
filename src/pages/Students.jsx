@@ -544,7 +544,7 @@ export default function Students() {
                                          <div 
                                            className="absolute inset-[-4px] rounded-full"
                                            style={{
-                                             background: 'radial-gradient(circle, rgba(255,184,122,0.6) 60%, rgba(255,160,96,0.3) 80%, transparent 100%)',
+                                             background: 'radial-gradient(circle, rgba(255,150,180,0.6) 60%, rgba(255,120,160,0.3) 80%, transparent 100%)',
                                              filter: 'blur(4px)',
                                            }}
                                          />
@@ -554,20 +554,20 @@ export default function Students() {
                                          className="w-10 h-10 relative"
                                          style={{
                                            boxShadow: isSelected 
-                                             ? 'inset 0 0 8px rgba(255,200,150,0.4), 0 0 0 2px #ffb87a'
+                                             ? 'inset 0 0 8px rgba(255,180,200,0.4), 0 0 0 2px #ffaac4'
                                              : '0 2px 8px rgba(180,150,140,0.2)',
                                            border: '2px solid transparent',
                                            background: isSelected 
-                                             ? 'linear-gradient(145deg, #c4a0a0, #8a7070) padding-box, linear-gradient(145deg, #ffd4a8, #ffb87a) border-box'
+                                             ? 'linear-gradient(145deg, #c4a0a0, #8a7070) padding-box, linear-gradient(145deg, #ffd0e0, #ffaac4) border-box'
                                              : 'none',
                                          }}
                                        >
                                           <AvatarFallback 
                                             style={{ 
                                               background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
-                                              color: isSelected ? '#ffe8d0' : '#fff',
+                                              color: isSelected ? '#ffe8f0' : '#fff',
                                               textShadow: isSelected 
-                                                ? '0 0 6px #fff, 0 0 12px #ffe0b0, 0 0 18px #ffcc88' 
+                                                ? '0 0 6px #fff, 0 0 12px #ffccdd, 0 0 18px #ffaacc' 
                                                 : 'none',
                                               fontWeight: isSelected ? '600' : '500',
                                             }}
@@ -663,7 +663,7 @@ export default function Students() {
                                       <div 
                                         className="absolute inset-[-4px] rounded-full"
                                         style={{
-                                          background: 'radial-gradient(circle, rgba(255,184,122,0.6) 60%, rgba(255,160,96,0.3) 80%, transparent 100%)',
+                                          background: 'radial-gradient(circle, rgba(255,150,180,0.6) 60%, rgba(255,120,160,0.3) 80%, transparent 100%)',
                                           filter: 'blur(4px)',
                                         }}
                                       />
@@ -673,20 +673,20 @@ export default function Students() {
                                       className="w-10 h-10 relative"
                                       style={{
                                         boxShadow: isSelected 
-                                          ? 'inset 0 0 8px rgba(255,200,150,0.4), 0 0 0 2px #ffb87a'
+                                          ? 'inset 0 0 8px rgba(255,180,200,0.4), 0 0 0 2px #ffaac4'
                                           : '0 2px 8px rgba(180,150,140,0.2)',
                                         border: '2px solid transparent',
                                         background: isSelected 
-                                          ? 'linear-gradient(145deg, #c4a0a0, #8a7070) padding-box, linear-gradient(145deg, #ffd4a8, #ffb87a) border-box'
+                                          ? 'linear-gradient(145deg, #c4a0a0, #8a7070) padding-box, linear-gradient(145deg, #ffd0e0, #ffaac4) border-box'
                                           : 'none',
                                       }}
                                     >
                                       <AvatarFallback 
                                         style={{ 
                                           background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
-                                          color: isSelected ? '#ffe8d0' : '#fff',
+                                          color: isSelected ? '#ffe8f0' : '#fff',
                                           textShadow: isSelected 
-                                            ? '0 0 6px #fff, 0 0 12px #ffe0b0, 0 0 18px #ffcc88' 
+                                            ? '0 0 6px #fff, 0 0 12px #ffccdd, 0 0 18px #ffaacc' 
                                             : 'none',
                                           fontWeight: isSelected ? '600' : '500',
                                         }}
