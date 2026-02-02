@@ -94,6 +94,38 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
           <div className="bg-white rounded-3xl p-5 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-48 bg-[#F2DCDD]/30 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
             
+            {/* Back button and actions */}
+            <div className="relative z-10 flex items-center justify-between mb-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={onBack} 
+                className="bg-[#F4F4F6] rounded-full w-8 h-8 text-[#333333] hover:bg-gray-200 transition-all"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div className="flex items-center gap-2">
+                {onViewFamily && (
+                  <Button 
+                    onClick={onViewFamily}
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full text-gray-500 hover:text-[#333333] hover:bg-[#F4F4F6] gap-1.5 h-8 px-3 text-xs"
+                  >
+                    <Users className="w-3.5 h-3.5" /> Family
+                  </Button>
+                )}
+                <Button 
+                  onClick={() => setIsNewEntryOpen(true)} 
+                  variant="outline" 
+                  size="sm"
+                  className="rounded-full border-gray-200 bg-white text-[#333333] gap-1.5 font-serif hover:bg-[#F2DCDD] hover:border-[#F2DCDD] transition-colors h-8 px-3 text-xs"
+                >
+                  <Quote className="w-3.5 h-3.5" /> Log Journal
+                </Button>
+              </div>
+            </div>
+            
             <div className="relative z-10 flex flex-col md:flex-row gap-5 items-center">
               <div className="flex-shrink-0 relative">
                  <Avatar className="w-20 h-20 bg-white border-4 border-white shadow-lg relative">
