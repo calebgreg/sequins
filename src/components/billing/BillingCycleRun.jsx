@@ -240,7 +240,7 @@ export default function BillingCycleRun({ isOpen, onOpenChange }) {
                               `}
                            >
                               <div>
-                                 <div className="font-bold text-[#333333]">{fee.name}</div>
+                                 <div className="font-bold text-[#333333]">{fee.note || 'Fee'}</div>
                                  <div className="text-xs text-gray-400">${fee.value?.amount || 0}</div>
                               </div>
                               <Checkbox checked={selectedFees.includes(fee.id)} className="data-[state=checked]:bg-[#333333]" />
