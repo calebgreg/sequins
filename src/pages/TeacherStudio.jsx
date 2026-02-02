@@ -476,40 +476,64 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
     );
   }
 
+  // Active class attendance view
   return (
-    <div className="flex flex-col h-screen bg-[#F4F4F6]">
+    <div 
+      className="flex flex-col min-h-screen relative overflow-hidden"
+      style={{ 
+        fontFamily: "'DM Sans', -apple-system, sans-serif",
+        background: '#ffffff',
+      }}
+    >
+      {/* Ambient background shapes */}
+      <div 
+        className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+      />
+      <div 
+        className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+      />
+
       {/* Header */}
-      <div className="px-8 py-8 flex items-center justify-between sticky top-0 z-10 bg-[#F4F4F6]">
-        <div className="flex items-center gap-6">
-          <Button variant="ghost" size="icon" onClick={() => setMode('dashboard')} className="bg-white rounded-full w-12 h-12 shadow-sm text-[#333333] hover:bg-white/80">
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-          <div>
-            <h2 className="font-serif text-3xl text-[#333333]">{classData.title}</h2>
-          </div>
+      <div className="relative px-8 py-8 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setMode('dashboard')} 
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+            style={{
+              background: 'rgba(255,255,255,0.6)',
+              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+              color: '#b5a599',
+            }}
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <h2 
+            className="text-2xl font-bold tracking-tight"
+            style={textGradient}
+          >
+            {classData.title}
+          </h2>
         </div>
         <div className="flex gap-3">
-          <Button 
-            variant="ghost"
-            className="rounded-full bg-white text-[#333333] border border-gray-200 hover:bg-gray-50 w-12 h-12 p-0 shadow-sm"
+          <button 
             onClick={() => setIsSubRequestOpen(true)}
-            title="Request Sub"
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+            style={{
+              background: 'rgba(255,255,255,0.6)',
+              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+              color: '#b5a599',
+            }}
           >
             <CalendarX className="w-5 h-5" />
-          </Button>
-          <Button 
-            variant="ghost"
-            className="rounded-full bg-[#333333] text-white hover:bg-black w-12 h-12 p-0 shadow-lg shadow-gray-200"
-            onClick={() => setIsVoiceOpen(true)}
-          >
-            <Mic className="w-5 h-5" />
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Student List */}
-      <ScrollArea className="flex-1 px-4 md:px-8">
-        <div className="space-y-4 pb-28 max-w-2xl mx-auto">
+      <ScrollArea className="relative flex-1 px-4 md:px-8">
+        <div className="space-y-3 pb-32 max-w-2xl mx-auto">
           {classData.student_names?.map((name, i) => {
              const status = attendance[name] || 'present';
              
@@ -519,13 +543,28 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
                  initial={{ opacity: 0, y: 10 }}
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ delay: i * 0.03 }}
-                 className="bg-white rounded-full h-16 px-6 flex items-center justify-between shadow-sm"
+                 className="rounded-2xl p-4 flex items-center justify-between"
+                 style={{
+                   background: 'rgba(255,255,255,0.5)',
+                   boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                 }}
                >
                  <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-full bg-[#F4F4F6] flex items-center justify-center text-sm font-serif text-[#333333]">
-                        {name.charAt(0)}
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{
+                        background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,1)',
+                      }}
+                    >
+                      <span className="text-sm font-medium" style={{ color: '#c9a99c' }}>{name.charAt(0)}</span>
                     </div>
-                    <span className={`font-medium text-[#333333] ${status === 'absent' ? 'line-through text-gray-300' : ''}`}>{name}</span>
+                    <span 
+                      className={`font-medium ${status === 'absent' ? 'line-through' : ''}`}
+                      style={{ color: status === 'absent' ? '#d4c4ba' : '#8b7d72' }}
+                    >
+                      {name}
+                    </span>
                  </div>
 
                  <div className="flex gap-2">
@@ -533,13 +572,20 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
                         <button
                             key={s}
                             onClick={() => setAttendance(prev => ({...prev, [name]: s}))}
-                            className={`
-                                h-8 px-4 rounded-full text-xs font-medium transition-all
-                                ${status === s 
-                                    ? (s === 'present' ? 'bg-[#F2DCDD] text-[#333333]' : 'bg-[#333333] text-white')
-                                    : 'text-gray-400 hover:text-gray-600'
-                                }
-                            `}
+                            className="px-4 py-1.5 rounded-xl text-xs font-medium transition-all"
+                            style={{
+                              background: status === s 
+                                ? (s === 'present' 
+                                  ? 'linear-gradient(145deg, rgba(126,184,154,0.2) 0%, rgba(126,184,154,0.1) 100%)'
+                                  : s === 'absent'
+                                  ? 'linear-gradient(145deg, rgba(212,165,116,0.2) 0%, rgba(212,165,116,0.1) 100%)'
+                                  : 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(164,139,196,0.1) 100%)')
+                                : 'transparent',
+                              color: status === s 
+                                ? (s === 'present' ? '#7eb89a' : s === 'absent' ? '#d4a574' : '#a48bc4')
+                                : '#c4b5ab',
+                              boxShadow: status === s ? 'inset 0 1px 1px rgba(255,255,255,0.5)' : 'none',
+                            }}
                         >
                             {s.charAt(0).toUpperCase() + s.slice(1)}
                         </button>
@@ -552,26 +598,28 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
       </ScrollArea>
 
       {/* Floating Footer */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center px-4">
-          <Button 
-            size="lg" 
-            className={`shadow-xl rounded-full px-10 py-6 text-lg font-serif transition-all ${submitSuccess ? 'bg-[#F2DCDD] text-[#333333]' : 'bg-[#333333] text-white hover:bg-black'}`}
-            onClick={handleSubmitAttendance}
-            disabled={isSubmitting || submitSuccess}
-          >
-            {isSubmitting ? "Analyzing..." : submitSuccess ? "Saved" : "Complete Class"}
-          </Button>
-        </div>
-
-        <SubRequestModal 
-          isOpen={isSubRequestOpen}
-          onOpenChange={setIsSubRequestOpen}
-          classData={classData}
-          teacherName={currentTeacherName}
-          availableClasses={[]} 
-        />
+      <div className="fixed bottom-8 left-0 right-0 flex justify-center px-4 z-20">
+        <button 
+          onClick={handleSubmitAttendance}
+          disabled={isSubmitting || submitSuccess}
+          className="px-10 py-4 rounded-2xl text-base font-bold tracking-tight transition-all hover:scale-[1.02] disabled:opacity-70"
+          style={buttonStyle}
+        >
+          <span style={textGradient}>
+            {isSubmitting ? "Analyzing..." : submitSuccess ? "Saved ✓" : "Complete Class"}
+          </span>
+        </button>
       </div>
-      );
+
+      <SubRequestModal 
+        isOpen={isSubRequestOpen}
+        onOpenChange={setIsSubRequestOpen}
+        classData={classData}
+        teacherName={currentTeacherName}
+        availableClasses={[]} 
+      />
+    </div>
+  );
       };
 
 // --- MAIN PAGE COMPONENT ---
