@@ -292,13 +292,13 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
          }}
        >
          <div 
-           className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+           className="fixed top-[-20%] right-[-10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
            style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
          />
-         <div className="relative px-8 py-8 flex items-center gap-4">
+         <div className="relative px-4 md:px-8 py-6 md:py-8 flex items-center gap-3 md:gap-4">
            <button 
              onClick={() => setMode('dashboard')} 
-             className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+             className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
              style={{
                background: 'rgba(255,255,255,0.6)',
                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
@@ -307,9 +307,9 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
            >
              <ArrowLeft className="w-5 h-5" />
            </button>
-           <div>
+           <div className="min-w-0">
              <h2 
-               className="text-2xl font-bold tracking-tight"
+               className="text-xl md:text-2xl font-bold tracking-tight"
                style={{
                  backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
                  backgroundClip: 'text',
@@ -319,12 +319,12 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
              >
                Class Notes
              </h2>
-             <p className="text-sm" style={{ color: '#b5a599' }}>Dictate or type notes for {classData.title}</p>
+             <p className="text-xs md:text-sm truncate" style={{ color: '#b5a599' }}>Dictate or type notes for {classData.title}</p>
            </div>
          </div>
-         <div className="relative flex-1 px-8 pb-8 flex flex-col max-w-4xl mx-auto w-full">
+         <div className="relative flex-1 px-4 md:px-8 pb-6 md:pb-8 flex flex-col max-w-4xl mx-auto w-full">
            <div 
-             className="rounded-3xl p-8 h-full"
+             className="rounded-2xl md:rounded-3xl p-4 md:p-8 h-full"
              style={{
                background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 15px 50px -15px rgba(180,150,140,0.15)',
