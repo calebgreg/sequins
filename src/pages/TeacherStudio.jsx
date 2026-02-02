@@ -22,21 +22,27 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // --- SUB-COMPONENT: Class List View ---
 const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
-  // Reverting to showing all classes as requested ("keep the 'today classes' view completely as is")
-  // This view acts as a "List" view of all recurring classes for the teacher
   const myClasses = classes.filter(c => c.teacher === currentTeacherName || !c.teacher);
   const displayClasses = myClasses.length > 0 ? myClasses : classes;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="font-serif text-3xl text-[#333333]">Today's Classes</h1>
-          <p className="text-[#333333]/60 mt-1 font-serif">{format(new Date(), 'MMMM do')}</p>
-        </div>
+    <div className="space-y-6">
+      <div className="mb-8">
+        <h1 
+          className="text-3xl font-bold tracking-tight"
+          style={{ 
+            color: 'transparent',
+            backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+          }}
+        >
+          Today's Classes
+        </h1>
+        <p className="text-sm mt-1" style={{ color: '#b5a599' }}>{format(new Date(), 'MMMM do, yyyy')}</p>
       </div>
       
-      <div className="space-y-5">
+      <div className="space-y-3">
         {displayClasses.map((cls, idx) => (
           <motion.div
             key={cls.id}
@@ -44,33 +50,57 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
             onClick={() => onSelectClass(cls)}
-            className="bg-white rounded-full h-20 px-8 flex items-center justify-between shadow-sm hover:shadow-md transition-all cursor-pointer group border border-transparent hover:border-[#F2DCDD]"
+            className="rounded-2xl p-5 flex items-center justify-between cursor-pointer transition-all hover:scale-[1.01]"
+            style={{
+              background: 'rgba(255,255,255,0.5)',
+              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 16px -8px rgba(180,150,140,0.15)',
+            }}
           >
-            <div className="flex items-center gap-6">
-              <div className="text-lg font-serif text-[#333333] w-16">
-                {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm')}
-                <span className="text-xs ml-0.5 text-gray-400 font-sans">am</span>
+            <div className="flex items-center gap-5">
+              <div 
+                className="w-14 h-14 rounded-xl flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
+                  boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+                }}
+              >
+                <span className="text-lg font-medium" style={{ color: '#c9a99c' }}>
+                  {cls.title.charAt(0)}
+                </span>
               </div>
               
-              <div className="h-8 w-px bg-gray-100" />
-              
               <div>
-                <h3 className="text-lg font-medium text-[#333333] group-hover:text-gray-600 transition-colors">{cls.title}</h3>
+                <h3 className="font-medium" style={{ color: '#8b7d72' }}>{cls.title}</h3>
+                <p className="text-sm mt-0.5" style={{ color: '#b5a599' }}>
+                  {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {cls.duration || 1}hr · {cls.student_names?.length || 0} students
+                </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-               <div className="flex -space-x-2">
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-2">
                 {cls.student_names?.slice(0, 3).map((name, i) => (
-                  <Avatar key={i} className="w-8 h-8 border-2 border-white bg-[#F4F4F6]">
-                    <AvatarFallback className="text-[10px] text-[#333333] font-serif">{name.charAt(0)}</AvatarFallback>
-                  </Avatar>
+                  <div 
+                    key={i} 
+                    className="w-8 h-8 rounded-full flex items-center justify-center border-2 border-white"
+                    style={{ background: 'rgba(244,206,206,0.4)' }}
+                  >
+                    <span className="text-xs" style={{ color: '#a8998e' }}>{name.charAt(0)}</span>
+                  </div>
                 ))}
               </div>
-              <div className={`h-3 w-3 rounded-full ${idx % 2 === 0 ? 'bg-[#333333]' : 'bg-[#F2DCDD]'}`} />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+              </svg>
             </div>
           </motion.div>
         ))}
+        
+        {displayClasses.length === 0 && (
+          <div className="text-center py-12" style={{ color: '#b5a599' }}>
+            No classes scheduled for today
+          </div>
+        )}
       </div>
     </div>
   );
