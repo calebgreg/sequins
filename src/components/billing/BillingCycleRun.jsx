@@ -40,7 +40,7 @@ export default function BillingCycleRun({ isOpen, onOpenChange }) {
   const discountRules = tuitionRules.filter(r => r.type === 'discount' && r.active !== false);
   const feeRules = tuitionRules.filter(r => r.type === 'fee' && r.active !== false);
 
-  // Calculation Logic
+  // Calculation Logic using TuitionRules ONLY
   const calculateCycle = () => {
     setIsCalculating(true);
     
@@ -64,117 +64,93 @@ export default function BillingCycleRun({ isOpen, onOpenChange }) {
         families[familyEmail].students.push(s);
       });
 
-      // Calculate per family
+      // Calculate per family using TuitionRules
       Object.values(families).forEach(family => {
          let familyTotal = 0;
          const familyItems = [];
+         const baseRate = basePricingRule?.value?.amount || 0;
 
-         // 1. Tuition Calculation (Plans vs Calculated)
+         // 1. Tuition Calculation using TuitionRules
          family.students.forEach(student => {
-            const plan = plans.find(p => p.id === student.tuition_plan_id);
+            const studentClasses = classes.filter(c => c.student_names?.includes(student.name));
             let studentTotal = 0;
-            let calculationMethod = 'Calculated';
 
-            // Priority 1: Assigned Tuition Plan (Overrides standard calc)
-            if (plan) {
-               studentTotal += plan.amount;
-               calculationMethod = plan.name;
-               familyItems.push({
-                  description: `${student.name}: ${plan.name}`,
-                  amount: plan.amount,
-                  student_name: student.name,
-                  type: 'tuition_plan'
-               });
-            } else {
-               // Priority 2: Studio Pricing Model
-               const studentClasses = classes.filter(c => c.student_names?.includes(student.name));
+            studentClasses.forEach(cls => {
+               // Check for class-specific exceptions first
+               const exception = classExceptionRules.find(r => 
+                  r.note?.toLowerCase().includes(cls.title?.toLowerCase())
+               );
                
-               if (settings.pricing_model === 'hourly') {
-                   // Sum hours
-                   const totalHours = studentClasses.reduce((sum, c) => sum + (c.duration || 1), 0);
-                   
-                   // Find Rate Tier
-                   // Sort tiers descending by hours to find the highest matching bracket
-                   // Assuming tiers are "Up to X hours" or "X hours =" 
-                   // Let's assume "X hours = $Y total" structure based on user request context
-                   const sortedTiers = [...(settings.hourly_rate_tiers || [])].sort((a, b) => b.hours - a.hours);
-                   const tier = sortedTiers.find(t => totalHours >= t.hours) || sortedTiers[sortedTiers.length - 1]; // Fallback to lowest tier or undefined
-                   
-                   // Fallback logic if no tiers or weird data: $15/hr default
-                   const rate = tier ? tier.rate : (totalHours * 15); 
-                   
-                   if (rate > 0) {
-                       studentTotal += rate;
-                       calculationMethod = `${totalHours} hrs / wk`;
-                       familyItems.push({
-                          description: `${student.name}: Hourly Tuition (${totalHours} hrs)`,
-                          amount: rate,
-                          student_name: student.name,
-                          type: 'tuition_calc'
-                       });
-                   }
+               const classRate = exception?.value?.amount || baseRate || cls.tuition_cost || 0;
+               studentTotal += classRate;
+            });
 
-               } else {
-                   // Default / Per Class Model
-                   const classCost = studentClasses.reduce((sum, c) => sum + (c.tuition_cost || 0), 0);
-                   if (classCost > 0) {
-                      studentTotal += classCost;
-                      calculationMethod = `${studentClasses.length} classes`;
-                      familyItems.push({
-                         description: `${student.name}: Class Tuition (${studentClasses.length} classes)`,
-                         amount: classCost,
-                         student_name: student.name,
-                         type: 'tuition_calc'
-                      });
-                   }
-               }
+            if (studentTotal > 0) {
+               familyItems.push({
+                  description: `${student.name}: ${studentClasses.length} classes × $${baseRate}`,
+                  amount: studentTotal,
+                  student_name: student.name,
+                  type: 'tuition_calc'
+               });
             }
             familyTotal += studentTotal;
          });
 
-         // 2. Discounts (Sibling & Promo)
-         // Sibling Discount Logic
-         const siblingDiscount = discounts.find(d => d.category === 'sibling' && d.active);
-         if (siblingDiscount && family.students.length > 1) {
-             // Apply to total or specific students? 
-             // Simplified: Apply to total tuition portion
-             const discountAmount = siblingDiscount.type === 'percent' 
-                ? familyTotal * (siblingDiscount.value / 100) 
-                : siblingDiscount.value;
-             
-             if (discountAmount > 0) {
-                familyTotal -= discountAmount;
-                familyItems.push({
-                   description: `${siblingDiscount.name}`,
-                   amount: -discountAmount,
-                   student_name: 'Family',
-                   type: 'discount'
-                });
-             }
-         }
+         // 2. Apply Discounts from TuitionRules
+         discountRules.forEach(rule => {
+            let applies = false;
+            let discountAmount = 0;
 
-         // 3. Fees (Mandatory Monthly + Selected One-Time/Annual)
-         const mandatoryMonthly = fees.filter(f => f.billing_frequency === 'monthly' && f.is_mandatory && !selectedFees.includes(f.id));
-         const feesToApply = [
-             ...mandatoryMonthly,
-             ...fees.filter(f => selectedFees.includes(f.id)) // User selected extra fees
-         ];
-
-         feesToApply.forEach(fee => {
-            // Apply once per family or student? Usually per student for things like Costume/Reg
-            // Let's assume per student for safety unless marked otherwise (schema update would be needed for 'per_family')
-            family.students.forEach(s => {
-               familyTotal += fee.amount;
-               familyItems.push({
-                  description: `${s.name}: ${fee.name}`,
-                  amount: fee.amount,
-                  student_name: s.name,
-                  type: 'fee'
+            // Check conditions
+            if (rule.conditions?.length > 0) {
+               rule.conditions.forEach(cond => {
+                  if (cond.field === 'student_count' && cond.operator === '>=' && family.students.length >= parseInt(cond.value)) {
+                     applies = true;
+                  }
                });
-            });
+            } else {
+               applies = true; // No conditions = always apply
+            }
+
+            if (applies && rule.value) {
+               if (rule.value.method === 'percent') {
+                  discountAmount = familyTotal * (rule.value.amount / 100);
+               } else if (rule.value.method === 'fixed') {
+                  discountAmount = rule.value.amount;
+               }
+
+               if (discountAmount > 0) {
+                  familyTotal -= discountAmount;
+                  familyItems.push({
+                     description: rule.note || 'Discount',
+                     amount: -discountAmount,
+                     student_name: 'Family',
+                     type: 'discount'
+                  });
+               }
+            }
          });
 
-         family.total = Math.max(0, familyTotal); // No negative invoices
+         // 3. Apply Fees from TuitionRules
+         const feesToApply = feeRules.filter(f => selectedFees.includes(f.id) || f.value?.mandatory);
+         
+         feesToApply.forEach(feeRule => {
+            const feeAmount = feeRule.value?.amount || 0;
+            if (feeAmount > 0) {
+               // Apply per student
+               family.students.forEach(s => {
+                  familyTotal += feeAmount;
+                  familyItems.push({
+                     description: `${s.name}: ${feeRule.note || 'Fee'}`,
+                     amount: feeAmount,
+                     student_name: s.name,
+                     type: 'fee'
+                  });
+               });
+            }
+         });
+
+         family.total = Math.max(0, familyTotal);
          family.lineItems = familyItems;
       });
 
