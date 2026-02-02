@@ -88,10 +88,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const anthropic = new Anthropic({
-      apiKey: Deno.env.get('ANTHROPIC_API_KEY') || Deno.env.get('OPENAI_API_KEY'),
-    });
-
     // Fetch partners (GrowthTargets with type partner or business)
     const targets = await base44.entities.GrowthTarget.list();
     const partners = targets.filter(t => t.target_type === 'partner' || t.target_type === 'business');
@@ -230,31 +226,39 @@ Find moments to give to families that they'll WANT to share:
 Return ONLY valid JSON matching the output format.
 `;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
-      system: REFERRER_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userPrompt }],
+    const agentOutput = await base44.integrations.Core.InvokeLLM({
+      prompt: `${REFERRER_SYSTEM_PROMPT}\n\n${userPrompt}`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          partnerReferralActions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                type: { type: "string" },
+                targetId: { type: "string" },
+                targetName: { type: "string" },
+                headline: { type: "string" },
+                reasoning: { type: "string" },
+                channel: { type: "string" },
+                draftMessage: { type: "string" },
+                suggestedMedia: { type: "string" }
+              }
+            }
+          },
+          shareableMomentActions: { type: "array", items: { type: "object" } },
+          insights: {
+            type: "object",
+            properties: {
+              partnerBalance: { type: "array", items: { type: "string" } },
+              topSharers: { type: "array", items: { type: "string" } },
+              untappedMoments: { type: "array", items: { type: "string" } }
+            }
+          }
+        }
+      }
     });
-
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type');
-    }
-
-    const jsonMatch = content.text.match(/```json\n?([\s\S]*?)\n?```/);
-    const jsonStr = jsonMatch ? jsonMatch[1] : content.text;
-    
-    let agentOutput;
-    try {
-      agentOutput = JSON.parse(jsonStr);
-    } catch {
-      agentOutput = {
-        partnerReferralActions: [],
-        shareableMomentActions: [],
-        insights: { partnerBalance: [], topSharers: [], untappedMoments: [] },
-      };
-    }
 
     // Find the referrer outcomes
     const outcomes = await base44.entities.GrowthOutcome.filter({ agent: 'referrer' });

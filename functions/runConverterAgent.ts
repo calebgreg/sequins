@@ -90,12 +90,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const anthropic = new Anthropic({
-      apiKey: Deno.env.get('OPENAI_API_KEY')?.startsWith('sk-ant') 
-        ? Deno.env.get('OPENAI_API_KEY') 
-        : Deno.env.get('ANTHROPIC_API_KEY') || Deno.env.get('OPENAI_API_KEY'),
-    });
-
     // Fetch trial families (students with status 'prospect' or recent trials)
     const students = await base44.entities.Student.filter({ status: 'prospect' });
     const allStudents = await base44.entities.Student.list();
@@ -212,33 +206,39 @@ Make every message feel like it was written just for them. No templates.
 Return ONLY valid JSON matching the output format.
 `;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
-      system: CONVERTER_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userPrompt }],
+    const agentOutput = await base44.integrations.Core.InvokeLLM({
+      prompt: `${CONVERTER_SYSTEM_PROMPT}\n\n${userPrompt}`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          feelSpecialActions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                familyId: { type: "string" },
+                childName: { type: "string" },
+                type: { type: "string" },
+                headline: { type: "string" },
+                reasoning: { type: "string" },
+                channel: { type: "string" },
+                draftMessage: { type: "string" },
+                suggestedMedia: { type: "string" }
+              }
+            }
+          },
+          showValueActions: { type: "array", items: { type: "object" } },
+          reasonToReturnActions: { type: "array", items: { type: "object" } },
+          insights: {
+            type: "object",
+            properties: {
+              commonPatterns: { type: "array", items: { type: "string" } },
+              suggestedImprovements: { type: "array", items: { type: "string" } }
+            }
+          }
+        }
+      }
     });
-
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type');
-    }
-
-    // Parse JSON from response
-    const jsonMatch = content.text.match(/```json\n?([\s\S]*?)\n?```/);
-    const jsonStr = jsonMatch ? jsonMatch[1] : content.text;
-    
-    let agentOutput;
-    try {
-      agentOutput = JSON.parse(jsonStr);
-    } catch {
-      agentOutput = {
-        feelSpecialActions: [],
-        showValueActions: [],
-        reasonToReturnActions: [],
-        insights: { commonPatterns: [], suggestedImprovements: [] },
-      };
-    }
 
     // Find the converter outcomes
     const outcomes = await base44.entities.GrowthOutcome.filter({ agent: 'converter' });

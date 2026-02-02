@@ -101,10 +101,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const anthropic = new Anthropic({
-      apiKey: Deno.env.get('ANTHROPIC_API_KEY') || Deno.env.get('OPENAI_API_KEY'),
-    });
-
     // Fetch studio settings
     const settings = await base44.entities.StudioSettings.list();
     const studioName = settings[0]?.name || 'Dance Studio';
@@ -196,31 +192,40 @@ Based on the above context:
 Return ONLY valid JSON matching the output format.
 `;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
-      system: CONNECTOR_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userPrompt }],
+    const agentOutput = await base44.integrations.Core.InvokeLLM({
+      prompt: `${CONNECTOR_SYSTEM_PROMPT}\n\n${userPrompt}`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          todaysActions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                partnerId: { type: "string" },
+                partnerName: { type: "string" },
+                businessName: { type: "string" },
+                headline: { type: "string" },
+                reasoning: { type: "string" },
+                channel: { type: "string" },
+                draftMessage: { type: "string" },
+                urgency: { type: "string" }
+              }
+            }
+          },
+          inProgress: { type: "array", items: { type: "object" } },
+          insights: {
+            type: "object",
+            properties: {
+              connectionRate: { type: "number" },
+              bestChannel: { type: "string" },
+              bestPartnerType: { type: "string" },
+              blockers: { type: "array", items: { type: "string" } }
+            }
+          }
+        }
+      }
     });
-
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type');
-    }
-
-    const jsonMatch = content.text.match(/```json\n?([\s\S]*?)\n?```/);
-    const jsonStr = jsonMatch ? jsonMatch[1] : content.text;
-    
-    let agentOutput;
-    try {
-      agentOutput = JSON.parse(jsonStr);
-    } catch {
-      agentOutput = {
-        todaysActions: [],
-        inProgress: [],
-        insights: { connectionRate: 0, bestChannel: 'email', bestPartnerType: 'daycare', blockers: [] },
-      };
-    }
 
     // Create GrowthActions from agent output
     const createdActions = [];

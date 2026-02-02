@@ -99,10 +99,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const anthropic = new Anthropic({
-      apiKey: Deno.env.get('ANTHROPIC_API_KEY') || Deno.env.get('OPENAI_API_KEY'),
-    });
-
     // Fetch all active students and families
     const students = await base44.entities.Student.filter({ status: 'active' });
     const families = await base44.entities.Family.list();
@@ -254,31 +250,38 @@ Find 10 wins worth celebrating. For each:
 Return ONLY valid JSON matching the output format.
 `;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
-      system: RETAINER_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userPrompt }],
+    const agentOutput = await base44.integrations.Core.InvokeLLM({
+      prompt: `${RETAINER_SYSTEM_PROMPT}\n\n${userPrompt}`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          atRiskActions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                familyId: { type: "string" },
+                studentName: { type: "string" },
+                type: { type: "string" },
+                headline: { type: "string" },
+                reasoning: { type: "string" },
+                urgency: { type: "string" },
+                channel: { type: "string" },
+                draftMessage: { type: "string" }
+              }
+            }
+          },
+          celebrationActions: { type: "array", items: { type: "object" } },
+          insights: {
+            type: "object",
+            properties: {
+              atRiskPatterns: { type: "array", items: { type: "string" } },
+              celebrationOpportunities: { type: "array", items: { type: "string" } }
+            }
+          }
+        }
+      }
     });
-
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type');
-    }
-
-    const jsonMatch = content.text.match(/```json\n?([\s\S]*?)\n?```/);
-    const jsonStr = jsonMatch ? jsonMatch[1] : content.text;
-    
-    let agentOutput;
-    try {
-      agentOutput = JSON.parse(jsonStr);
-    } catch {
-      agentOutput = {
-        atRiskActions: [],
-        celebrationActions: [],
-        insights: { atRiskPatterns: [], celebrationOpportunities: [] },
-      };
-    }
 
     // Find the retainer outcomes
     const outcomes = await base44.entities.GrowthOutcome.filter({ agent: 'retainer' });

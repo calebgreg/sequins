@@ -91,10 +91,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const anthropic = new Anthropic({
-      apiKey: Deno.env.get('ANTHROPIC_API_KEY') || Deno.env.get('OPENAI_API_KEY'),
-    });
-
     // Fetch prospect students as leads
     const prospectStudents = await base44.entities.Student.filter({ status: 'prospect' });
     
@@ -230,30 +226,40 @@ For each:
 Return ONLY valid JSON matching the output format.
 `;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
-      system: OFFERER_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userPrompt }],
+    const agentOutput = await base44.integrations.Core.InvokeLLM({
+      prompt: `${OFFERER_SYSTEM_PROMPT}\n\n${userPrompt}`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          offerActions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                leadId: { type: "string" },
+                familyName: { type: "string" },
+                childName: { type: "string" },
+                headline: { type: "string" },
+                offerType: { type: "string" },
+                reasoning: { type: "string" },
+                channel: { type: "string" },
+                draftMessage: { type: "string" },
+                specificOffer: { type: "string" },
+                urgency: { type: "string" }
+              }
+            }
+          },
+          insights: {
+            type: "object",
+            properties: {
+              bestSources: { type: "array", items: { type: "string" } },
+              staleLeads: { type: "number" },
+              suggestedOffers: { type: "array", items: { type: "string" } }
+            }
+          }
+        }
+      }
     });
-
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type');
-    }
-
-    const jsonMatch = content.text.match(/```json\n?([\s\S]*?)\n?```/);
-    const jsonStr = jsonMatch ? jsonMatch[1] : content.text;
-    
-    let agentOutput;
-    try {
-      agentOutput = JSON.parse(jsonStr);
-    } catch {
-      agentOutput = {
-        offerActions: [],
-        insights: { bestSources: [], staleLeads: 0, suggestedOffers: [] },
-      };
-    }
 
     // Find the offerer outcomes
     const outcomes = await base44.entities.GrowthOutcome.filter({ agent: 'offerer' });
