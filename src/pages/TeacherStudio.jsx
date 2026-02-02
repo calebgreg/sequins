@@ -497,13 +497,13 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
           </div>
         </div>
 
-        <SubRequestModal 
-          isOpen={isSubRequestOpen}
-          onOpenChange={setIsSubRequestOpen}
-          classData={classData}
-          teacherName={currentTeacherName}
-          availableClasses={[]} 
-        />
+{isSubRequestOpen && (
+          <SubRequestFlow 
+            onClose={() => setIsSubRequestOpen(false)}
+            classes={[classData]}
+            teacherName={currentTeacherName}
+          />
+        )}
       </div>
     );
   }
