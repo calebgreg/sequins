@@ -13,7 +13,7 @@ import FamilyProfileView from '../components/crm/FamilyProfileView';
 import StudentFormModal from '../components/crm/StudentFormModal';
 import MessageStudentModal from '../components/crm/MessageStudentModal';
 import NaturalLanguageSearch from '../components/crm/NaturalLanguageSearch';
-import BulkActionBar from '../components/crm/BulkActionBar';
+import { useBulkSelection } from '../components/ai/GlobalAiChat';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Design tokens
@@ -69,7 +69,10 @@ export default function Students() {
   const [studentToMessage, setStudentToMessage] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'prospect'
   const [billingFilter, setBillingFilter] = useState('all'); // 'all', 'auto_pay', 'manual'
-  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+  
+  // Use the global bulk selection context
+  const { selectedStudents, setSelectedStudents, clearSelection } = useBulkSelection();
+  const selectedStudentIds = selectedStudents.map(s => s.id);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -263,25 +266,16 @@ export default function Students() {
     setMessageModalOpen(true);
   };
 
-  const toggleStudentSelection = (e, studentId) => {
+  const toggleStudentSelection = (e, student) => {
     e.stopPropagation();
-    setSelectedStudentIds(prev => 
-      prev.includes(studentId) 
-        ? prev.filter(id => id !== studentId)
-        : [...prev, studentId]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedStudentIds.length === filteredStudents.length) {
-      setSelectedStudentIds([]);
-    } else {
-      setSelectedStudentIds(filteredStudents.map(s => s.id));
-    }
-  };
-
-  const clearSelection = () => {
-    setSelectedStudentIds([]);
+    setSelectedStudents(prev => {
+      const isSelected = prev.some(s => s.id === student.id);
+      if (isSelected) {
+        return prev.filter(s => s.id !== student.id);
+      } else {
+        return [...prev, student];
+      }
+    });
   };
 
   if (selectedStudent) {
@@ -533,7 +527,7 @@ export default function Students() {
                                <div className="flex justify-between items-start mb-3">
                                   <div className="flex items-center gap-3">
                                      <div 
-                                       onClick={(e) => toggleStudentSelection(e, student.id)}
+                                       onClick={(e) => toggleStudentSelection(e, student)}
                                        className="relative w-10 h-10 cursor-pointer transition-all duration-150"
                                        style={{
                                          transform: isSelected ? 'translateY(1px) scale(0.97)' : 'translateY(0) scale(1)',
@@ -656,7 +650,7 @@ export default function Students() {
                               <td className="p-5">
                                 <div className="flex items-center gap-4">
                                   <div 
-                                    onClick={(e) => toggleStudentSelection(e, student.id)}
+                                    onClick={(e) => toggleStudentSelection(e, student)}
                                     className="relative w-10 h-10 cursor-pointer transition-all duration-150"
                                     style={{
                                       transform: isSelected ? 'translateY(1px) scale(0.97)' : 'translateY(0) scale(1)',
@@ -922,23 +916,6 @@ export default function Students() {
         onOpenChange={setMessageModalOpen}
         student={studentToMessage}
       />
-
-      {/* Bulk Action Bar */}
-      <AnimatePresence>
-        {selectedStudentIds.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-          >
-            <BulkActionBar 
-              selectedIds={selectedStudentIds}
-              students={students}
-              onClear={clearSelection}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
+      </div>
+      );
+      }
