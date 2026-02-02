@@ -193,6 +193,13 @@ export function BillingOverview({ onSelectFamily }) {
         }
       });
 
+      // Apply family billing adjustments (saved from FamilyTuitionManager)
+      const familyEntity = familyEntities.find(f => f.parent_email === family.email);
+      const adjustments = familyEntity?.billing_adjustments || [];
+      adjustments.forEach(adj => {
+        totalAmount += adj.amount; // amount is already signed (negative for discounts)
+      });
+
       // Check for existing invoice this month
       const currentMonth = new Date().toISOString().slice(0, 7);
       const existingInvoice = invoices.find(inv => 
