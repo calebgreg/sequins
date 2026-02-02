@@ -16,52 +16,43 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Song title is required' }, { status: 400 });
         }
 
-        const prompt = `Find the official Spotify and Apple Music links for the song "${song_title}"${artist ? ` by "${artist}"` : ''}.
-
-        IMPORTANT: The user input might have typos (e.g. "Belinni" instead of "Bellini", or "Samba Rhythms" instead of "Samba de Janeiro"). 
-        1. First, identify the likely correct song and artist if the input seems off.
-        2. Then find the links for that corrected song.
-
-        CRITICAL: 
-        1. You MUST find the link to the *Individual Track/Song*, not the full album.
-        2. **NO FAKE LINKS**: If you cannot find a working, verifiable link, return null. 
-
-        Search Strategy:
-        1. Search for "spotify track ${song_title} ${artist || ''}"
-        2. Search for "apple music ${song_title} ${artist || ''}"
-
-        For Apple Music:
-        - Look for links containing "?i=". This indicates a specific song within an album.
-        - Example: https://music.apple.com/us/album/song-name/123456?i=789012
-        - If you find an album link that definitely contains the song, but cannot isolate the ?i= parameter, return the album link.
-
-        Return JSON: { "spotify_link": "...", "apple_music_link": "..." }`;
-
-        let response = await base44.integrations.Core.InvokeLLM({
-            prompt: prompt,
-            add_context_from_internet: true,
-            response_json_schema: {
-                type: "object",
-                properties: {
-                    spotify_link: { type: ["string", "null"] },
-                    apple_music_link: { type: ["string", "null"] }
-                }
-            }
+        // Use the real Apple Music API via searchAppleMusic function
+        const searchQuery = artist ? `${song_title} ${artist}` : song_title;
+        
+        const searchResponse = await base44.functions.invoke('searchAppleMusic', {
+            query: searchQuery
         });
 
-        // Extra Validation Layer to catch hallucinations
-        if (response.spotify_link) {
-            // Relaxed validation: Just check for spotify.com/track/ and at least some ID chars
-            const hasTrackPath = response.spotify_link.includes('spotify.com/track/');
-            const isGarbage = /0J0J|12345|example|YOUR_CLIENT_ID/.test(response.spotify_link);
-
-            if (!hasTrackPath || isGarbage) {
-                console.log("Discarding invalid/hallucinated Spotify link:", response.spotify_link);
-                response.spotify_link = null;
-            }
+        if (searchResponse.error) {
+            console.error('Apple Music search error:', searchResponse.error);
+            return Response.json({ 
+                apple_music_link: null,
+                album_artwork_url: null,
+                apple_music_preview_url: null,
+                itunes_buy_link: null
+            });
         }
 
-        return Response.json(response);
+        const songs = searchResponse.songs || [];
+        
+        if (songs.length === 0) {
+            return Response.json({ 
+                apple_music_link: null,
+                album_artwork_url: null,
+                apple_music_preview_url: null,
+                itunes_buy_link: null
+            });
+        }
+
+        // Return the first (best) match
+        const bestMatch = songs[0];
+        
+        return Response.json({
+            apple_music_link: bestMatch.itunes_buy_link || null,
+            album_artwork_url: bestMatch.album_artwork_url || null,
+            apple_music_preview_url: bestMatch.apple_music_preview_url || null,
+            itunes_buy_link: bestMatch.itunes_buy_link || null
+        });
 
     } catch (error) {
         console.error("Error finding music links:", error);
