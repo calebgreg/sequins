@@ -502,7 +502,7 @@ export function FamilyBillingDetail({ family, onBack }) {
       total,
       trace: allTrace,
     };
-  }, [family, classes, tuitionRules]);
+  }, [family, classes, tuitionRules, familyEntities]);
 
   // Get payment history
   const history = useMemo(() => {
