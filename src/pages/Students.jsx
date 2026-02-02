@@ -532,30 +532,50 @@ export default function Students() {
                          >
                                <div className="flex justify-between items-start mb-3">
                                   <div className="flex items-center gap-3">
-                                     <Avatar 
+                                     <div 
                                        onClick={(e) => toggleStudentSelection(e, student.id)}
-                                       className="w-10 h-10 cursor-pointer transition-all duration-150"
+                                       className="relative w-10 h-10 cursor-pointer transition-all duration-150"
                                        style={{
-                                         boxShadow: '0 2px 8px rgba(180,150,140,0.2)',
-                                         border: isSelected 
-                                           ? '2px solid #ffb87a'
-                                           : '2px solid rgba(255,255,255,0.8)',
                                          transform: isSelected ? 'translateY(1px) scale(0.97)' : 'translateY(0) scale(1)',
-                                         filter: isSelected ? 'drop-shadow(0 0 6px #ffb87a) drop-shadow(0 0 12px #ffa060)' : 'none',
                                        }}
                                      >
-                                        <AvatarFallback 
-                                          style={{ 
-                                            background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
-                                            color: isSelected ? '#fff5e6' : '#fff',
-                                            textShadow: isSelected 
-                                              ? '0 0 8px #fff, 0 0 16px #ffcc99, 0 0 24px #ffaa66' 
-                                              : 'none',
-                                          }}
-                                        >
-                                          {student.name.charAt(0)}
-                                        </AvatarFallback>
-                                     </Avatar>
+                                       {/* Outer glow ring */}
+                                       {isSelected && (
+                                         <div 
+                                           className="absolute inset-[-4px] rounded-full"
+                                           style={{
+                                             background: 'radial-gradient(circle, rgba(255,184,122,0.6) 60%, rgba(255,160,96,0.3) 80%, transparent 100%)',
+                                             filter: 'blur(4px)',
+                                           }}
+                                         />
+                                       )}
+                                       {/* Main avatar with glowing border */}
+                                       <Avatar 
+                                         className="w-10 h-10 relative"
+                                         style={{
+                                           boxShadow: isSelected 
+                                             ? 'inset 0 0 8px rgba(255,200,150,0.4), 0 0 0 2px #ffb87a'
+                                             : '0 2px 8px rgba(180,150,140,0.2)',
+                                           border: '2px solid transparent',
+                                           background: isSelected 
+                                             ? 'linear-gradient(145deg, #c4a0a0, #8a7070) padding-box, linear-gradient(145deg, #ffd4a8, #ffb87a) border-box'
+                                             : 'none',
+                                         }}
+                                       >
+                                          <AvatarFallback 
+                                            style={{ 
+                                              background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
+                                              color: isSelected ? '#ffe8d0' : '#fff',
+                                              textShadow: isSelected 
+                                                ? '0 0 6px #fff, 0 0 12px #ffe0b0, 0 0 18px #ffcc88' 
+                                                : 'none',
+                                              fontWeight: isSelected ? '600' : '500',
+                                            }}
+                                          >
+                                            {student.name.charAt(0)}
+                                          </AvatarFallback>
+                                       </Avatar>
+                                     </div>
                                      <div>
                                         <EtchedText size="sm">{student.name}</EtchedText>
                                         <div className="text-xs" style={{ color: colors.muted }}>{student.age} yrs • {student.level}</div>
@@ -631,30 +651,50 @@ export default function Students() {
                             >
                               <td className="p-5">
                                 <div className="flex items-center gap-4">
-                                  <Avatar 
+                                  <div 
                                     onClick={(e) => toggleStudentSelection(e, student.id)}
-                                    className="w-10 h-10 cursor-pointer transition-all duration-150"
+                                    className="relative w-10 h-10 cursor-pointer transition-all duration-150"
                                     style={{
-                                      boxShadow: '0 2px 8px rgba(180,150,140,0.2)',
-                                      border: isSelected 
-                                        ? '2px solid #ffb87a'
-                                        : '2px solid rgba(255,255,255,0.8)',
                                       transform: isSelected ? 'translateY(1px) scale(0.97)' : 'translateY(0) scale(1)',
-                                      filter: isSelected ? 'drop-shadow(0 0 6px #ffb87a) drop-shadow(0 0 12px #ffa060)' : 'none',
                                     }}
                                   >
-                                    <AvatarFallback 
-                                      style={{ 
-                                        background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
-                                        color: isSelected ? '#fff5e6' : '#fff',
-                                        textShadow: isSelected 
-                                          ? '0 0 8px #fff, 0 0 16px #ffcc99, 0 0 24px #ffaa66' 
+                                    {/* Outer glow ring */}
+                                    {isSelected && (
+                                      <div 
+                                        className="absolute inset-[-4px] rounded-full"
+                                        style={{
+                                          background: 'radial-gradient(circle, rgba(255,184,122,0.6) 60%, rgba(255,160,96,0.3) 80%, transparent 100%)',
+                                          filter: 'blur(4px)',
+                                        }}
+                                      />
+                                    )}
+                                    {/* Main avatar with glowing border */}
+                                    <Avatar 
+                                      className="w-10 h-10 relative"
+                                      style={{
+                                        boxShadow: isSelected 
+                                          ? 'inset 0 0 8px rgba(255,200,150,0.4), 0 0 0 2px #ffb87a'
+                                          : '0 2px 8px rgba(180,150,140,0.2)',
+                                        border: '2px solid transparent',
+                                        background: isSelected 
+                                          ? 'linear-gradient(145deg, #c4a0a0, #8a7070) padding-box, linear-gradient(145deg, #ffd4a8, #ffb87a) border-box'
                                           : 'none',
                                       }}
                                     >
-                                      {student.name.charAt(0)}
-                                    </AvatarFallback>
-                                  </Avatar>
+                                      <AvatarFallback 
+                                        style={{ 
+                                          background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
+                                          color: isSelected ? '#ffe8d0' : '#fff',
+                                          textShadow: isSelected 
+                                            ? '0 0 6px #fff, 0 0 12px #ffe0b0, 0 0 18px #ffcc88' 
+                                            : 'none',
+                                          fontWeight: isSelected ? '600' : '500',
+                                        }}
+                                      >
+                                        {student.name.charAt(0)}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  </div>
                                   <div>
                                     <EtchedText size="sm">{student.name}</EtchedText>
                                     {student.joined_date && <div className="text-xs" style={{ color: colors.muted }}>Joined {student.joined_date}</div>}
