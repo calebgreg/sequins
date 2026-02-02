@@ -54,7 +54,7 @@ export default function AppSidebar({ className = "", onSearchClick }) {
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   const navItems = [
-    { path: '/Home', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/Growth', icon: TrendingUp, label: 'Growth' },
     { path: '/TeacherStudio', icon: Briefcase, label: 'Studio' },
     { path: '/Tasks', icon: CheckSquare, label: 'Tasks' },
     { path: '/ClassManager', icon: Calendar, label: 'Schedule' },
