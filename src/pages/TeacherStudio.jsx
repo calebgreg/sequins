@@ -508,20 +508,20 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
     >
       {/* Ambient background shapes */}
       <div 
-        className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+        className="fixed top-[-20%] right-[-10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
         style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
       />
       <div 
-        className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+        className="fixed bottom-[-30%] left-[-15%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
         style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
       />
 
       {/* Header */}
-      <div className="relative px-8 py-8 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="relative px-4 md:px-8 py-6 md:py-8 flex items-center justify-between">
+        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
           <button 
             onClick={() => setMode('dashboard')} 
-            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
             style={{
               background: 'rgba(255,255,255,0.6)',
               boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
@@ -531,16 +531,16 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
             <ChevronLeft className="w-5 h-5" />
           </button>
           <h2 
-            className="text-2xl font-bold tracking-tight"
+            className="text-xl md:text-2xl font-bold tracking-tight truncate"
             style={textGradient}
           >
             {classData.title}
           </h2>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 md:gap-3 flex-shrink-0">
           <button 
             onClick={() => setIsSubRequestOpen(true)}
-            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
             style={{
               background: 'rgba(255,255,255,0.6)',
               boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
@@ -554,7 +554,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
 
       {/* Student List */}
       <ScrollArea className="relative flex-1 px-4 md:px-8">
-        <div className="space-y-3 pb-32 max-w-2xl mx-auto">
+        <div className="space-y-2 md:space-y-3 pb-28 md:pb-32 max-w-2xl mx-auto">
           {classData.student_names?.map((name, i) => {
              const status = attendance[name] || 'present';
              
@@ -564,15 +564,15 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
                  initial={{ opacity: 0, y: 10 }}
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ delay: i * 0.03 }}
-                 className="rounded-2xl p-4 flex items-center justify-between"
+                 className="rounded-xl md:rounded-2xl p-3 md:p-4 flex items-center justify-between gap-3"
                  style={{
                    background: 'rgba(255,255,255,0.5)',
                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
                  }}
                >
-                 <div className="flex items-center gap-4">
+                 <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
                     <div 
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0"
                       style={{
                         background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
                         boxShadow: 'inset 0 1px 1px rgba(255,255,255,1)',
@@ -581,19 +581,19 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
                       <span className="text-sm font-medium" style={{ color: '#c9a99c' }}>{name.charAt(0)}</span>
                     </div>
                     <span 
-                      className={`font-medium ${status === 'absent' ? 'line-through' : ''}`}
+                      className={`font-medium text-sm md:text-base truncate ${status === 'absent' ? 'line-through' : ''}`}
                       style={{ color: status === 'absent' ? '#d4c4ba' : '#8b7d72' }}
                     >
                       {name}
                     </span>
                  </div>
 
-                 <div className="flex gap-2">
+                 <div className="flex gap-1.5 md:gap-2 flex-shrink-0">
                     {['present', 'absent', 'late'].map(s => (
                         <button
                             key={s}
                             onClick={() => setAttendance(prev => ({...prev, [name]: s}))}
-                            className="px-4 py-1.5 rounded-xl text-xs font-medium transition-all"
+                            className="px-2.5 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-medium transition-all active:scale-95"
                             style={{
                               background: status === s 
                                 ? (s === 'present' 
@@ -608,7 +608,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
                               boxShadow: status === s ? 'inset 0 1px 1px rgba(255,255,255,0.5)' : 'none',
                             }}
                         >
-                            {s.charAt(0).toUpperCase() + s.slice(1)}
+                            {s === 'present' ? 'Here' : s === 'absent' ? 'Out' : 'Late'}
                         </button>
                     ))}
                  </div>
@@ -619,11 +619,11 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
       </ScrollArea>
 
       {/* Floating Footer */}
-      <div className="fixed bottom-8 left-0 right-0 flex justify-center px-4 z-20">
+      <div className="fixed bottom-6 md:bottom-8 left-0 right-0 flex justify-center px-4 z-20">
         <button 
           onClick={handleSubmitAttendance}
           disabled={isSubmitting || submitSuccess}
-          className="px-10 py-4 rounded-2xl text-base font-bold tracking-tight transition-all hover:scale-[1.02] disabled:opacity-70"
+          className="w-full max-w-sm md:w-auto px-8 md:px-10 py-4 rounded-2xl text-base font-bold tracking-tight transition-all active:scale-[0.98] md:hover:scale-[1.02] disabled:opacity-70"
           style={buttonStyle}
         >
           <span style={textGradient}>
@@ -632,7 +632,13 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
         </button>
       </div>
 
-
+      {isSubRequestOpen && (
+        <SubRequestFlow 
+          onClose={() => setIsSubRequestOpen(false)}
+          classes={[classData]}
+          teacherName={currentTeacherName}
+        />
+      )}
     </div>
   );
       };
