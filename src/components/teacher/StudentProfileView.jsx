@@ -12,6 +12,7 @@ import { base44 } from "@/api/base44Client";
 import { format, getDay } from 'date-fns';
 import NewJournalEntryModal from './NewJournalEntryModal';
 import StudentCommunicationTab from '../crm/StudentCommunicationTab';
+import StudentMeasurementsTab from './StudentMeasurementsTab';
 
 export default function StudentProfileView({ student, teacherName, onBack, onViewFamily }) {
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
@@ -290,6 +291,7 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                    { id: 'activity', label: 'Activity' },
                    { id: 'classes', label: 'Classes' },
                    { id: 'notes', label: 'Journal' },
+                   { id: 'measurements', label: 'Measurements' },
                    { id: 'communication', label: 'Messages' }
                  ].map(tab => (
                    <TabsTrigger 
@@ -608,6 +610,19 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                    </button>
                  </div>
               </div>
+            </TabsContent>
+
+            {/* MEASUREMENTS TAB */}
+            <TabsContent value="measurements" className="space-y-6">
+               <div 
+                  className="rounded-2xl p-5"
+                  style={{
+                    background: 'rgba(255,255,255,0.4)',
+                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                  }}
+               >
+                  <StudentMeasurementsTab student={student} />
+               </div>
             </TabsContent>
 
             {/* COMMUNICATION TAB */}
