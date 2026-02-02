@@ -180,7 +180,7 @@ export default function FamilyTuitionManager({ family }) {
         });
 
         return { lines, total: subtotal, savings: totalSavings, potential: potentialRevenue };
-    }, [familyStudents, classes, tuitionRules, manualItems, tuitionPlans]);
+    }, [familyStudents, classes, tuitionRules, manualItems]);
 
 
     // Handlers
