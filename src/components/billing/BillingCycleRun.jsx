@@ -241,7 +241,7 @@ export default function BillingCycleRun({ isOpen, onOpenChange }) {
                            >
                               <div>
                                  <div className="font-bold text-[#333333]">{fee.name}</div>
-                                 <div className="text-xs text-gray-400 capitalize">{fee.billing_frequency.replace('_', ' ')} • ${fee.amount}</div>
+                                 <div className="text-xs text-gray-400">${fee.value?.amount || 0}</div>
                               </div>
                               <Checkbox checked={selectedFees.includes(fee.id)} className="data-[state=checked]:bg-[#333333]" />
                            </div>
