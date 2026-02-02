@@ -202,47 +202,81 @@ export default function FamilyTuitionManager({ family }) {
     });
 
     return (
-        <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full">
-            {/* Header with Profitability Stats */}
-            <div className="p-6 border-b border-gray-100 bg-gray-50/30">
-                <div className="flex justify-between items-start mb-4">
+        <div 
+            className="rounded-3xl overflow-hidden flex flex-col h-full"
+            style={{
+                background: 'linear-gradient(145deg, rgba(253,238,236,0.5) 0%, rgba(250,232,228,0.3) 50%, rgba(252,243,240,0.4) 100%)',
+                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+            }}
+        >
+            {/* Header */}
+            <div 
+                className="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                style={{ borderBottom: '1px solid rgba(200,180,170,0.2)' }}
+            >
+                <div className="flex items-center gap-3">
+                    <div 
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                            boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+                            color: '#c9a99c',
+                        }}
+                    >
+                        <Calculator className="w-5 h-5" />
+                    </div>
                     <div>
-                        <h3 className="text-lg font-serif text-[#333333] flex items-center gap-2">
-                            <Calculator className="w-5 h-5 text-gray-400" />
-                            Tuition Manager
-                        </h3>
+                        <h3 className="text-lg font-bold" style={{ color: '#8b7d72' }}>Tuition Manager</h3>
+                        <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#b5a599' }}>For {family.parent_name}</p>
                     </div>
-                    <Button variant="outline" size="sm" className="h-8 gap-2 rounded-full text-xs">
-                        <Share2 className="w-3 h-3" /> Share Estimate
-                    </Button>
                 </div>
-                
-                {/* Value Cards */}
-                <div className="flex gap-4">
-                    <div className="flex-1 bg-green-50 rounded-2xl p-3 border border-green-100 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                            <Percent className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <div className="text-[10px] uppercase font-bold text-green-600/60">Family Savings</div>
-                            <div className="font-bold text-green-700">${calculation.savings.toFixed(2)}</div>
-                        </div>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 gap-2 rounded-full text-xs"
+                    style={{ background: 'rgba(255,255,255,0.6)', color: '#8b7d72' }}
+                >
+                    <Share2 className="w-3 h-3" /> Share Estimate
+                </Button>
+            </div>
+            
+            {/* Value Cards */}
+            <div className="flex flex-col sm:flex-row gap-4 p-6" style={{ borderBottom: '1px solid rgba(200,180,170,0.2)' }}>
+                <div 
+                    className="flex-1 rounded-2xl p-4 flex items-center gap-3"
+                    style={{ background: 'rgba(126,184,154,0.1)', border: '1px solid rgba(126,184,154,0.2)' }}
+                >
+                    <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center"
+                        style={{ background: 'rgba(126,184,154,0.2)', color: '#7eb89a' }}
+                    >
+                        <Percent className="w-5 h-5" />
                     </div>
-                    <div className="flex-1 bg-indigo-50 rounded-2xl p-3 border border-indigo-100 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                            <TrendingUp className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <div className="text-[10px] uppercase font-bold text-indigo-600/60">Active Plan Value</div>
-                            <div className="font-bold text-indigo-700">${calculation.total.toFixed(2)}</div>
-                        </div>
+                    <div>
+                        <div className="text-[10px] uppercase font-bold" style={{ color: '#7eb89a' }}>Family Savings</div>
+                        <div className="font-bold text-lg" style={{ color: '#7eb89a' }}>${calculation.savings.toFixed(2)}</div>
+                    </div>
+                </div>
+                <div 
+                    className="flex-1 rounded-2xl p-4 flex items-center gap-3"
+                    style={{ background: 'rgba(164,139,196,0.1)', border: '1px solid rgba(164,139,196,0.2)' }}
+                >
+                    <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center"
+                        style={{ background: 'rgba(164,139,196,0.2)', color: '#8b7d9a' }}
+                    >
+                        <TrendingUp className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <div className="text-[10px] uppercase font-bold" style={{ color: '#8b7d9a' }}>Active Plan Value</div>
+                        <div className="font-bold text-lg" style={{ color: '#8b7d9a' }}>${calculation.total.toFixed(2)}</div>
                     </div>
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 
-                {/* Students Breakdown & Plan Selection */}
+                {/* Students Breakdown */}
                 <div className="space-y-6">
                     {familyStudents.map(student => {
                         const studentLines = calculation.lines.filter(l => l.student_name === student.name && l.type === 'tuition');
@@ -251,27 +285,42 @@ export default function FamilyTuitionManager({ family }) {
                         return (
                             <div key={student.id} className="relative">
                                 {/* Connector Line */}
-                                <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gray-100 -z-10" />
+                                <div className="absolute left-4 top-8 bottom-0 w-0.5" style={{ background: 'rgba(200,180,170,0.2)' }} />
                                 
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-8 rounded-full bg-[#333333] text-white flex items-center justify-center font-serif text-sm border-4 border-white shadow-sm z-10">
+                                    <div 
+                                        className="w-8 h-8 rounded-full flex items-center justify-center text-sm border-4 z-10"
+                                        style={{
+                                            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                                            boxShadow: '0 2px 8px -2px rgba(180,150,140,0.1), inset 0 1px 1px rgba(255,255,255,0.8)',
+                                            borderColor: '#f5f0eb',
+                                            color: '#c9a99c',
+                                        }}
+                                    >
                                         {student.name.charAt(0)}
                                     </div>
-                                    <span className="font-bold text-[#333333]">{student.name}</span>
+                                    <span className="font-bold" style={{ color: '#8b7d72' }}>{student.name}</span>
                                 </div>
 
-                                <div className="ml-10 bg-white border border-gray-100 rounded-2xl p-4 shadow-sm group hover:border-indigo-200 transition-colors">
+                                <div 
+                                    className="ml-10 rounded-2xl p-4 transition-transform hover:scale-[1.005]"
+                                    style={{
+                                        background: 'rgba(255,255,255,0.6)',
+                                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                                        border: '1px solid rgba(200,180,170,0.2)',
+                                    }}
+                                >
                                     <div className="flex justify-between items-start mb-2">
-                                        <div className="text-sm font-medium text-gray-700">
+                                        <div className="text-sm font-medium" style={{ color: '#8b7d72' }}>
                                             {studentLines[0]?.description || 'Tuition'}
                                         </div>
-                                        <div className="font-bold text-[#333333]">
+                                        <div className="font-bold" style={{ color: '#8b7d72' }}>
                                             ${studentLines.reduce((sum, l) => sum + l.amount, 0).toFixed(2)}
                                         </div>
                                     </div>
                                     
-                                    {/* Class/Details List - uses TuitionRules rates */}
-                                    <div className="text-xs text-gray-400 space-y-1">
+                                    {/* Class/Details List */}
+                                    <div className="text-xs space-y-1" style={{ color: '#a8998e' }}>
                                         {studentLines.length > 0 ? (
                                             studentLines.map((line, idx) => (
                                                 <div key={idx} className="flex justify-between">
@@ -289,17 +338,29 @@ export default function FamilyTuitionManager({ family }) {
                     })}
                 </div>
 
-                <Separator className="bg-gray-100" />
+                <Separator style={{ background: 'rgba(200,180,170,0.2)' }} />
 
                 {/* Adjustments Section */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Discounts & Fees</h4>
+                        <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#b5a599' }}>Adjustments</h4>
                         <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => addManualItem('fee')} className="text-indigo-600 hover:bg-indigo-50 h-7 text-xs rounded-lg">
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => addManualItem('fee')} 
+                                className="h-7 text-xs rounded-lg"
+                                style={{ color: '#c8aa9c', background: 'rgba(200,170,156,0.1)' }}
+                            >
                                 <Plus className="w-3 h-3 mr-1" /> Add Fee
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => addManualItem('discount')} className="text-green-600 hover:bg-green-50 h-7 text-xs rounded-lg">
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => addManualItem('discount')} 
+                                className="h-7 text-xs rounded-lg"
+                                style={{ color: '#7eb89a', background: 'rgba(126,184,154,0.1)' }}
+                            >
                                 <Tag className="w-3 h-3 mr-1" /> Add Discount
                             </Button>
                         </div>
@@ -308,13 +369,17 @@ export default function FamilyTuitionManager({ family }) {
                     <div className="space-y-3">
                         {/* Auto-Calculated Discounts */}
                         {calculation.lines.filter(l => l.type === 'discount' && !l.isManual).map((line, idx) => (
-                            <div key={`auto-${idx}`} className="flex justify-between items-center p-3 bg-green-50/30 rounded-xl border border-green-100/50 text-sm">
+                            <div 
+                                key={`auto-${idx}`} 
+                                className="flex justify-between items-center p-3 rounded-xl text-sm"
+                                style={{ background: 'rgba(126,184,154,0.1)', border: '1px solid rgba(126,184,154,0.2)' }}
+                            >
                                 <div className="flex items-center gap-2">
-                                    <Tag className="w-3.5 h-3.5 text-green-500" />
-                                    <span className="text-green-900 font-medium">{line.description}</span>
-                                    {line.student_name !== 'Family' && <span className="text-xs text-green-600/70">({line.student_name})</span>}
+                                    <Tag className="w-3.5 h-3.5" style={{ color: '#7eb89a' }} />
+                                    <span className="font-medium" style={{ color: '#7eb89a' }}>{line.description}</span>
+                                    {line.student_name !== 'Family' && <span className="text-xs" style={{ color: '#a8998e' }}>({line.student_name})</span>}
                                 </div>
-                                <div className="font-bold text-green-700">
+                                <div className="font-bold" style={{ color: '#7eb89a' }}>
                                     -${Math.abs(line.amount).toFixed(2)}
                                 </div>
                             </div>
@@ -327,10 +392,13 @@ export default function FamilyTuitionManager({ family }) {
                                     value={item.student_name}
                                     onValueChange={v => updateManualItem(item.id, 'student_name', v)}
                                 >
-                                    <SelectTrigger className="w-[110px] h-8 text-xs bg-gray-50 border-transparent">
+                                    <SelectTrigger 
+                                        className="w-[110px] h-8 text-xs bg-white/60 rounded-lg"
+                                        style={{ borderColor: 'rgba(200,180,170,0.3)', color: '#8b7d72' }}
+                                    >
                                         <SelectValue placeholder="Student" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="rounded-xl">
                                         <SelectItem value="Family">Family</SelectItem>
                                         {familyStudents.map(s => (
                                             <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
@@ -340,7 +408,8 @@ export default function FamilyTuitionManager({ family }) {
                                 <Input 
                                     value={item.description}
                                     onChange={e => updateManualItem(item.id, 'description', e.target.value)}
-                                    className="h-8 text-sm flex-1 bg-gray-50 border-transparent"
+                                    className="h-8 text-sm flex-1 bg-white/60 rounded-lg"
+                                    style={{ borderColor: 'rgba(200,180,170,0.3)', color: '#8b7d72' }}
                                     placeholder="Description"
                                 />
                                 <div className="relative w-20">
@@ -348,13 +417,18 @@ export default function FamilyTuitionManager({ family }) {
                                         type="number"
                                         value={item.amount}
                                         onChange={e => updateManualItem(item.id, 'amount', e.target.value)}
-                                        className={`h-8 text-sm pl-2 text-right bg-gray-50 border-transparent ${item.type === 'discount' ? 'text-green-600' : 'text-[#333333]'}`}
+                                        className="h-8 text-sm pl-2 text-right bg-white/60 rounded-lg"
+                                        style={{ 
+                                            borderColor: 'rgba(200,180,170,0.3)', 
+                                            color: item.type === 'discount' ? '#7eb89a' : '#8b7d72' 
+                                        }}
                                     />
                                 </div>
                                 <Button 
                                     variant="ghost" 
                                     size="icon" 
-                                    className="h-8 w-8 text-gray-400 hover:text-red-500"
+                                    className="h-8 w-8 hover:bg-red-50/50"
+                                    style={{ color: '#c8aa9c' }}
                                     onClick={() => removeManualItem(item.id)}
                                 >
                                     <X className="w-4 h-4" />
@@ -363,7 +437,10 @@ export default function FamilyTuitionManager({ family }) {
                         ))}
                         
                         {calculation.lines.filter(l => l.type === 'discount').length === 0 && manualItems.length === 0 && (
-                            <div className="text-center py-6 text-xs text-gray-300 border border-dashed border-gray-100 rounded-xl">
+                            <div 
+                                className="text-center py-6 text-xs border border-dashed rounded-xl"
+                                style={{ borderColor: 'rgba(200,180,170,0.3)', color: '#b5a599' }}
+                            >
                                 No adjustments applied
                             </div>
                         )}
@@ -372,24 +449,35 @@ export default function FamilyTuitionManager({ family }) {
             </div>
 
             {/* Total Footer */}
-            <div className="p-6 bg-[#333333] text-white mt-auto">
+            <div 
+                className="p-6 mt-auto"
+                style={{ 
+                    background: 'rgba(255,255,255,0.7)',
+                    borderTop: '1px solid rgba(200,180,170,0.2)',
+                }}
+            >
                 <div className="flex justify-between items-end mb-4">
                     <div>
-                        <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-1">Estimated Total</div>
-                        <div className="text-3xl font-serif text-white">
+                        <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: '#b5a599' }}>Estimated Total</div>
+                        <div className="text-3xl font-bold" style={{ color: '#8b7d72' }}>
                             ${calculation.total.toFixed(2)}
                         </div>
                     </div>
                     <Button 
                         onClick={() => saveAdjustmentsMutation.mutate()}
                         disabled={saveAdjustmentsMutation.isPending}
-                        className="bg-white text-[#333333] hover:bg-gray-100 rounded-xl px-6 shadow-lg gap-2 font-bold"
+                        className="rounded-xl px-6 shadow-lg gap-2 font-bold transition-all hover:scale-[1.02]"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
+                            boxShadow: '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)',
+                            color: '#8b7d72',
+                        }}
                     >
                         {saveAdjustmentsMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         Save Adjustments
                     </Button>
                 </div>
-                <div className="text-[10px] text-white/30 text-center flex items-center justify-center gap-2">
+                <div className="text-[10px] text-center flex items-center justify-center gap-2" style={{ color: '#b5a599' }}>
                     <Check className="w-3 h-3" /> Adjustments will apply when billing runs
                 </div>
             </div>
