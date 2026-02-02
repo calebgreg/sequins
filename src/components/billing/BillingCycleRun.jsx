@@ -191,12 +191,8 @@ export default function BillingCycleRun({ isOpen, onOpenChange }) {
     }
   });
 
-  // Optional Fees Selection
-  const optionalFees = fees.filter(f => 
-     f.billing_frequency === 'annual' || 
-     f.billing_frequency === 'one_time' || 
-     f.billing_frequency === 'per_session'
-  );
+  // Optional Fees from TuitionRules (non-mandatory fee rules)
+  const optionalFees = feeRules.filter(f => !f.value?.mandatory);
 
   const toggleFee = (feeId) => {
       if (selectedFees.includes(feeId)) setSelectedFees(selectedFees.filter(id => id !== feeId));
