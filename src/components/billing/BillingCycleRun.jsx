@@ -34,6 +34,11 @@ export default function BillingCycleRun({ isOpen, onOpenChange }) {
     queryFn: () => base44.entities.TuitionRule.list(),
   });
 
+  const { data: familyEntities = [] } = useQuery({
+    queryKey: ['familyEntities'],
+    queryFn: () => base44.entities.Family.list(),
+  });
+
   // Derived rule sets from TuitionRule
   const basePricingRule = tuitionRules.find(r => r.type === 'base_pricing' && r.active !== false);
   const classExceptionRules = tuitionRules.filter(r => r.type === 'class_exception' && r.active !== false);
