@@ -149,9 +149,41 @@ export default function VoiceNoteIntake({ classData, students, teacherName, onNo
           )}
         </div>
 
+        {/* Class Insights Display */}
+        {classInsights && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl p-4 mb-4"
+            style={{
+              background: 'linear-gradient(145deg, rgba(126,184,154,0.1) 0%, rgba(140,190,165,0.08) 100%)',
+              border: '1px solid rgba(126,184,154,0.2)',
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Lightbulb className="w-4 h-4 text-emerald-600" />
+              <span className="text-sm font-medium text-emerald-700">Class Insights</span>
+            </div>
+            <p className="text-sm text-emerald-800 mb-2">{classInsights.standout_moments}</p>
+            {classInsights.focus_areas?.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                <span className="text-xs text-emerald-600">Focus areas:</span>
+                {classInsights.focus_areas.map((area, i) => (
+                  <span 
+                    key={i}
+                    className="px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700"
+                  >
+                    {area}
+                  </span>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+
         <div className="flex justify-end gap-3">
           {transcript && (
-             <Button variant="ghost" onClick={() => setTranscript('')} className="text-gray-400 hover:text-red-500">
+             <Button variant="ghost" onClick={() => { setTranscript(''); setClassInsights(null); }} className="text-gray-400 hover:text-red-500">
                <RotateCcw className="w-4 h-4 mr-2" /> Clear
              </Button>
           )}
