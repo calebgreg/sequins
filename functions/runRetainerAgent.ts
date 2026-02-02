@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import Anthropic from 'npm:@anthropic-ai/sdk';
 
 const RETAINER_SYSTEM_PROMPT = `You are the Retainer agent for Sequins, a growth engine for dance studios.
 
