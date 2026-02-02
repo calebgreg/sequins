@@ -208,14 +208,14 @@ export default function BillingCycleRun({ isOpen, onOpenChange }) {
                <DialogTitle className="font-serif text-2xl text-white">Run Billing Cycle</DialogTitle>
                <p className="text-white/60 text-sm mt-1">
                   Generating for <span className="text-white font-medium">{format(new Date(), 'MMMM yyyy')}</span> using 
-                  <span className="text-white font-medium capitalize ml-1">{settings.pricing_model.replace('_', ' ')} Model</span>
+                  <span className="text-white font-medium ml-1">TuitionRules Engine</span>
                </p>
-            </div>
-            <div className="flex gap-3">
-               <div className="bg-white/10 rounded-full px-4 py-2 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                  <Calculator className="w-3 h-3" /> {settings.pricing_model}
                </div>
-            </div>
+               <div className="flex gap-3">
+               <div className="bg-white/10 rounded-full px-4 py-2 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                  <Calculator className="w-3 h-3" /> ${basePricingRule?.value?.amount || 0}/class
+               </div>
+               </div>
          </div>
 
          <div className="flex-1 overflow-hidden flex flex-col bg-[#F4F4F6]">
