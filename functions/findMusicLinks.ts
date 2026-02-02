@@ -23,8 +23,11 @@ Deno.serve(async (req) => {
             query: searchQuery
         });
 
-        if (searchResponse.error) {
-            console.error('Apple Music search error:', searchResponse.error);
+        // searchResponse is an axios response, so data is in searchResponse.data
+        const searchData = searchResponse.data || searchResponse;
+
+        if (searchData.error) {
+            console.error('Apple Music search error:', searchData.error);
             return Response.json({ 
                 apple_music_link: null,
                 album_artwork_url: null,
@@ -33,7 +36,7 @@ Deno.serve(async (req) => {
             });
         }
 
-        const songs = searchResponse.songs || [];
+        const songs = searchData.songs || [];
         
         if (songs.length === 0) {
             return Response.json({ 
