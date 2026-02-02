@@ -22,6 +22,27 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
 
     const queryClient = useQueryClient();
 
+    // Fetch performances and routines for context
+    const { data: performances = [] } = useQuery({
+        queryKey: ['performances'],
+        queryFn: () => base44.entities.Performance.list(),
+    });
+
+    const { data: routines = [] } = useQuery({
+        queryKey: ['allRoutines'],
+        queryFn: () => base44.entities.PerformanceRoutine.list(),
+    });
+
+    const { data: classes = [] } = useQuery({
+        queryKey: ['classes'],
+        queryFn: () => base44.entities.DanceClass.list(),
+    });
+
+    const { data: teachers = [] } = useQuery({
+        queryKey: ['teachers'],
+        queryFn: () => base44.entities.Teacher.list(),
+    });
+
     // Fetch saved filters
     const { data: savedFilters = [] } = useQuery({
         queryKey: ['savedFilters'],
