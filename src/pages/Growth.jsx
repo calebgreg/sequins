@@ -257,17 +257,19 @@ export default function Growth() {
     const categoryOutcomes = outcomes.filter(o => o.category === category);
     const result = {};
     
-    categoryOutcomes.forEach(outcome => {
+    categoryOutcomes.forEach((outcome, index) => {
       const progressRecord = progress.find(p => p.outcome_id === outcome.id);
       const actual = progressRecord?.current_count || 0;
       const target = outcome.target_count;
       const percent = target > 0 ? actual / target : 0;
       
-      result[outcome.agent] = {
+      // Use outcome ID as key to allow multiple outcomes per agent
+      result[outcome.id] = {
         label: outcome.name.replace(/^\d+\s*/, '').replace(/per (week|month)$/i, '').trim(),
         actual,
         target,
         status: percent >= 1 ? 'ahead' : percent >= 0.6 ? 'on_track' : 'behind',
+        agent: outcome.agent,
       };
     });
     
