@@ -15,26 +15,20 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Search query is required' }, { status: 400 });
         }
 
-        const settings = await base44.entities.StudioSettings.list();
-        const studioSettings = settings[0];
-
-        if (!studioSettings || !studioSettings.apple_music_user_token) {
-            return Response.json({ error: 'Apple Music not configured' }, { status: 400 });
-        }
-
         const developerTokenResponse = await base44.functions.invoke('generateAppleMusicToken', {});
-        const developerToken = developerTokenResponse.data.token;
+        const tokenData = developerTokenResponse.data || developerTokenResponse;
+        const developerToken = tokenData.token;
 
         if (!developerToken) {
             return Response.json({ error: 'Failed to retrieve developer token' }, { status: 500 });
         }
 
+        // Catalog search only requires developer token, no user token needed
         const appleMusicApiUrl = `https://api.music.apple.com/v1/catalog/us/search?term=${encodeURIComponent(query)}&types=songs&limit=5`;
         
         const response = await fetch(appleMusicApiUrl, {
             headers: {
                 'Authorization': `Bearer ${developerToken}`,
-                'Music-User-Token': studioSettings.apple_music_user_token,
             },
         });
 
