@@ -720,10 +720,10 @@ export default function TeacherStudio() {
               className="flex-1 p-6 pt-20 md:pt-10 max-w-4xl mx-auto w-full"
             >
               {/* Header Controls */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-10">
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-10">
                  {/* Left: Classes / Admin Toggle */}
                  <div 
-                   className="inline-flex items-center gap-1 p-1 md:p-1.5 rounded-xl md:rounded-2xl"
+                   className="inline-flex items-center gap-1 p-1 rounded-xl"
                    style={{
                      background: 'rgba(240,230,225,0.5)',
                      boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.1)',
@@ -736,7 +736,7 @@ export default function TeacherStudio() {
                      <button
                        key={tab.id}
                        onClick={() => setActiveTab(tab.id)}
-                       className="px-4 md:px-6 py-1.5 md:py-2 rounded-lg md:rounded-xl text-sm font-medium transition-all"
+                       className="px-3 md:px-6 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all"
                        style={{
                          background: activeTab === tab.id 
                            ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
@@ -753,10 +753,10 @@ export default function TeacherStudio() {
                  </div>
                    
                  {/* Right: View Modes + Quick Actions */}
-                 <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                 <div className="flex items-center gap-2">
                    {/* View Mode Toggle */}
                    <div 
-                     className="inline-flex items-center gap-1 p-1 md:p-1.5 rounded-xl md:rounded-2xl"
+                     className="inline-flex items-center gap-0.5 md:gap-1 p-1 rounded-xl"
                      style={{
                        background: 'rgba(240,230,225,0.5)',
                        boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.1)',
@@ -770,7 +770,7 @@ export default function TeacherStudio() {
                        <button
                          key={view.id}
                          onClick={() => setViewMode(view.id)}
-                         className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-sm font-medium flex items-center gap-1.5 md:gap-2 transition-all"
+                         className="p-2 md:px-4 md:py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all"
                          style={{
                            background: viewMode === view.id 
                              ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
@@ -790,7 +790,7 @@ export default function TeacherStudio() {
                    {/* Time Management Link */}
                    <Link to={createPageUrl('TeacherTimeManagement')}>
                      <button 
-                       className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-all active:scale-95"
+                       className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center transition-all active:scale-95"
                        style={{
                          background: 'rgba(255,255,255,0.6)',
                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
