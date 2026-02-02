@@ -18,8 +18,18 @@ import { calculateTuition } from '../billing/TuitionBillingWizard';
 
 export default function FamilyTuitionManager({ family }) {
     const queryClient = useQueryClient();
-    const [manualItems, setManualItems] = useState([]);
-    const [isPosting, setIsPosting] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    
+    // Initialize manual items from family's saved billing_adjustments
+    const [manualItems, setManualItems] = useState(() => {
+        return (family?.billing_adjustments || []).map(adj => ({
+            id: adj.id || Date.now(),
+            type: adj.type,
+            description: adj.description,
+            amount: Math.abs(adj.amount),
+            student_name: adj.student_name || 'Family'
+        }));
+    });
 
     // Fetch necessary data
     const { data: students = [] } = useQuery({
