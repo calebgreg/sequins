@@ -172,45 +172,33 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
       }));
       await base44.entities.Attendance.bulkCreate(records);
 
-      const issues = Object.entries(attendance).filter(([_, s]) => s === 'absent' || s === 'late');
-      if (issues.length > 0) {
-        const analysis = await base44.integrations.Core.InvokeLLM({
-          prompt: `Analyze attendance for ${classData.title}. Issues: ${issues.map(([n, s]) => `${n}: ${s}`).join(', ')}. Return JSON to flag: { "updates": [{ "student_name": "Name", "flag": true, "summary": "Absent from Ballet" }] }`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              updates: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    student_name: { type: "string" },
-                    flag: { type: "boolean" },
-                    summary: { type: "string" }
-                  }
-                }
-              }
-            }
-          }
-        });
+      // Use the powerful AI attendance analyzer
+      const analysis = await analyzeAttendance({
+        attendance,
+        classData,
+        students,
+      });
 
-        if (analysis?.updates) {
-          await Promise.all(analysis.updates.map(async (update) => {
-            const student = students.find(s => s.name === update.student_name);
-            if (student && update.flag) {
-              await base44.entities.Student.update(student.id, {
-                attendance_alert: true,
-                attendance_summary: update.summary
-              });
+      if (analysis?.updates) {
+        await Promise.all(analysis.updates.map(async (update) => {
+          const student = students.find(s => s.name === update.student_name);
+          if (student && update.flag) {
+            await base44.entities.Student.update(student.id, {
+              attendance_alert: true,
+              attendance_summary: update.summary
+            });
+            // Only create high-severity alerts as messages
+            if (update.severity === 'high' || update.severity === 'medium') {
               await base44.entities.Message.create({
-                content: `Attendance Alert: ${update.summary}`,
-                sender: 'ai',
+                content: `Attendance Alert: ${update.summary}${update.suggested_action ? ` — ${update.suggested_action}` : ''}`,
+                sender: 'system',
+                student_id: student.id,
                 timestamp: new Date().toISOString(),
                 is_alert: true
               });
             }
-          }));
-        }
+          }
+        }));
       }
       
       // Only prompt for notes on students who attended (marked present)
