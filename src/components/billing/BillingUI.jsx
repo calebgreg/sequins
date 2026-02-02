@@ -476,6 +476,18 @@ export function FamilyBillingDetail({ family, onBack }) {
       }
     });
 
+    // Apply family billing adjustments (saved from FamilyTuitionManager)
+    const familyEntity = familyEntities.find(f => f.parent_email === family.email);
+    const adjustments = familyEntity?.billing_adjustments || [];
+    adjustments.forEach(adj => {
+      if (adj.type === 'discount') {
+        allDiscounts.push({ description: adj.description, amount: adj.amount });
+      } else {
+        allFees.push({ description: adj.description, amount: adj.amount });
+      }
+      total += adj.amount;
+    });
+
     const subtotal = allClasses.reduce((s, c) => s + c.amount, 0);
 
     return {
