@@ -86,13 +86,42 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
   }, [attendanceRate, streak, notes]);
 
   return (
-    <div className="flex flex-col h-full bg-[#F4F4F6] overflow-hidden">
-      <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 pt-4">
-        <div className="max-w-6xl mx-auto space-y-4">
+    <div 
+      className="flex flex-col h-full overflow-hidden relative"
+      style={{ 
+        fontFamily: "'DM Sans', -apple-system, sans-serif",
+        background: '#ffffff',
+      }}
+    >
+      {/* Ambient background shapes */}
+      <div 
+        className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+      />
+      <div 
+        className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+      />
+
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 pt-4 relative">
+        <div className="max-w-4xl mx-auto space-y-6">
           
-          {/* Hero Profile Card - Compact */}
-          <div className="bg-white rounded-3xl p-5 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-[#F2DCDD]/30 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+          {/* Hero Profile Card - Frosted Glass */}
+          <div 
+            className="relative rounded-3xl p-6"
+            style={{
+              background: 'linear-gradient(145deg, rgba(253,238,236,0.85) 0%, rgba(250,232,228,0.7) 30%, rgba(248,235,230,0.6) 70%, rgba(252,243,240,0.75) 100%)',
+              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), inset 0 -1px 2px rgba(200,180,170,0.15), 0 20px 60px -20px rgba(180,150,140,0.2)',
+              backdropFilter: 'blur(20px)',
+            }}
+          >
+            {/* Inner glow */}
+            <div 
+              className="absolute inset-0 rounded-3xl pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 50%)',
+              }}
+            />
             
             {/* Back button and actions */}
             <div className="relative z-10 flex items-center justify-between mb-4">
@@ -100,7 +129,12 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                 variant="ghost" 
                 size="icon" 
                 onClick={onBack} 
-                className="bg-[#F4F4F6] rounded-full w-8 h-8 text-[#333333] hover:bg-gray-200 transition-all"
+                className="rounded-full w-8 h-8 transition-all hover:scale-105"
+                style={{
+                  background: 'rgba(255,255,255,0.6)',
+                  color: '#8b7d72',
+                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                }}
               >
                 <ArrowLeft className="w-4 h-4" />
               </Button>
@@ -110,171 +144,271 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                     onClick={onViewFamily}
                     variant="ghost"
                     size="sm"
-                    className="rounded-full text-gray-500 hover:text-[#333333] hover:bg-[#F4F4F6] gap-1.5 h-8 px-3 text-xs"
+                    className="rounded-full gap-1.5 h-8 px-3 text-xs transition-all hover:scale-105"
+                    style={{
+                      background: 'rgba(255,255,255,0.5)',
+                      color: '#9a8b80',
+                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                    }}
                   >
                     <Users className="w-3.5 h-3.5" /> Family
                   </Button>
                 )}
                 <Button 
                   onClick={() => setIsNewEntryOpen(true)} 
-                  variant="outline" 
                   size="sm"
-                  className="rounded-full border-gray-200 bg-white text-[#333333] gap-1.5 font-serif hover:bg-[#F2DCDD] hover:border-[#F2DCDD] transition-colors h-8 px-3 text-xs"
+                  className="rounded-full gap-1.5 h-8 px-3 text-xs font-medium transition-all hover:scale-105"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+                    boxShadow: '0 4px 12px -2px rgba(180,150,140,0.25), inset 0 1px 2px rgba(255,255,255,0.8)',
+                    border: '1px solid rgba(255, 220, 210, 0.5)',
+                    color: '#8a7070',
+                  }}
                 >
                   <Quote className="w-3.5 h-3.5" /> Log Journal
                 </Button>
               </div>
             </div>
             
-            <div className="relative z-10 flex flex-col md:flex-row gap-5 items-center">
-              <div className="flex-shrink-0 relative">
-                 <Avatar className="w-20 h-20 bg-white border-4 border-white shadow-lg relative">
-                  <AvatarFallback className="text-2xl font-serif text-[#333333]">{student.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-1 -right-1 bg-[#333333] text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-sm">
-                   {student.level}
-                </div>
+            <div className="relative z-10 flex flex-col md:flex-row gap-6 items-start">
+              {/* Avatar */}
+              <div 
+                className="w-24 h-24 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                  boxShadow: '0 8px 32px -8px rgba(180,150,140,0.25), inset 0 1px 1px rgba(255,255,255,1)',
+                }}
+              >
+                <span 
+                  className="text-3xl font-medium"
+                  style={{ color: '#c9a99c' }}
+                >
+                  {student.name.charAt(0)}
+                </span>
               </div>
               
-              <div className="flex-1 w-full">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex-1 w-full pt-1">
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                   <div>
-                    <h1 className="font-serif text-3xl text-[#333333] mb-1">{student.name}</h1>
-                    <div className="flex flex-wrap gap-2 text-gray-400 items-center">
-                      <span className="flex items-center gap-1.5 bg-[#F4F4F6] px-2.5 py-0.5 rounded-full text-xs"><Star className="w-3 h-3" /> {student.age} Years Old</span>
-                      <span className="flex items-center gap-1.5 bg-[#F4F4F6] px-2.5 py-0.5 rounded-full text-xs"><Mail className="w-3 h-3" /> {student.parent_email || 'No email'}</span>
+                    <h1 
+                      className="text-3xl font-bold tracking-tight mb-1"
+                      style={{ 
+                        color: 'transparent',
+                        backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+                        filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+                      }}
+                    >
+                      {student.name}
+                    </h1>
+                    <div className="flex flex-wrap gap-2 items-center mt-3">
+                      <span 
+                        className="px-3 py-1 rounded-full text-xs"
+                        style={{
+                          background: 'rgba(255,255,255,0.5)',
+                          color: '#9a8b80',
+                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                        }}
+                      >
+                        {student.level}
+                      </span>
+                      <span 
+                        className="px-3 py-1 rounded-full text-xs"
+                        style={{
+                          background: 'rgba(255,255,255,0.5)',
+                          color: '#9a8b80',
+                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                        }}
+                      >
+                        {student.age} Years Old
+                      </span>
                     </div>
                   </div>
                   
-                  {/* Quick Stats Mini-Grid */}
-                  <div className="flex gap-3">
-                    <div className="text-center px-3 py-1.5 bg-[#F4F4F6] rounded-xl">
-                       <div className="text-2xl font-serif text-[#333333]">{attendanceRate}%</div>
-                       <div className="text-[9px] uppercase tracking-wider text-gray-400 font-bold">Attendance</div>
+                  {/* Quick Stats */}
+                  <div className="text-right">
+                    <div className="mb-2">
+                      <p className="text-3xl font-light" style={{ color: '#8b7d72' }}>
+                        {attendanceRate}
+                        <span className="text-lg ml-1" style={{ color: '#c4b5ab' }}>%</span>
+                      </p>
+                      <p className="text-xs" style={{ color: '#b5a599' }}>Attendance</p>
                     </div>
-                    <div className="text-center px-3 py-1.5 bg-[#F4F4F6] rounded-xl">
-                       <div className="text-2xl font-serif text-[#333333]">{streak}</div>
-                       <div className="text-[9px] uppercase tracking-wider text-gray-400 font-bold">Day Streak</div>
-                    </div>
+                    <p className="text-sm" style={{ color: '#b5a599' }}>{streak} day streak</p>
                   </div>
                 </div>
 
-                {/* Engagement Bar */}
-                <div className="mt-3 space-y-1">
-                   <div className="flex justify-between text-xs font-medium">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="text-gray-400 flex items-center gap-1 cursor-help">
-                              Engagement Score <AlertCircle className="w-3 h-3" />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent className="bg-black/90 text-white border-none shadow-xl">
-                             <div className="font-bold mb-1">Score Breakdown:</div>
-                             <ul className="space-y-1 text-gray-300 w-48 text-xs">
-                               <li className="flex justify-between"><span>Attendance</span> <span>70%</span></li>
-                               <li className="flex justify-between"><span>Consistency Streak</span> <span>15%</span></li>
-                               <li className="flex justify-between"><span>Teacher Feedback</span> <span>15%</span></li>
-                             </ul>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <span className="text-[#333333]">{engagementLabel} ({engagementScore}%)</span>
-                   </div>
-                   <Progress value={engagementScore} className="h-1.5 bg-[#F4F4F6]" indicatorClassName="bg-gradient-to-r from-[#F2DCDD] to-[#E5C0C2]" />
+                {/* Contact & Engagement */}
+                <div 
+                  className="relative flex flex-wrap items-center justify-between gap-4 mt-5 pt-4"
+                  style={{ borderTop: '1px solid rgba(200,180,170,0.2)' }}
+                >
+                  <span className="text-sm" style={{ color: '#a8998e' }}>
+                    {student.parent_email || 'No email'}
+                  </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span 
+                          className="text-xs px-3 py-1 rounded-full cursor-help"
+                          style={{
+                            background: engagementScore >= 75 ? 'rgba(126,184,154,0.15)' : engagementScore >= 50 ? 'rgba(212,165,116,0.15)' : 'rgba(200,100,100,0.15)',
+                            color: engagementScore >= 75 ? '#7eb89a' : engagementScore >= 50 ? '#d4a574' : '#c87070',
+                          }}
+                        >
+                          {engagementLabel} ({engagementScore}%)
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-black/90 text-white border-none shadow-xl">
+                         <div className="font-bold mb-1">Score Breakdown:</div>
+                         <ul className="space-y-1 text-gray-300 w-48 text-xs">
+                           <li className="flex justify-between"><span>Attendance</span> <span>70%</span></li>
+                           <li className="flex justify-between"><span>Consistency Streak</span> <span>15%</span></li>
+                           <li className="flex justify-between"><span>Teacher Feedback</span> <span>15%</span></li>
+                         </ul>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Compact Tabs */}
+          {/* Pill-Style Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="bg-transparent p-0 gap-2 mb-4 h-auto w-full flex overflow-x-auto">
-               {[
-                 { id: 'activity', label: 'Activity & Stats', icon: TrendingUp },
-                 { id: 'classes', label: 'Class Schedule', icon: Calendar },
-                 { id: 'notes', label: 'Teacher Journal', icon: Quote },
-                 { id: 'communication', label: 'Messaging', icon: MessageCircle }
-               ].map(tab => (
-                 <TabsTrigger 
-                   key={tab.id} 
-                   value={tab.id}
-                   className="flex-1 min-w-[120px] rounded-xl bg-white p-2.5 h-auto data-[state=active]:bg-[#333333] data-[state=active]:text-white shadow-sm border border-transparent hover:border-gray-200 transition-all group"
-                 >
-                   <div className="flex flex-col items-center gap-1.5 w-full">
-                      <tab.icon className="w-5 h-5 group-data-[state=active]:text-[#F2DCDD] transition-colors" />
-                      <span className="font-serif text-sm">{tab.label}</span>
-                   </div>
-                 </TabsTrigger>
-               ))}
-            </TabsList>
+            <div className="flex justify-center mb-6">
+              <TabsList 
+                className="inline-flex items-center gap-1 p-1.5 rounded-2xl h-auto bg-transparent"
+                style={{
+                  background: 'rgba(240,230,225,0.5)',
+                  boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.1)',
+                }}
+              >
+                 {[
+                   { id: 'activity', label: 'Activity' },
+                   { id: 'classes', label: 'Classes' },
+                   { id: 'notes', label: 'Journal' },
+                   { id: 'communication', label: 'Messages' }
+                 ].map(tab => (
+                   <TabsTrigger 
+                     key={tab.id} 
+                     value={tab.id}
+                     className="px-5 py-2 rounded-xl text-sm font-medium transition-all data-[state=active]:shadow-md"
+                     style={{
+                       background: activeTab === tab.id 
+                         ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
+                         : 'transparent',
+                       color: activeTab === tab.id ? '#8b7d72' : '#b5a599',
+                       boxShadow: activeTab === tab.id 
+                         ? '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)'
+                         : 'none',
+                     }}
+                   >
+                     {tab.label}
+                   </TabsTrigger>
+                 ))}
+              </TabsList>
+            </div>
 
             {/* ACTIVITY TAB */}
             <TabsContent value="activity" className="space-y-4">
                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Visual Stats Block */}
                   <div className="md:col-span-1 space-y-4">
-                     <div className="bg-gradient-to-br from-[#333333] to-black rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-                        <Sparkles className="absolute top-4 right-4 text-[#F2DCDD] opacity-20 w-8 h-8" />
-                        <h3 className="font-serif text-lg mb-0.5">Current Streak</h3>
-                        <div className="text-4xl font-serif font-light mb-2">{streak} <span className="text-sm opacity-50">days</span></div>
-                        <p className="text-white/60 text-xs leading-relaxed">
-                           {student.name} has been consistent lately! Keep up the momentum.
+                     <div 
+                        className="rounded-2xl p-5 relative overflow-hidden"
+                        style={{
+                          background: 'linear-gradient(145deg, rgba(164,139,196,0.15) 0%, rgba(180,160,200,0.1) 100%)',
+                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.5)',
+                        }}
+                     >
+                        <span className="absolute top-4 right-4 text-2xl">✦</span>
+                        <h3 className="text-lg mb-0.5 font-medium" style={{ color: '#8b7d9a' }}>Current Streak</h3>
+                        <div className="text-4xl font-light mb-2" style={{ color: '#8b7d72' }}>
+                          {streak} <span className="text-sm" style={{ color: '#b5a599' }}>days</span>
+                        </div>
+                        <p className="text-xs leading-relaxed" style={{ color: '#a8a0b5' }}>
+                           {student.name} has been consistent lately!
                         </p>
                      </div>
                      
-                     <div className="bg-white rounded-2xl p-4 shadow-sm">
-                        <h4 className="font-serif text-sm mb-3">Quick Insights</h4>
+                     <div 
+                        className="rounded-2xl p-4"
+                        style={{
+                          background: 'rgba(255,255,255,0.4)',
+                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                        }}
+                     >
+                        <h4 className="text-sm mb-3 font-medium" style={{ color: '#8b7d72' }}>Quick Insights</h4>
                         <div className="space-y-2">
                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-gray-500">On-Time Arrival</span>
-                              <span className="font-medium text-green-600">92%</span>
+                              <span style={{ color: '#b5a599' }}>On-Time Arrival</span>
+                              <span className="font-medium" style={{ color: '#7eb89a' }}>92%</span>
                            </div>
-                           <div className="w-full h-px bg-gray-100" />
+                           <div className="w-full h-px" style={{ background: 'rgba(200,180,170,0.2)' }} />
                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-gray-500">Style Versatility</span>
-                              <span className="font-medium text-[#333333]">Medium</span>
+                              <span style={{ color: '#b5a599' }}>Style Versatility</span>
+                              <span className="font-medium" style={{ color: '#8b7d72' }}>Medium</span>
                            </div>
                         </div>
                      </div>
                   </div>
 
                   {/* Timeline */}
-                  <div className="md:col-span-2 bg-white rounded-2xl p-5 shadow-sm max-h-[320px] overflow-y-auto">
-                     <h3 className="font-serif text-lg text-[#333333] mb-4">Attendance Timeline</h3>
-                     <div className="space-y-0 relative pl-3">
-                        {/* Connector Line */}
-                        <div className="absolute top-3 bottom-3 left-[15px] w-0.5 bg-gray-100" />
-                        
+                  <div 
+                     className="md:col-span-2 rounded-2xl p-5 max-h-[320px] overflow-y-auto"
+                     style={{
+                       background: 'linear-gradient(145deg, rgba(253,238,236,0.6) 0%, rgba(250,232,228,0.4) 100%)',
+                       boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                     }}
+                  >
+                     <h3 className="text-lg font-medium mb-4" style={{ color: '#8b7d72' }}>Attendance Timeline</h3>
+                     <div className="space-y-3">
                         {attendance.slice(0, 6).map((record, i) => (
                            <motion.div 
                               key={i}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: i * 0.05 }}
-                              className="relative flex gap-4 py-2 group"
+                              className="flex gap-4 p-4 rounded-xl transition-all hover:scale-[1.01]"
+                              style={{ background: 'rgba(255,255,255,0.5)' }}
                            >
-                              <div className={`
-                                 relative z-10 w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 transition-transform group-hover:scale-110
-                                 ${record.status === 'present' ? 'bg-[#E5F9F0] text-green-600' : 
-                                   record.status === 'absent' ? 'bg-[#FFF0F0] text-red-500' : 'bg-gray-100 text-gray-500'}
-                              `}>
-                                 {record.status === 'present' ? <CheckCircle2 className="w-4 h-4" /> : 
-                                  record.status === 'absent' ? <AlertCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                              <div 
+                                 className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                                 style={{
+                                   background: record.status === 'present' ? 'rgba(126,184,154,0.15)' 
+                                     : record.status === 'absent' ? 'rgba(200,100,100,0.15)' 
+                                     : 'rgba(212,165,116,0.15)',
+                                 }}
+                              >
+                                 <span style={{ 
+                                   color: record.status === 'present' ? '#7eb89a' 
+                                     : record.status === 'absent' ? '#c87070' 
+                                     : '#d4a574',
+                                   fontSize: '14px',
+                                 }}>
+                                   {record.status === 'present' ? '✓' : record.status === 'absent' ? '✗' : '◐'}
+                                 </span>
                               </div>
                               
-                              <div className="flex-1 bg-[#F4F4F6] rounded-xl p-3 hover:bg-[#F2DCDD]/20 transition-colors">
-                                 <div className="flex justify-between items-center mb-0.5">
-                                    <span className="font-serif text-sm text-[#333333]">{record.class_name}</span>
-                                    <span className="text-[10px] text-gray-400 font-medium">
+                              <div className="flex-1">
+                                 <div className="flex justify-between items-center mb-1">
+                                    <span className="font-medium" style={{ color: '#8b7d72' }}>{record.class_name}</span>
+                                    <span className="text-xs" style={{ color: '#b5a599' }}>
                                        {format(new Date(record.date), 'MMM d')}
                                     </span>
                                  </div>
-                                 <Badge variant="secondary" className={`capitalize text-[10px] h-4 px-1.5 font-normal ${
-                                    record.status === 'present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                 }`}>
+                                 <span 
+                                    className="text-xs capitalize px-2 py-0.5 rounded-full"
+                                    style={{
+                                      background: record.status === 'present' ? 'rgba(126,184,154,0.15)' : 'rgba(200,100,100,0.15)',
+                                      color: record.status === 'present' ? '#7eb89a' : '#c87070',
+                                    }}
+                                 >
                                     {record.status}
-                                 </Badge>
+                                 </span>
                               </div>
                            </motion.div>
                         ))}
@@ -284,10 +418,16 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
             </TabsContent>
 
             {/* CLASSES TAB */}
-            <TabsContent value="classes" className="space-y-8">
+            <TabsContent value="classes" className="space-y-6">
                {/* Weekly Visualizer */}
-               <div className="bg-white rounded-[32px] p-8 shadow-sm">
-                  <h3 className="font-serif text-2xl text-[#333333] mb-6">Weekly Rhythm</h3>
+               <div 
+                  className="rounded-3xl p-6"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 15px 50px -15px rgba(180,150,140,0.15)',
+                  }}
+               >
+                  <h3 className="text-xl font-medium mb-5" style={{ color: '#8b7d72' }}>Weekly Rhythm</h3>
                   <div className="grid grid-cols-7 gap-2">
                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => {
                         const dayMap = { 0: 'U', 1: 'M', 2: 'T', 3: 'W', 4: 'R', 5: 'F', 6: 'S' };
@@ -296,13 +436,23 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                         
                         return (
                            <div key={day} className="flex flex-col gap-2">
-                              <div className="text-center text-xs font-bold text-gray-300 uppercase">{day}</div>
-                              <div className={`
-                                 h-32 rounded-2xl border border-dashed border-gray-200 p-1 space-y-1
-                                 ${dayClasses.length > 0 ? 'bg-[#F4F4F6]/50' : 'bg-transparent'}
-                              `}>
+                              <div className="text-center text-xs font-medium uppercase" style={{ color: '#c4b5ab' }}>{day}</div>
+                              <div 
+                                 className="h-28 rounded-xl p-1 space-y-1"
+                                 style={{
+                                   background: dayClasses.length > 0 ? 'rgba(255,255,255,0.4)' : 'transparent',
+                                   border: '1px dashed rgba(200,180,170,0.3)',
+                                 }}
+                              >
                                  {dayClasses.map(c => (
-                                    <div key={c.id} className="bg-[#333333] text-white text-[10px] p-1.5 rounded-xl text-center leading-tight shadow-sm truncate">
+                                    <div 
+                                       key={c.id} 
+                                       className="text-[10px] p-1.5 rounded-lg text-center leading-tight truncate"
+                                       style={{
+                                         background: 'linear-gradient(145deg, rgba(200,170,156,0.3) 0%, rgba(180,150,140,0.2) 100%)',
+                                         color: '#8b7d72',
+                                       }}
+                                    >
                                        {c.title}
                                     </div>
                                  ))}
@@ -313,46 +463,46 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                   </div>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="space-y-3">
                  {studentClasses.map((cls, i) => (
                    <motion.div 
                      key={cls.id}
                      initial={{ opacity: 0, y: 20 }}
                      animate={{ opacity: 1, y: 0 }}
                      transition={{ delay: i * 0.1 }}
-                     className="bg-white p-0 rounded-[32px] shadow-sm overflow-hidden group border border-transparent hover:border-[#F2DCDD] transition-all"
+                     className="flex items-center justify-between p-4 rounded-2xl transition-all hover:scale-[1.01] cursor-pointer"
+                     style={{
+                       background: 'rgba(255,255,255,0.4)',
+                       boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                     }}
                    >
-                     <div className="h-24 bg-[#F4F4F6] p-6 flex items-start justify-between relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#F4F4F6] to-white opacity-50" />
-                        <Badge className="bg-white text-[#333333] hover:bg-white shadow-sm relative z-10">
-                           {cls.style || 'Dance'}
-                        </Badge>
-                        <div className="w-12 h-12 bg-[#333333] rounded-full flex items-center justify-center text-white font-serif text-xl shadow-lg relative z-10 group-hover:scale-110 transition-transform">
-                           {cls.title.charAt(0)}
+                     <div className="flex items-center gap-4">
+                        <span 
+                           className="text-sm w-12"
+                           style={{ color: '#b5a599' }}
+                        >
+                           {cls.day === 'M' ? 'Mon' : cls.day === 'T' ? 'Tue' : cls.day === 'W' ? 'Wed' : cls.day === 'R' ? 'Thu' : cls.day === 'F' ? 'Fri' : cls.day === 'S' ? 'Sat' : 'Sun'}
+                        </span>
+                        <span 
+                           className="w-2 h-2 rounded-full"
+                           style={{ background: '#c4b5ab' }}
+                        />
+                        <div>
+                           <p className="font-medium" style={{ color: '#8b7d72' }}>{cls.title}</p>
+                           <p className="text-sm" style={{ color: '#b5a599' }}>
+                              {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mma')} · {cls.teacher || 'Staff'} · {cls.room || 'Main'}
+                           </p>
                         </div>
                      </div>
-                     
-                     <div className="p-8 pt-2">
-                        <h3 className="font-serif text-2xl text-[#333333] mb-1">{cls.title}</h3>
-                        <p className="text-gray-400 text-sm mb-6">with {cls.teacher || 'Staff'}</p>
-                        
-                        <div className="space-y-3">
-                           <div className="flex items-center gap-3 text-[#333333]">
-                              <div className="w-8 h-8 rounded-full bg-[#F4F4F6] flex items-center justify-center text-gray-500">
-                                 <Clock className="w-4 h-4" />
-                              </div>
-                              <span className="font-medium">
-                                 {cls.day === 'M' ? 'Mondays' : cls.day === 'T' ? 'Tuesdays' : cls.day === 'W' ? 'Wednesdays' : cls.day === 'R' ? 'Thursdays' : cls.day === 'F' ? 'Fridays' : 'Weekends'} at {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mma')}
-                              </span>
-                           </div>
-                           <div className="flex items-center gap-3 text-[#333333]">
-                              <div className="w-8 h-8 rounded-full bg-[#F4F4F6] flex items-center justify-center text-gray-500">
-                                 <MapPin className="w-4 h-4" />
-                              </div>
-                              <span className="font-medium">Studio {cls.room || 'Main'}</span>
-                           </div>
-                        </div>
-                     </div>
+                     <svg 
+                       className="w-4 h-4 flex-shrink-0"
+                       fill="none" 
+                       stroke="currentColor" 
+                       viewBox="0 0 24 24"
+                       style={{ color: '#d4c4ba' }}
+                     >
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                     </svg>
                    </motion.div>
                  ))}
                </div>
@@ -360,81 +510,117 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
 
             {/* NOTES TAB - Timeline Style */}
             <TabsContent value="notes" className="space-y-4">
-              <div className="bg-white rounded-2xl p-5 shadow-sm">
-                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-serif text-lg text-[#333333]">Journal Timeline</h3>
-                    <Button 
-                       onClick={() => setIsNewEntryOpen(true)}
-                       className="bg-[#F2DCDD] text-[#333333] hover:bg-[#E5C0C2] rounded-full font-serif h-8 px-4 text-xs"
-                    >
-                       + Add Note
-                    </Button>
-                 </div>
-                 
+              <div className="space-y-4">
                  {notes.length === 0 ? (
-                   <div className="py-8 text-center border-2 border-dashed border-gray-100 rounded-xl">
-                      <Quote className="w-6 h-6 text-gray-200 mx-auto mb-2" />
-                      <p className="text-gray-400 text-sm">No journal entries yet.</p>
+                   <div 
+                      className="py-12 text-center rounded-2xl"
+                      style={{
+                        background: 'rgba(255,255,255,0.4)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                      }}
+                   >
+                      <span className="text-2xl mb-3 block">✎</span>
+                      <p style={{ color: '#b5a599' }}>No journal entries yet</p>
                    </div>
                  ) : (
-                   <div className="space-y-0 relative pl-3">
-                      {/* Connector Line */}
-                      <div className="absolute top-3 bottom-3 left-[15px] w-0.5 bg-gray-100" />
-                      
-                      {notes.map((note, i) => (
-                        <motion.div 
-                           key={i}
-                           initial={{ opacity: 0, x: -20 }}
-                           animate={{ opacity: 1, x: 0 }}
-                           transition={{ delay: i * 0.05 }}
-                           className="relative flex gap-4 py-3 group"
+                   notes.map((note, i) => (
+                     <motion.div 
+                        key={i}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="flex gap-4 p-5 rounded-2xl"
+                        style={{
+                          background: 'rgba(255,255,255,0.4)',
+                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                        }}
+                     >
+                        <div 
+                           className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                           style={{
+                             background: note.sentiment === 'positive' ? 'rgba(200,180,80,0.15)'
+                               : note.sentiment === 'constructive' ? 'rgba(100,150,200,0.15)'
+                               : 'rgba(200,170,156,0.15)',
+                           }}
                         >
-                           <div className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm flex-shrink-0 bg-[#F2DCDD] text-[#8a7070]">
-                              <Quote className="w-3.5 h-3.5" />
-                           </div>
-                           
-                           <div className="flex-1 bg-[#F4F4F6] rounded-xl p-4 hover:bg-[#F2DCDD]/20 transition-colors">
-                              <div className="flex items-center justify-between mb-2">
-                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs text-gray-500 font-medium">
-                                       {format(new Date(note.date), 'MMM d')}
-                                    </span>
-                                    <span className="text-gray-300">·</span>
-                                    <span className="text-xs text-gray-400">{note.teacher_name}</span>
-                                 </div>
-                                 <Badge variant="outline" className={`
-                                    text-[10px] px-2 py-0 h-5
-                                    ${note.sentiment === 'positive' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' : 
-                                      note.sentiment === 'constructive' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-gray-50 text-gray-500 border-gray-100'}
-                                 `}>
-                                    {note.category || 'General'}
-                                 </Badge>
-                              </div>
-                              
-                              <p className="text-sm text-[#333333] leading-relaxed">
-                                 {note.content}
-                              </p>
-
-                              {note.tags && note.tags.length > 0 && (
-                                 <div className="flex flex-wrap gap-1.5 mt-2">
-                                    {note.tags.map((tag, t) => (
-                                       <span key={t} className="text-[10px] bg-white text-gray-500 px-2 py-0.5 rounded-md">
-                                          #{tag}
-                                       </span>
-                                    ))}
-                                 </div>
+                           <span style={{ 
+                             color: note.sentiment === 'positive' ? '#b5a060'
+                               : note.sentiment === 'constructive' ? '#6090b5'
+                               : '#c8aa9c',
+                             fontSize: '14px',
+                           }}>
+                             ✎
+                           </span>
+                        </div>
+                        <div className="flex-1">
+                           <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm" style={{ color: '#b5a599' }}>{format(new Date(note.date), 'MMM d')}</span>
+                              {note.teacher_name && (
+                                 <span className="text-sm" style={{ color: '#c4b5ab' }}>· {note.teacher_name}</span>
                               )}
                            </div>
-                        </motion.div>
-                      ))}
-                   </div>
+                           <p style={{ color: '#8b7d72' }}>{note.content}</p>
+                           {note.tags && note.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                 {note.tags.map((tag, t) => (
+                                    <span 
+                                       key={t} 
+                                       className="text-[10px] px-2 py-0.5 rounded-md"
+                                       style={{
+                                         background: 'rgba(255,255,255,0.5)',
+                                         color: '#b5a599',
+                                       }}
+                                    >
+                                       #{tag}
+                                    </span>
+                                 ))}
+                              </div>
+                           )}
+                        </div>
+                     </motion.div>
+                   ))
                  )}
+
+                 {/* Add Note Button */}
+                 <div className="flex justify-center pt-4">
+                   <button 
+                     onClick={() => setIsNewEntryOpen(true)}
+                     className="px-8 py-3 rounded-2xl text-sm font-bold tracking-tight transition-all hover:scale-[1.02]"
+                     style={{
+                       background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+                       boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+                       border: '1px solid rgba(255, 220, 210, 0.5)',
+                       backdropFilter: 'blur(8px)',
+                     }}
+                   >
+                     <span
+                       style={{
+                         backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                         backgroundClip: 'text',
+                         WebkitBackgroundClip: 'text',
+                         color: 'transparent',
+                         textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+                         filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+                       }}
+                     >
+                       Add Note
+                     </span>
+                   </button>
+                 </div>
               </div>
             </TabsContent>
 
             {/* COMMUNICATION TAB */}
             <TabsContent value="communication" className="space-y-6">
-               <StudentCommunicationTab student={student} />
+               <div 
+                  className="rounded-2xl p-5"
+                  style={{
+                    background: 'rgba(255,255,255,0.4)',
+                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                  }}
+               >
+                  <StudentCommunicationTab student={student} />
+               </div>
             </TabsContent>
           </Tabs>
 
