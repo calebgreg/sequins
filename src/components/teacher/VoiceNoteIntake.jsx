@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { Mic, Square, Loader2, Sparkles, Check, RotateCcw, Hash } from 'lucide-react';
+import { Mic, Square, Loader2, Sparkles, Check, RotateCcw, Hash, TrendingUp, Lightbulb } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from "@/api/base44Client";
 import useNoteInference from './useNoteInference';
+import { processBulkNotes, fetchStudentHistory } from './useNoteAI';
 
 export default function VoiceNoteIntake({ classData, students, teacherName, onNotesProcessed }) {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [classInsights, setClassInsights] = useState(null);
   const recognitionRef = useRef(null);
 
   const { detectedTags } = useNoteInference({
