@@ -18,10 +18,32 @@ export default function StudentNotePrompt({
   const [noteContent, setNoteContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [smartPrompt, setSmartPrompt] = useState("What stood out today?");
+  const [processedNote, setProcessedNote] = useState(null);
+  const [recentNotes, setRecentNotes] = useState([]);
   const recognitionRef = useRef(null);
 
   const currentStudent = studentsToPrompt[currentIndex];
   const isLastStudent = currentIndex === studentsToPrompt.length - 1;
+
+  // Fetch recent notes and generate smart prompt when student changes
+  useEffect(() => {
+    const loadContext = async () => {
+      if (currentStudent) {
+        const notes = await fetchStudentHistory(currentStudent.name, 5);
+        setRecentNotes(notes);
+        const prompt = await generateNotePrompt({
+          student: currentStudent,
+          classData,
+          recentNotes: notes,
+        });
+        setSmartPrompt(prompt);
+      }
+    };
+    loadContext();
+    setProcessedNote(null);
+    setNoteContent('');
+  }, [currentStudent, classData]);
 
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
