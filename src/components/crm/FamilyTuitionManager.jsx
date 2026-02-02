@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 
 export default function FamilyTuitionManager({ family }) {
     const queryClient = useQueryClient();
-    const [manualItems, setManualItems] = useState([]); // [{ type: 'fee'|'discount', description, amount }]
+    const [manualItems, setManualItems] = useState([]);
     const [isPosting, setIsPosting] = useState(false);
 
     // Fetch necessary data
@@ -26,7 +26,6 @@ export default function FamilyTuitionManager({ family }) {
         queryFn: () => base44.entities.Student.list(),
     });
     
-    // Filter for this family
     const familyStudents = useMemo(() => 
         students.filter(s => s.parent_email === family.email), 
     [students, family.email]);
@@ -36,17 +35,13 @@ export default function FamilyTuitionManager({ family }) {
         queryFn: () => base44.entities.DanceClass.list(),
     });
 
-    const { data: settingsList = [] } = useQuery({
-        queryKey: ['studio_settings'],
-        queryFn: () => base44.entities.StudioSettings.list(),
-    });
-    const settings = settingsList[0] || { pricing_model: 'per_class' };
-
-    const { data: discountRules = [] } = useQuery({
-        queryKey: ['discount_rules'],
-        queryFn: () => base44.entities.DiscountRule.list(),
+    // NEW: Fetch TuitionRules (the real billing engine)
+    const { data: tuitionRules = [] } = useQuery({
+        queryKey: ['tuition_rules'],
+        queryFn: () => base44.entities.TuitionRule.list(),
     });
 
+    // Legacy entities for backwards compatibility
     const { data: tuitionPlans = [] } = useQuery({
         queryKey: ['tuition_plans'],
         queryFn: () => base44.entities.TuitionPlan.list(),
