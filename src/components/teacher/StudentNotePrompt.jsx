@@ -84,15 +84,28 @@ export default function StudentNotePrompt({
     setIsLoading(true);
     try {
       if (noteContent.trim()) {
-        await base44.entities.StudentNote.create({
+        // Use AI to process and enrich the note
+        const processed = await processIndividualNote({
+          rawContent: noteContent,
+          student: currentStudent,
+          classData,
+          teacherName,
+          recentNotes,
+        });
+
+        const noteData = {
           student_name: currentStudent.name,
           class_name: classData.title,
           teacher_name: teacherName,
-          content: noteContent.trim(),
-          category: 'progress',
-          sentiment: 'neutral',
+          content: processed?.content || noteContent.trim(),
+          category: processed?.category || 'progress',
+          sentiment: processed?.sentiment || 'neutral',
+          tags: processed?.tags || [],
           date: new Date().toISOString().split('T')[0],
-        });
+        };
+
+        await base44.entities.StudentNote.create(noteData);
+        setProcessedNote(processed);
       }
       
       setNoteContent('');
