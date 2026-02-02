@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { calculateTuition } from '../billing/TuitionBillingWizard';
 
 export default function FamilyTuitionManager({ family }) {
     const queryClient = useQueryClient();
