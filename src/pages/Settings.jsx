@@ -67,7 +67,7 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="billing">
-             <TuitionBillingWizard />
+             <TuitionRulesDisplay onEdit={() => setSearchParams({ wizard: 'billing' })} />
           </TabsContent>
 
           <TabsContent value="integrations">
