@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
-import { Plus, Download, Mail, User, Phone, Edit, ArrowRight, Check } from 'lucide-react';
+import { Plus, Download, Mail, User, Phone, Edit, ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { createPageUrl } from '../utils';
 import { Link, useLocation } from 'react-router-dom';
 import StudentProfileView from '../components/teacher/StudentProfileView';
@@ -518,16 +517,18 @@ export default function Students() {
                   >
                     {/* Mobile Card View (hidden on lg and up) */}
                     <div className="block lg:hidden space-y-3 p-4" style={{ backgroundColor: colors.paper }}>
-                      {filteredStudents.map((student) => (
+                      {filteredStudents.map((student) => {
+                         const isSelected = selectedStudentIds.includes(student.id);
+                         return (
                          <div 
                            key={student.id} 
                            className="rounded-2xl p-4 cursor-pointer transition-all hover:scale-[1.01]"
                            style={{
-                             background: selectedStudentIds.includes(student.id) 
+                             background: isSelected 
                                ? 'linear-gradient(145deg, rgba(199, 210, 254, 0.3) 0%, rgba(199, 210, 254, 0.2) 100%)'
                                : 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
                              boxShadow: '0 4px 16px -4px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)',
-                             border: selectedStudentIds.includes(student.id) 
+                             border: isSelected 
                                ? '2px solid rgba(99, 102, 241, 0.4)'
                                : '1px solid rgba(255, 200, 200, 0.2)',
                            }}
@@ -535,24 +536,26 @@ export default function Students() {
                          >
                                <div className="flex justify-between items-start mb-3">
                                   <div className="flex items-center gap-3">
-                                     <div 
-                                       onClick={(e) => toggleStudentSelection(e, student.id)}
-                                       className="w-5 h-5 rounded-md flex items-center justify-center cursor-pointer transition-all"
-                                       style={{
-                                         backgroundColor: selectedStudentIds.includes(student.id) ? colors.ink : 'rgba(255,255,255,0.8)',
-                                         border: selectedStudentIds.includes(student.id) ? 'none' : '1.5px solid rgba(200,180,170,0.3)',
-                                       }}
-                                     >
-                                       {selectedStudentIds.includes(student.id) && <Check className="w-3 h-3 text-white" />}
-                                     </div>
                                      <Avatar 
-                                       className="w-10 h-10"
+                                       onClick={(e) => toggleStudentSelection(e, student.id)}
+                                       className="w-10 h-10 cursor-pointer transition-all duration-150"
                                        style={{
-                                         boxShadow: '0 2px 8px rgba(180,150,140,0.2)',
-                                         border: '2px solid rgba(255,255,255,0.8)',
+                                         boxShadow: isSelected 
+                                           ? `0 0 12px 3px rgba(196, 160, 160, 0.6), 0 0 20px 6px rgba(196, 160, 160, 0.3), inset 0 2px 4px rgba(0,0,0,0.2)`
+                                           : '0 2px 8px rgba(180,150,140,0.2)',
+                                         border: isSelected ? '2px solid rgba(255,255,255,0.9)' : '2px solid rgba(255,255,255,0.8)',
+                                         transform: isSelected ? 'translateY(2px) scale(0.95)' : 'translateY(0) scale(1)',
                                        }}
                                      >
-                                        <AvatarFallback style={{ background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, color: '#fff' }}>{student.name.charAt(0)}</AvatarFallback>
+                                        <AvatarFallback 
+                                          style={{ 
+                                            background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
+                                            color: '#fff',
+                                            textShadow: isSelected ? '0 0 8px rgba(255,255,255,0.8)' : 'none',
+                                          }}
+                                        >
+                                          {student.name.charAt(0)}
+                                        </AvatarFallback>
                                      </Avatar>
                                      <div>
                                         <EtchedText size="sm">{student.name}</EtchedText>
@@ -597,7 +600,7 @@ export default function Students() {
                                   </div>
                                </div>
                          </div>
-                      ))}
+                      );})}
                     </div>
 
                     {/* Desktop Table View (hidden on mobile/tablet) */}
@@ -605,18 +608,6 @@ export default function Students() {
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr style={{ borderBottom: '1px solid rgba(200,180,170,0.15)' }}>
-                            <th className="p-5 w-12">
-                              <div 
-                                onClick={toggleSelectAll}
-                                className="w-5 h-5 rounded-md flex items-center justify-center cursor-pointer transition-all"
-                                style={{
-                                  backgroundColor: selectedStudentIds.length === filteredStudents.length && filteredStudents.length > 0 ? colors.ink : 'rgba(255,255,255,0.8)',
-                                  border: selectedStudentIds.length === filteredStudents.length && filteredStudents.length > 0 ? 'none' : '1.5px solid rgba(200,180,170,0.3)',
-                                }}
-                              >
-                                {selectedStudentIds.length === filteredStudents.length && filteredStudents.length > 0 && <Check className="w-3 h-3 text-white" />}
-                              </div>
-                            </th>
                             <th className="p-5 text-[10px] uppercase tracking-wider font-bold" style={{ color: colors.muted }}>Student Name</th>
                             <th className="p-5 text-[10px] uppercase tracking-wider font-bold" style={{ color: colors.muted }}>Status</th>
                             <th className="p-5 text-[10px] uppercase tracking-wider font-bold hidden sm:table-cell" style={{ color: colors.muted }}>Level / Age</th>
@@ -625,7 +616,9 @@ export default function Students() {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredStudents.map((student) => (
+                          {filteredStudents.map((student) => {
+                            const isSelected = selectedStudentIds.includes(student.id);
+                            return (
                             <motion.tr 
                               key={student.id}
                               initial={{ opacity: 0 }}
@@ -633,33 +626,33 @@ export default function Students() {
                               className="group transition-colors cursor-pointer"
                               style={{ 
                                 borderBottom: '1px solid rgba(200,180,170,0.1)',
-                                backgroundColor: selectedStudentIds.includes(student.id) ? 'rgba(199, 210, 254, 0.15)' : 'transparent',
+                                backgroundColor: isSelected ? 'rgba(199, 210, 254, 0.15)' : 'transparent',
                               }}
-                              whileHover={{ backgroundColor: selectedStudentIds.includes(student.id) ? 'rgba(199, 210, 254, 0.25)' : 'rgba(255,255,255,0.5)' }}
+                              whileHover={{ backgroundColor: isSelected ? 'rgba(199, 210, 254, 0.25)' : 'rgba(255,255,255,0.5)' }}
                               onClick={() => setSelectedStudent(student)}
                             >
-                              <td className="p-5 w-12">
-                                <div 
-                                  onClick={(e) => toggleStudentSelection(e, student.id)}
-                                  className="w-5 h-5 rounded-md flex items-center justify-center cursor-pointer transition-all"
-                                  style={{
-                                    backgroundColor: selectedStudentIds.includes(student.id) ? colors.ink : 'rgba(255,255,255,0.8)',
-                                    border: selectedStudentIds.includes(student.id) ? 'none' : '1.5px solid rgba(200,180,170,0.3)',
-                                  }}
-                                >
-                                  {selectedStudentIds.includes(student.id) && <Check className="w-3 h-3 text-white" />}
-                                </div>
-                              </td>
                               <td className="p-5">
                                 <div className="flex items-center gap-4">
                                   <Avatar 
-                                    className="w-10 h-10"
+                                    onClick={(e) => toggleStudentSelection(e, student.id)}
+                                    className="w-10 h-10 cursor-pointer transition-all duration-150"
                                     style={{
-                                      boxShadow: '0 2px 8px rgba(180,150,140,0.2)',
-                                      border: '2px solid rgba(255,255,255,0.8)',
+                                      boxShadow: isSelected 
+                                        ? `0 0 12px 3px rgba(196, 160, 160, 0.6), 0 0 20px 6px rgba(196, 160, 160, 0.3), inset 0 2px 4px rgba(0,0,0,0.2)`
+                                        : '0 2px 8px rgba(180,150,140,0.2)',
+                                      border: isSelected ? '2px solid rgba(255,255,255,0.9)' : '2px solid rgba(255,255,255,0.8)',
+                                      transform: isSelected ? 'translateY(2px) scale(0.95)' : 'translateY(0) scale(1)',
                                     }}
                                   >
-                                    <AvatarFallback style={{ background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, color: '#fff' }}>{student.name.charAt(0)}</AvatarFallback>
+                                    <AvatarFallback 
+                                      style={{ 
+                                        background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
+                                        color: '#fff',
+                                        textShadow: isSelected ? '0 0 8px rgba(255,255,255,0.8)' : 'none',
+                                      }}
+                                    >
+                                      {student.name.charAt(0)}
+                                    </AvatarFallback>
                                   </Avatar>
                                   <div>
                                     <EtchedText size="sm">{student.name}</EtchedText>
@@ -734,7 +727,7 @@ export default function Students() {
                                 </div>
                               </td>
                             </motion.tr>
-                          ))}
+                          );})}
                         </tbody>
                       </table>
                     </div>
