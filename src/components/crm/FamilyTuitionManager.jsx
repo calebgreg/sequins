@@ -375,22 +375,22 @@ export default function FamilyTuitionManager({ family }) {
             <div className="p-6 bg-[#333333] text-white mt-auto">
                 <div className="flex justify-between items-end mb-4">
                     <div>
-                        <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-1">Final Total</div>
+                        <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-1">Estimated Total</div>
                         <div className="text-3xl font-serif text-white">
                             ${calculation.total.toFixed(2)}
                         </div>
                     </div>
                     <Button 
-                        onClick={() => postInvoiceMutation.mutate()}
-                        disabled={postInvoiceMutation.isPending}
+                        onClick={() => saveAdjustmentsMutation.mutate()}
+                        disabled={saveAdjustmentsMutation.isPending}
                         className="bg-white text-[#333333] hover:bg-gray-100 rounded-xl px-6 shadow-lg gap-2 font-bold"
                     >
-                        {postInvoiceMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
-                        Post Invoice
+                        {saveAdjustmentsMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        Save Adjustments
                     </Button>
                 </div>
                 <div className="text-[10px] text-white/30 text-center flex items-center justify-center gap-2">
-                    <Check className="w-3 h-3" /> Ready to send to {family.email}
+                    <Check className="w-3 h-3" /> Adjustments will apply when billing runs
                 </div>
             </div>
         </div>
