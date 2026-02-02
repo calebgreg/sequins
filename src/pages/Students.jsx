@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
-import { Plus, Download, Mail, User, Phone, Edit, ArrowRight } from 'lucide-react';
+import { Plus, Download, Mail, User, Phone, Edit, ArrowRight, Check } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { createPageUrl } from '../utils';
 import { Link, useLocation } from 'react-router-dom';
 import StudentProfileView from '../components/teacher/StudentProfileView';
@@ -13,6 +14,7 @@ import FamilyProfileView from '../components/crm/FamilyProfileView';
 import StudentFormModal from '../components/crm/StudentFormModal';
 import MessageStudentModal from '../components/crm/MessageStudentModal';
 import NaturalLanguageSearch from '../components/crm/NaturalLanguageSearch';
+import BulkActionBar from '../components/crm/BulkActionBar';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Design tokens
@@ -68,6 +70,7 @@ export default function Students() {
   const [studentToMessage, setStudentToMessage] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'prospect'
   const [billingFilter, setBillingFilter] = useState('all'); // 'all', 'auto_pay', 'manual'
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -259,6 +262,27 @@ export default function Students() {
     e.stopPropagation();
     setStudentToMessage(student);
     setMessageModalOpen(true);
+  };
+
+  const toggleStudentSelection = (e, studentId) => {
+    e.stopPropagation();
+    setSelectedStudentIds(prev => 
+      prev.includes(studentId) 
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedStudentIds.length === filteredStudents.length) {
+      setSelectedStudentIds([]);
+    } else {
+      setSelectedStudentIds(filteredStudents.map(s => s.id));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedStudentIds([]);
   };
 
   if (selectedStudent) {
@@ -499,14 +523,28 @@ export default function Students() {
                            key={student.id} 
                            className="rounded-2xl p-4 cursor-pointer transition-all hover:scale-[1.01]"
                            style={{
-                             background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                             background: selectedStudentIds.includes(student.id) 
+                               ? 'linear-gradient(145deg, rgba(199, 210, 254, 0.3) 0%, rgba(199, 210, 254, 0.2) 100%)'
+                               : 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
                              boxShadow: '0 4px 16px -4px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)',
-                             border: '1px solid rgba(255, 200, 200, 0.2)',
+                             border: selectedStudentIds.includes(student.id) 
+                               ? '2px solid rgba(99, 102, 241, 0.4)'
+                               : '1px solid rgba(255, 200, 200, 0.2)',
                            }}
                            onClick={() => setSelectedStudent(student)}
                          >
                                <div className="flex justify-between items-start mb-3">
                                   <div className="flex items-center gap-3">
+                                     <div 
+                                       onClick={(e) => toggleStudentSelection(e, student.id)}
+                                       className="w-5 h-5 rounded-md flex items-center justify-center cursor-pointer transition-all"
+                                       style={{
+                                         backgroundColor: selectedStudentIds.includes(student.id) ? colors.ink : 'rgba(255,255,255,0.8)',
+                                         border: selectedStudentIds.includes(student.id) ? 'none' : '1.5px solid rgba(200,180,170,0.3)',
+                                       }}
+                                     >
+                                       {selectedStudentIds.includes(student.id) && <Check className="w-3 h-3 text-white" />}
+                                     </div>
                                      <Avatar 
                                        className="w-10 h-10"
                                        style={{
@@ -567,6 +605,18 @@ export default function Students() {
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr style={{ borderBottom: '1px solid rgba(200,180,170,0.15)' }}>
+                            <th className="p-5 w-12">
+                              <div 
+                                onClick={toggleSelectAll}
+                                className="w-5 h-5 rounded-md flex items-center justify-center cursor-pointer transition-all"
+                                style={{
+                                  backgroundColor: selectedStudentIds.length === filteredStudents.length && filteredStudents.length > 0 ? colors.ink : 'rgba(255,255,255,0.8)',
+                                  border: selectedStudentIds.length === filteredStudents.length && filteredStudents.length > 0 ? 'none' : '1.5px solid rgba(200,180,170,0.3)',
+                                }}
+                              >
+                                {selectedStudentIds.length === filteredStudents.length && filteredStudents.length > 0 && <Check className="w-3 h-3 text-white" />}
+                              </div>
+                            </th>
                             <th className="p-5 text-[10px] uppercase tracking-wider font-bold" style={{ color: colors.muted }}>Student Name</th>
                             <th className="p-5 text-[10px] uppercase tracking-wider font-bold" style={{ color: colors.muted }}>Status</th>
                             <th className="p-5 text-[10px] uppercase tracking-wider font-bold hidden sm:table-cell" style={{ color: colors.muted }}>Level / Age</th>
@@ -581,10 +631,25 @@ export default function Students() {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               className="group transition-colors cursor-pointer"
-                              style={{ borderBottom: '1px solid rgba(200,180,170,0.1)' }}
-                              whileHover={{ backgroundColor: 'rgba(255,255,255,0.5)' }}
+                              style={{ 
+                                borderBottom: '1px solid rgba(200,180,170,0.1)',
+                                backgroundColor: selectedStudentIds.includes(student.id) ? 'rgba(199, 210, 254, 0.15)' : 'transparent',
+                              }}
+                              whileHover={{ backgroundColor: selectedStudentIds.includes(student.id) ? 'rgba(199, 210, 254, 0.25)' : 'rgba(255,255,255,0.5)' }}
                               onClick={() => setSelectedStudent(student)}
                             >
+                              <td className="p-5 w-12">
+                                <div 
+                                  onClick={(e) => toggleStudentSelection(e, student.id)}
+                                  className="w-5 h-5 rounded-md flex items-center justify-center cursor-pointer transition-all"
+                                  style={{
+                                    backgroundColor: selectedStudentIds.includes(student.id) ? colors.ink : 'rgba(255,255,255,0.8)',
+                                    border: selectedStudentIds.includes(student.id) ? 'none' : '1.5px solid rgba(200,180,170,0.3)',
+                                  }}
+                                >
+                                  {selectedStudentIds.includes(student.id) && <Check className="w-3 h-3 text-white" />}
+                                </div>
+                              </td>
                               <td className="p-5">
                                 <div className="flex items-center gap-4">
                                   <Avatar 
@@ -815,6 +880,23 @@ export default function Students() {
         onOpenChange={setMessageModalOpen}
         student={studentToMessage}
       />
+
+      {/* Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedStudentIds.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+          >
+            <BulkActionBar 
+              selectedIds={selectedStudentIds}
+              students={students}
+              onClear={clearSelection}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
