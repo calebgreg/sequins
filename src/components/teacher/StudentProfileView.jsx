@@ -13,10 +13,13 @@ import { format, getDay } from 'date-fns';
 import NewJournalEntryModal from './NewJournalEntryModal';
 import StudentCommunicationTab from '../crm/StudentCommunicationTab';
 import StudentMeasurementsTab from './StudentMeasurementsTab';
+import MakeupClassModal from './MakeupClassModal';
 
 export default function StudentProfileView({ student, teacherName, onBack, onViewFamily }) {
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('activity');
+  const [makeupModalOpen, setMakeupModalOpen] = useState(false);
+  const [selectedAbsence, setSelectedAbsence] = useState(null);
 
   const { data: attendance = [] } = useQuery({
     queryKey: ['attendance', student?.name],
@@ -368,52 +371,82 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                   >
                      <h3 className="text-lg font-medium mb-4" style={{ color: '#8b7d72' }}>Attendance Timeline</h3>
                      <div className="space-y-3">
-                        {attendance.slice(0, 6).map((record, i) => (
-                           <motion.div 
-                              key={i}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: i * 0.05 }}
-                              className="flex gap-4 p-4 rounded-xl transition-all hover:scale-[1.01]"
-                              style={{ background: 'rgba(255,255,255,0.5)' }}
-                           >
-                              <div 
-                                 className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                                 style={{
-                                   background: record.status === 'present' ? 'rgba(126,184,154,0.15)' 
-                                     : record.status === 'absent' ? 'rgba(200,100,100,0.15)' 
-                                     : 'rgba(212,165,116,0.15)',
-                                 }}
-                              >
-                                 <span style={{ 
-                                   color: record.status === 'present' ? '#7eb89a' 
-                                     : record.status === 'absent' ? '#c87070' 
-                                     : '#d4a574',
-                                   fontSize: '14px',
-                                 }}>
-                                   {record.status === 'present' ? '✓' : record.status === 'absent' ? '✗' : '◐'}
-                                 </span>
-                              </div>
-                              
-                              <div className="flex-1">
-                                 <div className="flex justify-between items-center mb-1">
-                                    <span className="font-medium" style={{ color: '#8b7d72' }}>{record.class_name}</span>
-                                    <span className="text-xs" style={{ color: '#b5a599' }}>
-                                       {format(new Date(record.date), 'MMM d')}
-                                    </span>
-                                 </div>
-                                 <span 
-                                    className="text-xs capitalize px-2 py-0.5 rounded-full"
-                                    style={{
-                                      background: record.status === 'present' ? 'rgba(126,184,154,0.15)' : 'rgba(200,100,100,0.15)',
-                                      color: record.status === 'present' ? '#7eb89a' : '#c87070',
-                                    }}
-                                 >
-                                    {record.status}
-                                 </span>
-                              </div>
-                           </motion.div>
-                        ))}
+                        {attendance.slice(0, 6).map((record, i) => {
+                           const isMadeUp = record.status === 'made_up';
+                           const isAbsent = record.status === 'absent' || record.status === 'excused';
+                           const hasMakeupScheduled = isAbsent && record.makeup_class_id;
+                           
+                           const getStatusColor = () => {
+                             if (record.status === 'present') return { bg: 'rgba(126,184,154,0.15)', color: '#7eb89a' };
+                             if (isMadeUp) return { bg: 'rgba(164,139,196,0.15)', color: '#8b7d9a' };
+                             if (hasMakeupScheduled) return { bg: 'rgba(212,165,116,0.15)', color: '#d4a574' };
+                             if (isAbsent) return { bg: 'rgba(200,100,100,0.15)', color: '#c87070' };
+                             return { bg: 'rgba(212,165,116,0.15)', color: '#d4a574' };
+                           };
+                           
+                           const statusStyle = getStatusColor();
+                           
+                           return (
+                             <motion.div 
+                                key={i}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.05 }}
+                                className="flex gap-4 p-4 rounded-xl transition-all hover:scale-[1.01]"
+                                style={{ background: 'rgba(255,255,255,0.5)' }}
+                             >
+                                <div 
+                                   className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                                   style={{ background: statusStyle.bg }}
+                                >
+                                   <span style={{ color: statusStyle.color, fontSize: '14px' }}>
+                                     {record.status === 'present' ? '✓' : isMadeUp ? '↻' : isAbsent ? '✗' : '◐'}
+                                   </span>
+                                </div>
+                                
+                                <div className="flex-1">
+                                   <div className="flex justify-between items-center mb-1">
+                                      <span className="font-medium" style={{ color: '#8b7d72' }}>{record.class_name}</span>
+                                      <span className="text-xs" style={{ color: '#b5a599' }}>
+                                         {format(new Date(record.date), 'MMM d')}
+                                      </span>
+                                   </div>
+                                   <div className="flex items-center gap-2 flex-wrap">
+                                     <span 
+                                        className="text-xs capitalize px-2 py-0.5 rounded-full"
+                                        style={{ background: statusStyle.bg, color: statusStyle.color }}
+                                     >
+                                        {isMadeUp ? 'Made Up' : hasMakeupScheduled ? 'Makeup Scheduled' : record.status}
+                                     </span>
+                                     
+                                     {/* Makeup button for absences without scheduled makeup */}
+                                     {isAbsent && !hasMakeupScheduled && !isMadeUp && (
+                                       <button
+                                         onClick={() => {
+                                           setSelectedAbsence(record);
+                                           setMakeupModalOpen(true);
+                                         }}
+                                         className="text-xs px-2 py-0.5 rounded-full transition-all hover:scale-105"
+                                         style={{
+                                           background: 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(180,160,200,0.15) 100%)',
+                                           color: '#8b7d9a',
+                                         }}
+                                       >
+                                         + Schedule Makeup
+                                       </button>
+                                     )}
+                                     
+                                     {/* Show makeup info if scheduled */}
+                                     {hasMakeupScheduled && (
+                                       <span className="text-xs" style={{ color: '#b5a599' }}>
+                                         → {record.makeup_class_name} ({format(new Date(record.makeup_date), 'MMM d')})
+                                       </span>
+                                     )}
+                                   </div>
+                                </div>
+                             </motion.div>
+                           );
+                        })}
                      </div>
                   </div>
                </div>
@@ -648,6 +681,13 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
         student={student}
         teacherName={teacherName}
         classes={studentClasses}
+      />
+
+      <MakeupClassModal
+        isOpen={makeupModalOpen}
+        onOpenChange={setMakeupModalOpen}
+        absenceRecord={selectedAbsence}
+        studentName={student.name}
       />
     </div>
   );
