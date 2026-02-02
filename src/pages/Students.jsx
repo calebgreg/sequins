@@ -208,6 +208,9 @@ export default function Students() {
                 });
                 // Check if this student is in the performance
                 if (!performerIds.has(s.id)) matchesAi = false;
+            } else {
+                // If there's a performance_filters object but no valid performance_id, exclude all
+                matchesAi = false;
             }
         }
     }
