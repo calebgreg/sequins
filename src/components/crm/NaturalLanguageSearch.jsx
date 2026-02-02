@@ -83,7 +83,7 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
             Analyze this query for a dance studio CRM and extract filter criteria.
             Query: "${query}"
 
-            AVAILABLE PERFORMANCES:
+            AVAILABLE PERFORMANCES (use EXACT ID from this list):
             ${performanceContext || 'None'}
 
             AVAILABLE CLASSES:
@@ -109,23 +109,23 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                     "class_title": string (exact or partial class name match)
                 },
                 "performance_filters": {
-                    "performance_id": string (ID of the performance),
+                    "performance_id": string (MUST be exact ID from AVAILABLE PERFORMANCES list above),
                     "performance_title": string (name of performance for display)
                 }
             }
             
-            IMPORTANT RULES:
+            CRITICAL RULES:
             - Only include fields that are present in the query
-            - For performance queries like "students in X performance", use performance_filters with the matching performance_id
+            - For performance queries like "students in X performance" or "dancers in X", use performance_filters
+            - YOU MUST USE THE EXACT performance_id FROM THE LIST ABOVE - copy it exactly as shown
+            - Match performance titles loosely (e.g. "new years" matches "New Year's", "new year" matches "New Year's")
             - For class queries like "students in Ballet I" or "Monday students", use class_filters
-            - Match performance titles loosely (e.g. "new years" matches "New Year's")
             - If asking for "my students" or "my classes", ignore the "my" part
             
             Examples:
             - "9 year old tap students" -> { "filters": { "age": { "$eq": 9 } }, "class_filters": { "style": "tap" } }
-            - "students in the new years performance" -> { "performance_filters": { "performance_id": "<matching ID>", "performance_title": "New Year's" } }
+            - "students in the new years performance" -> { "performance_filters": { "performance_id": "6941b976de9c86e4978413ca", "performance_title": "New Year's" } }
             - "Monday ballet students" -> { "class_filters": { "day": "M", "style": "Ballet" } }
-            - "Miss Sarah's students" -> { "class_filters": { "teacher": "Sarah" } }
             `;
 
             const res = await base44.integrations.Core.InvokeLLM({
