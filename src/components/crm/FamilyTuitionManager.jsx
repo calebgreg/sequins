@@ -91,10 +91,13 @@ export default function FamilyTuitionManager({ family }) {
                 breakdown.push(`Includes ${activePlan.class_limit === 0 ? 'Unlimited' : activePlan.class_limit} classes`);
             } else {
                 // Priority 2: Use TuitionRules to calculate
-                
-                // Check for class-specific exceptions first
                 let classTotal = 0;
+                
+                // Determine per-class rate from base_pricing rule
+                const baseRate = basePricingRule?.value?.amount || 0;
+                
                 studentClasses.forEach(cls => {
+                    // Check for class-specific exceptions first
                     const exception = classExceptionRules.find(r => 
                         r.note?.toLowerCase().includes(cls.title?.toLowerCase())
                     );
@@ -102,26 +105,19 @@ export default function FamilyTuitionManager({ family }) {
                     if (exception && exception.value?.amount) {
                         classTotal += exception.value.amount;
                         breakdown.push(`${cls.title}: $${exception.value.amount} (special)`);
-                    } else if (basePricingRule?.value) {
-                        // Use base pricing
-                        const baseValue = basePricingRule.value;
-                        if (baseValue.method === 'flat') {
-                            classTotal += baseValue.amount || 0;
-                            breakdown.push(`${cls.title}: $${baseValue.amount || 0}`);
-                        } else if (baseValue.method === 'hourly') {
-                            const hours = cls.duration || 1;
-                            classTotal += (baseValue.rate || 0) * hours;
-                            breakdown.push(`${cls.title}: $${(baseValue.rate || 0) * hours}`);
-                        }
+                    } else if (baseRate > 0) {
+                        // Use base pricing rule rate
+                        classTotal += baseRate;
+                        breakdown.push(`${cls.title}: $${baseRate}`);
                     } else if (cls.tuition_cost) {
-                        // Fallback to class-level cost if set
+                        // Fallback to class-level cost
                         classTotal += cls.tuition_cost;
                         breakdown.push(`${cls.title}: $${cls.tuition_cost}`);
                     }
                 });
                 
                 amount = classTotal;
-                description = `Standard Calculation`;
+                description = `Standard Calculation (${studentClasses.length} classes × $${baseRate || 'varies'})`;
             }
 
             potentialRevenue += amount;
