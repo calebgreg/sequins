@@ -717,7 +717,7 @@ export default function TeacherStudio() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex-1 p-6 pt-20 md:pt-10 max-w-4xl mx-auto w-full"
+              className="flex-1 p-4 md:p-6 pt-16 md:pt-10 max-w-4xl mx-auto w-full"
             >
               {/* Header Controls */}
               <div className="flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-10">
