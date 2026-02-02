@@ -179,30 +179,25 @@ export default function FamilyTuitionManager({ family }) {
         setManualItems(prev => prev.filter(item => item.id !== id));
     };
 
-    const postInvoiceMutation = useMutation({
+    // Save adjustments to Family entity (not post invoice)
+    const saveAdjustmentsMutation = useMutation({
         mutationFn: async () => {
-            return base44.entities.Invoice.create({
-                parent_email: family.email,
-                parent_name: family.parent_name,
-                title: `Tuition - ${format(new Date(), 'MMMM yyyy')}`,
-                issue_date: new Date().toISOString().split('T')[0],
-                due_date: format(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
-                status: 'sent',
-                items: calculation.lines.map(l => ({
-                    description: l.description,
-                    amount: l.amount,
-                    student_name: l.student_name
-                })),
-                subtotal: calculation.total,
-                total_amount: calculation.total,
-                balance_due: calculation.total,
-                notes: 'Generated via Tuition Manager'
+            const adjustments = manualItems.map(item => ({
+                id: String(item.id),
+                type: item.type,
+                description: item.description,
+                amount: item.type === 'discount' ? -Math.abs(parseFloat(item.amount) || 0) : Math.abs(parseFloat(item.amount) || 0),
+                student_name: item.student_name || 'Family',
+                created_date: new Date().toISOString().split('T')[0]
+            }));
+            
+            return base44.entities.Family.update(family.id, {
+                billing_adjustments: adjustments
             });
         },
         onSuccess: () => {
-            toast.success("Invoice created successfully");
-            setManualItems([]);
-            queryClient.invalidateQueries(['invoices']);
+            toast.success("Adjustments saved — will apply when billing runs");
+            queryClient.invalidateQueries(['families']);
         }
     });
 
