@@ -74,29 +74,58 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
         
         setIsProcessing(true);
         try {
+            // Build context for the AI
+            const performanceContext = performances.map(p => `- "${p.title}" (ID: ${p.id})`).join('\n');
+            const classContext = classes.map(c => `- "${c.title}" on ${c.day} with ${c.teacher || 'TBD'} (style: ${c.style || c.title})`).join('\n');
+            const teacherContext = teachers.map(t => `- ${t.name}`).join('\n');
+
             const prompt = `
             Analyze this query for a dance studio CRM and extract filter criteria.
             Query: "${query}"
 
+            AVAILABLE PERFORMANCES:
+            ${performanceContext || 'None'}
+
+            AVAILABLE CLASSES:
+            ${classContext || 'None'}
+
+            TEACHERS:
+            ${teacherContext || 'None'}
+
             Return a valid JSON object matching this structure:
             {
                 "filters": {
-                    "name": string (partial match),
+                    "name": string (partial match on student name),
                     "status": "active" | "inactive" | "prospect" | "alumni",
                     "billing_method": "auto_pay" | "manual",
-                    "age": { "$eq": number, "$gt": number, "$lt": number },
-                    "level": string,
+                    "age": { "$eq": number, "$gt": number, "$lt": number, "$gte": number, "$lte": number },
+                    "level": string (e.g. "Mini", "Petite", "Junior", "Senior"),
                     "tags": [string]
                 },
                 "class_filters": {
                     "day": "M"|"T"|"W"|"R"|"F"|"S"|"U",
-                    "style": string,
-                    "teacher": string
+                    "style": string (e.g. "Ballet", "Tap", "Jazz", "Hip Hop", "Acro", "Contemporary", "Lyrical"),
+                    "teacher": string,
+                    "class_title": string (exact or partial class name match)
+                },
+                "performance_filters": {
+                    "performance_id": string (ID of the performance),
+                    "performance_title": string (name of performance for display)
                 }
             }
-            Only include fields that are present in the query.
-            If asking for "my students" or "my classes", ignore the "my" part as we filter for the whole studio for now.
-            Example: "9 year old tap students" -> { "filters": { "age": { "$eq": 9 } }, "class_filters": { "style": "tap" } }
+            
+            IMPORTANT RULES:
+            - Only include fields that are present in the query
+            - For performance queries like "students in X performance", use performance_filters with the matching performance_id
+            - For class queries like "students in Ballet I" or "Monday students", use class_filters
+            - Match performance titles loosely (e.g. "new years" matches "New Year's")
+            - If asking for "my students" or "my classes", ignore the "my" part
+            
+            Examples:
+            - "9 year old tap students" -> { "filters": { "age": { "$eq": 9 } }, "class_filters": { "style": "tap" } }
+            - "students in the new years performance" -> { "performance_filters": { "performance_id": "<matching ID>", "performance_title": "New Year's" } }
+            - "Monday ballet students" -> { "class_filters": { "day": "M", "style": "Ballet" } }
+            - "Miss Sarah's students" -> { "class_filters": { "teacher": "Sarah" } }
             `;
 
             const res = await base44.integrations.Core.InvokeLLM({
@@ -129,7 +158,15 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                             properties: {
                                 day: { type: "string", enum: ["M", "T", "W", "R", "F", "S", "U"] },
                                 style: { type: "string" },
-                                teacher: { type: "string" }
+                                teacher: { type: "string" },
+                                class_title: { type: "string" }
+                            }
+                        },
+                        performance_filters: {
+                            type: "object",
+                            properties: {
+                                performance_id: { type: "string" },
+                                performance_title: { type: "string" }
                             }
                         }
                     }
