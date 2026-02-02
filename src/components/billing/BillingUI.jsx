@@ -127,6 +127,11 @@ export function BillingOverview({ onSelectFamily }) {
     queryFn: () => base44.entities.Invoice.list(),
   });
 
+  const { data: familyEntities = [] } = useQuery({
+    queryKey: ['familyEntities'],
+    queryFn: () => base44.entities.Family.list(),
+  });
+
   // Group students by family and calculate bills
   const families = useMemo(() => {
     const groups = {};
