@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, ArrowRight, SkipForward, Mic, Square } from 'lucide-react';
+import { Sparkles, ArrowRight, SkipForward, Mic, Square, TrendingUp, Tag } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { motion } from 'framer-motion';
+import { processIndividualNote, fetchStudentHistory, generateNotePrompt } from './useNoteAI';
 
 export default function StudentNotePrompt({
   classData,
