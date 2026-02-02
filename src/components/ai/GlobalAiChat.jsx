@@ -169,10 +169,10 @@ export default function GlobalAiChat() {
     const [inputValue, setInputValue] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const [messages, setMessages] = useState([]);
-    const [selectedStudents, setSelectedStudents] = useState([]);
     const navigate = useNavigate();
 
-    const clearSelection = () => setSelectedStudents([]);
+    // Use the shared context for bulk selection
+    const { selectedStudents, setSelectedStudents, clearSelection } = useBulkSelection();
     const hasBulkSelection = selectedStudents.length > 0;
     
     // Get Current User
