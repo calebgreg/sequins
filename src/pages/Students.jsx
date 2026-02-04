@@ -218,6 +218,45 @@ export default function Students() {
                 matchesAi = false;
             }
         }
+
+        // Attendance-based Filters
+        if (aiFilter.attendance_filters && matchesAi) {
+            const af = aiFilter.attendance_filters;
+            // Get all attendance records for this student
+            const studentAttendance = attendance.filter(a => a.student_name === s.name);
+            
+            if (studentAttendance.length > 0) {
+                // Group by class to check attendance per class
+                const byClass = {};
+                studentAttendance.forEach(a => {
+                    const key = a.class_id || a.class_name;
+                    if (!byClass[key]) byClass[key] = [];
+                    byClass[key].push(a);
+                });
+                
+                // Check if ANY class meets the attendance threshold criteria
+                let hasMatchingClass = false;
+                Object.values(byClass).forEach(classRecords => {
+                    const total = classRecords.length;
+                    const present = classRecords.filter(r => 
+                        r.status === 'present' || r.status === 'late' || r.status === 'made_up'
+                    ).length;
+                    const rate = total > 0 ? (present / total) * 100 : 100;
+                    
+                    if (af.rate_below !== undefined && rate < af.rate_below) {
+                        hasMatchingClass = true;
+                    }
+                    if (af.rate_above !== undefined && rate > af.rate_above) {
+                        hasMatchingClass = true;
+                    }
+                });
+                
+                if (!hasMatchingClass) matchesAi = false;
+            } else {
+                // No attendance records - exclude from low attendance searches
+                if (af.rate_below !== undefined) matchesAi = false;
+            }
+        }
     }
 
     return matchesSearch && matchesStatus && matchesBilling && matchesAi;
