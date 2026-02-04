@@ -1,5 +1,11 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+
+// Import Manrope font
+const manropeLink = document.createElement('link');
+manropeLink.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap';
+manropeLink.rel = 'stylesheet';
+document.head.appendChild(manropeLink);
 import AppSidebar from './components/layout/AppSidebar';
 import CommandMenu from './components/layout/CommandMenu';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
