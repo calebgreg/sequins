@@ -398,7 +398,14 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                           {streak} <span className="text-sm" style={{ color: '#b5a599' }}>days</span>
                         </div>
                         <p className="text-xs leading-relaxed" style={{ color: '#a8a0b5' }}>
-                           {student.name} has been consistent lately!
+                           {streak >= 5 
+                             ? `${student.name} is on fire! 🔥` 
+                             : streak >= 2 
+                               ? `${student.name} has been consistent lately!`
+                               : streak === 0 && attendanceRate < 50
+                                 ? `${student.name} needs some encouragement`
+                                 : `Let's build that streak!`
+                           }
                         </p>
                      </div>
                      
