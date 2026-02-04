@@ -63,13 +63,68 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
     return count;
   }, [attendance]);
 
-  // On-Time Rate Calculation (present / (present + late)) - null if no attendance data
-  const onTimeRate = useMemo(() => {
-    const presentCount = attendance.filter(a => a.status === 'present').length;
-    const lateCount = attendance.filter(a => a.status === 'late').length;
-    const totalRelevant = presentCount + lateCount;
-    return totalRelevant > 0 ? Math.round((presentCount / totalRelevant) * 100) : null;
-  }, [attendance]);
+  // Quick Insights - AI-synthesized from real data
+  const quickInsights = useMemo(() => {
+    const insights = [];
+    
+    // Attendance trend (compare last 4 weeks to previous 4 weeks)
+    const sortedAttendance = [...attendance].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const recentFour = sortedAttendance.slice(0, 4);
+    const previousFour = sortedAttendance.slice(4, 8);
+    
+    if (recentFour.length >= 2) {
+      const recentPresent = recentFour.filter(a => a.status === 'present').length;
+      const previousPresent = previousFour.filter(a => a.status === 'present').length;
+      
+      if (previousFour.length >= 2) {
+        const recentRate = recentPresent / recentFour.length;
+        const previousRate = previousPresent / previousFour.length;
+        
+        if (recentRate < previousRate - 0.2) {
+          insights.push({ label: 'Attendance Trend', value: 'Declining', color: '#c87070' });
+        } else if (recentRate > previousRate + 0.2) {
+          insights.push({ label: 'Attendance Trend', value: 'Improving', color: '#7eb89a' });
+        }
+      }
+      
+      // Check for consecutive absences
+      const consecutiveAbsences = recentFour.filter(a => a.status === 'absent' || a.status === 'excused').length;
+      if (consecutiveAbsences >= 3) {
+        insights.push({ label: 'Recent Pattern', value: `${consecutiveAbsences} absences`, color: '#c87070' });
+      }
+    }
+    
+    // Pending makeups
+    const pendingMakeups = attendance.filter(a => 
+      (a.status === 'absent' || a.status === 'excused') && !a.makeup_class_id
+    ).length;
+    if (pendingMakeups > 0) {
+      insights.push({ label: 'Makeups Needed', value: `${pendingMakeups} pending`, color: '#d4a574' });
+    }
+    
+    // Completed makeups
+    const completedMakeups = attendance.filter(a => a.status === 'made_up').length;
+    if (completedMakeups > 0) {
+      insights.push({ label: 'Makeups Done', value: `${completedMakeups} completed`, color: '#7eb89a' });
+    }
+    
+    // Teacher feedback themes from notes
+    const positiveNotes = notes.filter(n => n.sentiment === 'positive').length;
+    const constructiveNotes = notes.filter(n => n.sentiment === 'constructive').length;
+    
+    if (positiveNotes >= 3) {
+      insights.push({ label: 'Teacher Feedback', value: 'Very positive', color: '#7eb89a' });
+    } else if (constructiveNotes >= 2) {
+      insights.push({ label: 'Teacher Feedback', value: 'Areas to work on', color: '#d4a574' });
+    }
+    
+    // Risk flag from student data
+    if (student.attendance_alert) {
+      insights.push({ label: 'Status', value: 'Needs attention', color: '#c87070' });
+    }
+    
+    return insights.slice(0, 3); // Show max 3 insights
+  }, [attendance, notes, student.attendance_alert]);
 
   // Engagement Score Calculation
   const { score: engagementScore, label: engagementLabel } = useMemo(() => {
@@ -347,28 +402,28 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                         </p>
                      </div>
                      
-                     <div 
-                        className="rounded-2xl p-4"
-                        style={{
-                          background: 'rgba(255,255,255,0.4)',
-                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
-                        }}
-                     >
-                        <h4 className="text-sm mb-3 font-medium" style={{ color: '#8b7d72' }}>Quick Insights</h4>
-                        <div className="space-y-2">
-                           <div className="flex items-center justify-between text-xs">
-                               <span style={{ color: '#b5a599' }}>On-Time Arrival</span>
-                               <span className="font-medium" style={{ color: onTimeRate === null ? '#b5a599' : onTimeRate >= 80 ? '#7eb89a' : onTimeRate >= 60 ? '#d4a574' : '#c87070' }}>
-                                 {onTimeRate === null ? '—' : `${onTimeRate}%`}
-                               </span>
-                            </div>
-                           <div className="w-full h-px" style={{ background: 'rgba(200,180,170,0.2)' }} />
-                           <div className="flex items-center justify-between text-xs">
-                              <span style={{ color: '#b5a599' }}>Style Versatility</span>
-                              <span className="font-medium" style={{ color: '#8b7d72' }}>Medium</span>
-                           </div>
-                        </div>
-                     </div>
+                     {quickInsights.length > 0 && (
+                       <div 
+                          className="rounded-2xl p-4"
+                          style={{
+                            background: 'rgba(255,255,255,0.4)',
+                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                          }}
+                       >
+                          <h4 className="text-sm mb-3 font-medium" style={{ color: '#8b7d72' }}>Quick Insights</h4>
+                          <div className="space-y-2">
+                             {quickInsights.map((insight, i) => (
+                               <React.Fragment key={i}>
+                                 {i > 0 && <div className="w-full h-px" style={{ background: 'rgba(200,180,170,0.2)' }} />}
+                                 <div className="flex items-center justify-between text-xs">
+                                    <span style={{ color: '#b5a599' }}>{insight.label}</span>
+                                    <span className="font-medium" style={{ color: insight.color }}>{insight.value}</span>
+                                 </div>
+                               </React.Fragment>
+                             ))}
+                          </div>
+                       </div>
+                     )}
                   </div>
 
                   {/* Timeline */}
