@@ -281,7 +281,8 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                                 }
                             }}
                             disabled={isProcessing}
-                            className={`pl-10 pr-20 h-12 bg-white border-transparent hover:border-gray-200 focus:border-indigo-200 transition-all shadow-sm hover:shadow-md rounded-full text-base font-serif placeholder:font-sans ${
+                            style={{ fontFamily: "'Manrope', sans-serif" }}
+                            className={`pl-10 pr-20 h-12 bg-white border-transparent hover:border-gray-200 focus:border-indigo-200 transition-all shadow-sm hover:shadow-md rounded-full text-base placeholder:font-sans ${
                                 activeFilter ? 'ring-2 ring-indigo-500/10' : ''
                             }`}
                         />
