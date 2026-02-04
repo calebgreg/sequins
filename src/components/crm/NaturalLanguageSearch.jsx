@@ -171,6 +171,13 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                                 class_title: { type: "string" }
                             }
                         },
+                        attendance_filters: {
+                            type: "object",
+                            properties: {
+                                rate_below: { type: "number" },
+                                rate_above: { type: "number" }
+                            }
+                        },
                         performance_filters: {
                             type: "object",
                             properties: {
