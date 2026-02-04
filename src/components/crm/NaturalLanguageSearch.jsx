@@ -313,40 +313,56 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                         <Save className="w-4 h-4 relative z-10" />
                     </Button>
                 )}
-                </div>
 
-                {/* Saved Views */}
+                {/* Saved Views Dropdown */}
                 {savedFilters.length > 0 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar mask-gradient animate-in slide-in-from-top-2">
-                    <span className="text-xs font-bold text-gray-300 uppercase tracking-wider shrink-0 mr-1">Views</span>
-                    {savedFilters.map((filter) => (
-                        <button
-                            key={filter.id}
-                            onClick={() => applySavedFilter(filter)}
-                            className={`
-                                group flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all shrink-0 border
-                                ${activeFilter?.id === filter.id 
-                                    ? 'bg-[#333333] text-white border-[#333333] shadow-md' 
-                                    : 'bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:text-[#333333] hover:shadow-sm'}
-                            `}
-                        >
-                            <span>{filter.filter_name}</span>
-                            <span 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteFilterMutation.mutate(filter.id);
-                                }}
-                                className={`
-                                    opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-full
-                                    ${activeFilter?.id === filter.id ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-400 hover:text-red-500'}
-                                `}
+                    <Popover open={isSavedFiltersOpen} onOpenChange={setIsSavedFiltersOpen}>
+                        <PopoverTrigger asChild>
+                            <Button 
+                                variant="ghost"
+                                className={`h-10 px-4 rounded-full border transition-all gap-2 ${
+                                    activeFilter?.id 
+                                        ? 'bg-[#333333] text-white border-[#333333]' 
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                                }`}
                             >
-                                <X className="w-3 h-3" />
-                            </span>
-                        </button>
-                    ))}
+                                <Filter className="w-4 h-4" />
+                                <span className="text-sm font-medium">
+                                    {activeFilter?.id ? activeFilter.filter_name : 'Saved Views'}
+                                </span>
+                                <ChevronDown className="w-3 h-3" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-56 p-2" align="end">
+                            <div className="space-y-1">
+                                {savedFilters.map((filter) => (
+                                    <div
+                                        key={filter.id}
+                                        className={`
+                                            group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-all
+                                            ${activeFilter?.id === filter.id 
+                                                ? 'bg-gray-100 text-[#333333]' 
+                                                : 'hover:bg-gray-50 text-gray-600'}
+                                        `}
+                                        onClick={() => applySavedFilter(filter)}
+                                    >
+                                        <span className="text-sm font-medium">{filter.filter_name}</span>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteFilterMutation.mutate(filter.id);
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-red-500 transition-all"
+                                        >
+                                            <Trash2 className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                )}
                 </div>
-            )}
 
             {/* Active Criteria Display */}
             {activeFilter && (
