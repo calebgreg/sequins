@@ -142,8 +142,7 @@ export default function Students() {
                          s.parent_name?.toLowerCase().includes(search.toLowerCase()) ||
                          s.tags?.some(tag => tag.toLowerCase().includes(search.toLowerCase())));
     
-    const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
-    const matchesBilling = billingFilter === 'all' || s.billing_method === billingFilter;
+
 
     // 2. AI Smart Filters (if active)
     let matchesAi = true;
