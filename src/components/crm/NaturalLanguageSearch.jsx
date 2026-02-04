@@ -108,6 +108,10 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                     "teacher": string,
                     "class_title": string (exact or partial class name match)
                 },
+                "attendance_filters": {
+                    "rate_below": number (percentage threshold, e.g. 80 means less than 80% attendance),
+                    "rate_above": number (percentage threshold, e.g. 90 means above 90% attendance)
+                },
                 "performance_filters": {
                     "performance_id": string (MUST be exact ID from AVAILABLE PERFORMANCES list above),
                     "performance_title": string (name of performance for display)
