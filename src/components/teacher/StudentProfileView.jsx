@@ -50,7 +50,7 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
 
   // Stats Calculation
   const totalClasses = attendance.length;
-  const presentCount = attendance.filter(a => a.status === 'present').length;
+  const presentCount = attendance.filter(a => a.status === 'present' || a.status === 'made_up' || a.status === 'late').length;
   const attendanceRate = totalClasses > 0 ? Math.round((presentCount / totalClasses) * 100) : 100;
   
   // Streak Calculation
