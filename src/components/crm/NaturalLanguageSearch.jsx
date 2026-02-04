@@ -125,11 +125,16 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
             - Match performance titles loosely (e.g. "new years" matches "New Year's", "new year" matches "New Year's")
             - For class queries like "students in Ballet I" or "Monday students", use class_filters
             - If asking for "my students" or "my classes", ignore the "my" part
+            - For attendance queries like "students with less than 80% attendance" or "low attendance students", use attendance_filters
+            - "less than X% attendance" means rate_below: X
+            - "above X% attendance" or "more than X%" means rate_above: X
             
             Examples:
             - "9 year old tap students" -> { "filters": { "age": { "$eq": 9 } }, "class_filters": { "style": "tap" } }
             - "students in the new years performance" -> { "performance_filters": { "performance_id": "6941b976de9c86e4978413ca", "performance_title": "New Year's" } }
             - "Monday ballet students" -> { "class_filters": { "day": "M", "style": "Ballet" } }
+            - "students with less than 80% attendance" -> { "attendance_filters": { "rate_below": 80 } }
+            - "show me all students that have less than 80% attendance in a class" -> { "attendance_filters": { "rate_below": 80 } }
             `;
 
             const res = await base44.integrations.Core.InvokeLLM({
