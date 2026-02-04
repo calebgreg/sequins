@@ -63,12 +63,12 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
     return count;
   }, [attendance]);
 
-  // On-Time Rate Calculation (present / (present + late))
+  // On-Time Rate Calculation (present / (present + late)) - null if no attendance data
   const onTimeRate = useMemo(() => {
     const presentCount = attendance.filter(a => a.status === 'present').length;
     const lateCount = attendance.filter(a => a.status === 'late').length;
     const totalRelevant = presentCount + lateCount;
-    return totalRelevant > 0 ? Math.round((presentCount / totalRelevant) * 100) : 100;
+    return totalRelevant > 0 ? Math.round((presentCount / totalRelevant) * 100) : null;
   }, [attendance]);
 
   // Engagement Score Calculation
@@ -358,7 +358,9 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                         <div className="space-y-2">
                            <div className="flex items-center justify-between text-xs">
                                <span style={{ color: '#b5a599' }}>On-Time Arrival</span>
-                               <span className="font-medium" style={{ color: onTimeRate >= 80 ? '#7eb89a' : onTimeRate >= 60 ? '#d4a574' : '#c87070' }}>{onTimeRate}%</span>
+                               <span className="font-medium" style={{ color: onTimeRate === null ? '#b5a599' : onTimeRate >= 80 ? '#7eb89a' : onTimeRate >= 60 ? '#d4a574' : '#c87070' }}>
+                                 {onTimeRate === null ? '—' : `${onTimeRate}%`}
+                               </span>
                             </div>
                            <div className="w-full h-px" style={{ background: 'rgba(200,180,170,0.2)' }} />
                            <div className="flex items-center justify-between text-xs">
