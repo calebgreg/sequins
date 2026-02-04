@@ -257,7 +257,7 @@ export default function Students() {
         }
     }
 
-    return matchesSearch && matchesStatus && matchesBilling && matchesAi;
+    return matchesSearch && matchesAi;
   });
 
   const filteredFamilies = families.filter(f => {
