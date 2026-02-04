@@ -87,10 +87,10 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
         }
       }
       
-      // Check for consecutive absences
+      // Check for consecutive absences in recent classes
       const consecutiveAbsences = recentFour.filter(a => a.status === 'absent' || a.status === 'excused').length;
       if (consecutiveAbsences >= 3) {
-        insights.push({ label: 'Recent Pattern', value: `${consecutiveAbsences} absences`, color: '#c87070' });
+        insights.push({ label: 'Last 4 Classes', value: `${consecutiveAbsences} missed`, color: '#c87070' });
       }
     }
     
