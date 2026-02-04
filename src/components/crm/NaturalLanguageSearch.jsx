@@ -377,6 +377,16 @@ export default function NaturalLanguageSearch({ onFilterChange, onSearchChange }
                             </Badge>
                          );
                     })}
+                    {activeFilter.parsed_criteria_json.attendance_filters?.rate_below && (
+                        <Badge variant="secondary" className="px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-700 shadow-sm font-normal">
+                            <span className="opacity-50 mr-1">Attendance:</span> &lt; {activeFilter.parsed_criteria_json.attendance_filters.rate_below}%
+                        </Badge>
+                    )}
+                    {activeFilter.parsed_criteria_json.attendance_filters?.rate_above && (
+                        <Badge variant="secondary" className="px-3 py-1 rounded-full bg-green-50 border border-green-100 text-green-700 shadow-sm font-normal">
+                            <span className="opacity-50 mr-1">Attendance:</span> &gt; {activeFilter.parsed_criteria_json.attendance_filters.rate_above}%
+                        </Badge>
+                    )}
                     {activeFilter.parsed_criteria_json.performance_filters?.performance_title && (
                         <Badge variant="secondary" className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 shadow-sm font-normal">
                             <span className="opacity-50 mr-1">Performance:</span> {activeFilter.parsed_criteria_json.performance_filters.performance_title}
