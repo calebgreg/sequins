@@ -613,8 +613,8 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                           <span 
                             className="px-3 py-1.5 rounded-xl text-xs font-medium"
                             style={{
-                              background: classRate >= 80 ? 'rgba(126,184,154,0.15)' : classRate >= 60 ? 'rgba(212,165,116,0.15)' : 'rgba(200,100,100,0.15)',
-                              color: classRate >= 80 ? '#7eb89a' : classRate >= 60 ? '#d4a574' : '#c87070',
+                              background: classRate >= 80 ? 'rgba(34,197,94,0.15)' : classRate >= 60 ? 'rgba(234,179,8,0.15)' : 'rgba(239,68,68,0.15)',
+                              color: classRate >= 80 ? '#16a34a' : classRate >= 60 ? '#ca8a04' : '#dc2626',
                             }}
                           >
                             {classRate}%
