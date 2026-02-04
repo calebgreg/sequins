@@ -571,7 +571,14 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                </div>
 
                <div className="space-y-3">
-                 {studentClasses.map((cls, i) => (
+                 {studentClasses.map((cls, i) => {
+                   // Calculate attendance % for this specific class
+                   const classAttendance = attendance.filter(a => a.class_id === cls.id || a.class_name === cls.title);
+                   const classTotal = classAttendance.length;
+                   const classPresent = classAttendance.filter(a => a.status === 'present' || a.status === 'made_up').length;
+                   const classRate = classTotal > 0 ? Math.round((classPresent / classTotal) * 100) : null;
+                   
+                   return (
                    <motion.div 
                      key={cls.id}
                      initial={{ opacity: 0, y: 20 }}
@@ -601,17 +608,30 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                            </p>
                         </div>
                      </div>
-                     <svg 
-                       className="w-4 h-4 flex-shrink-0"
-                       fill="none" 
-                       stroke="currentColor" 
-                       viewBox="0 0 24 24"
-                       style={{ color: '#d4c4ba' }}
-                     >
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                     </svg>
+                     <div className="flex items-center gap-3">
+                        {classRate !== null && (
+                          <span 
+                            className="px-3 py-1.5 rounded-xl text-xs font-medium"
+                            style={{
+                              background: classRate >= 80 ? 'rgba(126,184,154,0.15)' : classRate >= 60 ? 'rgba(212,165,116,0.15)' : 'rgba(200,100,100,0.15)',
+                              color: classRate >= 80 ? '#7eb89a' : classRate >= 60 ? '#d4a574' : '#c87070',
+                            }}
+                          >
+                            {classRate}%
+                          </span>
+                        )}
+                        <svg 
+                          className="w-4 h-4 flex-shrink-0"
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                          style={{ color: '#d4c4ba' }}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                     </div>
                    </motion.div>
-                 ))}
+                 );})}
                </div>
             </TabsContent>
 
