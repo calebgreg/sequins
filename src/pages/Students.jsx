@@ -467,87 +467,36 @@ export default function Students() {
               />
           </div>
 
-          {/* Bottom: Filter Chips & View Toggles */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          {/* Bottom: View Toggles */}
+          <div className="flex items-center justify-between gap-4">
             
-            <div className="flex flex-wrap items-center gap-2">
-               {/* Primary View Toggle */}
-               <div 
-                 className="flex gap-1 p-1 rounded-full mr-2"
-                 style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
-               >
-                 <button 
-                   onClick={() => setView('list')}
-                   className="rounded-full px-4 py-1.5 text-xs font-semibold transition-all"
-                   style={{
-                     backgroundColor: view === 'list' ? colors.ink : 'transparent',
-                     color: view === 'list' ? '#fff' : colors.muted,
-                     boxShadow: view === 'list' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                   }}
-                 >
-                   Students
-                 </button>
-                 <button 
-                   onClick={() => setView('families')}
-                   className="rounded-full px-4 py-1.5 text-xs font-semibold transition-all"
-                   style={{
-                     backgroundColor: view === 'families' ? colors.ink : 'transparent',
-                     color: view === 'families' ? '#fff' : colors.muted,
-                     boxShadow: view === 'families' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                   }}
-                 >
-                   Families
-                 </button>
-               </div>
-
-               {/* Divider */}
-               <div className="w-px h-6 hidden sm:block mx-1" style={{ backgroundColor: 'rgba(200,180,170,0.2)' }}></div>
-
-               {/* Quick Filters */}
-               <button 
-                 onClick={() => setStatusFilter(current => current === 'active' ? 'all' : 'active')}
-                 className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
-                 style={{
-                   backgroundColor: statusFilter === 'active' ? colors.ink : 'rgba(255,255,255,0.6)',
-                   color: statusFilter === 'active' ? '#fff' : colors.muted,
-                   boxShadow: statusFilter === 'active' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                 }}
-               >
-                 Active
-               </button>
-               <button 
-                 onClick={() => setStatusFilter(current => current === 'prospect' ? 'all' : 'prospect')}
-                 className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
-                 style={{
-                   backgroundColor: statusFilter === 'prospect' ? colors.ink : 'rgba(255,255,255,0.6)',
-                   color: statusFilter === 'prospect' ? '#fff' : colors.muted,
-                   boxShadow: statusFilter === 'prospect' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                 }}
-               >
-                 Prospects
-               </button>
-               <button 
-                 onClick={() => setBillingFilter(current => current === 'auto_pay' ? 'all' : 'auto_pay')}
-                 className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
-                 style={{
-                   backgroundColor: billingFilter === 'auto_pay' ? colors.ink : 'rgba(255,255,255,0.6)',
-                   color: billingFilter === 'auto_pay' ? '#fff' : colors.muted,
-                   boxShadow: billingFilter === 'auto_pay' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                 }}
-               >
-                 Auto-Pay
-               </button>
-               <button 
-                 onClick={() => setBillingFilter(current => current === 'manual' ? 'all' : 'manual')}
-                 className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
-                 style={{
-                   backgroundColor: billingFilter === 'manual' ? colors.ink : 'rgba(255,255,255,0.6)',
-                   color: billingFilter === 'manual' ? '#fff' : colors.muted,
-                   boxShadow: billingFilter === 'manual' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                 }}
-               >
-                 Manual
-               </button>
+            {/* Primary View Toggle */}
+            <div 
+              className="flex gap-1 p-1 rounded-full"
+              style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
+            >
+              <button 
+                onClick={() => setView('list')}
+                className="rounded-full px-4 py-1.5 text-xs font-semibold transition-all"
+                style={{
+                  backgroundColor: view === 'list' ? colors.ink : 'transparent',
+                  color: view === 'list' ? '#fff' : colors.muted,
+                  boxShadow: view === 'list' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                }}
+              >
+                Students
+              </button>
+              <button 
+                onClick={() => setView('families')}
+                className="rounded-full px-4 py-1.5 text-xs font-semibold transition-all"
+                style={{
+                  backgroundColor: view === 'families' ? colors.ink : 'transparent',
+                  color: view === 'families' ? '#fff' : colors.muted,
+                  boxShadow: view === 'families' ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                }}
+              >
+                Families
+              </button>
             </div>
 
             <button 
