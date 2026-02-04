@@ -67,8 +67,7 @@ export default function Students() {
   const [editingStudent, setEditingStudent] = useState(null);
   const [messageModalOpen, setMessageModalOpen] = useState(false);
   const [studentToMessage, setStudentToMessage] = useState(null);
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'prospect'
-  const [billingFilter, setBillingFilter] = useState('all'); // 'all', 'auto_pay', 'manual'
+
   
   // Use the global bulk selection context
   const { selectedStudents, setSelectedStudents, clearSelection } = useBulkSelection();
