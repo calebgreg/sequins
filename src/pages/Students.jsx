@@ -95,6 +95,11 @@ export default function Students() {
     queryFn: () => base44.entities.PerformanceRoutine.list(),
   });
 
+  const { data: attendance = [] } = useQuery({
+    queryKey: ['attendance'],
+    queryFn: () => base44.entities.Attendance.list(),
+  });
+
   // Handle direct student links via URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
