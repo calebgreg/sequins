@@ -369,46 +369,125 @@ export default function Growth() {
                       Object.keys(retentionData).length > 0 ||
                       Object.keys(referralData).length > 0;
 
+  // Calculate total outcomes and progress stats
+  const totalOutcomes = outcomes.length;
+  const onTrackCount = outcomes.filter(o => {
+    const p = progress.find(pr => pr.outcome_id === o.id);
+    const percent = p ? p.current_count / o.target_count : 0;
+    return percent >= 0.6;
+  }).length;
+  const behindCount = totalOutcomes - onTrackCount;
+
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #FDF8F6 0%, #FAF0ED 50%, #F5E6E0 100%)',
-      padding: '16px',
+      background: colors.paper,
+      padding: '24px',
       fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
     }}>
-      {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: '600', color: '#8B7355', marginBottom: '4px' }}>Growth</h1>
-        <p style={{ fontSize: '14px', color: '#A89080' }}>12 outcomes across 4 categories</p>
-      </div>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        
+        {/* Hero Stats Card - Matching Billing aesthetic */}
+        <div
+          style={{
+            padding: '32px',
+            borderRadius: '24px',
+            marginBottom: '24px',
+            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 200, 200, 0.3)',
+            boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
+          }}
+        >
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: '14px', color: colors.muted, marginBottom: '8px' }}>
+              {totalOutcomes} outcomes
+            </p>
+            <EtchedText size="2xl">{onTrackCount} on track</EtchedText>
+            
+            {/* Sub-stats */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              gap: '12px', 
+              marginTop: '24px',
+              flexWrap: 'wrap',
+            }}>
+              <div
+                style={{
+                  padding: '16px 32px',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
+                  boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+                  minWidth: '120px',
+                }}
+              >
+                <EtchedText size="lg">{Object.keys(acquisitionData).length}</EtchedText>
+                <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginTop: '4px' }}>
+                  Acquisition
+                </div>
+              </div>
+              <div
+                style={{
+                  padding: '16px 32px',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
+                  boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+                  minWidth: '120px',
+                }}
+              >
+                <EtchedText size="lg">{Object.keys(conversionData).length}</EtchedText>
+                <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginTop: '4px' }}>
+                  Conversion
+                </div>
+              </div>
+              <div
+                style={{
+                  padding: '16px 32px',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
+                  boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+                  minWidth: '120px',
+                }}
+              >
+                <EtchedText size="lg">{behindCount}</EtchedText>
+                <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginTop: '4px' }}>
+                  Need Focus
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      {/* Outcomes Grid */}
-      {hasOutcomes ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px', marginBottom: '24px' }}>
-          {Object.keys(acquisitionData).length > 0 && (
-            <CategoryCard title="Acquisition" outcomes={acquisitionData} color={categoryColors.acquisition} />
-          )}
-          {Object.keys(conversionData).length > 0 && (
-            <CategoryCard title="Conversion" outcomes={conversionData} color={categoryColors.conversion} />
-          )}
-          {Object.keys(retentionData).length > 0 && (
-            <CategoryCard title="Retention" outcomes={retentionData} color={categoryColors.retention} />
-          )}
-          {Object.keys(referralData).length > 0 && (
-            <CategoryCard title="Referral" outcomes={referralData} color={categoryColors.referral} />
-          )}
-        </div>
-      ) : (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.7)',
-          borderRadius: '16px',
-          padding: '40px',
-          textAlign: 'center',
-          marginBottom: '24px',
-        }}>
-          <p style={{ color: '#A89080', fontSize: '16px' }}>Loading outcomes...</p>
-        </div>
-      )}
+        {/* Outcomes Grid */}
+        {hasOutcomes ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+            {Object.keys(acquisitionData).length > 0 && (
+              <CategoryCard title="Acquisition" outcomes={acquisitionData} color={categoryColors.acquisition} />
+            )}
+            {Object.keys(conversionData).length > 0 && (
+              <CategoryCard title="Conversion" outcomes={conversionData} color={categoryColors.conversion} />
+            )}
+            {Object.keys(retentionData).length > 0 && (
+              <CategoryCard title="Retention" outcomes={retentionData} color={categoryColors.retention} />
+            )}
+            {Object.keys(referralData).length > 0 && (
+              <CategoryCard title="Referral" outcomes={referralData} color={categoryColors.referral} />
+            )}
+          </div>
+        ) : (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+            borderRadius: '24px',
+            padding: '40px',
+            textAlign: 'center',
+            marginBottom: '24px',
+            border: '1px solid rgba(255, 200, 200, 0.3)',
+          }}>
+            <p style={{ color: colors.muted, fontSize: '16px' }}>Loading outcomes...</p>
+          </div>
+        )}
 
       {/* Focus Banner */}
       <div style={{
