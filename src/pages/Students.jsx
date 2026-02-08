@@ -676,8 +676,9 @@ export default function Students() {
                               className="group transition-colors cursor-pointer"
                               style={{ 
                                 borderBottom: '1px solid rgba(200,180,170,0.1)',
+                                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
                               }}
-                              whileHover={{ backgroundColor: 'rgba(255,255,255,0.5)' }}
+                              whileHover={{ backgroundColor: 'rgba(255,255,255,0.98)' }}
                               onClick={() => setSelectedStudent(student)}
                             >
                               <td className="p-5">
@@ -708,27 +709,30 @@ export default function Students() {
                                         }}
                                       />
                                     )}
-                                    {/* Main avatar */}
-                                    <Avatar 
-                                      className="w-10 h-10"
+                                    {/* Main avatar - Frosted glass style */}
+                                    <div 
+                                      className="w-10 h-10 rounded-full flex items-center justify-center"
                                       style={{
-                                        boxShadow: isSelected ? 'none' : '0 2px 8px rgba(180,150,140,0.2)',
-                                        border: isSelected ? 'none' : '2px solid rgba(255,255,255,0.8)',
+                                        background: 'linear-gradient(145deg, #faf4f4 0%, #f5ebeb 100%)',
+                                        boxShadow: isSelected 
+                                          ? 'inset 2px 2px 5px rgba(200, 170, 170, 0.3), inset -2px -2px 5px rgba(255, 250, 250, 0.9)'
+                                          : '4px 4px 10px rgba(210, 190, 190, 0.2), -4px -4px 10px rgba(255, 255, 255, 0.9)',
                                       }}
                                     >
-                                      <AvatarFallback 
-                                        style={{ 
-                                          background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`, 
-                                          color: isSelected ? '#ffeaea' : '#fff',
-                                          textShadow: isSelected 
-                                            ? '0 0 2px #ffdede, 0 0 4px #ffd0d0, 0 0 8px rgba(255,200,200,0.7), 0 0 12px rgba(255,190,190,0.5), 0 0 20px rgba(255,180,180,0.3)' 
-                                            : 'none',
-                                          fontWeight: '500',
-                                        }}
-                                      >
+                                      <span style={{
+                                        fontSize: '15px',
+                                        fontWeight: '500',
+                                        color: 'transparent',
+                                        backgroundImage: 'linear-gradient(180deg, #c4a8a8 0%, #9a7878 100%)',
+                                        backgroundClip: 'text',
+                                        WebkitBackgroundClip: 'text',
+                                        textShadow: isSelected 
+                                          ? '0 0 4px rgba(255,200,200,0.8), 0 0 8px rgba(255,190,190,0.5)'
+                                          : '0 1px 2px rgba(255,255,255,0.8)',
+                                      }}>
                                         {student.name.charAt(0)}
-                                      </AvatarFallback>
-                                    </Avatar>
+                                      </span>
+                                    </div>
                                   </div>
                                   <div>
                                     <EtchedText size="sm">{student.name}</EtchedText>
