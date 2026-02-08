@@ -846,8 +846,14 @@ function ClassRow({ classData }) {
   );
 }
 
-function StudentCard({ student, onClick }) {
+function StudentCard({ student, onClick, isSelected, onToggleSelect }) {
   const rateColor = student.rate >= 85 ? colors.green : student.rate >= 70 ? colors.amber : colors.red;
+  
+  const handleAvatarClick = (e) => {
+    e.stopPropagation();
+    onToggleSelect(student);
+  };
+  
   return (
     <motion.div 
       whileHover={{ scale: 1.01, y: -1 }}
@@ -863,12 +869,32 @@ function StudentCard({ student, onClick }) {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
         {/* Light Pink Frosted Avatar - Raised Neumorphic with Etched Text */}
-        <div style={{
-          width: '44px', height: '44px', borderRadius: '50%',
-          background: 'linear-gradient(145deg, #faf4f4 0%, #f5ebeb 100%)',
-          boxShadow: '4px 4px 10px rgba(210, 190, 190, 0.2), -4px -4px 10px rgba(255, 255, 255, 0.9)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
+        <div 
+          onClick={handleAvatarClick}
+          style={{
+            position: 'relative',
+            width: '44px', height: '44px', borderRadius: '50%',
+            background: 'linear-gradient(145deg, #faf4f4 0%, #f5ebeb 100%)',
+            boxShadow: isSelected 
+              ? 'inset 2px 2px 5px rgba(200, 170, 170, 0.3), inset -2px -2px 5px rgba(255, 250, 250, 0.9)'
+              : '4px 4px 10px rgba(210, 190, 190, 0.2), -4px -4px 10px rgba(255, 255, 255, 0.9)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+            transform: isSelected ? 'scale(0.97)' : 'scale(1)',
+          }}
+        >
+          {/* Selection glow ring */}
+          {isSelected && (
+            <div style={{
+              position: 'absolute',
+              inset: '-4px',
+              borderRadius: '50%',
+              border: '2px solid rgba(255,210,210,0.9)',
+              boxShadow: '0 0 8px 2px rgba(255,200,200,0.5), 0 0 16px 4px rgba(255,190,190,0.3)',
+              pointerEvents: 'none',
+            }} />
+          )}
           <span style={{
             fontSize: '17px',
             fontWeight: '500',
@@ -876,7 +902,9 @@ function StudentCard({ student, onClick }) {
             backgroundImage: 'linear-gradient(180deg, #c4a8a8 0%, #9a7878 100%)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
-            textShadow: '0 1px 2px rgba(255,255,255,0.8)',
+            textShadow: isSelected 
+              ? '0 0 4px rgba(255,200,200,0.8), 0 0 8px rgba(255,190,190,0.5)'
+              : '0 1px 2px rgba(255,255,255,0.8)',
           }}>
             {student.name.charAt(0)}
           </span>
