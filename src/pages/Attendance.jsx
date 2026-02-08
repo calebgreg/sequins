@@ -848,19 +848,24 @@ function StudentCard({ student, onClick }) {
       whileHover={{ scale: 1.02, y: -2 }}
       onClick={onClick}
       style={{
-        padding: '18px',
-        borderRadius: '16px',
-        background: 'rgba(255,255,255,0.6)',
+        padding: '20px',
+        borderRadius: '20px',
+        background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 240, 240, 0.9) 100%)',
+        backdropFilter: 'blur(8px)',
+        border: '1px solid rgba(255, 200, 200, 0.25)',
+        boxShadow: '0 4px 16px rgba(180, 120, 120, 0.06)',
         cursor: 'pointer',
-        transition: 'box-shadow 0.2s',
+        transition: 'all 0.2s',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
         <div style={{
-          width: '40px', height: '40px', borderRadius: '50%',
-          background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+          width: '42px', height: '42px', borderRadius: '50%',
+          background: 'linear-gradient(145deg, rgba(255, 210, 210, 0.9) 0%, rgba(230, 180, 180, 0.8) 100%)',
+          border: '2px solid rgba(255, 255, 255, 0.8)',
+          boxShadow: '0 2px 8px rgba(180, 120, 120, 0.15)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#fff', fontWeight: '600', fontSize: '16px',
+          color: colors.etchDark, fontWeight: '600', fontSize: '16px',
         }}>
           {student.name.charAt(0)}
         </div>
@@ -870,13 +875,13 @@ function StudentCard({ student, onClick }) {
         </div>
         <span style={{ fontSize: '20px', fontWeight: '700', color: barColor }}>{student.rate.toFixed(0)}%</span>
       </div>
-      <div style={{ display: 'flex', gap: '12px', fontSize: '12px' }}>
+      <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: colors.muted }}>
         <span><span style={{ color: colors.green }}>●</span> {student.present} present</span>
         <span><span style={{ color: colors.red }}>●</span> {student.absent} absent</span>
         <span><span style={{ color: colors.amber }}>●</span> {student.late} late</span>
       </div>
-      <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
-        <ChevronRight size={18} style={{ color: colors.muted }} />
+      <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'flex-end' }}>
+        <ChevronRight size={18} style={{ color: colors.etchLight }} />
       </div>
     </motion.div>
   );
