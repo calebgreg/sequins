@@ -860,11 +860,11 @@ function StudentCard({ student, onClick }) {
         {/* Light Pink Frosted Avatar */}
         <div style={{
           width: '44px', height: '44px', borderRadius: '50%',
-          background: 'linear-gradient(145deg, #f5d4d4 0%, #ecc4c4 100%)',
-          boxShadow: '2px 2px 5px rgba(180, 150, 150, 0.08), -2px -2px 4px rgba(255, 255, 255, 0.9), inset 0 1px 3px rgba(255, 255, 255, 0.7)',
-          border: '1px solid rgba(255, 240, 240, 0.9)',
+          background: 'linear-gradient(145deg, #f9e0e0 0%, #f2d4d4 100%)',
+          boxShadow: '2px 2px 4px rgba(210, 180, 180, 0.12), -2px -2px 4px rgba(255, 255, 255, 0.95)',
+          border: '1px solid rgba(255, 245, 245, 0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#9a7575',
+          color: '#a08080',
           fontWeight: '500', fontSize: '17px',
         }}>
           {student.name.charAt(0)}
