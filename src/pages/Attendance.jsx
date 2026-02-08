@@ -1247,11 +1247,21 @@ function StudentDetailView({ studentName, stats, detail, onBack, students }) {
           <div className="flex items-center gap-4">
             <div style={{
               width: '64px', height: '64px', borderRadius: '50%',
-              background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+              background: 'linear-gradient(145deg, #faf4f4 0%, #f5ebeb 100%)',
+              boxShadow: '4px 4px 10px rgba(210, 190, 190, 0.2), -4px -4px 10px rgba(255, 255, 255, 0.9)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontWeight: '700', fontSize: '24px',
             }}>
-              {studentName.charAt(0)}
+              <span style={{
+                fontSize: '24px',
+                fontWeight: '500',
+                color: 'transparent',
+                backgroundImage: 'linear-gradient(180deg, #c4a8a8 0%, #9a7878 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                textShadow: '0 1px 2px rgba(255,255,255,0.8)',
+              }}>
+                {studentName.charAt(0)}
+              </span>
             </div>
             <div>
               <EtchedText size="xl">{studentName}</EtchedText>
