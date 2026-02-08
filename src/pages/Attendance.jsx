@@ -842,30 +842,30 @@ function ClassRow({ classData }) {
 }
 
 function StudentCard({ student, onClick }) {
-  const barColor = student.rate >= 85 ? colors.green : student.rate >= 70 ? colors.amber : colors.red;
+  const rateColor = student.rate >= 85 ? colors.green : student.rate >= 70 ? colors.amber : colors.red;
   return (
     <motion.div 
-      whileHover={{ scale: 1.02, y: -2 }}
+      whileHover={{ scale: 1.01, y: -1 }}
       onClick={onClick}
       style={{
         padding: '20px',
         borderRadius: '20px',
-        background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 240, 240, 0.9) 100%)',
-        backdropFilter: 'blur(8px)',
-        border: '1px solid rgba(255, 200, 200, 0.25)',
-        boxShadow: '0 4px 16px rgba(180, 120, 120, 0.06)',
+        background: 'linear-gradient(145deg, #fef7f7 0%, #fce8e8 100%)',
+        boxShadow: '6px 6px 12px rgba(200, 170, 170, 0.15), -4px -4px 10px rgba(255, 255, 255, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
         cursor: 'pointer',
         transition: 'all 0.2s',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
+        {/* Etched Avatar */}
         <div style={{
-          width: '42px', height: '42px', borderRadius: '50%',
-          background: 'linear-gradient(145deg, rgba(255, 210, 210, 0.9) 0%, rgba(230, 180, 180, 0.8) 100%)',
-          border: '2px solid rgba(255, 255, 255, 0.8)',
-          boxShadow: '0 2px 8px rgba(180, 120, 120, 0.15)',
+          width: '44px', height: '44px', borderRadius: '50%',
+          background: 'linear-gradient(145deg, #fce4e4 0%, #f5d0d0 100%)',
+          boxShadow: '4px 4px 8px rgba(200, 160, 160, 0.2), -3px -3px 6px rgba(255, 255, 255, 0.9), inset 1px 1px 2px rgba(255, 255, 255, 0.5), inset -1px -1px 2px rgba(200, 170, 170, 0.1)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: colors.etchDark, fontWeight: '600', fontSize: '16px',
+          color: '#9a7070',
+          fontWeight: '600', fontSize: '17px',
+          textShadow: '1px 1px 1px rgba(255,255,255,0.8), -1px -1px 1px rgba(180,140,140,0.15)',
         }}>
           {student.name.charAt(0)}
         </div>
@@ -873,7 +873,19 @@ function StudentCard({ student, onClick }) {
           <div style={{ fontSize: '15px', fontWeight: '600', color: colors.ink }}>{student.name}</div>
           <div style={{ fontSize: '12px', color: colors.muted }}>{student.total} classes</div>
         </div>
-        <span style={{ fontSize: '20px', fontWeight: '700', color: barColor }}>{student.rate.toFixed(0)}%</span>
+        {/* Etched Percentage */}
+        <span style={{ 
+          fontSize: '22px', 
+          fontWeight: '700', 
+          color: 'transparent',
+          backgroundImage: `linear-gradient(180deg, ${rateColor}cc 0%, ${rateColor} 100%)`,
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          textShadow: '1px 1px 2px rgba(255,255,255,0.7), -1px -1px 1px rgba(150,100,100,0.1)',
+          filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+        }}>
+          {student.rate.toFixed(0)}%
+        </span>
       </div>
       <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: colors.muted }}>
         <span><span style={{ color: colors.green }}>●</span> {student.present} present</span>
