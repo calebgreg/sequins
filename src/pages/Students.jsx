@@ -13,6 +13,7 @@ import FamilyProfileView from '../components/crm/FamilyProfileView';
 import StudentFormModal from '../components/crm/StudentFormModal';
 import MessageStudentModal from '../components/crm/MessageStudentModal';
 import NaturalLanguageSearch from '../components/crm/NaturalLanguageSearch';
+import AttendanceReportModal from '../components/crm/AttendanceReportModal';
 import { useBulkSelection } from '../components/ai/GlobalAiChat';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -67,6 +68,7 @@ export default function Students() {
   const [editingStudent, setEditingStudent] = useState(null);
   const [messageModalOpen, setMessageModalOpen] = useState(false);
   const [studentToMessage, setStudentToMessage] = useState(null);
+  const [attendanceModalOpen, setAttendanceModalOpen] = useState(false);
 
   
   // Use the global bulk selection context
