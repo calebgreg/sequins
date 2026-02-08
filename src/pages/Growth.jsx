@@ -3,12 +3,56 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
+// Design tokens matching the Billing page aesthetic
+const colors = {
+  ink: '#1a1a1a',
+  paper: '#faf9f7',
+  warm: '#f5f3ef',
+  muted: '#8a8478',
+  border: '#e8e6e1',
+  frost: '#fef7f7',
+  frostShadow: 'rgba(180, 120, 120, 0.08)',
+  frostDeep: 'rgba(180, 120, 120, 0.05)',
+  etchLight: '#c4a0a0',
+  etchDark: '#8a7070',
+};
+
 // Category colors
 const categoryColors = {
   acquisition: { bg: 'rgba(196, 169, 140, 0.15)', accent: '#8B7355', light: '#C4A98C' },
   conversion: { bg: 'rgba(140, 169, 196, 0.15)', accent: '#456577', light: '#8CA9C4' },
   retention: { bg: 'rgba(169, 196, 140, 0.15)', accent: '#577745', light: '#A9C48C' },
   referral: { bg: 'rgba(196, 140, 169, 0.15)', accent: '#774565', light: '#C48CA9' },
+};
+
+// Etched text component for large numbers
+const EtchedText = ({ children, size = 'md', className = '' }) => {
+  const sizes = {
+    sm: { fontSize: '14px' },
+    md: { fontSize: '18px' },
+    lg: { fontSize: '24px' },
+    xl: { fontSize: '32px' },
+    '2xl': { fontSize: '48px' },
+  };
+  
+  return (
+    <span
+      className={className}
+      style={{
+        ...sizes[size],
+        fontWeight: '700',
+        letterSpacing: '-0.02em',
+        color: 'transparent',
+        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+        filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+      }}
+    >
+      {children}
+    </span>
+  );
 };
 
 // Agent badge colors
