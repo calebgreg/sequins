@@ -857,15 +857,14 @@ function StudentCard({ student, onClick }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
-        {/* Light Pink Frosted Avatar */}
+        {/* Light Pink Frosted Avatar - Neumorphic */}
         <div style={{
           width: '44px', height: '44px', borderRadius: '50%',
-          background: 'linear-gradient(145deg, #f9e0e0 0%, #f2d4d4 100%)',
-          boxShadow: '2px 2px 4px rgba(210, 180, 180, 0.12), -2px -2px 4px rgba(255, 255, 255, 0.95)',
-          border: '1px solid rgba(255, 245, 245, 0.95)',
+          background: '#f5e8e8',
+          boxShadow: 'inset 2px 2px 4px rgba(180, 160, 160, 0.25), inset -2px -2px 4px rgba(255, 255, 255, 0.8)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#a08080',
-          fontWeight: '500', fontSize: '17px',
+          color: '#9a8888',
+          fontWeight: '400', fontSize: '17px',
         }}>
           {student.name.charAt(0)}
         </div>
