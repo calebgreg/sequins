@@ -158,12 +158,30 @@ Deno.serve(async (req) => {
         mediaAvailable: false,
       }));
 
-    // Upcoming milestones (could be tracked separately)
-    const upcomingMilestones = students.slice(0, 5).map(s => ({
-      studentName: s.name,
-      milestone: s.joined_date ? 'Anniversary coming up' : 'First month complete',
-      date: new Date(),
-    }));
+    // Upcoming milestones - only REAL upcoming anniversaries within 14 days
+    const today = new Date();
+    const upcomingMilestones = students
+      .filter(s => s.joined_date)
+      .map(s => {
+        const joinDate = new Date(s.joined_date);
+        // Calculate this year's anniversary
+        const thisYearAnniversary = new Date(today.getFullYear(), joinDate.getMonth(), joinDate.getDate());
+        // If already passed this year, check next year
+        if (thisYearAnniversary < today) {
+          thisYearAnniversary.setFullYear(today.getFullYear() + 1);
+        }
+        const daysUntil = Math.ceil((thisYearAnniversary - today) / (1000 * 60 * 60 * 24));
+        const yearsAtStudio = today.getFullYear() - joinDate.getFullYear();
+        
+        return {
+          studentName: s.name,
+          milestone: `${yearsAtStudio} year anniversary`,
+          date: thisYearAnniversary,
+          daysUntil,
+        };
+      })
+      .filter(m => m.daysUntil <= 14 && m.daysUntil >= 0) // Only show anniversaries within 2 weeks
+      .sort((a, b) => a.daysUntil - b.daysUntil);
 
     const userPrompt = `
 ## Studio Context
