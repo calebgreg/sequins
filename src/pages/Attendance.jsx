@@ -6,6 +6,7 @@ import { createPageUrl } from '../utils';
 import { TrendingUp, TrendingDown, AlertTriangle, Star, Calendar, Users, BarChart3, Sparkles, Clock, CheckCircle, XCircle, ArrowUpRight, Loader2, ChevronRight, ArrowLeft, Search, X, Mail, MessageSquare, Filter, SlidersHorizontal } from 'lucide-react';
 import { format, subDays, startOfWeek, startOfMonth, parseISO, differenceInDays } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useBulkSelection } from '../components/ai/GlobalAiChat';
 
 // Design tokens
 const colors = {
