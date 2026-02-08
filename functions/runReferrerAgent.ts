@@ -221,10 +221,10 @@ ${recentClassMoments.length === 0 ? 'No recent moments captured.' : recentClassM
 - **${m.studentName}**: ${m.moment} ${m.mediaAvailable ? '📸 Media available' : ''}
 `).join('\n')}
 
-## Upcoming Milestones
+## Upcoming Milestones (next 2 weeks)
 
-${upcomingMilestones.map(m => `
-- **${m.studentName}**: ${m.milestone} on ${formatDate(m.date)}
+${upcomingMilestones.length === 0 ? 'No anniversaries in the next 2 weeks.' : upcomingMilestones.map(m => `
+- **${m.studentName}**: ${m.milestone} in ${m.daysUntil} days (${formatDate(m.date)})
 `).join('\n')}
 
 ## Your Task
