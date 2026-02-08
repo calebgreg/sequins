@@ -238,8 +238,10 @@ Find opportunities to send referrals to partners:
 ### Shareable Moments (target: 5 this week)
 Find moments to give to families that they'll WANT to share:
 - Recent class moments worth capturing
-- Upcoming milestones to celebrate publicly
+- ONLY mention anniversaries if there are REAL ones in the "Upcoming Milestones" section above
 - Things that make parents proud
+
+IMPORTANT: Do NOT generate anniversary actions unless there are ACTUAL anniversaries listed above. If "No anniversaries in the next 2 weeks" is shown, focus only on recent class moments and positive notes.
 
 Return ONLY valid JSON matching the output format.
 `;
