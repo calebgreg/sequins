@@ -421,16 +421,18 @@ export default function Students() {
                <EtchedText size="lg">{activeStudents}</EtchedText>
                <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.muted }}>Active</div>
              </div>
-             <div 
-               className="rounded-2xl px-5 py-3 text-center min-w-[100px]"
+             <button 
+               onClick={() => setAttendanceModalOpen(true)}
+               className="rounded-2xl px-5 py-3 text-center min-w-[100px] transition-all hover:scale-105 cursor-pointer"
                style={{
                  background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
                  boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+                 border: 'none',
                }}
              >
-               <EtchedText size="lg">{prospects}</EtchedText>
-               <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.muted }}>Prospects</div>
-             </div>
+               <EtchedText size="lg">{attendance.length > 0 ? `${Math.round(attendance.filter(a => a.status === 'present' || a.status === 'late' || a.status === 'made_up').length / attendance.length * 100)}%` : '—'}</EtchedText>
+               <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.muted }}>Attendance</div>
+             </button>
              <Button 
                onClick={handleCreate}
                className="h-auto rounded-2xl px-6 transition-all hover:scale-105"
@@ -946,6 +948,11 @@ export default function Students() {
         isOpen={messageModalOpen}
         onOpenChange={setMessageModalOpen}
         student={studentToMessage}
+      />
+      
+      <AttendanceReportModal 
+        isOpen={attendanceModalOpen}
+        onClose={() => setAttendanceModalOpen(false)}
       />
       </div>
       );
