@@ -857,11 +857,11 @@ function StudentCard({ student, onClick }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
-        {/* Light Pink Frosted Avatar - Neumorphic with Etched Text */}
+        {/* Light Pink Frosted Avatar - Raised Neumorphic with Etched Text */}
         <div style={{
           width: '44px', height: '44px', borderRadius: '50%',
-          background: '#f2dede',
-          boxShadow: 'inset 2px 2px 5px rgba(200, 170, 170, 0.3), inset -2px -2px 5px rgba(255, 250, 250, 0.9)',
+          background: 'linear-gradient(145deg, #f8e8e8 0%, #edd8d8 100%)',
+          boxShadow: '4px 4px 8px rgba(200, 170, 170, 0.25), -4px -4px 8px rgba(255, 255, 255, 0.8)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <span style={{
