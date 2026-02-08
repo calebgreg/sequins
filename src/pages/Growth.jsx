@@ -92,21 +92,21 @@ function CategoryCard({ title, outcomes, color }) {
   
   return (
     <div style={{
-      background: 'rgba(255, 255, 255, 0.7)',
-      backdropFilter: 'blur(20px)',
-      borderRadius: '16px',
-      border: `1px solid ${color.light}40`,
-      padding: '16px',
-      marginBottom: '12px',
+      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+      backdropFilter: 'blur(16px)',
+      borderRadius: '20px',
+      border: '1px solid rgba(255, 200, 200, 0.2)',
+      padding: '20px',
+      boxShadow: '0 4px 16px -4px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)',
     }}>
       <div 
-        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginBottom: expanded ? '12px' : 0 }}
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginBottom: expanded ? '16px' : 0 }}
         onClick={() => setExpanded(!expanded)}
       >
-        <h3 style={{ fontSize: '14px', fontWeight: '600', color: color.accent, textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0 }}>
+        <h3 style={{ fontSize: '12px', fontWeight: '700', color: colors.etchDark, textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0 }}>
           {title}
         </h3>
-        <span style={{ color: color.accent }}>{expanded ? '−' : '+'}</span>
+        <span style={{ color: colors.etchLight, fontSize: '18px', fontWeight: '300' }}>{expanded ? '−' : '+'}</span>
       </div>
       {expanded && (
         <div>
