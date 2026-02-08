@@ -860,8 +860,8 @@ function StudentCard({ student, onClick }) {
         {/* Light Pink Frosted Avatar - Raised Neumorphic with Etched Text */}
         <div style={{
           width: '44px', height: '44px', borderRadius: '50%',
-          background: 'linear-gradient(145deg, #f8e8e8 0%, #edd8d8 100%)',
-          boxShadow: '4px 4px 8px rgba(200, 170, 170, 0.25), -4px -4px 8px rgba(255, 255, 255, 0.8)',
+          background: 'linear-gradient(145deg, #faf4f4 0%, #f5ebeb 100%)',
+          boxShadow: '4px 4px 10px rgba(210, 190, 190, 0.2), -4px -4px 10px rgba(255, 255, 255, 0.9)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <span style={{
