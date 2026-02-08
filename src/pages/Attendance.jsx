@@ -709,23 +709,14 @@ Provide actionable insights in JSON format:
                   </div>
                 )}
 
-                {/* Students to watch - as avatars/chips */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {aiInsights.retentionRisks?.length > 0 && (
-                    <StudentChipSection 
-                      title="Might be slipping away" 
-                      students={aiInsights.retentionRisks} 
-                      color={colors.red}
-                    />
-                  )}
-                  {aiInsights.advancementCandidates?.length > 0 && (
-                    <StudentChipSection 
-                      title="Ready to move up" 
-                      students={aiInsights.advancementCandidates} 
-                      color={colors.green}
-                    />
-                  )}
-                </div>
+                {/* Students at risk */}
+                {aiInsights.retentionRisks?.length > 0 && (
+                  <StudentChipSection 
+                    title="Low attendance — might be disengaging" 
+                    students={aiInsights.retentionRisks} 
+                    color={colors.red}
+                  />
+                )}
 
                 {/* Class placement as conversation */}
                 {aiInsights.classPlacementSuggestions?.length > 0 && (
