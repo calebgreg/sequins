@@ -52,7 +52,7 @@ const viewModes = [
   { key: 'overview', label: 'Overview', icon: BarChart3 },
   { key: 'students', label: 'By Student', icon: Users },
   { key: 'classes', label: 'By Class', icon: Calendar },
-  { key: 'insights', label: 'AI Insights', icon: Sparkles },
+  { key: 'insights', label: 'Insights', icon: TrendingUp },
 ];
 
 export default function Attendance() {
@@ -661,11 +661,7 @@ Provide actionable insights in JSON format:
                   border: '1px solid rgba(200, 180, 170, 0.2)',
                   boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                    <Sparkles size={24} style={{ color: colors.etchDark }} />
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: colors.etchDark, textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI Summary</span>
-                  </div>
-                  <p style={{ fontSize: '24px', fontWeight: '500', color: colors.ink, lineHeight: '1.4' }}>
+                  <p style={{ fontSize: '28px', fontWeight: '500', color: colors.ink, lineHeight: '1.4' }}>
                     {aiInsights.headline}
                   </p>
                 </div>
@@ -684,8 +680,8 @@ Provide actionable insights in JSON format:
                     background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
                     border: '1px solid rgba(255, 200, 200, 0.2)',
                   }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: colors.etchDark, marginBottom: '20px' }}>
-                      Recommended Actions
+                    <h3 style={{ fontSize: '13px', fontWeight: '700', color: colors.etchDark, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '20px' }}>
+                      Your To-Do List
                     </h3>
                     <div className="space-y-3">
                       {aiInsights.recommendations.map((rec, i) => (
@@ -703,8 +699,8 @@ Provide actionable insights in JSON format:
                     background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
                     border: '1px solid rgba(255, 200, 200, 0.2)',
                   }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: colors.etchDark, marginBottom: '20px' }}>
-                      Class Placement Considerations
+                    <h3 style={{ fontSize: '13px', fontWeight: '700', color: colors.etchDark, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '20px' }}>
+                      Consider Moving
                     </h3>
                     <div className="space-y-3">
                       {aiInsights.classPlacementSuggestions.map((sug, i) => (
@@ -742,8 +738,7 @@ Provide actionable insights in JSON format:
                       gap: '10px',
                     }}
                   >
-                    <Sparkles size={18} />
-                    Regenerate Insights
+                    Refresh Analysis
                   </button>
                 </div>
               </div>
@@ -908,41 +903,55 @@ function ClassDetailCard({ classData, attendance, onClick }) {
 }
 
 function InsightSection({ title, items, color, icon: Icon }) {
+  // Map generic titles to natural language
+  const titleMap = {
+    'Concerns': 'Needs Attention',
+    'Celebrations': 'Wins This Period',
+  };
+  const displayTitle = titleMap[title] || title;
+  
   return (
     <div style={{
       padding: '28px',
       borderRadius: '24px',
       background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
       border: '1px solid rgba(255, 200, 200, 0.2)',
+      borderLeft: `4px solid ${color}`,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-        <Icon size={20} style={{ color }} />
-        <span style={{ fontSize: '16px', fontWeight: '700', color: colors.etchDark }}>{title}</span>
+      <div style={{ marginBottom: '16px' }}>
+        <span style={{ fontSize: '13px', fontWeight: '700', color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{displayTitle}</span>
       </div>
       {items?.length > 0 ? (
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }} className="space-y-3">
           {items.map((item, i) => (
-            <li key={i} style={{ fontSize: '15px', color: colors.ink, lineHeight: '1.6' }}>• {item}</li>
+            <li key={i} style={{ fontSize: '15px', color: colors.ink, lineHeight: '1.6' }}>{item}</li>
           ))}
         </ul>
       ) : (
-        <p style={{ color: colors.muted, fontSize: '14px' }}>None identified</p>
+        <p style={{ color: colors.muted, fontSize: '14px' }}>Nothing to report</p>
       )}
     </div>
   );
 }
 
 function InsightList({ title, items, color, icon: Icon }) {
+  // Map generic titles to natural language
+  const titleMap = {
+    'Advancement Candidates': 'Ready to Level Up',
+    'Retention Risks': 'At Risk of Leaving',
+  };
+  const displayTitle = titleMap[title] || title;
+  
   return (
     <div style={{
       padding: '28px',
       borderRadius: '24px',
       background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
       border: '1px solid rgba(255, 200, 200, 0.2)',
+      borderLeft: `4px solid ${color}`,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-        <Icon size={20} style={{ color }} />
-        <span style={{ fontSize: '16px', fontWeight: '700', color: colors.etchDark }}>{title}</span>
+      <div style={{ marginBottom: '16px' }}>
+        <span style={{ fontSize: '13px', fontWeight: '700', color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{displayTitle}</span>
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
         {items.map((name, i) => (
@@ -951,7 +960,7 @@ function InsightList({ title, items, color, icon: Icon }) {
             borderRadius: '10px',
             fontSize: '14px',
             fontWeight: '500',
-            background: `${color}20`,
+            background: `${color}15`,
             color,
           }}>
             {name}
