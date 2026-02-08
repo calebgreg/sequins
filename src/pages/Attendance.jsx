@@ -655,31 +655,49 @@ Provide actionable insights in JSON format:
               <div className="space-y-6">
                 {/* Main Narrative */}
                 <div style={{
-                  padding: '40px',
+                  padding: '32px',
                   borderRadius: '24px',
                   background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
                   border: '1px solid rgba(200, 180, 170, 0.15)',
                   boxShadow: '0 4px 24px rgba(180, 120, 120, 0.06)',
                 }}>
-                  <p style={{ fontSize: '32px', fontWeight: '400', color: colors.ink, lineHeight: '1.5', letterSpacing: '-0.01em' }}>
+                  <p style={{ fontSize: '20px', fontWeight: '500', color: colors.ink, lineHeight: '1.5' }}>
                     {aiInsights.headline}
                   </p>
-                  
-                  {/* Inline concerns and wins as flowing text */}
-                  <div style={{ marginTop: '32px', fontSize: '16px', color: colors.ink, lineHeight: '1.8' }}>
-                    {aiInsights.concerns?.length > 0 && (
-                      <p style={{ marginBottom: '16px' }}>
-                        <span style={{ color: colors.red, fontWeight: '600' }}>Watch out for:</span>{' '}
-                        {aiInsights.concerns.join(' Also, ')}
-                      </p>
-                    )}
-                    {aiInsights.celebrations?.length > 0 && (
-                      <p>
-                        <span style={{ color: colors.green, fontWeight: '600' }}>Good news:</span>{' '}
-                        {aiInsights.celebrations.join(' And ')}
-                      </p>
-                    )}
-                  </div>
+                </div>
+                
+                {/* Concerns and Wins as separate small cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {aiInsights.concerns?.length > 0 && (
+                    <div style={{
+                      padding: '20px',
+                      borderRadius: '16px',
+                      background: `${colors.red}08`,
+                      border: `1px solid ${colors.red}20`,
+                    }}>
+                      <p style={{ fontSize: '12px', fontWeight: '600', color: colors.red, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Heads up</p>
+                      <ul style={{ margin: 0, paddingLeft: '16px' }}>
+                        {aiInsights.concerns.map((c, i) => (
+                          <li key={i} style={{ fontSize: '14px', color: colors.ink, marginBottom: '6px' }}>{c}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {aiInsights.celebrations?.length > 0 && (
+                    <div style={{
+                      padding: '20px',
+                      borderRadius: '16px',
+                      background: `${colors.green}08`,
+                      border: `1px solid ${colors.green}20`,
+                    }}>
+                      <p style={{ fontSize: '12px', fontWeight: '600', color: colors.green, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Wins</p>
+                      <ul style={{ margin: 0, paddingLeft: '16px' }}>
+                        {aiInsights.celebrations.map((c, i) => (
+                          <li key={i} style={{ fontSize: '14px', color: colors.ink, marginBottom: '6px' }}>{c}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Cards - Visual, not list-like */}
