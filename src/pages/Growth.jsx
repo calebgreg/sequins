@@ -123,6 +123,9 @@ function CategoryCard({ title, outcomes, color }) {
 function ActionCard({ action, onSend, onEdit, onSkip }) {
   const [expanded, setExpanded] = useState(false);
   const [hover, setHover] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState(action.content || '');
+  const [editedSubject, setEditedSubject] = useState(action.subject || '');
   
   const color = categoryColors[action.category] || categoryColors.acquisition;
   const agentColor = agentColors[action.agent] || agentColors.connector;
@@ -209,14 +212,55 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
           <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginBottom: '8px' }}>
             {action.action_type === 'email' ? 'Email' : action.action_type === 'sms' ? 'Text' : 'Message'}
           </div>
-          {action.subject && (
-            <div style={{ fontSize: '13px', fontWeight: '500', color: colors.ink, marginBottom: '8px' }}>
-              Subject: {action.subject}
-            </div>
+          {isEditing ? (
+            <>
+              {action.action_type === 'email' && (
+                <input
+                  type="text"
+                  value={editedSubject}
+                  onChange={(e) => setEditedSubject(e.target.value)}
+                  placeholder="Subject line..."
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    marginBottom: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(200, 180, 170, 0.3)',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    outline: 'none',
+                  }}
+                />
+              )}
+              <textarea
+                value={editedContent}
+                onChange={(e) => setEditedContent(e.target.value)}
+                style={{
+                  width: '100%',
+                  minHeight: '150px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(200, 180, 170, 0.3)',
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                  resize: 'vertical',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                }}
+              />
+            </>
+          ) : (
+            <>
+              {action.subject && (
+                <div style={{ fontSize: '13px', fontWeight: '500', color: colors.ink, marginBottom: '8px' }}>
+                  Subject: {action.subject}
+                </div>
+              )}
+              <div style={{ fontSize: '14px', color: colors.ink, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                {action.content}
+              </div>
+            </>
           )}
-          <div style={{ fontSize: '14px', color: colors.ink, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-            {action.content}
-          </div>
         </div>
       )}
 
@@ -224,31 +268,73 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }} onClick={(e) => e.stopPropagation()}>
         {action.content ? (
           <>
-            <button style={{
-              background: colors.ink,
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '12px 20px',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            }} onClick={onSend}>
-              Send this
-            </button>
-            <button style={{
-              background: 'rgba(255, 255, 255, 0.6)',
-              color: colors.ink,
-              border: '1px solid rgba(200, 180, 170, 0.2)',
-              borderRadius: '12px',
-              padding: '12px 20px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-            }} onClick={onEdit}>
-              Edit first
-            </button>
+            {isEditing ? (
+              <>
+                <button style={{
+                  background: colors.ink,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px 20px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                }} onClick={() => {
+                  onEdit(editedContent, editedSubject);
+                  setIsEditing(false);
+                }}>
+                  Save & Send
+                </button>
+                <button style={{
+                  background: 'rgba(255, 255, 255, 0.6)',
+                  color: colors.muted,
+                  border: '1px solid rgba(200, 180, 170, 0.2)',
+                  borderRadius: '12px',
+                  padding: '12px 20px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                }} onClick={() => {
+                  setEditedContent(action.content || '');
+                  setEditedSubject(action.subject || '');
+                  setIsEditing(false);
+                }}>
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                <button style={{
+                  background: colors.ink,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px 20px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                }} onClick={onSend}>
+                  Send this
+                </button>
+                <button style={{
+                  background: 'rgba(255, 255, 255, 0.6)',
+                  color: colors.ink,
+                  border: '1px solid rgba(200, 180, 170, 0.2)',
+                  borderRadius: '12px',
+                  padding: '12px 20px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                }} onClick={() => {
+                  setExpanded(true);
+                  setIsEditing(true);
+                }}>
+                  Edit first
+                </button>
+              </>
+            )}
           </>
         ) : (
           <button style={{
@@ -265,18 +351,20 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
             Do this
           </button>
         )}
-        <button style={{
-          background: 'rgba(255, 255, 255, 0.6)',
-          color: colors.muted,
-          border: '1px solid rgba(200, 180, 170, 0.2)',
-          borderRadius: '12px',
-          padding: '12px 20px',
-          fontSize: '14px',
-          fontWeight: '500',
-          cursor: 'pointer',
-        }} onClick={onSkip}>
-          Skip
-        </button>
+        {!isEditing && (
+          <button style={{
+            background: 'rgba(255, 255, 255, 0.6)',
+            color: colors.muted,
+            border: '1px solid rgba(200, 180, 170, 0.2)',
+            borderRadius: '12px',
+            padding: '12px 20px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+          }} onClick={onSkip}>
+            Skip
+          </button>
+        )}
       </div>
     </div>
   );
@@ -364,8 +452,14 @@ export default function Growth() {
     toast.success('Action skipped');
   };
 
-  const handleEdit = (action) => {
-    toast.info('Edit feature coming soon');
+  const handleEdit = async (action, newContent, newSubject) => {
+    await base44.entities.GrowthAction.update(action.id, {
+      content: newContent,
+      subject: newSubject,
+      status: 'approved',
+      approved_at: new Date().toISOString(),
+    });
+    toast.success('Saved and approved!');
   };
 
   const hasOutcomes = Object.keys(acquisitionData).length > 0 || 
