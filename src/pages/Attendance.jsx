@@ -649,96 +649,103 @@ Provide actionable insights in JSON format:
             {loadingInsights ? (
               <div style={{ textAlign: 'center', padding: '80px 20px' }}>
                 <Loader2 size={40} style={{ color: colors.etchLight, animation: 'spin 1s linear infinite' }} />
-                <p style={{ color: colors.muted, marginTop: '16px', fontSize: '16px' }}>Analyzing attendance patterns...</p>
+                <p style={{ color: colors.muted, marginTop: '16px', fontSize: '16px' }}>Looking at the numbers...</p>
               </div>
             ) : aiInsights ? (
-              <div className="space-y-8">
-                {/* Headline */}
+              <div className="space-y-6">
+                {/* Main Narrative */}
                 <div style={{
-                  padding: '32px',
+                  padding: '40px',
                   borderRadius: '24px',
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
-                  border: '1px solid rgba(200, 180, 170, 0.2)',
-                  boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                  border: '1px solid rgba(200, 180, 170, 0.15)',
+                  boxShadow: '0 4px 24px rgba(180, 120, 120, 0.06)',
                 }}>
-                  <p style={{ fontSize: '28px', fontWeight: '500', color: colors.ink, lineHeight: '1.4' }}>
+                  <p style={{ fontSize: '32px', fontWeight: '400', color: colors.ink, lineHeight: '1.5', letterSpacing: '-0.01em' }}>
                     {aiInsights.headline}
                   </p>
+                  
+                  {/* Inline concerns and wins as flowing text */}
+                  <div style={{ marginTop: '32px', fontSize: '16px', color: colors.ink, lineHeight: '1.8' }}>
+                    {aiInsights.concerns?.length > 0 && (
+                      <p style={{ marginBottom: '16px' }}>
+                        <span style={{ color: colors.red, fontWeight: '600' }}>Watch out for:</span>{' '}
+                        {aiInsights.concerns.join(' Also, ')}
+                      </p>
+                    )}
+                    {aiInsights.celebrations?.length > 0 && (
+                      <p>
+                        <span style={{ color: colors.green, fontWeight: '600' }}>Good news:</span>{' '}
+                        {aiInsights.celebrations.join(' And ')}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Concerns & Celebrations */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <InsightSection title="Concerns" items={aiInsights.concerns} color={colors.red} icon={AlertTriangle} />
-                  <InsightSection title="Celebrations" items={aiInsights.celebrations} color={colors.green} icon={Star} />
-                </div>
-
-                {/* Recommendations */}
+                {/* Action Cards - Visual, not list-like */}
                 {aiInsights.recommendations?.length > 0 && (
-                  <div style={{
-                    padding: '28px',
-                    borderRadius: '24px',
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
-                    border: '1px solid rgba(255, 200, 200, 0.2)',
-                  }}>
-                    <h3 style={{ fontSize: '13px', fontWeight: '700', color: colors.etchDark, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '20px' }}>
-                      Your To-Do List
-                    </h3>
-                    <div className="space-y-3">
-                      {aiInsights.recommendations.map((rec, i) => (
-                        <RecommendationCard key={i} recommendation={rec} />
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {aiInsights.recommendations.map((rec, i) => (
+                      <ActionCard key={i} recommendation={rec} index={i} />
+                    ))}
                   </div>
                 )}
 
-                {/* Class Placement */}
+                {/* Students to watch - as avatars/chips */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {aiInsights.retentionRisks?.length > 0 && (
+                    <StudentChipSection 
+                      title="Might be slipping away" 
+                      students={aiInsights.retentionRisks} 
+                      color={colors.red}
+                    />
+                  )}
+                  {aiInsights.advancementCandidates?.length > 0 && (
+                    <StudentChipSection 
+                      title="Ready to move up" 
+                      students={aiInsights.advancementCandidates} 
+                      color={colors.green}
+                    />
+                  )}
+                </div>
+
+                {/* Class placement as conversation */}
                 {aiInsights.classPlacementSuggestions?.length > 0 && (
                   <div style={{
-                    padding: '28px',
+                    padding: '32px',
                     borderRadius: '24px',
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
-                    border: '1px solid rgba(255, 200, 200, 0.2)',
+                    background: 'rgba(255,255,255,0.6)',
+                    border: '1px solid rgba(200, 180, 170, 0.1)',
                   }}>
-                    <h3 style={{ fontSize: '13px', fontWeight: '700', color: colors.etchDark, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '20px' }}>
-                      Consider Moving
-                    </h3>
-                    <div className="space-y-3">
+                    <p style={{ fontSize: '14px', fontWeight: '600', color: colors.muted, marginBottom: '20px' }}>
+                      Placement thoughts
+                    </p>
+                    <div className="space-y-4">
                       {aiInsights.classPlacementSuggestions.map((sug, i) => (
-                        <PlacementCard key={i} suggestion={sug} />
+                        <div key={i} style={{ fontSize: '15px', color: colors.ink, lineHeight: '1.6' }}>
+                          <span style={{ fontWeight: '600' }}>{sug.student}</span> in {sug.currentClass} — {sug.suggestion.toLowerCase()} {sug.reason && <span style={{ color: colors.muted }}>({sug.reason})</span>}
+                        </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Advancement & Retention */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {aiInsights.advancementCandidates?.length > 0 && (
-                    <InsightList title="Advancement Candidates" items={aiInsights.advancementCandidates} color={colors.green} icon={TrendingUp} />
-                  )}
-                  {aiInsights.retentionRisks?.length > 0 && (
-                    <InsightList title="Retention Risks" items={aiInsights.retentionRisks} color={colors.red} icon={TrendingDown} />
-                  )}
-                </div>
-
-                {/* Regenerate */}
-                <div className="text-center">
+                {/* Subtle refresh */}
+                <div className="text-center pt-4">
                   <button
                     onClick={generateInsights}
                     style={{
-                      padding: '14px 28px',
-                      borderRadius: '16px',
-                      border: '1px solid rgba(200, 180, 170, 0.3)',
-                      background: 'rgba(255,255,255,0.8)',
+                      padding: '10px 20px',
+                      borderRadius: '20px',
+                      border: 'none',
+                      background: 'transparent',
                       color: colors.muted,
-                      fontSize: '14px',
-                      fontWeight: '600',
+                      fontSize: '13px',
+                      fontWeight: '500',
                       cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '10px',
                     }}
                   >
-                    Refresh Analysis
+                    ↻ Refresh
                   </button>
                 </div>
               </div>
@@ -965,6 +972,104 @@ function InsightList({ title, items, color, icon: Icon }) {
           }}>
             {name}
           </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ActionCard({ recommendation, index }) {
+  const priorityColors = { high: colors.red, medium: colors.amber, low: colors.muted };
+  const color = priorityColors[recommendation.priority] || colors.etchDark;
+  const priorityLabels = { high: 'Do first', medium: 'This week', low: 'When you can' };
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      style={{
+        padding: '24px',
+        borderRadius: '20px',
+        background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+        border: '1px solid rgba(200, 180, 170, 0.15)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+      }}
+    >
+      <div style={{ 
+        fontSize: '11px', 
+        fontWeight: '700', 
+        color, 
+        textTransform: 'uppercase', 
+        letterSpacing: '0.5px' 
+      }}>
+        {priorityLabels[recommendation.priority] || 'To do'}
+      </div>
+      <div style={{ fontSize: '16px', fontWeight: '500', color: colors.ink, lineHeight: '1.5' }}>
+        {recommendation.action}
+      </div>
+      {recommendation.student && (
+        <div style={{ 
+          display: 'inline-flex', 
+          alignItems: 'center', 
+          gap: '8px',
+          padding: '8px 12px',
+          borderRadius: '10px',
+          background: 'rgba(200, 180, 170, 0.1)',
+          alignSelf: 'flex-start',
+        }}>
+          <div style={{
+            width: '24px', height: '24px', borderRadius: '50%',
+            background: `linear-gradient(145deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontWeight: '600', fontSize: '11px',
+          }}>
+            {recommendation.student.charAt(0)}
+          </div>
+          <span style={{ fontSize: '13px', color: colors.ink }}>{recommendation.student}</span>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function StudentChipSection({ title, students, color }) {
+  return (
+    <div style={{
+      padding: '28px',
+      borderRadius: '20px',
+      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+      border: '1px solid rgba(200, 180, 170, 0.15)',
+    }}>
+      <p style={{ fontSize: '14px', fontWeight: '600', color: colors.muted, marginBottom: '16px' }}>
+        {title}
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+        {students.map((name, i) => (
+          <div 
+            key={i} 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '10px 16px',
+              borderRadius: '24px',
+              background: `${color}10`,
+              border: `1px solid ${color}30`,
+            }}
+          >
+            <div style={{
+              width: '28px', height: '28px', borderRadius: '50%',
+              background: `linear-gradient(145deg, ${color}80 0%, ${color} 100%)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontWeight: '600', fontSize: '12px',
+            }}>
+              {name.charAt(0)}
+            </div>
+            <span style={{ fontSize: '14px', fontWeight: '500', color: colors.ink }}>{name}</span>
+          </div>
         ))}
       </div>
     </div>
