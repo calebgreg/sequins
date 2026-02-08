@@ -65,6 +65,10 @@ export default function Attendance() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedClass, setSelectedClass] = useState(null);
   const [rateFilter, setRateFilter] = useState('all'); // all, at-risk, perfect, good
+  
+  // Multi-select functionality
+  const { selectedStudents, setSelectedStudents } = useBulkSelection();
+  const selectedStudentNames = selectedStudents.map(s => s.name);
 
   const { data: attendance = [] } = useQuery({
     queryKey: ['allAttendance'],
