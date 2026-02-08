@@ -126,21 +126,23 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
   
   const color = categoryColors[action.category] || categoryColors.acquisition;
   const agentColor = agentColors[action.agent] || agentColors.connector;
-  const urgencyColor = action.urgency === 'now' ? '#D4A59A' : action.urgency === 'soon' ? '#C4A98C' : '#A89080';
+  const urgencyColor = action.urgency === 'now' ? colors.etchLight : action.urgency === 'soon' ? colors.etchDark : colors.muted;
 
   return (
     <div
       style={{
-        background: 'rgba(255, 252, 250, 0.9)',
+        background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
         backdropFilter: 'blur(10px)',
         borderRadius: '16px',
         padding: '20px',
         marginBottom: '12px',
-        border: '1px solid rgba(200, 180, 160, 0.2)',
+        border: '1px solid rgba(255, 200, 200, 0.2)',
         cursor: 'pointer',
         transition: 'all 0.2s ease',
         transform: hover ? 'translateY(-2px)' : 'none',
-        boxShadow: hover ? '0 8px 30px rgba(180, 150, 130, 0.15)' : 'none',
+        boxShadow: hover 
+          ? '0 8px 30px rgba(180, 120, 120, 0.12), inset 0 1px 1px rgba(255,255,255,0.8)' 
+          : '0 4px 16px -4px rgba(180,150,140,0.1), inset 0 1px 1px rgba(255,255,255,0.8)',
       }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -154,8 +156,8 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
           fontWeight: '600',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
-          padding: '4px 8px',
-          borderRadius: '6px',
+          padding: '4px 10px',
+          borderRadius: '8px',
           background: agentColor.bg,
           color: agentColor.text,
         }}>
@@ -166,30 +168,30 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
           fontWeight: '500',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
-          color: color.accent,
+          color: colors.muted,
         }}>
           {action.category}
         </span>
       </div>
 
       {/* Title */}
-      <div style={{ fontSize: '18px', fontWeight: '600', color: '#6B5A4A', marginBottom: '4px' }}>
+      <div style={{ fontSize: '18px', fontWeight: '600', color: colors.ink, marginBottom: '4px' }}>
         {action.title}
       </div>
       {action.target_name && (
-        <div style={{ fontSize: '14px', color: '#A89080', marginBottom: '12px' }}>{action.target_name}</div>
+        <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '12px' }}>{action.target_name}</div>
       )}
 
       {/* Reasoning */}
       {action.summary && (
         <div style={{
           fontSize: '14px',
-          color: '#8B7A6A',
+          color: colors.muted,
           lineHeight: '1.5',
           marginBottom: '12px',
-          padding: '12px',
-          background: 'rgba(200, 180, 160, 0.1)',
-          borderRadius: '10px',
+          padding: '12px 14px',
+          background: 'rgba(200, 180, 170, 0.08)',
+          borderRadius: '12px',
         }}>
           {action.summary}
         </div>
@@ -198,21 +200,21 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
       {/* Draft (expanded) */}
       {expanded && action.content && (
         <div style={{
-          background: 'rgba(255, 255, 255, 0.8)',
+          background: 'rgba(255, 255, 255, 0.7)',
           borderRadius: '12px',
           padding: '16px',
           marginBottom: '16px',
-          border: '1px solid rgba(200, 180, 160, 0.2)',
+          border: '1px solid rgba(200, 180, 170, 0.15)',
         }}>
-          <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#A89080', marginBottom: '8px' }}>
+          <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginBottom: '8px' }}>
             {action.action_type === 'email' ? 'Email' : action.action_type === 'sms' ? 'Text' : 'Message'}
           </div>
           {action.subject && (
-            <div style={{ fontSize: '13px', fontWeight: '500', color: '#6B5A4A', marginBottom: '8px' }}>
+            <div style={{ fontSize: '13px', fontWeight: '500', color: colors.ink, marginBottom: '8px' }}>
               Subject: {action.subject}
             </div>
           )}
-          <div style={{ fontSize: '14px', color: '#6B5A4A', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+          <div style={{ fontSize: '14px', color: colors.ink, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
             {action.content}
           </div>
         </div>
@@ -223,22 +225,23 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
         {action.content ? (
           <>
             <button style={{
-              background: 'linear-gradient(135deg, #8B7355 0%, #6B5A4A 100%)',
+              background: colors.ink,
               color: 'white',
               border: 'none',
-              borderRadius: '10px',
+              borderRadius: '12px',
               padding: '12px 20px',
               fontSize: '14px',
               fontWeight: '600',
               cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             }} onClick={onSend}>
               Send this
             </button>
             <button style={{
-              background: 'rgba(200, 180, 160, 0.2)',
-              color: '#6B5A4A',
-              border: '1px solid rgba(200, 180, 160, 0.3)',
-              borderRadius: '10px',
+              background: 'rgba(255, 255, 255, 0.6)',
+              color: colors.ink,
+              border: '1px solid rgba(200, 180, 170, 0.2)',
+              borderRadius: '12px',
               padding: '12px 20px',
               fontSize: '14px',
               fontWeight: '500',
@@ -249,23 +252,24 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
           </>
         ) : (
           <button style={{
-            background: 'linear-gradient(135deg, #8B7355 0%, #6B5A4A 100%)',
+            background: colors.ink,
             color: 'white',
             border: 'none',
-            borderRadius: '10px',
+            borderRadius: '12px',
             padding: '12px 20px',
             fontSize: '14px',
             fontWeight: '600',
             cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           }} onClick={onSend}>
             Do this
           </button>
         )}
         <button style={{
-          background: 'rgba(200, 180, 160, 0.2)',
-          color: '#6B5A4A',
-          border: '1px solid rgba(200, 180, 160, 0.3)',
-          borderRadius: '10px',
+          background: 'rgba(255, 255, 255, 0.6)',
+          color: colors.muted,
+          border: '1px solid rgba(200, 180, 170, 0.2)',
+          borderRadius: '12px',
           padding: '12px 20px',
           fontSize: '14px',
           fontWeight: '500',
