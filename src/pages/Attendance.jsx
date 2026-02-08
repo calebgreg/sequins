@@ -606,9 +606,29 @@ Provide actionable insights in JSON format:
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredStudentStats.map(s => (
-                      <StudentCard key={s.name} student={s} onClick={() => setSelectedStudent(s.name)} />
-                    ))}
+                    {filteredStudentStats.map(s => {
+                      // Find the full student object to pass for selection
+                      const fullStudent = students.find(st => st.name === s.name);
+                      return (
+                        <StudentCard 
+                          key={s.name} 
+                          student={s} 
+                          onClick={() => setSelectedStudent(s.name)}
+                          isSelected={selectedStudentNames.includes(s.name)}
+                          onToggleSelect={() => {
+                            if (!fullStudent) return;
+                            setSelectedStudents(prev => {
+                              const isAlreadySelected = prev.some(st => st.name === s.name);
+                              if (isAlreadySelected) {
+                                return prev.filter(st => st.name !== s.name);
+                              } else {
+                                return [...prev, fullStudent];
+                              }
+                            });
+                          }}
+                        />
+                      );
+                    })}
                   </div>
                 )}
               </motion.div>
