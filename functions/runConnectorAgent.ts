@@ -65,13 +65,29 @@ Return a JSON object with:
 
 Each action should have:
 - partnerId: string
-- partnerName: string
+- partnerName: string (the contact person's name)
 - businessName: string
-- headline: string
-- reasoning: string
+- headline: string (short action title for the studio owner to see)
+- reasoning: string (explain to the studio owner WHY this person and why now - this is internal)
 - channel: 'email' | 'instagram_dm' | 'linkedin' | 'phone' | 'drop_in'
-- draftMessage: string
+- draftMessage: string (THE ACTUAL MESSAGE TO SEND TO THE PARTNER - ready to copy/paste or send directly. Include "Hi [Name]," greeting and signature. NOT reasoning or strategy notes.)
 - urgency: 'now' | 'soon' | 'later'
+
+CRITICAL DISTINCTION:
+- "reasoning" = internal notes for the studio owner explaining the strategy
+- "draftMessage" = the ACTUAL outreach message to send to the partner
+
+Example draftMessage:
+"Hi Maria,
+
+I'm Rachel - I own Sequins Dance Studio right around the corner from Little Steps. I've been meaning to stop by and say hi!
+
+I have a few families who've asked me about preschools and I always love being able to point people toward neighbors I actually know. Would you be open to grabbing coffee sometime?
+
+- Rachel"
+
+NOT this (this is reasoning, not a message):
+"Daycare centers are prime partners for a kids dance studio as their clientele overlaps significantly."
 
 Be specific. Be actionable. Help the owner hit their connection target.`;
 
