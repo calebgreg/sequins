@@ -719,21 +719,15 @@ export default function Growth() {
           </div>
         </div>
 
-        {/* Outcomes Grid */}
+        {/* Outcomes Card */}
         {hasOutcomes ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-            {Object.keys(acquisitionData).length > 0 && (
-              <CategoryCard title="Acquisition" outcomes={acquisitionData} color={categoryColors.acquisition} />
-            )}
-            {Object.keys(conversionData).length > 0 && (
-              <CategoryCard title="Conversion" outcomes={conversionData} color={categoryColors.conversion} />
-            )}
-            {Object.keys(retentionData).length > 0 && (
-              <CategoryCard title="Retention" outcomes={retentionData} color={categoryColors.retention} />
-            )}
-            {Object.keys(referralData).length > 0 && (
-              <CategoryCard title="Referral" outcomes={referralData} color={categoryColors.referral} />
-            )}
+          <div style={{ marginBottom: '24px' }}>
+            <OutcomesCard 
+              acquisitionData={acquisitionData}
+              conversionData={conversionData}
+              retentionData={retentionData}
+              referralData={referralData}
+            />
           </div>
         ) : (
           <div style={{
