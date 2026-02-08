@@ -621,7 +621,7 @@ export default function Growth() {
                 key={action.id}
                 action={action}
                 onSend={() => handleSend(action)}
-                onEdit={() => handleEdit(action)}
+                onEdit={(content, subject) => handleEdit(action, content, subject)}
                 onSkip={() => handleSkip(action)}
               />
             ))}
@@ -647,7 +647,7 @@ export default function Growth() {
                 key={action.id}
                 action={action}
                 onSend={() => handleSend(action)}
-                onEdit={() => handleEdit(action)}
+                onEdit={(content, subject) => handleEdit(action, content, subject)}
                 onSkip={() => handleSkip(action)}
               />
             ))}
