@@ -881,8 +881,9 @@ function StudentCard({ student, onClick, isSelected, onToggleSelect }) {
       style={{
         padding: '20px',
         borderRadius: '20px',
-        background: 'linear-gradient(145deg, #fef7f7 0%, #fce8e8 100%)',
-        boxShadow: '6px 6px 12px rgba(200, 170, 170, 0.15), -4px -4px 10px rgba(255, 255, 255, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+        background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+        border: '1px solid rgba(255, 200, 200, 0.2)',
+        boxShadow: '0 4px 16px rgba(180, 120, 120, 0.08)',
         cursor: 'pointer',
         transition: 'all 0.2s',
       }}
