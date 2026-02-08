@@ -69,17 +69,17 @@ const agentColors = {
 // Progress Mini Card
 function ProgressMini({ label, actual, target, status }) {
   const percent = Math.min((actual / target) * 100, 100);
-  const fillColor = status === 'ahead' ? '#7BAE7F' : status === 'behind' ? '#D4A59A' : '#C4A98C';
+  const fillColor = status === 'ahead' ? '#7eb89a' : status === 'behind' ? colors.etchLight : colors.etchDark;
   
   return (
-    <div style={{ marginBottom: '12px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-        <span style={{ fontSize: '13px', color: '#6B5A4A' }}>{label}</span>
-        <span style={{ fontSize: '14px', fontWeight: '600', color: status === 'behind' ? '#9A6B5A' : '#6B5A4A' }}>
+    <div style={{ marginBottom: '14px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+        <span style={{ fontSize: '13px', color: colors.muted }}>{label}</span>
+        <span style={{ fontSize: '14px', fontWeight: '600', color: status === 'behind' ? colors.etchLight : colors.ink }}>
           {actual}/{target}
         </span>
       </div>
-      <div style={{ height: '4px', background: 'rgba(200, 180, 160, 0.2)', borderRadius: '2px', overflow: 'hidden' }}>
+      <div style={{ height: '4px', background: 'rgba(200, 180, 170, 0.15)', borderRadius: '2px', overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${percent}%`, background: fillColor, borderRadius: '2px', transition: 'width 0.3s' }} />
       </div>
     </div>
