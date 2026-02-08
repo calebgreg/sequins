@@ -860,10 +860,10 @@ function StudentCard({ student, onClick }) {
         {/* Light Pink Frosted Avatar - Neumorphic */}
         <div style={{
           width: '44px', height: '44px', borderRadius: '50%',
-          background: '#f5e8e8',
-          boxShadow: 'inset 2px 2px 4px rgba(180, 160, 160, 0.25), inset -2px -2px 4px rgba(255, 255, 255, 0.8)',
+          background: '#f2dede',
+          boxShadow: 'inset 2px 2px 5px rgba(200, 170, 170, 0.3), inset -2px -2px 5px rgba(255, 250, 250, 0.9)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#9a8888',
+          color: '#a08888',
           fontWeight: '400', fontSize: '17px',
         }}>
           {student.name.charAt(0)}
