@@ -86,35 +86,196 @@ function ProgressMini({ label, actual, target, status }) {
   );
 }
 
-// Category Card
-function CategoryCard({ title, outcomes, color }) {
-  const [expanded, setExpanded] = useState(true);
+// Unified Outcomes Card with Tabs
+function OutcomesCard({ acquisitionData, conversionData, retentionData, referralData }) {
+  const [activeTab, setActiveTab] = useState('acquisition');
   
+  const tabs = [
+    { key: 'acquisition', label: 'Acquisition', data: acquisitionData },
+    { key: 'conversion', label: 'Conversion', data: conversionData },
+    { key: 'retention', label: 'Retention', data: retentionData },
+    { key: 'referral', label: 'Referral', data: referralData },
+  ].filter(t => Object.keys(t.data).length > 0);
+
+  const activeData = tabs.find(t => t.key === activeTab)?.data || {};
+  
+  // Calculate stats per category
+  const getStats = (data) => {
+    const outcomes = Object.values(data);
+    const total = outcomes.length;
+    const onTrack = outcomes.filter(o => o.status === 'ahead' || o.status === 'on_track').length;
+    return { total, onTrack };
+  };
+
   return (
     <div style={{
       background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
       backdropFilter: 'blur(16px)',
-      borderRadius: '20px',
+      borderRadius: '24px',
       border: '1px solid rgba(255, 200, 200, 0.2)',
-      padding: '20px',
-      boxShadow: '0 4px 16px -4px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)',
+      boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08), inset 0 1px 1px rgba(255,255,255,0.8)',
+      overflow: 'hidden',
     }}>
-      <div 
-        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginBottom: expanded ? '16px' : 0 }}
-        onClick={() => setExpanded(!expanded)}
-      >
-        <h3 style={{ fontSize: '12px', fontWeight: '700', color: colors.etchDark, textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0 }}>
-          {title}
-        </h3>
-        <span style={{ color: colors.etchLight, fontSize: '18px', fontWeight: '300' }}>{expanded ? '−' : '+'}</span>
+      {/* Tab Bar */}
+      <div style={{
+        display: 'flex',
+        borderBottom: '1px solid rgba(200, 180, 170, 0.15)',
+        background: 'rgba(255, 252, 250, 0.5)',
+      }}>
+        {tabs.map((tab) => {
+          const stats = getStats(tab.data);
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              style={{
+                flex: 1,
+                padding: '16px 12px',
+                border: 'none',
+                background: isActive ? 'rgba(255, 255, 255, 0.8)' : 'transparent',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <div style={{
+                fontSize: '10px',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                color: isActive ? colors.etchDark : colors.muted,
+                marginBottom: '4px',
+              }}>
+                {tab.label}
+              </div>
+              <div style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: isActive ? colors.etchDark : colors.muted,
+              }}>
+                {stats.onTrack}/{stats.total}
+              </div>
+              {isActive && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: '20%',
+                  right: '20%',
+                  height: '3px',
+                  background: `linear-gradient(90deg, ${colors.etchLight}, ${colors.etchDark})`,
+                  borderRadius: '3px 3px 0 0',
+                }} />
+              )}
+            </button>
+          );
+        })}
       </div>
-      {expanded && (
-        <div>
-          {Object.values(outcomes).map((o, i) => (
-            <ProgressMini key={i} label={o.label} actual={o.actual} target={o.target} status={o.status} />
-          ))}
+
+      {/* Content */}
+      <div style={{ padding: '20px' }}>
+        {Object.values(activeData).length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '20px', color: colors.muted }}>
+            No outcomes in this category
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {Object.values(activeData).map((o, i) => (
+              <OutcomeRow key={i} outcome={o} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Single outcome row with visual progress
+function OutcomeRow({ outcome }) {
+  const percent = Math.min((outcome.actual / outcome.target) * 100, 100);
+  const isComplete = percent >= 100;
+  const isBehind = outcome.status === 'behind';
+  
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '16px',
+      padding: '12px 16px',
+      borderRadius: '12px',
+      background: isComplete 
+        ? 'rgba(126, 184, 154, 0.1)' 
+        : isBehind 
+          ? 'rgba(196, 160, 160, 0.08)' 
+          : 'rgba(255, 255, 255, 0.5)',
+      border: `1px solid ${isComplete ? 'rgba(126, 184, 154, 0.3)' : 'rgba(200, 180, 170, 0.1)'}`,
+    }}>
+      {/* Progress Circle */}
+      <div style={{ position: 'relative', width: '44px', height: '44px', flexShrink: 0 }}>
+        <svg width="44" height="44" style={{ transform: 'rotate(-90deg)' }}>
+          {/* Background circle */}
+          <circle
+            cx="22"
+            cy="22"
+            r="18"
+            fill="none"
+            stroke="rgba(200, 180, 170, 0.2)"
+            strokeWidth="4"
+          />
+          {/* Progress circle */}
+          <circle
+            cx="22"
+            cy="22"
+            r="18"
+            fill="none"
+            stroke={isComplete ? '#7eb89a' : isBehind ? colors.etchLight : colors.etchDark}
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeDasharray={`${(percent / 100) * 113} 113`}
+            style={{ transition: 'stroke-dasharray 0.5s ease' }}
+          />
+        </svg>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '11px',
+          fontWeight: '700',
+          color: isComplete ? '#5a9a7a' : isBehind ? colors.etchLight : colors.etchDark,
+        }}>
+          {outcome.actual}
         </div>
-      )}
+      </div>
+
+      {/* Label */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: '14px',
+          fontWeight: '500',
+          color: colors.ink,
+          lineHeight: '1.3',
+        }}>
+          {outcome.label}
+        </div>
+        <div style={{
+          fontSize: '12px',
+          color: colors.muted,
+          marginTop: '2px',
+        }}>
+          {isComplete ? '✓ Complete' : `${outcome.target - outcome.actual} to go`}
+        </div>
+      </div>
+
+      {/* Target */}
+      <div style={{
+        fontSize: '14px',
+        fontWeight: '600',
+        color: colors.muted,
+      }}>
+        /{outcome.target}
+      </div>
     </div>
   );
 }
