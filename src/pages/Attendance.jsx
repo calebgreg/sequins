@@ -857,15 +857,15 @@ function StudentCard({ student, onClick }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
-        {/* Etched Avatar */}
+        {/* Light Pink Frosted Avatar */}
         <div style={{
           width: '44px', height: '44px', borderRadius: '50%',
-          background: 'linear-gradient(145deg, #fce4e4 0%, #f5d0d0 100%)',
-          boxShadow: '4px 4px 8px rgba(200, 160, 160, 0.2), -3px -3px 6px rgba(255, 255, 255, 0.9), inset 1px 1px 2px rgba(255, 255, 255, 0.5), inset -1px -1px 2px rgba(200, 170, 170, 0.1)',
+          background: 'linear-gradient(145deg, #f8d7d7 0%, #f0c4c4 100%)',
+          boxShadow: '3px 3px 6px rgba(180, 140, 140, 0.12), -2px -2px 4px rgba(255, 255, 255, 0.95), inset 0 1px 2px rgba(255, 255, 255, 0.6)',
+          border: '1px solid rgba(255, 235, 235, 0.8)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#9a7070',
-          fontWeight: '600', fontSize: '17px',
-          textShadow: '1px 1px 1px rgba(255,255,255,0.8), -1px -1px 1px rgba(180,140,140,0.15)',
+          color: '#8a6565',
+          fontWeight: '500', fontSize: '17px',
         }}>
           {student.name.charAt(0)}
         </div>
