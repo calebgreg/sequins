@@ -489,84 +489,87 @@ export default function Growth() {
           </div>
         )}
 
-      {/* Focus Banner */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(212, 165, 154, 0.3) 0%, rgba(196, 169, 140, 0.3) 100%)',
-        borderRadius: '16px',
-        padding: '16px 20px',
-        marginBottom: '24px',
-        border: '1px solid rgba(212, 165, 154, 0.3)',
-      }}>
-        <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#A89080', marginBottom: '4px' }}>
-          Today's Focus
+        {/* Focus Banner */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+          borderRadius: '20px',
+          padding: '20px 24px',
+          marginBottom: '24px',
+          border: '1px solid rgba(255, 200, 200, 0.3)',
+          boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
+        }}>
+          <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginBottom: '4px' }}>
+            Today's Focus
+          </div>
+          <div style={{ fontSize: '16px', color: colors.ink, fontWeight: '500' }}>{focusReason}</div>
         </div>
-        <div style={{ fontSize: '16px', color: '#6B5A4A', fontWeight: '500' }}>{focusReason}</div>
+
+        {/* Do Today */}
+        {nowActions.length > 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+            backdropFilter: 'blur(16px)',
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 200, 200, 0.3)',
+            boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
+            padding: '24px',
+            marginBottom: '20px',
+          }}>
+            <div style={{ fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginBottom: '16px' }}>
+              Do Today
+            </div>
+            {nowActions.map(action => (
+              <ActionCard
+                key={action.id}
+                action={action}
+                onSend={() => handleSend(action)}
+                onEdit={() => handleEdit(action)}
+                onSkip={() => handleSkip(action)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Do This Week */}
+        {soonActions.length > 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+            backdropFilter: 'blur(16px)',
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 200, 200, 0.3)',
+            boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
+            padding: '24px',
+            marginBottom: '20px',
+          }}>
+            <div style={{ fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginBottom: '16px' }}>
+              Do This Week
+            </div>
+            {soonActions.map(action => (
+              <ActionCard
+                key={action.id}
+                action={action}
+                onSend={() => handleSend(action)}
+                onEdit={() => handleEdit(action)}
+                onSkip={() => handleSkip(action)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Empty state for actions */}
+        {nowActions.length === 0 && soonActions.length === 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+            borderRadius: '24px',
+            padding: '48px',
+            textAlign: 'center',
+            border: '1px solid rgba(255, 200, 200, 0.3)',
+          }}>
+            <p style={{ color: colors.muted, fontSize: '16px', marginBottom: '8px' }}>No pending actions</p>
+            <p style={{ color: colors.etchLight, fontSize: '14px' }}>Your agents will generate actions as they identify opportunities.</p>
+          </div>
+        )}
       </div>
-
-      {/* Do Today */}
-      {nowActions.length > 0 && (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.7)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '20px',
-          border: '1px solid rgba(255, 255, 255, 0.8)',
-          boxShadow: '0 4px 30px rgba(180, 150, 130, 0.1)',
-          padding: '20px',
-          marginBottom: '16px',
-        }}>
-          <div style={{ fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#A89080', marginBottom: '16px' }}>
-            Do Today
-          </div>
-          {nowActions.map(action => (
-            <ActionCard
-              key={action.id}
-              action={action}
-              onSend={() => handleSend(action)}
-              onEdit={() => handleEdit(action)}
-              onSkip={() => handleSkip(action)}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Do This Week */}
-      {soonActions.length > 0 && (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.7)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '20px',
-          border: '1px solid rgba(255, 255, 255, 0.8)',
-          boxShadow: '0 4px 30px rgba(180, 150, 130, 0.1)',
-          padding: '20px',
-          marginBottom: '16px',
-        }}>
-          <div style={{ fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#A89080', marginBottom: '16px' }}>
-            Do This Week
-          </div>
-          {soonActions.map(action => (
-            <ActionCard
-              key={action.id}
-              action={action}
-              onSend={() => handleSend(action)}
-              onEdit={() => handleEdit(action)}
-              onSkip={() => handleSkip(action)}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Empty state for actions */}
-      {nowActions.length === 0 && soonActions.length === 0 && (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.7)',
-          borderRadius: '20px',
-          padding: '40px',
-          textAlign: 'center',
-        }}>
-          <p style={{ color: '#A89080', fontSize: '16px', marginBottom: '8px' }}>No pending actions</p>
-          <p style={{ color: '#C4A98C', fontSize: '14px' }}>Your agents will generate actions as they identify opportunities.</p>
-        </div>
-      )}
     </div>
   );
 }
