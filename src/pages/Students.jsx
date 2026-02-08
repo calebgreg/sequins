@@ -13,7 +13,7 @@ import FamilyProfileView from '../components/crm/FamilyProfileView';
 import StudentFormModal from '../components/crm/StudentFormModal';
 import MessageStudentModal from '../components/crm/MessageStudentModal';
 import NaturalLanguageSearch from '../components/crm/NaturalLanguageSearch';
-import AttendanceReportModal from '../components/crm/AttendanceReportModal';
+
 import { useBulkSelection } from '../components/ai/GlobalAiChat';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -68,7 +68,7 @@ export default function Students() {
   const [editingStudent, setEditingStudent] = useState(null);
   const [messageModalOpen, setMessageModalOpen] = useState(false);
   const [studentToMessage, setStudentToMessage] = useState(null);
-  const [attendanceModalOpen, setAttendanceModalOpen] = useState(false);
+
 
   
   // Use the global bulk selection context
@@ -421,18 +421,18 @@ export default function Students() {
                <EtchedText size="lg">{activeStudents}</EtchedText>
                <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.muted }}>Active</div>
              </div>
-             <button 
-               onClick={() => setAttendanceModalOpen(true)}
-               className="rounded-2xl px-5 py-3 text-center min-w-[100px] transition-all hover:scale-105 cursor-pointer"
+             <Link 
+               to={createPageUrl('Attendance')}
+               className="rounded-2xl px-5 py-3 text-center min-w-[100px] transition-all hover:scale-105 cursor-pointer block"
                style={{
                  background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
                  boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
-                 border: 'none',
+                 textDecoration: 'none',
                }}
              >
                <EtchedText size="lg">{attendance.length > 0 ? `${Math.round(attendance.filter(a => a.status === 'present' || a.status === 'late' || a.status === 'made_up').length / attendance.length * 100)}%` : '—'}</EtchedText>
                <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors.muted }}>Attendance</div>
-             </button>
+             </Link>
              <Button 
                onClick={handleCreate}
                className="h-auto rounded-2xl px-6 transition-all hover:scale-105"
@@ -950,10 +950,7 @@ export default function Students() {
         student={studentToMessage}
       />
       
-      <AttendanceReportModal 
-        isOpen={attendanceModalOpen}
-        onClose={() => setAttendanceModalOpen(false)}
-      />
+
       </div>
       );
       }
