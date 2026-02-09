@@ -677,14 +677,18 @@ export default function TeacherStudio() {
   
   const currentTeacherName = currentUser?.full_name || "Sarah Miller";
 
+  const studioId = currentUser?.studio_id;
+
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes'],
-    queryFn: () => base44.entities.DanceClass.list(),
+    queryKey: ['classes', studioId],
+    queryFn: () => base44.entities.DanceClass.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: students = [] } = useQuery({
-    queryKey: ['students'],
-    queryFn: () => base44.entities.Student.list(),
+    queryKey: ['students', studioId],
+    queryFn: () => base44.entities.Student.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
 

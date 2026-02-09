@@ -107,29 +107,41 @@ function buildCalculationInput(familyStudents, classes, studentIndex = 1) {
 export function BillingOverview({ onSelectFamily }) {
   const [filter, setFilter] = useState('all');
   
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const studioId = currentUser?.studio_id;
+
   const { data: students = [] } = useQuery({
-    queryKey: ['students'],
-    queryFn: () => base44.entities.Student.list(),
+    queryKey: ['students', studioId],
+    queryFn: () => base44.entities.Student.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes'],
-    queryFn: () => base44.entities.DanceClass.list(),
+    queryKey: ['classes', studioId],
+    queryFn: () => base44.entities.DanceClass.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: tuitionRules = [] } = useQuery({
-    queryKey: ['tuitionRules'],
-    queryFn: () => base44.entities.TuitionRule.list(),
+    queryKey: ['tuitionRules', studioId],
+    queryFn: () => base44.entities.TuitionRule.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: invoices = [] } = useQuery({
-    queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
+    queryKey: ['invoices', studioId],
+    queryFn: () => base44.entities.Invoice.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: familyEntities = [] } = useQuery({
-    queryKey: ['familyEntities'],
-    queryFn: () => base44.entities.Family.list(),
+    queryKey: ['familyEntities', studioId],
+    queryFn: () => base44.entities.Family.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   // Group students by family and calculate bills
@@ -433,24 +445,35 @@ export function BillingOverview({ onSelectFamily }) {
 export function FamilyBillingDetail({ family, onBack }) {
   const [showTrace, setShowTrace] = useState(false);
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const studioId = currentUser?.studio_id;
+
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes'],
-    queryFn: () => base44.entities.DanceClass.list(),
+    queryKey: ['classes', studioId],
+    queryFn: () => base44.entities.DanceClass.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: tuitionRules = [] } = useQuery({
-    queryKey: ['tuitionRules'],
-    queryFn: () => base44.entities.TuitionRule.list(),
+    queryKey: ['tuitionRules', studioId],
+    queryFn: () => base44.entities.TuitionRule.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: invoices = [] } = useQuery({
-    queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
+    queryKey: ['invoices', studioId],
+    queryFn: () => base44.entities.Invoice.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: familyEntities = [] } = useQuery({
-    queryKey: ['familyEntities'],
-    queryFn: () => base44.entities.Family.list(),
+    queryKey: ['familyEntities', studioId],
+    queryFn: () => base44.entities.Family.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   // Calculate current bill
