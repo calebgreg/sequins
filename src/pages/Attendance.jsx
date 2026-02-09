@@ -70,19 +70,29 @@ export default function Attendance() {
   const { selectedStudents, setSelectedStudents } = useBulkSelection();
   const selectedStudentNames = selectedStudents.map(s => s.name);
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const studioId = currentUser?.studio_id;
+
   const { data: attendance = [] } = useQuery({
-    queryKey: ['allAttendance'],
-    queryFn: () => base44.entities.Attendance.list('-date', 5000),
+    queryKey: ['allAttendance', studioId],
+    queryFn: () => base44.entities.Attendance.filter({ studio_id: studioId }, '-date', 5000),
+    enabled: !!studioId,
   });
 
   const { data: students = [] } = useQuery({
-    queryKey: ['students'],
-    queryFn: () => base44.entities.Student.filter({ status: 'active' }),
+    queryKey: ['students', studioId],
+    queryFn: () => base44.entities.Student.filter({ studio_id: studioId, status: 'active' }),
+    enabled: !!studioId,
   });
 
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes'],
-    queryFn: () => base44.entities.DanceClass.filter({ type: 'class' }),
+    queryKey: ['classes', studioId],
+    queryFn: () => base44.entities.DanceClass.filter({ studio_id: studioId, type: 'class' }),
+    enabled: !!studioId,
   });
 
   // Filter attendance by time range

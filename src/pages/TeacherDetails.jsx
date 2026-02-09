@@ -25,39 +25,43 @@ const TeacherDetails = () => {
     select: (data) => data[0],
   });
 
-  // Fetch time logs for this teacher
-  const { data: timeLogs = [] } = useQuery({
-    queryKey: ['timeLogs', teacher?.name],
-    queryFn: () => base44.entities.TimeLog.filter({ teacher_name: teacher?.name }),
-    enabled: !!teacher?.name,
-  });
-
-  // Fetch sub requests for this teacher
-  const { data: subRequests = [] } = useQuery({
-    queryKey: ['subRequests', teacher?.name],
-    queryFn: () => base44.entities.SubRequest.filter({ teacher_name: teacher?.name }),
-    enabled: !!teacher?.name,
-  });
-
-  // Fetch classes for this teacher
-  const { data: classes = [] } = useQuery({
-    queryKey: ['teacherClasses', teacher?.name],
-    queryFn: () => base44.entities.DanceClass.filter({ teacher: teacher?.name }),
-    enabled: !!teacher?.name,
-  });
-
-  // Fetch notes for this teacher
-  const { data: teacherNotes = [] } = useQuery({
-    queryKey: ['teacherNotes', teacherId],
-    queryFn: () => base44.entities.TeacherNote.filter({ teacher_id: teacherId }),
-    enabled: !!teacherId,
-  });
-
-  // Fetch current user
+  // Fetch current user to get studio context
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  const studioId = currentUser?.studio_id;
+
+  // Fetch time logs for this teacher
+  const { data: timeLogs = [] } = useQuery({
+    queryKey: ['timeLogs', teacher?.name, studioId],
+    queryFn: () => base44.entities.TimeLog.filter({ studio_id: studioId, teacher_name: teacher?.name }),
+    enabled: !!teacher?.name && !!studioId,
+  });
+
+  // Fetch sub requests for this teacher
+  const { data: subRequests = [] } = useQuery({
+    queryKey: ['subRequests', teacher?.name, studioId],
+    queryFn: () => base44.entities.SubRequest.filter({ studio_id: studioId, teacher_name: teacher?.name }),
+    enabled: !!teacher?.name && !!studioId,
+  });
+
+  // Fetch classes for this teacher
+  const { data: classes = [] } = useQuery({
+    queryKey: ['teacherClasses', teacher?.name, studioId],
+    queryFn: () => base44.entities.DanceClass.filter({ studio_id: studioId, teacher: teacher?.name }),
+    enabled: !!teacher?.name && !!studioId,
+  });
+
+  // Fetch notes for this teacher
+  const { data: teacherNotes = [] } = useQuery({
+    queryKey: ['teacherNotes', teacherId, studioId],
+    queryFn: () => base44.entities.TeacherNote.filter({ studio_id: studioId, teacher_id: teacherId }),
+    enabled: !!teacherId && !!studioId,
+  });
+
+
 
   // Create note mutation
   const createNoteMutation = useMutation({
@@ -71,6 +75,7 @@ const TeacherDetails = () => {
   const handleSaveNote = (content) => {
     const today = new Date().toISOString().split('T')[0];
     createNoteMutation.mutate({
+      studio_id: studioId,
       teacher_id: teacherId,
       teacher_name: teacher?.name,
       content,

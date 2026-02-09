@@ -533,20 +533,30 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
 
 // Main Dashboard
 export default function Growth() {
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const studioId = currentUser?.studio_id;
+
   // Fetch outcomes and actions from database
   const { data: outcomes = [] } = useQuery({
-    queryKey: ['growthOutcomes'],
-    queryFn: () => base44.entities.GrowthOutcome.filter({ is_active: true }),
+    queryKey: ['growthOutcomes', studioId],
+    queryFn: () => base44.entities.GrowthOutcome.filter({ studio_id: studioId, is_active: true }),
+    enabled: !!studioId,
   });
 
   const { data: actions = [] } = useQuery({
-    queryKey: ['growthActions'],
-    queryFn: () => base44.entities.GrowthAction.filter({ status: 'pending_review' }, '-created_date'),
+    queryKey: ['growthActions', studioId],
+    queryFn: () => base44.entities.GrowthAction.filter({ studio_id: studioId, status: 'pending_review' }, '-created_date'),
+    enabled: !!studioId,
   });
 
   const { data: progress = [] } = useQuery({
-    queryKey: ['growthProgress'],
-    queryFn: () => base44.entities.GrowthPeriodProgress.list('-period_start', 20),
+    queryKey: ['growthProgress', studioId],
+    queryFn: () => base44.entities.GrowthPeriodProgress.filter({ studio_id: studioId }, '-period_start', 20),
+    enabled: !!studioId,
   });
 
   // Build outcome data by category

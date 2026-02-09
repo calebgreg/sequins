@@ -420,6 +420,7 @@ function RunningState({ data, onComplete }) {
         // Create invoice
         try {
           await base44.entities.Invoice.create({
+            studio_id: studioId,
             parent_email: family.parentEmail,
             parent_name: family.parentName,
             title: `Tuition - ${data.period}`,
@@ -698,33 +699,44 @@ export default function RunBilling() {
   const [results, setResults] = useState([]);
   const [isCalculating, setIsCalculating] = useState(true);
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const studioId = currentUser?.studio_id;
+
   // Data Fetching
   const { data: students = [] } = useQuery({
-    queryKey: ['students'],
-    queryFn: () => base44.entities.Student.list(),
+    queryKey: ['students', studioId],
+    queryFn: () => base44.entities.Student.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: families = [] } = useQuery({
-    queryKey: ['families'],
-    queryFn: () => base44.entities.Family.list(),
+    queryKey: ['families', studioId],
+    queryFn: () => base44.entities.Family.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes'],
-    queryFn: () => base44.entities.DanceClass.list(),
+    queryKey: ['classes', studioId],
+    queryFn: () => base44.entities.DanceClass.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: tuitionRules = [] } = useQuery({
-    queryKey: ['tuitionRules'],
-    queryFn: () => base44.entities.TuitionRule.list(),
+    queryKey: ['tuitionRules', studioId],
+    queryFn: () => base44.entities.TuitionRule.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   // Calculate preview on mount
   useEffect(() => {
-    if (students.length > 0 && !previewData) {
+    if (students.length > 0 && studioId && !previewData) {
       calculatePreview();
     }
-  }, [students, tuitionRules]);
+  }, [students, tuitionRules, studioId]);
 
   const calculatePreview = () => {
     setIsCalculating(true);

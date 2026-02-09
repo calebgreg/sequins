@@ -27,18 +27,26 @@ export default function ClassDetail() {
   
   const classId = new URLSearchParams(location.search).get('id');
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const studioId = currentUser?.studio_id;
+
   const { data: classData, isLoading } = useQuery({
-    queryKey: ['class', classId],
+    queryKey: ['class', classId, studioId],
     queryFn: async () => {
-      const classes = await base44.entities.DanceClass.list();
+      const classes = await base44.entities.DanceClass.filter({ studio_id: studioId });
       return classes.find(c => c.id === classId);
     },
-    enabled: !!classId
+    enabled: !!classId && !!studioId
   });
 
   const { data: students = [] } = useQuery({
-    queryKey: ['students'],
-    queryFn: () => base44.entities.Student.list(),
+    queryKey: ['students', studioId],
+    queryFn: () => base44.entities.Student.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const deleteMutation = useMutation({

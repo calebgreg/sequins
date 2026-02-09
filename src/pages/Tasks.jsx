@@ -32,18 +32,20 @@ export default function TasksPage() {
         queryFn: () => base44.auth.me(),
         retry: false
     });
+
+    const studioId = currentUser?.studio_id;
     
     const { data: tasks = [] } = useQuery({
-        queryKey: ['all_tasks', currentUser?.email],
+        queryKey: ['all_tasks', studioId, currentUser?.email],
         queryFn: async () => {
             if (!currentUser) return [];
             
             let all;
             if (currentUser.role === 'admin') {
-                all = await base44.entities.FamilyTask.list();
+                all = await base44.entities.FamilyTask.filter({ studio_id: studioId });
             } else {
                 // For parents, only show tasks related to them and marked as shared
-                const myTasks = await base44.entities.FamilyTask.list();
+                const myTasks = await base44.entities.FamilyTask.filter({ studio_id: studioId });
                 all = myTasks.filter(t => t.parent_email === currentUser.email && t.is_shared);
             }
 
@@ -53,11 +55,12 @@ export default function TasksPage() {
                 return new Date(a.due_date) - new Date(b.due_date);
             });
         },
-        enabled: !!currentUser
+        enabled: !!currentUser && !!studioId
     });
 
     const createMutation = useMutation({
         mutationFn: (title) => base44.entities.FamilyTask.create({
+            studio_id: studioId,
             title: title,
             status: 'pending',
             priority: 'medium',
