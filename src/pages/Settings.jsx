@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Settings as SettingsIcon } from 'lucide-react';
+import { ArrowLeft, Settings as SettingsIcon, Upload } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import GeneralSettings from '../components/settings/GeneralSettings';
 import TuitionBillingWizard from '../components/billing/TuitionBillingWizard';
@@ -36,10 +36,16 @@ export default function Settings() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <div>
+          <div className="flex-1">
             <h1 className="text-4xl font-serif text-[#333333]">Studio Settings</h1>
             <p className="text-gray-500 mt-1">Manage your studio configuration and preferences.</p>
           </div>
+          <Link to={createPageUrl('Onboarding')}>
+            <Button className="rounded-full bg-[#333333] text-white hover:bg-black gap-2">
+              <Upload className="w-4 h-4" />
+              Import Data
+            </Button>
+          </Link>
         </div>
 
         <Tabs defaultValue="general" className="w-full">
