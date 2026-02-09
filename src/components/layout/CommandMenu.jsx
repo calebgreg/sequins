@@ -23,11 +23,19 @@ export default function CommandMenu({ open, onOpenChange }) {
   const navigate = useNavigate();
   const [inputValue, setInputValue] = useState('');
 
-  // Fetch students for quick search
+  // Fetch current user for studio context
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const studioId = currentUser?.studio_id;
+
+  // Fetch students for quick search - filtered by studio
   const { data: students = [] } = useQuery({
-    queryKey: ['students-search'],
-    queryFn: () => base44.entities.Student.list(),
-    enabled: !!open // Only fetch when open
+    queryKey: ['students-search', studioId],
+    queryFn: () => base44.entities.Student.filter({ studio_id: studioId }),
+    enabled: !!open && !!studioId // Only fetch when open and studio is known
   });
   
   // Note: Keyboard shortcut handled in Context Provider now
