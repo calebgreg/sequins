@@ -40,14 +40,6 @@ export default function UserMenu() {
 
   return (
     <div className="flex items-center gap-3">
-      {/* Show current studio context if impersonating */}
-      {isImpersonating && currentStudio && (
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-sm font-medium">
-          <Building2 className="w-4 h-4" />
-          <span>{currentStudio.name}</span>
-        </div>
-      )}
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/50 transition-colors outline-none">
@@ -70,6 +62,9 @@ export default function UserMenu() {
               <span className="inline-block mt-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">
                 Super Admin
               </span>
+            )}
+            {isImpersonating && currentStudio && (
+              <p className="text-xs text-gray-400 mt-1">Viewing: {currentStudio.name}</p>
             )}
           </div>
           
