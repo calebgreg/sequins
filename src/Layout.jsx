@@ -14,6 +14,7 @@ import { Menu } from 'lucide-react';
 import { CommandMenuProvider, useCommandMenu } from './components/layout/CommandMenuContext';
 import { Toaster } from 'sonner';
 import GlobalAiChat, { GlobalAiChatProvider } from './components/ai/GlobalAiChat';
+import UserMenu from './components/layout/UserMenu';
 
 function LayoutContent({ children }) {
   const location = useLocation();
@@ -56,7 +57,13 @@ function LayoutContent({ children }) {
 
       {/* Main Content */}
       <main className="flex-1 min-w-0 overflow-y-auto h-[100dvh]">
-         <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 pt-20 md:pt-8">
+         {/* Top Header with User Menu */}
+         <div className="sticky top-0 z-40 bg-[#F4F4F6]/80 backdrop-blur-sm border-b border-gray-200/50">
+           <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 py-3 flex justify-end">
+             <UserMenu />
+           </div>
+         </div>
+         <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8">
             {children}
          </div>
       </main>
