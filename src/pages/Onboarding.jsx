@@ -1,10 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tanstack/react-query';
-import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Loader2, Users, Calendar, GraduationCap, MapPin, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Loader2, Users, Calendar, GraduationCap, MapPin, AlertTriangle, ChevronDown, ChevronUp, Building2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 
 // Design tokens
 const colors = {
@@ -44,6 +46,24 @@ export default function Onboarding() {
   const [results, setResults] = useState(null);
   const [showErrors, setShowErrors] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Get current user and their studio
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: studio } = useQuery({
+    queryKey: ['currentStudio', currentUser?.studio_id],
+    queryFn: async () => {
+      if (!currentUser?.studio_id) return null;
+      const studios = await base44.entities.Studio.filter({ id: currentUser.studio_id });
+      return studios[0] || null;
+    },
+    enabled: !!currentUser?.studio_id,
+  });
+
+  const studioId = currentUser?.studio_id;
 
   // Parse CSV file
   const parseCSV = (text) => {
@@ -228,16 +248,23 @@ export default function Onboarding() {
   // Import mutation
   const importMutation = useMutation({
     mutationFn: async () => {
+      if (!studioId) {
+        throw new Error('No studio ID found. Please ensure your account is linked to a studio.');
+      }
+
       const entities = extractEntities(csvData);
       const errors = [];
       let created = { students: 0, classes: 0, teachers: 0, rooms: 0 };
       const total = entities.students.length + entities.classes.length + entities.teachers.length + entities.rooms.length;
       let processed = 0;
 
-      // Create Rooms first
+      // Create Rooms first (with studio_id)
       for (const roomName of entities.rooms) {
         try {
-          await base44.entities.Room.create({ name: roomName });
+          await base44.entities.Room.create({ 
+            studio_id: studioId,
+            name: roomName 
+          });
           created.rooms++;
         } catch (err) {
           errors.push({ type: 'Room', name: roomName, error: err.message });
@@ -246,12 +273,13 @@ export default function Onboarding() {
         setProgress(Math.round((processed / total) * 100));
       }
 
-      // Create Teachers
+      // Create Teachers (with studio_id)
       for (const teacherName of entities.teachers) {
         try {
           await base44.entities.Teacher.create({ 
+            studio_id: studioId,
             name: teacherName,
-            styles: [], // Will be populated based on classes later
+            styles: [],
           });
           created.teachers++;
         } catch (err) {
@@ -261,10 +289,14 @@ export default function Onboarding() {
         setProgress(Math.round((processed / total) * 100));
       }
 
-      // Create Students
+      // Create Students (with studio_id)
       for (const student of entities.students) {
         try {
-          await base44.entities.Student.create(student);
+          await base44.entities.Student.create({
+            ...student,
+            studio_id: studioId,
+            color: student.color || '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
+          });
           created.students++;
         } catch (err) {
           errors.push({ type: 'Student', name: student.name, error: err.message });
@@ -273,10 +305,13 @@ export default function Onboarding() {
         setProgress(Math.round((processed / total) * 100));
       }
 
-      // Create Classes
+      // Create Classes (with studio_id)
       for (const classData of entities.classes) {
         try {
-          await base44.entities.DanceClass.create(classData);
+          await base44.entities.DanceClass.create({
+            ...classData,
+            studio_id: studioId,
+          });
           created.classes++;
         } catch (err) {
           errors.push({ type: 'Class', name: classData.title, error: err.message });
@@ -315,10 +350,43 @@ export default function Onboarding() {
           <p style={{ color: colors.muted }}>
             Import your roster to set up students, classes, teachers, and rooms
           </p>
+          {studio && (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              background: 'rgba(126, 184, 154, 0.15)',
+              marginTop: '12px',
+            }}>
+              <Building2 size={16} style={{ color: colors.green }} />
+              <span style={{ fontSize: '14px', fontWeight: '500', color: colors.ink }}>
+                Importing to: {studio.name}
+              </span>
+            </div>
+          )}
         </div>
 
+        {/* No Studio Warning */}
+        {currentUser && !studioId && (
+          <div style={{
+            padding: '24px',
+            borderRadius: '24px',
+            background: `${colors.amber}15`,
+            border: `1px solid ${colors.amber}40`,
+            textAlign: 'center',
+          }}>
+            <AlertTriangle size={32} style={{ color: colors.amber, margin: '0 auto 12px' }} />
+            <EtchedText size="md">No Studio Linked</EtchedText>
+            <p style={{ color: colors.muted, marginTop: '8px', maxWidth: '400px', margin: '8px auto 0' }}>
+              Your account isn't linked to a studio yet. Please contact your administrator to set up your studio.
+            </p>
+          </div>
+        )}
+
         {/* Upload Area */}
-        {importStatus === 'idle' && (
+        {importStatus === 'idle' && studioId && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
