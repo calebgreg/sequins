@@ -63,12 +63,19 @@ Deno.serve(async (req) => {
         // --- FETCH DATA (Parallel) ---
         const dataMap = {};
         const fetchPromises = [];
+        const studioId = user.studio_id;
 
         const fetchEntity = async (name) => {
             try {
-                // Using standard list for now. Could be optimized with filters later.
-                const list = await base44.entities[name].list();
-                dataMap[name] = list;
+                // Filter by studio_id for multi-tenant isolation
+                if (studioId) {
+                    const list = await base44.entities[name].filter({ studio_id: studioId });
+                    dataMap[name] = list;
+                } else {
+                    // Fallback if no studio context (shouldn't happen in normal use)
+                    const list = await base44.entities[name].list();
+                    dataMap[name] = list;
+                }
             } catch (err) {
                 console.warn(`[Gene] Failed to fetch ${name}`, err);
                 dataMap[name] = [];
@@ -208,9 +215,13 @@ Deno.serve(async (req) => {
                 let result;
 
                 if (entity === 'PerformanceProducer') {
-                    // Lazy Fetch Fallback: Ensure we have classes/settings if Pass 1 missed them
+                    // Lazy Fetch Fallback: Ensure we have classes/settings if Pass 1 missed them - filter by studio_id
                     let producerClasses = dataMap["DanceClass"];
-                    if (!producerClasses) producerClasses = await base44.entities.DanceClass.list();
+                    if (!producerClasses) {
+                        producerClasses = studioId
+                            ? await base44.entities.DanceClass.filter({ studio_id: studioId })
+                            : await base44.entities.DanceClass.list();
+                    }
                     
                     const produceContext = {
                         studio: { 
@@ -246,9 +257,13 @@ Deno.serve(async (req) => {
 
                 } else if (action === 'read' && entity === 'Student') {
                     const searchName = (payload.name || '').toLowerCase();
-                    // Lazy Fetch Fallback
+                    // Lazy Fetch Fallback - filter by studio_id
                     let searchPool = dataMap["Student"];
-                    if (!searchPool) searchPool = await base44.entities.Student.list();
+                    if (!searchPool) {
+                        searchPool = studioId 
+                            ? await base44.entities.Student.filter({ studio_id: studioId })
+                            : await base44.entities.Student.list();
+                    }
                     
                     const foundStudent = searchPool.find(s => s.name.toLowerCase().includes(searchName));
 
@@ -281,7 +296,8 @@ Deno.serve(async (req) => {
                         actionResult = { type: 'error', message: 'No Apple Music results found' };
                     }
                 } else if (action === 'create') {
-                    // Enrich payload defaults
+                    // Enrich payload defaults and add studio_id for multi-tenant isolation
+                    if (studioId) payload.studio_id = studioId;
                     if (entity === 'FamilyNote') payload.author_name = user.full_name || 'Gene AI';
                     if (entity === 'FamilyTask' && !payload.assigned_to) payload.assigned_to = user.full_name;
                     if (entity === 'StudentNote' && !payload.date) payload.date = new Date().toISOString().split('T')[0];
@@ -293,8 +309,9 @@ Deno.serve(async (req) => {
                     result = await base44.entities[entity].update(entity_id, payload);
                     actionResult = { type: 'success', entity, action, result };
                 } else if (action === 'create_draft' && entity === 'Performance') {
-                    // Create draft performance
+                    // Create draft performance with studio_id for multi-tenant isolation
                     const newPerf = await base44.entities.Performance.create({
+                        studio_id: studioId,
                         title: payload.title || "New Draft Event",
                         status: 'planning',
                         date: new Date().toISOString().split('T')[0], // Default to today, user changes later
@@ -303,6 +320,7 @@ Deno.serve(async (req) => {
 
                     // Save the user's prompt as the first message to maintain context
                     await base44.entities.PerformanceChat.create({
+                        studio_id: studioId,
                         performance_id: newPerf.id,
                         role: 'user',
                         content: prompt,
