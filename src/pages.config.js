@@ -66,6 +66,7 @@ import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
 import Onboarding from './pages/Onboarding';
+import SuperAdmin from './pages/SuperAdmin';
 import __Layout from './Layout.jsx';
 
 
@@ -89,6 +90,7 @@ export const PAGES = {
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
     "Onboarding": Onboarding,
+    "SuperAdmin": SuperAdmin,
 }
 
 export const pagesConfig = {
