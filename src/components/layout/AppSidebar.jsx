@@ -8,8 +8,7 @@ import {
   Settings, 
   Briefcase,
   CheckSquare,
-  Mic2,
-  Shield
+  Mic2
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useLocation } from 'react-router-dom';
@@ -64,7 +63,13 @@ export default function AppSidebar({ className = "", onSearchClick }) {
     { path: '/Performances', icon: Mic2, label: 'Shows' },
     { path: '/Billing', icon: CreditCard, label: 'Billing' },
     { path: '/Settings', icon: Settings, label: 'Settings' },
-  ];
+  ].filter(item => {
+    // Hide all nav items if user has no studio_id (show only SuperAdmin)
+    if (!currentUser?.studio_id && currentUser?.role === 'admin') {
+      return false;
+    }
+    return true;
+  });
 
   const NavItem = ({ item, active }) => {
     const content = (
@@ -166,15 +171,7 @@ export default function AppSidebar({ className = "", onSearchClick }) {
           ))}
         </nav>
 
-        {/* Super Admin - Only visible to admins */}
-        {currentUser?.role === 'admin' && (
-          <div className="px-3 relative">
-            <NavItem 
-              item={{ path: '/SuperAdmin', icon: Shield, label: 'Super Admin' }} 
-              active={isActive('/SuperAdmin')} 
-            />
-          </div>
-        )}
+
 
         {/* Bottom - Avatar with collapse toggle */}
         <div 
