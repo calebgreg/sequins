@@ -71,9 +71,17 @@ export default function PerformancesPage() {
 
     const queryClient = useQueryClient();
 
+    const { data: currentUser } = useQuery({
+        queryKey: ['currentUser'],
+        queryFn: () => base44.auth.me(),
+    });
+
+    const studioId = currentUser?.studio_id;
+
     const { data: performances = [], isLoading } = useQuery({
-        queryKey: ['performances'],
-        queryFn: () => base44.entities.Performance.list('-date'),
+        queryKey: ['performances', studioId],
+        queryFn: () => base44.entities.Performance.filter({ studio_id: studioId }, '-date'),
+        enabled: !!studioId,
         staleTime: 5 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,

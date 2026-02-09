@@ -26,27 +26,38 @@ import { motion } from 'framer-motion';
 export default function Home() {
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
 
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const studioId = currentUser?.studio_id;
+
   const { data: settings, isLoading: settingsLoading } = useQuery({
-    queryKey: ['studioSettings'],
+    queryKey: ['studioSettings', studioId],
     queryFn: async () => {
-      const res = await base44.entities.StudioSettings.list();
+      const res = await base44.entities.StudioSettings.filter({ studio_id: studioId });
       return res[0] || null;
-    }
+    },
+    enabled: !!studioId,
   });
 
   const { data: students = [], isLoading: studentsLoading } = useQuery({
-    queryKey: ['students'],
-    queryFn: () => base44.entities.Student.list(),
+    queryKey: ['students', studioId],
+    queryFn: () => base44.entities.Student.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: classes = [], isLoading: classesLoading } = useQuery({
-    queryKey: ['classes'],
-    queryFn: () => base44.entities.DanceClass.list(),
+    queryKey: ['classes', studioId],
+    queryFn: () => base44.entities.DanceClass.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: invoices = [], isLoading: invoicesLoading } = useQuery({
-    queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
+    queryKey: ['invoices', studioId],
+    queryFn: () => base44.entities.Invoice.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   // Computed Metrics
@@ -65,7 +76,7 @@ export default function Home() {
     return { activeStudents, monthlyRevenue, todaysClasses };
   }, [students, invoices, classes]);
 
-  const isLoading = settingsLoading || studentsLoading || classesLoading || invoicesLoading;
+  const isLoading = userLoading || settingsLoading || studentsLoading || classesLoading || invoicesLoading;
 
   if (isLoading) {
     return (

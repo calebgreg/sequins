@@ -81,24 +81,30 @@ export default function Students() {
     retry: false
   });
 
+  const studioId = currentUser?.studio_id;
+
   const { data: students = [] } = useQuery({
-    queryKey: ['students'],
-    queryFn: () => base44.entities.Student.list('-created_date', 1000),
+    queryKey: ['students', studioId],
+    queryFn: () => base44.entities.Student.filter({ studio_id: studioId }, '-created_date', 1000),
+    enabled: !!studioId,
   });
 
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes'],
-    queryFn: () => base44.entities.DanceClass.list(),
+    queryKey: ['classes', studioId],
+    queryFn: () => base44.entities.DanceClass.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: routines = [] } = useQuery({
-    queryKey: ['allRoutines'],
-    queryFn: () => base44.entities.PerformanceRoutine.list(),
+    queryKey: ['allRoutines', studioId],
+    queryFn: () => base44.entities.PerformanceRoutine.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: attendance = [] } = useQuery({
-    queryKey: ['attendance'],
-    queryFn: () => base44.entities.Attendance.list(),
+    queryKey: ['attendance', studioId],
+    queryFn: () => base44.entities.Attendance.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   // Handle direct student links via URL

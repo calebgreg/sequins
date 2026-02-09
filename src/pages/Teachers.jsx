@@ -28,14 +28,23 @@ export default function Teachers() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const studioId = currentUser?.studio_id;
+
   const { data: teachers = [] } = useQuery({
-    queryKey: ['teachers'],
-    queryFn: () => base44.entities.Teacher.list(),
+    queryKey: ['teachers', studioId],
+    queryFn: () => base44.entities.Teacher.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+    queryKey: ['teams', studioId],
+    queryFn: () => base44.entities.Team.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const createTeacherMutation = useMutation({
