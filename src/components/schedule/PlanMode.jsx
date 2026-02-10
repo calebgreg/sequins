@@ -238,9 +238,8 @@ export default function PlanMode({
                     isHighlighted ? 'ring-2 ring-amber-300' : ''
                   }`}
                   style={{
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(252, 245, 245, 0.95) 100%)',
-                    border: '1px solid rgba(200, 160, 160, 0.15)',
-                    boxShadow: '0 4px 20px rgba(180, 120, 120, 0.08)',
+                    background: 'rgba(255, 255, 255, 0.7)',
+                    boxShadow: '0 4px 20px rgba(168, 152, 152, 0.1)',
                   }}
                 >
                   {/* Header */}
@@ -253,7 +252,7 @@ export default function PlanMode({
                     </div>
                     <div 
                       className="p-2 rounded-full transition-all group-hover:translate-x-1"
-                      style={{ backgroundColor: 'rgba(200, 160, 160, 0.1)' }}
+                      style={{ backgroundColor: 'rgba(212, 196, 196, 0.15)' }}
                     >
                       <ArrowRight size={14} style={{ color: colors.etchDark }} />
                     </div>
@@ -262,17 +261,12 @@ export default function PlanMode({
                   {/* Utilization */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs" style={{ color: colors.muted }}>Utilization</span>
-                      <span 
-                        className="text-sm font-semibold"
-                        style={{ color: utilization >= 70 ? colors.etchDark : colors.muted }}
-                      >
-                        {utilization}%
-                      </span>
+                      <span className="text-xs uppercase tracking-wider" style={{ color: colors.muted }}>Utilization</span>
+                      <EtchedText size="sm">{utilization}%</EtchedText>
                     </div>
                     <div 
-                      className="h-2 rounded-full overflow-hidden"
-                      style={{ backgroundColor: 'rgba(200, 160, 160, 0.12)' }}
+                      className="h-1.5 rounded-full overflow-hidden"
+                      style={{ backgroundColor: 'rgba(212, 196, 196, 0.2)' }}
                     >
                       <div 
                         className="h-full rounded-full transition-all"
@@ -289,10 +283,11 @@ export default function PlanMode({
                     <div className="flex flex-wrap gap-2">
                       {conflicts.length > 0 && (
                         <span 
-                          className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
+                          className="px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
-                            color: colors.etchDark 
+                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+                            color: colors.etchDark,
+                            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.08)',
                           }}
                         >
                           <AlertTriangle size={11} />
@@ -301,10 +296,11 @@ export default function PlanMode({
                       )}
                       {unstaffed.length > 0 && (
                         <span 
-                          className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
+                          className="px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
-                            color: colors.etchDark 
+                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+                            color: colors.etchDark,
+                            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.08)',
                           }}
                         >
                           <UserX size={11} />
@@ -313,10 +309,11 @@ export default function PlanMode({
                       )}
                       {lowEnrollment.length > 0 && (
                         <span 
-                          className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
+                          className="px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
-                            color: colors.etchDark 
+                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+                            color: colors.etchDark,
+                            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.08)',
                           }}
                         >
                           <Users size={11} />
