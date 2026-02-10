@@ -9,14 +9,27 @@ const STUDIO_HOURS = { start: 9, end: 21 }; // 9am to 9pm = 12 hours of potentia
 const colors = {
   ink: '#1a1a1a',
   paper: '#faf9f7',
-  muted: '#9ca3af',
-  border: '#f3e8e8',
-  etchLight: '#e8b4b8',
-  etchDark: '#d4a5a5',
-  accent: '#f0c6c6',
-  warning: '#f59e0b',
-  danger: '#ef4444',
-  success: '#22c55e',
+  muted: '#8a8478',
+  border: '#e8e6e1',
+  etchLight: '#c4a0a0',
+  etchDark: '#8a7070',
+};
+
+const EtchedText = ({ children, size = 'md', className = '' }) => {
+  const sizes = { sm: 'text-sm', md: 'text-lg', lg: 'text-2xl', xl: 'text-3xl' };
+  return (
+    <span
+      className={`${sizes[size]} font-bold tracking-tight ${className}`}
+      style={{
+        color: 'transparent',
+        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+      }}
+    >
+      {children}
+    </span>
+  );
 };
 
 export default function PlanMode({
