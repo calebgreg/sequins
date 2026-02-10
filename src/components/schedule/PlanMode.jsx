@@ -9,9 +9,9 @@ const STUDIO_HOURS = { start: 9, end: 21 }; // 9am to 9pm = 12 hours of potentia
 const colors = {
   ink: '#1a1a1a',
   paper: '#faf9f7',
-  muted: '#b8a8a8',
-  etchLight: '#d4c4c4',
-  etchDark: '#a89898',
+  muted: '#c4b8b8',
+  etchLight: '#e8d8d8',
+  etchDark: '#c4b0b0',
 };
 
 const EtchedText = ({ children, size = 'md', className = '' }) => {
