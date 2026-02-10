@@ -73,7 +73,8 @@ export default function NowMode({ classes, students, teachers, rooms }) {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {relevantClasses.map(cls => {
             const status = getStatus(cls);
-            const studentCount = cls.student_names?.length || 0;
+            // Count students that actually exist in the database
+            const studentCount = students.filter(s => cls.student_names?.includes(s.name)).length;
             const classStartTime = formatClassTime(cls.start_time);
             const classEndTime = formatClassTime(cls.start_time + (cls.duration || 1));
             const roomName = cls.room || 'Unassigned';
