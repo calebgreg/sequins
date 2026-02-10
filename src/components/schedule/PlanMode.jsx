@@ -237,26 +237,24 @@ export default function PlanMode({
                     isHighlighted ? 'ring-2 ring-amber-300' : ''
                   }`}
                   style={{
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(253, 242, 248, 0.9) 100%)',
-                    border: '1px solid rgba(244, 114, 182, 0.12)',
-                    boxShadow: '0 4px 20px rgba(244, 114, 182, 0.06)',
+                    background: 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(252, 245, 245, 0.95) 100%)',
+                    border: '1px solid rgba(200, 160, 160, 0.15)',
+                    boxShadow: '0 4px 20px rgba(180, 120, 120, 0.08)',
                   }}
                 >
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="text-lg font-bold tracking-tight" style={{ color: colors.ink }}>
-                        {room.name}
-                      </h3>
+                      <EtchedText size="md">{room.name}</EtchedText>
                       <p className="text-xs mt-0.5" style={{ color: colors.muted }}>
                         {roomClasses.length} {roomClasses.length === 1 ? 'class' : 'classes'} scheduled
                       </p>
                     </div>
                     <div 
                       className="p-2 rounded-full transition-all group-hover:translate-x-1"
-                      style={{ backgroundColor: 'rgba(244, 114, 182, 0.08)' }}
+                      style={{ backgroundColor: 'rgba(200, 160, 160, 0.1)' }}
                     >
-                      <ArrowRight size={14} style={{ color: '#ec4899' }} />
+                      <ArrowRight size={14} style={{ color: colors.etchDark }} />
                     </div>
                   </div>
 
@@ -266,20 +264,20 @@ export default function PlanMode({
                       <span className="text-xs" style={{ color: colors.muted }}>Utilization</span>
                       <span 
                         className="text-sm font-semibold"
-                        style={{ color: colors.ink }}
+                        style={{ color: utilization >= 70 ? colors.etchDark : colors.muted }}
                       >
                         {utilization}%
                       </span>
                     </div>
                     <div 
-                      className="h-1.5 rounded-full overflow-hidden"
-                      style={{ backgroundColor: 'rgba(244, 114, 182, 0.1)' }}
+                      className="h-2 rounded-full overflow-hidden"
+                      style={{ backgroundColor: 'rgba(200, 160, 160, 0.12)' }}
                     >
                       <div 
                         className="h-full rounded-full transition-all"
                         style={{ 
                           width: `${utilization}%`,
-                          background: 'linear-gradient(90deg, #fda4af 0%, #f472b6 100%)',
+                          background: `linear-gradient(90deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
                         }}
                       />
                     </div>
@@ -292,8 +290,8 @@ export default function PlanMode({
                         <span 
                           className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(244, 114, 182, 0.08)', 
-                            color: '#be185d' 
+                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
+                            color: colors.etchDark 
                           }}
                         >
                           <AlertTriangle size={11} />
@@ -304,8 +302,8 @@ export default function PlanMode({
                         <span 
                           className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(244, 114, 182, 0.08)', 
-                            color: '#be185d' 
+                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
+                            color: colors.etchDark 
                           }}
                         >
                           <UserX size={11} />
@@ -316,8 +314,8 @@ export default function PlanMode({
                         <span 
                           className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(244, 114, 182, 0.08)', 
-                            color: '#be185d' 
+                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
+                            color: colors.etchDark 
                           }}
                         >
                           <Users size={11} />
@@ -328,7 +326,7 @@ export default function PlanMode({
                   ) : (
                     <div 
                       className="text-xs font-medium"
-                      style={{ color: '#059669' }}
+                      style={{ color: colors.etchDark }}
                     >
                       ✓ No issues
                     </div>
