@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Building2, Plus, Check, Users, ArrowRight, Shield, Loader2 } from 'lucide-react';
+import { Building2, Plus, Check, Users, ArrowRight, Shield, Loader2, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Navigate } from 'react-router-dom';
 
@@ -15,6 +15,9 @@ export default function SuperAdmin() {
   const [newStudioName, setNewStudioName] = useState('');
   const [newStudioEmail, setNewStudioEmail] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [deleteStudio, setDeleteStudio] = useState(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const queryClient = useQueryClient();
 
   // Get current user
@@ -69,6 +72,37 @@ export default function SuperAdmin() {
       toast.error('Failed to switch studio: ' + err.message);
     }
   });
+
+  // Delete studio handler
+  const handleDeleteStudio = async () => {
+    if (!deleteStudio || deleteConfirmName !== deleteStudio.name) {
+      toast.error('Please type the studio name to confirm deletion');
+      return;
+    }
+    
+    setIsDeleting(true);
+    try {
+      const response = await base44.functions.invoke('deleteStudio', { studio_id: deleteStudio.id });
+      
+      // If current studio was deleted, clear it from user
+      if (currentUser?.studio_id === deleteStudio.id) {
+        await base44.auth.updateMe({ studio_id: null });
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['allStudios'] });
+      toast.success('Studio and all data deleted successfully');
+      setDeleteStudio(null);
+      setDeleteConfirmName('');
+      
+      if (currentUser?.studio_id === deleteStudio.id) {
+        window.location.reload();
+      }
+    } catch (err) {
+      toast.error('Failed to delete studio: ' + err.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleCreateStudio = () => {
     if (!newStudioName.trim()) {
@@ -265,12 +299,22 @@ export default function SuperAdmin() {
                           </Button>
                         )}
                         
-                        {isCurrentStudio && (
-                          <div className="flex items-center gap-2 text-indigo-600">
-                            <Check className="w-5 h-5" />
-                            <span className="text-sm font-medium">Active</span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {isCurrentStudio && (
+                            <div className="flex items-center gap-2 text-indigo-600 mr-2">
+                              <Check className="w-5 h-5" />
+                              <span className="text-sm font-medium">Active</span>
+                            </div>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteStudio(studio)}
+                            className="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -281,6 +325,59 @@ export default function SuperAdmin() {
         </div>
 
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteStudio} onOpenChange={(open) => { if (!open) { setDeleteStudio(null); setDeleteConfirmName(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="w-5 h-5" />
+              Delete Studio
+            </DialogTitle>
+            <DialogDescription>
+              This action is <strong>irreversible</strong>. All data associated with this studio will be permanently deleted, including:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <ul className="text-sm text-gray-600 space-y-1 mb-4 list-disc list-inside">
+              <li>All teachers and staff</li>
+              <li>All students and families</li>
+              <li>All classes and attendance records</li>
+              <li>All invoices and billing data</li>
+              <li>All performances and routines</li>
+              <li>All messages and notes</li>
+            </ul>
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+              <p className="text-sm text-red-800">
+                To confirm, type <strong>{deleteStudio?.name}</strong> below:
+              </p>
+            </div>
+            <Input
+              placeholder="Type studio name to confirm"
+              value={deleteConfirmName}
+              onChange={(e) => setDeleteConfirmName(e.target.value)}
+              className="border-red-200 focus:border-red-400"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDeleteStudio(null); setDeleteConfirmName(''); }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleDeleteStudio}
+              disabled={isDeleting || deleteConfirmName !== deleteStudio?.name}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              Delete Studio
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
