@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { X, Send } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 export default function EditStaffModal({ isOpen, onClose, teacher, onSave }) {
   const [formData, setFormData] = useState({
@@ -75,134 +74,224 @@ export default function EditStaffModal({ isOpen, onClose, teacher, onSave }) {
     }
   };
 
+  const inputStyle = {
+    background: 'rgba(255,255,255,0.6)',
+    border: 'none',
+    borderRadius: '12px',
+    padding: '12px 16px',
+    color: '#8b7d72',
+    boxShadow: 'inset 0 1px 2px rgba(180,150,140,0.08)',
+    outline: 'none',
+    width: '100%',
+    fontSize: '14px',
+  };
+
+  const labelStyle = {
+    color: '#b5a599',
+    fontSize: '11px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    marginBottom: '6px',
+    display: 'block',
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle 
-            className="text-xl font-semibold"
-            style={{ color: '#8b7d72' }}
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent 
+        side="right" 
+        className="w-[400px] p-0 border-none"
+        style={{
+          background: 'linear-gradient(180deg, #fef7f7 0%, #faf5f3 100%)',
+        }}
+      >
+        {/* Header */}
+        <div className="px-6 py-5 flex items-center justify-between border-b" style={{ borderColor: 'rgba(200,180,170,0.2)' }}>
+          <h2 
+            className="text-lg font-semibold"
+            style={{ 
+              color: 'transparent',
+              backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+            }}
           >
-            Edit Staff Member
-          </DialogTitle>
-        </DialogHeader>
+            Edit Staff
+          </h2>
+          <button 
+            onClick={onClose}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-105"
+            style={{
+              background: 'rgba(255,255,255,0.6)',
+              color: '#b5a599',
+            }}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-        <div className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <Label className="text-sm" style={{ color: '#8a8478' }}>Name</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                className="mt-1"
-              />
-            </div>
+        {/* Content */}
+        <div className="px-6 py-6 space-y-5 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 160px)' }}>
+          
+          {/* Name */}
+          <div>
+            <label style={labelStyle}>Name</label>
+            <input
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              style={inputStyle}
+            />
+          </div>
 
+          {/* Email & Phone Row */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-sm" style={{ color: '#8a8478' }}>Email</Label>
-              <Input
+              <label style={labelStyle}>Email</label>
+              <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
-                className="mt-1"
                 placeholder="email@example.com"
+                style={inputStyle}
               />
             </div>
-
             <div>
-              <Label className="text-sm" style={{ color: '#8a8478' }}>Phone</Label>
-              <Input
+              <label style={labelStyle}>Phone</label>
+              <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
-                className="mt-1"
                 placeholder="(555) 123-4567"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <Label className="text-sm" style={{ color: '#8a8478' }}>Title</Label>
-              <Input
-                value={formData.title}
-                onChange={(e) => handleChange('title', e.target.value)}
-                className="mt-1"
-                placeholder="e.g., Lead Instructor"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <Label className="text-sm" style={{ color: '#8a8478' }}>Styles (comma separated)</Label>
-              <Input
-                value={stylesInput}
-                onChange={(e) => handleStylesChange(e.target.value)}
-                className="mt-1"
-                placeholder="Ballet, Jazz, Contemporary"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <Label className="text-sm" style={{ color: '#8a8478' }}>Availability</Label>
-              <Input
-                value={formData.availability}
-                onChange={(e) => handleChange('availability', e.target.value)}
-                className="mt-1"
-                placeholder="e.g., Mon-Fri afternoons"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <Label className="text-sm" style={{ color: '#8a8478' }}>Bio</Label>
-              <Textarea
-                value={formData.bio}
-                onChange={(e) => handleChange('bio', e.target.value)}
-                className="mt-1"
-                rows={3}
-                placeholder="Short biography..."
+                style={inputStyle}
               />
             </div>
           </div>
 
-          {/* Invite to App Section */}
+          {/* Title */}
+          <div>
+            <label style={labelStyle}>Title</label>
+            <input
+              value={formData.title}
+              onChange={(e) => handleChange('title', e.target.value)}
+              placeholder="Lead Instructor"
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Styles */}
+          <div>
+            <label style={labelStyle}>Styles</label>
+            <input
+              value={stylesInput}
+              onChange={(e) => handleStylesChange(e.target.value)}
+              placeholder="Ballet, Jazz, Contemporary"
+              style={inputStyle}
+            />
+            {formData.styles.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {formData.styles.map((style, i) => (
+                  <span 
+                    key={i}
+                    className="px-3 py-1 rounded-full text-xs"
+                    style={{
+                      background: 'rgba(244,206,206,0.3)',
+                      color: '#8a7070',
+                    }}
+                  >
+                    {style}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Availability */}
+          <div>
+            <label style={labelStyle}>Availability</label>
+            <input
+              value={formData.availability}
+              onChange={(e) => handleChange('availability', e.target.value)}
+              placeholder="Mon-Fri afternoons"
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Bio */}
+          <div>
+            <label style={labelStyle}>Bio</label>
+            <textarea
+              value={formData.bio}
+              onChange={(e) => handleChange('bio', e.target.value)}
+              placeholder="Short biography..."
+              rows={3}
+              style={{
+                ...inputStyle,
+                resize: 'none',
+              }}
+            />
+          </div>
+
+          {/* Invite Card */}
           <div 
-            className="p-4 rounded-xl mt-4"
-            style={{ 
-              background: 'linear-gradient(145deg, rgba(164,139,196,0.1) 0%, rgba(180,160,200,0.05) 100%)',
-              border: '1px solid rgba(164,139,196,0.2)',
+            className="rounded-2xl p-4"
+            style={{
+              background: 'linear-gradient(145deg, rgba(164,139,196,0.12) 0%, rgba(180,160,200,0.06) 100%)',
             }}
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-sm" style={{ color: '#8b7d9a' }}>App Access</p>
-                <p className="text-xs" style={{ color: '#a8a0b5' }}>
-                  Send invite so they can log into Sequins
+                <p className="text-xs mt-0.5" style={{ color: '#a8a0b5' }}>
+                  Invite to log into Sequins
                 </p>
               </div>
-              <Button
+              <button
                 onClick={handleInviteToApp}
                 disabled={inviting || !formData.email}
-                variant="outline"
-                size="sm"
-                className="text-xs"
+                className="px-4 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all hover:scale-105 disabled:opacity-50"
+                style={{
+                  background: 'rgba(255,255,255,0.7)',
+                  color: '#8b7d9a',
+                }}
               >
-                {inviting ? 'Sending...' : 'Send Invite'}
-              </Button>
+                <Send className="w-3 h-3" />
+                {inviting ? 'Sending...' : 'Invite'}
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-2">
-          <Button variant="outline" onClick={onClose}>
+        {/* Footer */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 px-6 py-4 flex gap-3"
+          style={{ 
+            background: 'linear-gradient(0deg, #fef7f7 0%, transparent 100%)',
+            paddingTop: '24px',
+          }}
+        >
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+            style={{
+              background: 'rgba(255,255,255,0.6)',
+              color: '#b5a599',
+            }}
+          >
             Cancel
-          </Button>
-          <Button 
+          </button>
+          <button
             onClick={handleSave}
             disabled={saving}
-            style={{ backgroundColor: '#1a1a1a' }}
+            className="flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] disabled:opacity-50"
+            style={{
+              background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+              boxShadow: '0 4px 12px -2px rgba(180,150,140,0.25), inset 0 1px 2px rgba(255,255,255,0.8)',
+              color: '#8a7070',
+            }}
           >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
+            {saving ? 'Saving...' : 'Save'}
+          </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
