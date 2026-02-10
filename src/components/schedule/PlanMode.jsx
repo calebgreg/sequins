@@ -285,40 +285,40 @@ export default function PlanMode({
                     <div className="flex flex-wrap gap-2">
                       {conflicts.length > 0 && (
                         <span 
-                          className="px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1.5"
+                          className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
-                            color: colors.etchDark,
-                            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.08)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.5)', 
+                            color: '#c4b0b0',
+                            borderColor: 'rgba(200, 180, 180, 0.3)',
                           }}
                         >
-                          <AlertTriangle size={11} />
+                          <AlertTriangle size={12} />
                           {conflicts.length} {conflicts.length === 1 ? 'conflict' : 'conflicts'}
                         </span>
                       )}
                       {unstaffed.length > 0 && (
                         <span 
-                          className="px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1.5"
+                          className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
-                            color: colors.etchDark,
-                            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.08)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.5)', 
+                            color: '#c4b0b0',
+                            borderColor: 'rgba(200, 180, 180, 0.3)',
                           }}
                         >
-                          <UserX size={11} />
+                          <UserX size={12} />
                           {unstaffed.length} unstaffed
                         </span>
                       )}
                       {lowEnrollment.length > 0 && (
                         <span 
-                          className="px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1.5"
+                          className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
-                            color: colors.etchDark,
-                            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.08)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.5)', 
+                            color: '#c4b0b0',
+                            borderColor: 'rgba(200, 180, 180, 0.3)',
                           }}
                         >
-                          <Users size={11} />
+                          <Users size={12} />
                           {lowEnrollment.length} low
                         </span>
                       )}
@@ -326,7 +326,7 @@ export default function PlanMode({
                   ) : (
                     <div 
                       className="text-xs font-medium"
-                      style={{ color: colors.etchDark }}
+                      style={{ color: '#c4b0b0' }}
                     >
                       ✓ No issues
                     </div>
