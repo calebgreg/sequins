@@ -91,93 +91,110 @@ export default function StudioDayDetail({ room, metrics, selectedDay, students, 
               const highlighted = shouldHighlight(cls);
 
               return (
-                <Link
+                <div
                   key={cls.id}
-                  to={`${createPageUrl('ClassDetail')}?id=${cls.id}`}
-                  className={`flex items-center gap-4 p-4 rounded-xl transition-all hover:scale-[1.01] block ${
-                    highlighted ? 'ring-2 ring-amber-400' : ''
-                  }`}
-                  style={{ 
-                    backgroundColor: highlighted ? 'rgba(251, 191, 36, 0.05)' : 'transparent',
-                  }}
+                  className={`flex items-start gap-4 ${highlighted ? 'ring-2 ring-amber-400 rounded-2xl' : ''}`}
                 >
-                  <div className="w-16 text-right">
-                    <span className="text-sm font-medium" style={{ color: colors.ink }}>
+                  {/* Time column */}
+                  <div className="w-20 pt-5 text-right flex-shrink-0">
+                    <span 
+                      className="text-sm font-bold"
+                      style={{ 
+                        color: 'transparent',
+                        backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                      }}
+                    >
                       {formatTime(cls.start_time)}
                     </span>
                   </div>
-                  <div 
-                    className="flex-1 p-4 rounded-xl"
+
+                  {/* Card */}
+                  <Link
+                    to={`${createPageUrl('ClassDetail')}?id=${cls.id}`}
+                    className="flex-1 p-5 rounded-3xl transition-all hover:scale-[1.01]"
                     style={{
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(252, 245, 245, 0.95) 100%)',
-                      border: '1px solid rgba(200, 160, 160, 0.25)',
-                      boxShadow: '0 2px 8px rgba(180, 120, 120, 0.06)',
+                      backgroundColor: '#fef7f7',
+                      boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
                     }}
                   >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-semibold" style={{ color: colors.ink }}>{cls.title}</h3>
-                        <p className="text-sm mt-0.5" style={{ color: colors.muted }}>
-                          {cls.teacher || <span className="text-amber-600 flex items-center gap-1"><UserX size={12} /> No teacher</span>}
-                          {cls.teacher && ` · ${enrolled}/${capacity} students`}
+                    <div className="flex items-start justify-between mb-1">
+                      <div className="flex-1 min-w-0">
+                        <h3 
+                          className="font-bold text-base truncate"
+                          style={{ 
+                            color: 'transparent',
+                            backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                          }}
+                        >
+                          {cls.title}
+                        </h3>
+                        <p className="text-xs mt-1" style={{ color: '#8a8478' }}>
+                          {cls.teacher || 'No teacher'} · {enrolled}/{capacity} students
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 ml-3">
                         {hasConflict(cls) && (
                           <span 
-                            className="p-1.5 rounded-full"
-                            style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: 'rgba(254, 226, 226, 0.8)' }}
                             title="Scheduling conflict"
                           >
-                            <AlertTriangle size={14} style={{ color: colors.danger }} />
+                            <AlertTriangle size={14} style={{ color: '#dc2626' }} />
                           </span>
                         )}
                         {isUnstaffed(cls) && (
                           <span 
-                            className="p-1.5 rounded-full"
-                            style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: 'rgba(254, 243, 199, 0.8)' }}
                             title="No teacher assigned"
                           >
-                            <UserX size={14} style={{ color: colors.warning }} />
+                            <UserX size={14} style={{ color: '#d97706' }} />
                           </span>
                         )}
                         {isLowEnrollment(cls) && (
                           <span 
-                            className="p-1.5 rounded-full"
-                            style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: 'rgba(254, 243, 199, 0.8)' }}
                             title="Low enrollment"
                           >
-                            <Users size={14} style={{ color: colors.warning }} />
+                            <Users size={14} style={{ color: '#d97706' }} />
                           </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Enrollment bar */}
-                    <div className="mt-3 flex items-center gap-2">
+                    {/* Enrollment meter */}
+                    <div className="mt-3 flex items-center gap-3">
                       <div 
-                        className="flex-1 h-1.5 rounded-full overflow-hidden"
-                        style={{ backgroundColor: 'rgba(200, 160, 160, 0.15)' }}
+                        className="flex-1 h-2 rounded-full overflow-hidden"
+                        style={{ backgroundColor: 'rgba(232, 200, 204, 0.4)' }}
                       >
                         <div 
-                          className="h-full rounded-full"
+                          className="h-full rounded-full transition-all"
                           style={{ 
                             width: `${enrollmentPercent}%`,
-                            backgroundColor: enrollmentPercent >= 70 ? colors.success : enrollmentPercent >= 50 ? colors.etchDark : colors.warning,
+                            backgroundColor: '#e8c8cc',
                           }}
                         />
                       </div>
                       <span 
-                        className="text-xs font-medium"
+                        className="text-xs font-bold w-10 text-right"
                         style={{ 
-                          color: enrollmentPercent >= 70 ? colors.success : enrollmentPercent >= 50 ? colors.muted : colors.warning 
+                          color: 'transparent',
+                          backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                          backgroundClip: 'text',
+                          WebkitBackgroundClip: 'text',
                         }}
                       >
                         {enrollmentPercent}%
                       </span>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                </div>
               );
             })
           )}
