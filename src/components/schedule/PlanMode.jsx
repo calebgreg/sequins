@@ -214,91 +214,119 @@ export default function PlanMode({
             <p style={{ color: colors.muted }}>No studios configured. Set up rooms in Settings.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid gap-4 md:grid-cols-2">
             {roomMetrics.map(({ room, utilization, conflicts, unstaffed, lowEnrollment, classes: roomClasses }) => {
-              // Determine if this row should be highlighted based on active filter
               const isHighlighted = 
                 (activeFilter === 'conflicts' && conflicts.length > 0) ||
                 (activeFilter === 'unstaffed' && unstaffed.length > 0) ||
                 (activeFilter === 'low_enrollment' && lowEnrollment.length > 0);
 
+              const hasIssues = conflicts.length > 0 || unstaffed.length > 0 || lowEnrollment.length > 0;
+
               return (
                 <button
                   key={room.id}
                   onClick={() => setSelectedStudio(room)}
-                  className={`w-full p-4 rounded-2xl text-left transition-all hover:scale-[1.01] ${
-                    isHighlighted ? 'ring-2 ring-amber-400' : ''
+                  className={`group text-left p-5 rounded-3xl transition-all hover:scale-[1.02] ${
+                    isHighlighted ? 'ring-2 ring-amber-300' : ''
                   }`}
                   style={{
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(252, 245, 245, 0.9) 100%)',
-                    border: '1px solid rgba(200, 160, 160, 0.2)',
-                    boxShadow: '0 2px 8px rgba(180, 120, 120, 0.06)',
+                    background: 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(252, 245, 245, 0.95) 100%)',
+                    border: '1px solid rgba(200, 160, 160, 0.15)',
+                    boxShadow: '0 4px 20px rgba(180, 120, 120, 0.08)',
                   }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="font-semibold" style={{ color: colors.ink }}>{room.name}</span>
-                        <span className="text-xs" style={{ color: colors.muted }}>
-                          {roomClasses.length} classes
-                        </span>
-                      </div>
-
-                      {/* Utilization Bar */}
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="flex-1 h-2 rounded-full overflow-hidden"
-                          style={{ backgroundColor: 'rgba(200, 160, 160, 0.15)' }}
-                        >
-                          <div 
-                            className="h-full rounded-full transition-all"
-                            style={{ 
-                              width: `${utilization}%`,
-                              backgroundColor: utilization > 80 ? colors.success : utilization > 50 ? colors.etchDark : colors.warning,
-                            }}
-                          />
-                        </div>
-                        <span 
-                          className="text-xs font-medium w-12 text-right"
-                          style={{ color: utilization > 80 ? colors.success : utilization > 50 ? colors.muted : colors.warning }}
-                        >
-                          {utilization}%
-                        </span>
-                      </div>
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold tracking-tight" style={{ color: colors.ink }}>
+                        {room.name}
+                      </h3>
+                      <p className="text-xs mt-0.5" style={{ color: colors.muted }}>
+                        {roomClasses.length} {roomClasses.length === 1 ? 'class' : 'classes'} scheduled
+                      </p>
                     </div>
+                    <div 
+                      className="p-2 rounded-full transition-all group-hover:translate-x-1"
+                      style={{ backgroundColor: 'rgba(200, 160, 160, 0.1)' }}
+                    >
+                      <ArrowRight size={14} style={{ color: colors.etchDark }} />
+                    </div>
+                  </div>
 
-                    {/* Issue Badges */}
-                    <div className="flex items-center gap-2 ml-4">
+                  {/* Utilization */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs" style={{ color: colors.muted }}>Utilization</span>
+                      <span 
+                        className="text-sm font-semibold"
+                        style={{ color: utilization >= 70 ? colors.etchDark : colors.muted }}
+                      >
+                        {utilization}%
+                      </span>
+                    </div>
+                    <div 
+                      className="h-2 rounded-full overflow-hidden"
+                      style={{ backgroundColor: 'rgba(200, 160, 160, 0.12)' }}
+                    >
+                      <div 
+                        className="h-full rounded-full transition-all"
+                        style={{ 
+                          width: `${utilization}%`,
+                          background: `linear-gradient(90deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Issue Pills */}
+                  {hasIssues ? (
+                    <div className="flex flex-wrap gap-2">
                       {conflicts.length > 0 && (
                         <span 
-                          className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1"
-                          style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: colors.danger }}
+                          className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
+                          style={{ 
+                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
+                            color: colors.etchDark 
+                          }}
                         >
-                          <AlertTriangle size={12} />
-                          {conflicts.length}
+                          <AlertTriangle size={11} />
+                          {conflicts.length} {conflicts.length === 1 ? 'conflict' : 'conflicts'}
                         </span>
                       )}
                       {unstaffed.length > 0 && (
                         <span 
-                          className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1"
-                          style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', color: colors.warning }}
+                          className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
+                          style={{ 
+                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
+                            color: colors.etchDark 
+                          }}
                         >
-                          <UserX size={12} />
-                          {unstaffed.length}
+                          <UserX size={11} />
+                          {unstaffed.length} unstaffed
                         </span>
                       )}
                       {lowEnrollment.length > 0 && (
                         <span 
-                          className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1"
-                          style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', color: colors.warning }}
+                          className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
+                          style={{ 
+                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
+                            color: colors.etchDark 
+                          }}
                         >
-                          <Users size={12} />
-                          {lowEnrollment.length}
+                          <Users size={11} />
+                          {lowEnrollment.length} low
                         </span>
                       )}
-                      <ArrowRight size={16} style={{ color: colors.muted }} />
                     </div>
-                  </div>
+                  ) : (
+                    <div 
+                      className="text-xs font-medium"
+                      style={{ color: colors.etchDark }}
+                    >
+                      ✓ No issues
+                    </div>
+                  )}
                 </button>
               );
             })}
