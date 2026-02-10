@@ -22,9 +22,14 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // --- SUB-COMPONENT: Class List View ---
-const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
+const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = [] }) => {
   const myClasses = classes.filter(c => c.teacher === currentTeacherName || !c.teacher);
   const displayClasses = myClasses.length > 0 ? myClasses : classes;
+  
+  // Helper to count actual students that exist in database
+  const getActualStudentCount = (cls) => {
+    return students.filter(s => cls.student_names?.includes(s.name)).length;
+  };
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -73,7 +78,7 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName }) => {
               <div className="min-w-0 flex-1">
                 <h3 className="font-medium truncate" style={{ color: '#8b7d72' }}>{cls.title}</h3>
                 <p className="text-xs md:text-sm mt-0.5 truncate" style={{ color: '#b5a599' }}>
-                  {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {cls.duration || 1}hr · {cls.student_names?.length || 0} students
+                  {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {cls.duration || 1}hr · {getActualStudentCount(cls)} students
                 </p>
               </div>
             </div>
@@ -817,6 +822,7 @@ export default function TeacherStudio() {
                 {viewMode === 'list' && (
                   <ClassListView 
                     classes={classes} 
+                    students={students}
                     onSelectClass={setSelectedClass} 
                     currentTeacherName={currentTeacherName}
                     filterType={activeTab === 'classes' ? 'class' : 'admin'}
