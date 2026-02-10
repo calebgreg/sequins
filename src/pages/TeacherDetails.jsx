@@ -3,14 +3,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import SubRequestFlow from '../components/teachers/SubRequestFlow';
 import AddNoteModal from '../components/teachers/AddNoteModal';
+import EditStaffModal from '../components/teachers/modals/EditStaffModal';
 
 const TeacherDetails = () => {
   const [activeTab, setActiveTab] = useState('timecard');
   const [timecardExpanded, setTimecardExpanded] = useState(true);
   const [subRequestOpen, setSubRequestOpen] = useState(false);
   const [addNoteOpen, setAddNoteOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   // Get teacher ID from URL
@@ -82,6 +86,18 @@ const TeacherDetails = () => {
       author_name: currentUser?.full_name || 'Unknown',
       date: today,
     });
+  };
+
+  // Update teacher mutation
+  const updateTeacherMutation = useMutation({
+    mutationFn: (data) => base44.entities.Teacher.update(teacherId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacher', teacherId] });
+    },
+  });
+
+  const handleSaveTeacher = async (data) => {
+    await updateTeacherMutation.mutateAsync(data);
   };
 
   // Calculate hours
@@ -305,8 +321,18 @@ const TeacherDetails = () => {
               </div>
             </div>
 
-            {/* Quick Stats */}
+            {/* Quick Stats & Edit Button */}
             <div className="text-right pt-2">
+              <Button
+                onClick={() => setEditModalOpen(true)}
+                variant="ghost"
+                size="sm"
+                className="mb-3 text-xs gap-1.5"
+                style={{ color: '#b5a599' }}
+              >
+                <Pencil className="w-3 h-3" />
+                Edit
+              </Button>
               <div className="mb-4">
                 <p className="text-sm mb-1" style={{ color: '#b5a599' }}>This Period</p>
                 <p className="text-4xl font-light" style={{ color: '#8b7d72' }}>
@@ -778,6 +804,14 @@ const TeacherDetails = () => {
           onSave={handleSaveNote}
           saving={createNoteMutation.isPending}
           teacherName={teacher?.name}
+        />
+
+        {/* Edit Staff Modal */}
+        <EditStaffModal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          teacher={teacher}
+          onSave={handleSaveTeacher}
         />
       </div>
     </div>
