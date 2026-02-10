@@ -770,39 +770,8 @@ export default function TeacherStudio() {
               className="flex-1 p-4 md:p-6 pt-16 md:pt-10 max-w-4xl mx-auto w-full"
             >
               {/* Header Controls */}
-              <div className="flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-10">
-                 {/* Left: Classes / Admin Toggle */}
-                 <div 
-                   className="inline-flex items-center gap-1 p-1 rounded-xl"
-                   style={{
-                     background: 'rgba(240,230,225,0.5)',
-                     boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.1)',
-                   }}
-                 >
-                   {[
-                     { id: 'classes', label: 'Classes' },
-                     { id: 'admin', label: 'Admin' }
-                   ].map((tab) => (
-                     <button
-                       key={tab.id}
-                       onClick={() => setActiveTab(tab.id)}
-                       className="px-3 md:px-6 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all"
-                       style={{
-                         background: activeTab === tab.id 
-                           ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
-                           : 'transparent',
-                         color: activeTab === tab.id ? '#8b7d72' : '#b5a599',
-                         boxShadow: activeTab === tab.id 
-                           ? '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)'
-                           : 'none',
-                       }}
-                     >
-                       {tab.label}
-                     </button>
-                   ))}
-                 </div>
-                   
-                 {/* Right: View Modes + Quick Actions */}
+              <div className="flex flex-wrap justify-end items-center gap-3 mb-6 md:mb-10">
+                 {/* Right: Quick Actions */}
                  <div className="flex items-center gap-2">
                    {/* Time Management Link */}
                    <Link to={createPageUrl('TeacherTimeManagement')}>
