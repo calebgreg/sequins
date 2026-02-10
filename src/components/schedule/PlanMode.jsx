@@ -282,7 +282,7 @@ export default function PlanMode({
                     </div>
                     <div 
                       className="h-2 rounded-full overflow-hidden"
-                      style={{ backgroundColor: 'rgba(200, 180, 180, 0.2)' }}
+                      style={{ backgroundColor: 'rgba(232, 200, 204, 0.4)' }}
                     >
                       <div 
                         className="h-full rounded-full transition-all"
