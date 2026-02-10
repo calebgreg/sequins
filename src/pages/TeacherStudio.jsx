@@ -21,15 +21,27 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+// --- HELPER: Get today's day code ---
+const getTodayDayCode = () => {
+  const dayMap = { 0: 'U', 1: 'M', 2: 'T', 3: 'W', 4: 'R', 5: 'F', 6: 'S' };
+  return dayMap[new Date().getDay()];
+};
+
+// --- HELPER: Count actual students that exist in database ---
+const getActualStudentCount = (cls, students) => {
+  if (!cls.student_names || !students) return 0;
+  return students.filter(s => cls.student_names.includes(s.name)).length;
+};
+
 // --- SUB-COMPONENT: Class List View ---
 const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = [] }) => {
-  const myClasses = classes.filter(c => c.teacher === currentTeacherName || !c.teacher);
-  const displayClasses = myClasses.length > 0 ? myClasses : classes;
+  const todayCode = getTodayDayCode();
   
-  // Helper to count actual students that exist in database
-  const getActualStudentCount = (cls) => {
-    return students.filter(s => cls.student_names?.includes(s.name)).length;
-  };
+  // Filter by today AND by teacher (teacher name appears in the teacher field)
+  const todaysClasses = classes.filter(c => c.day === todayCode);
+  const myTodaysClasses = todaysClasses.filter(c => 
+    c.teacher?.toLowerCase().includes(currentTeacherName?.toLowerCase()) || !c.teacher
+  );
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -45,11 +57,11 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = 
         >
           Today's Classes
         </h1>
-        <p className="text-sm mt-1" style={{ color: '#b5a599' }}>{format(new Date(), 'MMMM do, yyyy')}</p>
+        <p className="text-sm mt-1" style={{ color: '#b5a599' }}>{format(new Date(), 'EEEE, MMMM do, yyyy')}</p>
       </div>
       
       <div className="space-y-3">
-        {displayClasses.map((cls, idx) => (
+        {myTodaysClasses.map((cls, idx) => (
           <motion.div
             key={cls.id}
             initial={{ opacity: 0, y: 10 }}
@@ -78,7 +90,7 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = 
               <div className="min-w-0 flex-1">
                 <h3 className="font-medium truncate" style={{ color: '#8b7d72' }}>{cls.title}</h3>
                 <p className="text-xs md:text-sm mt-0.5 truncate" style={{ color: '#b5a599' }}>
-                  {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {cls.duration || 1}hr · {getActualStudentCount(cls)} students
+                  {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {cls.duration || 1}hr · {getActualStudentCount(cls, students)} students
                 </p>
               </div>
             </div>
@@ -102,9 +114,9 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = 
           </motion.div>
         ))}
         
-        {displayClasses.length === 0 && (
+        {myTodaysClasses.length === 0 && (
           <div className="text-center py-12" style={{ color: '#b5a599' }}>
-            No classes scheduled for today
+            No classes scheduled for you today
           </div>
         )}
       </div>
