@@ -34,25 +34,25 @@ const getActualStudentCount = (cls, students) => {
 };
 
 // --- SUB-COMPONENT: Class List View ---
-const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = [] }) => {
+const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = [], filterType = 'class' }) => {
   const todayCode = getTodayDayCode();
   
-  console.log('DEBUG: Today code =', todayCode, '| Total classes =', classes.length);
+  // Filter by today first
+  const todaysClasses = classes.filter(c => c.day === todayCode);
   
-  // Filter by today AND by teacher (teacher name appears in the teacher field)
-  const todaysClasses = classes.filter(c => {
-    const match = c.day === todayCode;
-    if (!match) console.log('Filtered out (wrong day):', c.title, 'day:', c.day);
-    return match;
+  // Filter by type (class vs admin)
+  const typeFilteredClasses = todaysClasses.filter(c => {
+    if (filterType === 'admin') return c.type === 'admin';
+    return c.type !== 'admin'; // Default to regular classes
   });
   
-  console.log('DEBUG: Classes for today =', todaysClasses.length);
-  
-  const myTodaysClasses = todaysClasses.filter(c => 
-    c.teacher?.toLowerCase().includes(currentTeacherName?.toLowerCase()) || !c.teacher
-  );
-  
-  console.log('DEBUG: My classes for today =', myTodaysClasses.length);
+  // Filter by teacher - exact match (case-insensitive) or unassigned
+  const myTodaysClasses = typeFilteredClasses.filter(c => {
+    if (!c.teacher) return true; // Show unassigned classes
+    if (!currentTeacherName) return false;
+    // Exact match, case-insensitive
+    return c.teacher.trim().toLowerCase() === currentTeacherName.trim().toLowerCase();
+  });
 
   return (
     <div className="space-y-4 md:space-y-6">
