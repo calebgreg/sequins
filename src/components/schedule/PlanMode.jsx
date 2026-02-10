@@ -262,19 +262,19 @@ export default function PlanMode({
 
                   {/* Utilization */}
                   <div className="mb-4">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs uppercase tracking-wider" style={{ color: colors.muted }}>Utilization</span>
-                      <EtchedText size="sm">{utilization}%</EtchedText>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs uppercase tracking-wider font-medium" style={{ color: '#c4b8b8' }}>Utilization</span>
+                      <span className="text-sm font-semibold" style={{ color: '#c8b8b8', textShadow: '0 1px 1px rgba(255,255,255,0.8)' }}>{utilization}%</span>
                     </div>
                     <div 
-                      className="h-1.5 rounded-full overflow-hidden"
-                      style={{ backgroundColor: 'rgba(220, 200, 200, 0.3)' }}
+                      className="h-2 rounded-full overflow-hidden"
+                      style={{ backgroundColor: 'rgba(200, 180, 180, 0.2)' }}
                     >
                       <div 
                         className="h-full rounded-full transition-all"
                         style={{ 
                           width: `${utilization}%`,
-                          background: 'linear-gradient(90deg, #d4c0c0 0%, #b8a0a0 100%)',
+                          backgroundColor: '#c4b0b0',
                         }}
                       />
                     </div>
