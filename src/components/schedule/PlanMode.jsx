@@ -263,18 +263,18 @@ export default function PlanMode({
                   {/* Utilization */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs uppercase tracking-wider font-medium" style={{ color: '#c4b8b8' }}>Utilization</span>
-                      <span className="text-sm font-semibold" style={{ color: '#c8b8b8', textShadow: '0 1px 1px rgba(255,255,255,0.8)' }}>{utilization}%</span>
+                      <span className="text-xs uppercase tracking-wider font-medium" style={{ color: '#c9a8ab' }}>UTILIZATION</span>
+                      <span className="text-sm font-semibold" style={{ color: '#c9a8ab', textShadow: '0 1px 2px rgba(255,255,255,0.95)' }}>{utilization}%</span>
                     </div>
                     <div 
                       className="h-2 rounded-full overflow-hidden"
-                      style={{ backgroundColor: 'rgba(200, 180, 180, 0.2)' }}
+                      style={{ backgroundColor: 'rgba(210, 190, 195, 0.3)' }}
                     >
                       <div 
                         className="h-full rounded-full transition-all"
                         style={{ 
                           width: `${utilization}%`,
-                          backgroundColor: '#c4b0b0',
+                          backgroundColor: '#d4a8ac',
                         }}
                       />
                     </div>
