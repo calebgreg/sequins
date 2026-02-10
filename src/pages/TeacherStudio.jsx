@@ -804,6 +804,18 @@ export default function TeacherStudio() {
                   filterType="class"
                 />
               </div>
+
+              {isSubRequestOpen && (
+                <SubRequestFlow 
+                  onClose={() => setIsSubRequestOpen(false)}
+                  classes={classes.filter(c => {
+                    if (!c.teacher) return true;
+                    if (!currentTeacherName) return false;
+                    return c.teacher.trim().toLowerCase() === currentTeacherName.trim().toLowerCase();
+                  })}
+                  teacherName={currentTeacherName}
+                />
+              )}
             </motion.div>
           ) : (
             <motion.div 
