@@ -119,52 +119,21 @@ export default function StudioDayDetail({ room, metrics, selectedDay, students, 
                       boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
                     }}
                   >
-                    <div className="flex items-start justify-between mb-1">
-                      <div className="flex-1 min-w-0">
-                        <h3 
-                          className="font-bold text-base truncate"
-                          style={{ 
-                            color: 'transparent',
-                            backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                          }}
-                        >
-                          {cls.title}
-                        </h3>
-                        <p className="text-xs mt-1" style={{ color: '#8a8478' }}>
-                          {cls.teacher || 'No teacher'} · {enrolled}/{capacity} students
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1.5 ml-3">
-                        {hasConflict(cls) && (
-                          <span 
-                            className="w-8 h-8 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: 'rgba(254, 226, 226, 0.8)' }}
-                            title="Scheduling conflict"
-                          >
-                            <AlertTriangle size={14} style={{ color: '#dc2626' }} />
-                          </span>
-                        )}
-                        {isUnstaffed(cls) && (
-                          <span 
-                            className="w-8 h-8 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: 'rgba(254, 243, 199, 0.8)' }}
-                            title="No teacher assigned"
-                          >
-                            <UserX size={14} style={{ color: '#d97706' }} />
-                          </span>
-                        )}
-                        {isLowEnrollment(cls) && (
-                          <span 
-                            className="w-8 h-8 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: 'rgba(254, 243, 199, 0.8)' }}
-                            title="Low enrollment"
-                          >
-                            <Users size={14} style={{ color: '#d97706' }} />
-                          </span>
-                        )}
-                      </div>
+                    <div>
+                      <h3 
+                        className="font-bold text-base"
+                        style={{ 
+                          color: 'transparent',
+                          backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                          backgroundClip: 'text',
+                          WebkitBackgroundClip: 'text',
+                        }}
+                      >
+                        {cls.title}
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: '#8a8478' }}>
+                        {cls.teacher || 'No teacher'} · {enrolled}/{capacity} students
+                      </p>
                     </div>
 
                     {/* Enrollment meter */}
