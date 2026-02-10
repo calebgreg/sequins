@@ -12,11 +12,7 @@ export default function EditStaffModal({ isOpen, onClose, teacher, onSave }) {
     email: '',
     phone: '',
     title: '',
-    bio: '',
-    styles: [],
-    availability: '',
   });
-  const [stylesInput, setStylesInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [inviting, setInviting] = useState(false);
 
@@ -27,22 +23,12 @@ export default function EditStaffModal({ isOpen, onClose, teacher, onSave }) {
         email: teacher.email || '',
         phone: teacher.phone || '',
         title: teacher.title || '',
-        bio: teacher.bio || '',
-        styles: teacher.styles || [],
-        availability: teacher.availability || '',
       });
-      setStylesInput((teacher.styles || []).join(', '));
     }
   }, [teacher]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleStylesChange = (value) => {
-    setStylesInput(value);
-    const styles = value.split(',').map(s => s.trim()).filter(Boolean);
-    setFormData(prev => ({ ...prev, styles }));
   };
 
   const handleSave = async () => {
@@ -174,59 +160,6 @@ export default function EditStaffModal({ isOpen, onClose, teacher, onSave }) {
               onChange={(e) => handleChange('title', e.target.value)}
               placeholder="Lead Instructor"
               style={inputStyle}
-            />
-          </div>
-
-          {/* Styles */}
-          <div>
-            <label style={labelStyle}>Styles</label>
-            <input
-              value={stylesInput}
-              onChange={(e) => handleStylesChange(e.target.value)}
-              placeholder="Ballet, Jazz, Contemporary"
-              style={inputStyle}
-            />
-            {formData.styles.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {formData.styles.map((style, i) => (
-                  <span 
-                    key={i}
-                    className="px-3 py-1 rounded-full text-xs"
-                    style={{
-                      background: 'rgba(244,206,206,0.3)',
-                      color: '#8a7070',
-                    }}
-                  >
-                    {style}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Availability */}
-          <div>
-            <label style={labelStyle}>Availability</label>
-            <input
-              value={formData.availability}
-              onChange={(e) => handleChange('availability', e.target.value)}
-              placeholder="Mon-Fri afternoons"
-              style={inputStyle}
-            />
-          </div>
-
-          {/* Bio */}
-          <div>
-            <label style={labelStyle}>Bio</label>
-            <textarea
-              value={formData.bio}
-              onChange={(e) => handleChange('bio', e.target.value)}
-              placeholder="Short biography..."
-              rows={3}
-              style={{
-                ...inputStyle,
-                resize: 'none',
-              }}
             />
           </div>
 
