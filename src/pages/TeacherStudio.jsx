@@ -696,6 +696,7 @@ export default function TeacherStudio() {
   const [viewMode, setViewMode] = useState('list'); // 'list', 'week', 'month'
   const [activeTab, setActiveTab] = useState('classes'); // 'classes', 'admin'
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
