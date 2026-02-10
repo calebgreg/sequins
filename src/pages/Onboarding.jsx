@@ -245,7 +245,19 @@ export default function Onboarding() {
     };
   };
 
-  // Import mutation
+  // Helper to chunk arrays for batch processing
+  const chunkArray = (arr, size) => {
+    const chunks = [];
+    for (let i = 0; i < arr.length; i += size) {
+      chunks.push(arr.slice(i, i + size));
+    }
+    return chunks;
+  };
+
+  // Small delay to avoid rate limits
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Import mutation with batching to avoid rate limits
   const importMutation = useMutation({
     mutationFn: async () => {
       if (!studioId) {
@@ -258,66 +270,104 @@ export default function Onboarding() {
       const total = entities.students.length + entities.classes.length + entities.teachers.length + entities.rooms.length;
       let processed = 0;
 
-      // Create Rooms first (with studio_id)
-      for (const roomName of entities.rooms) {
+      const BATCH_SIZE = 25; // Process 25 items at a time
+      const BATCH_DELAY = 500; // 500ms between batches
+
+      // Create Rooms in batches (with studio_id)
+      const roomChunks = chunkArray(entities.rooms, BATCH_SIZE);
+      for (const chunk of roomChunks) {
+        const roomData = chunk.map(roomName => ({ studio_id: studioId, name: roomName }));
         try {
-          await base44.entities.Room.create({ 
-            studio_id: studioId,
-            name: roomName 
-          });
-          created.rooms++;
+          await base44.entities.Room.bulkCreate(roomData);
+          created.rooms += chunk.length;
         } catch (err) {
-          errors.push({ type: 'Room', name: roomName, error: err.message });
+          // If bulk fails, try one by one as fallback
+          for (const roomName of chunk) {
+            try {
+              await base44.entities.Room.create({ studio_id: studioId, name: roomName });
+              created.rooms++;
+            } catch (innerErr) {
+              errors.push({ type: 'Room', name: roomName, error: innerErr.message });
+            }
+          }
         }
-        processed++;
+        processed += chunk.length;
         setProgress(Math.round((processed / total) * 100));
+        if (roomChunks.indexOf(chunk) < roomChunks.length - 1) await delay(BATCH_DELAY);
       }
 
-      // Create Teachers (with studio_id)
-      for (const teacherName of entities.teachers) {
+      // Create Teachers in batches (with studio_id)
+      const teacherChunks = chunkArray(entities.teachers, BATCH_SIZE);
+      for (const chunk of teacherChunks) {
+        const teacherData = chunk.map(name => ({ studio_id: studioId, name, styles: [] }));
         try {
-          await base44.entities.Teacher.create({ 
-            studio_id: studioId,
-            name: teacherName,
-            styles: [],
-          });
-          created.teachers++;
+          await base44.entities.Teacher.bulkCreate(teacherData);
+          created.teachers += chunk.length;
         } catch (err) {
-          errors.push({ type: 'Teacher', name: teacherName, error: err.message });
+          for (const teacherName of chunk) {
+            try {
+              await base44.entities.Teacher.create({ studio_id: studioId, name: teacherName, styles: [] });
+              created.teachers++;
+            } catch (innerErr) {
+              errors.push({ type: 'Teacher', name: teacherName, error: innerErr.message });
+            }
+          }
         }
-        processed++;
+        processed += chunk.length;
         setProgress(Math.round((processed / total) * 100));
+        if (teacherChunks.indexOf(chunk) < teacherChunks.length - 1) await delay(BATCH_DELAY);
       }
 
-      // Create Students (with studio_id)
-      for (const student of entities.students) {
+      // Create Students in batches (with studio_id)
+      const studentChunks = chunkArray(entities.students, BATCH_SIZE);
+      for (const chunk of studentChunks) {
+        const studentData = chunk.map(student => ({
+          ...student,
+          studio_id: studioId,
+          color: student.color || '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
+        }));
         try {
-          await base44.entities.Student.create({
-            ...student,
-            studio_id: studioId,
-            color: student.color || '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
-          });
-          created.students++;
+          await base44.entities.Student.bulkCreate(studentData);
+          created.students += chunk.length;
         } catch (err) {
-          errors.push({ type: 'Student', name: student.name, error: err.message });
+          for (const student of chunk) {
+            try {
+              await base44.entities.Student.create({
+                ...student,
+                studio_id: studioId,
+                color: student.color || '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
+              });
+              created.students++;
+            } catch (innerErr) {
+              errors.push({ type: 'Student', name: student.name, error: innerErr.message });
+            }
+          }
         }
-        processed++;
+        processed += chunk.length;
         setProgress(Math.round((processed / total) * 100));
+        if (studentChunks.indexOf(chunk) < studentChunks.length - 1) await delay(BATCH_DELAY);
       }
 
-      // Create Classes (with studio_id)
-      for (const classData of entities.classes) {
+      // Create Classes in batches (with studio_id)
+      const classChunks = chunkArray(entities.classes, BATCH_SIZE);
+      for (const chunk of classChunks) {
+        const classData = chunk.map(c => ({ ...c, studio_id: studioId }));
         try {
-          await base44.entities.DanceClass.create({
-            ...classData,
-            studio_id: studioId,
-          });
-          created.classes++;
+          await base44.entities.DanceClass.bulkCreate(classData);
+          created.classes += chunk.length;
         } catch (err) {
-          errors.push({ type: 'Class', name: classData.title, error: err.message });
+          for (const classItem of chunk) {
+            try {
+              await base44.entities.DanceClass.create({ ...classItem, studio_id: studioId });
+              created.classes++;
+            } catch (innerErr) {
+              errors.push({ type: 'Class', name: classItem.title, error: innerErr.message });
+            }
+          }
         }
-        processed++;
+        processed += chunk.length;
         setProgress(Math.round((processed / total) * 100));
+        if (classChunks.indexOf(chunk) < classChunks.length - 1) await delay(BATCH_DELAY);
       }
 
       return { created, errors, total };

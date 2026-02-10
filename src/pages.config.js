@@ -61,12 +61,12 @@ import RunBilling from './pages/RunBilling';
 import Settings from './pages/Settings';
 import StaffDirectory from './pages/StaffDirectory';
 import Students from './pages/Students';
+import SuperAdmin from './pages/SuperAdmin';
 import Tasks from './pages/Tasks';
 import TeacherDetails from './pages/TeacherDetails';
 import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
-import SuperAdmin from './pages/SuperAdmin';
 import __Layout from './Layout.jsx';
 
 
@@ -85,12 +85,12 @@ export const PAGES = {
     "Settings": Settings,
     "StaffDirectory": StaffDirectory,
     "Students": Students,
+    "SuperAdmin": SuperAdmin,
     "Tasks": Tasks,
     "TeacherDetails": TeacherDetails,
     "TeacherStudio": TeacherStudio,
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
-    "SuperAdmin": SuperAdmin,
 }
 
 export const pagesConfig = {
