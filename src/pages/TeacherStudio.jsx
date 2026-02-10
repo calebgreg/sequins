@@ -723,13 +723,7 @@ export default function TeacherStudio() {
   // Use teacher name from Teacher entity if found, otherwise fall back to user's full_name
   const currentTeacherName = teacherRecord?.name || currentUser?.full_name;
   
-  // Debug: Log what's happening with teacher lookup
-  console.log('Teacher Studio Debug:', {
-    userEmail: currentUser?.email,
-    studioId,
-    teacherRecord: teacherRecord?.name,
-    currentTeacherName
-  });
+
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', studioId],
