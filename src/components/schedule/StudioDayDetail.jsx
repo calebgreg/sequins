@@ -48,7 +48,7 @@ export default function StudioDayDetail({ room, metrics, selectedDay, students, 
     return false;
   };
 
-  const shouldHighlightGap = activeFilter === 'gaps';
+
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
