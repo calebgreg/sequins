@@ -240,9 +240,9 @@ export default function PlanMode({
                     </div>
                     <div 
                       className="p-2 rounded-full transition-all group-hover:translate-x-1"
-                      style={{ backgroundColor: 'rgba(200, 160, 160, 0.1)' }}
+                      style={{ backgroundColor: 'rgba(244, 114, 182, 0.08)' }}
                     >
-                      <ArrowRight size={14} style={{ color: colors.etchDark }} />
+                      <ArrowRight size={14} style={{ color: '#ec4899' }} />
                     </div>
                   </div>
 
