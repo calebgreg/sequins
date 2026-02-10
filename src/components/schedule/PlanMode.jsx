@@ -17,10 +17,10 @@ const EtchedText = ({ children, size = 'md', className = '' }) => {
   const sizes = { sm: 'text-sm', md: 'text-lg', lg: 'text-2xl', xl: 'text-3xl' };
   return (
     <span
-      className={`${sizes[size]} font-semibold tracking-tight ${className}`}
+      className={`${sizes[size]} font-bold tracking-tight ${className}`}
       style={{
-        color: '#c9a8ab',
-        textShadow: '0 1px 2px rgba(255,255,255,0.95)',
+        color: '#e8d8da',
+        textShadow: '0 2px 4px rgba(180, 140, 150, 0.5), 0 -1px 0 rgba(255, 255, 255, 0.8)',
       }}
     >
       {children}
