@@ -293,11 +293,10 @@ export default function PlanMode({
                     <div className="flex flex-wrap gap-2">
                       {conflicts.length > 0 && (
                         <span 
-                          className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border"
+                          className="px-4 py-2 rounded-2xl text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
-                            color: '#c9a8ab',
-                            borderColor: 'rgba(210, 180, 185, 0.4)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.85)', 
+                            color: '#c8b0b4',
                           }}
                         >
                           <AlertTriangle size={12} />
@@ -306,11 +305,10 @@ export default function PlanMode({
                       )}
                       {unstaffed.length > 0 && (
                         <span 
-                          className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border"
+                          className="px-4 py-2 rounded-2xl text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
-                            color: '#c9a8ab',
-                            borderColor: 'rgba(210, 180, 185, 0.4)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.85)', 
+                            color: '#c8b0b4',
                           }}
                         >
                           <UserX size={12} />
@@ -319,11 +317,10 @@ export default function PlanMode({
                       )}
                       {lowEnrollment.length > 0 && (
                         <span 
-                          className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border"
+                          className="px-4 py-2 rounded-2xl text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
-                            color: '#c9a8ab',
-                            borderColor: 'rgba(210, 180, 185, 0.4)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.85)', 
+                            color: '#c8b0b4',
                           }}
                         >
                           <Users size={12} />
@@ -334,7 +331,7 @@ export default function PlanMode({
                   ) : (
                     <div 
                       className="text-xs font-medium"
-                      style={{ color: '#c9a8ab' }}
+                      style={{ color: '#c8b0b4' }}
                     >
                       ✓ No issues
                     </div>
