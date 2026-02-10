@@ -19,8 +19,12 @@ const EtchedText = ({ children, size = 'md', className = '' }) => {
     <span
       className={`${sizes[size]} font-bold tracking-tight ${className}`}
       style={{
-        color: '#e8d8da',
-        textShadow: '0 2px 4px rgba(180, 140, 150, 0.5), 0 -1px 0 rgba(255, 255, 255, 0.8)',
+        color: 'transparent',
+        backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+        filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
       }}
     >
       {children}
