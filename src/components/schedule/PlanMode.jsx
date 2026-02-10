@@ -267,7 +267,7 @@ export default function PlanMode({
                   {/* Utilization */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs uppercase tracking-wide" style={{ color: '#8a8478' }}>UTILIZATION</span>
+                      <span className="text-xs uppercase tracking-wide font-semibold" style={{ color: '#c4a0a0' }}>UTILIZATION</span>
                       <span 
                         className="text-sm font-bold"
                         style={{ 
