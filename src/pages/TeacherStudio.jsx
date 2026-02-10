@@ -804,39 +804,6 @@ export default function TeacherStudio() {
                    
                  {/* Right: View Modes + Quick Actions */}
                  <div className="flex items-center gap-2">
-                   {/* View Mode Toggle */}
-                   <div 
-                     className="inline-flex items-center gap-0.5 md:gap-1 p-1 rounded-xl"
-                     style={{
-                       background: 'rgba(240,230,225,0.5)',
-                       boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.1)',
-                     }}
-                   >
-                     {[
-                       { id: 'list', label: 'List', icon: List },
-                       { id: 'week', label: 'Week', icon: LayoutGrid },
-                       { id: 'month', label: 'Month', icon: CalendarIcon }
-                     ].map(view => (
-                       <button
-                         key={view.id}
-                         onClick={() => setViewMode(view.id)}
-                         className="p-2 md:px-4 md:py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all"
-                         style={{
-                           background: viewMode === view.id 
-                             ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
-                             : 'transparent',
-                           color: viewMode === view.id ? '#8b7d72' : '#b5a599',
-                           boxShadow: viewMode === view.id 
-                             ? '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,0.8)'
-                             : 'none',
-                         }}
-                       >
-                         <view.icon className="w-4 h-4" />
-                         <span className="hidden md:inline">{view.label}</span>
-                       </button>
-                     ))}
-                   </div>
-
                    {/* Time Management Link */}
                    <Link to={createPageUrl('TeacherTimeManagement')}>
                      <button 
