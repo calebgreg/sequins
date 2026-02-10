@@ -252,15 +252,15 @@ export default function PlanMode({
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <EtchedText size="md">{room.name}</EtchedText>
-                      <p className="text-xs mt-0.5" style={{ color: colors.muted }}>
+                      <p className="text-xs mt-0.5" style={{ color: '#8a8478' }}>
                         {roomClasses.length} {roomClasses.length === 1 ? 'class' : 'classes'} scheduled
                       </p>
                     </div>
                     <div 
                       className="p-2 rounded-full transition-all group-hover:translate-x-1"
-                      style={{ backgroundColor: 'rgba(212, 196, 196, 0.15)' }}
+                      style={{ backgroundColor: 'rgba(200, 180, 180, 0.15)' }}
                     >
-                      <ArrowRight size={14} style={{ color: colors.etchDark }} />
+                      <ArrowRight size={14} style={{ color: '#8a8478' }} />
                     </div>
                   </div>
 
