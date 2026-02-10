@@ -796,30 +796,13 @@ export default function TeacherStudio() {
                   boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6), 0 15px 50px -15px rgba(180,150,140,0.12)',
                 }}
               >
-                {viewMode === 'list' && (
-                  <ClassListView 
-                    classes={classes} 
-                    students={students}
-                    onSelectClass={setSelectedClass} 
-                    currentTeacherName={currentTeacherName}
-                    filterType={activeTab === 'classes' ? 'class' : 'admin'}
-                  />
-                )}
-                {viewMode === 'week' && (
-                  <WeekView 
-                    classes={classes} 
-                    currentTeacherName={currentTeacherName}
-                    filterType={activeTab === 'classes' ? 'class' : 'admin'}
-                  />
-                )}
-                {viewMode === 'month' && (
-                  <MonthView 
-                    classes={classes} 
-                    currentTeacherName={currentTeacherName} 
-                    filterType={activeTab === 'classes' ? 'class' : 'admin'}
-                    onDateSelect={(date) => {}}
-                  />
-                )}
+                <ClassListView 
+                  classes={classes} 
+                  students={students}
+                  onSelectClass={setSelectedClass} 
+                  currentTeacherName={currentTeacherName}
+                  filterType="class"
+                />
               </div>
             </motion.div>
           ) : (
