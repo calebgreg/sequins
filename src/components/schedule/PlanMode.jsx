@@ -271,13 +271,13 @@ export default function PlanMode({
                     </div>
                     <div 
                       className="h-1.5 rounded-full overflow-hidden"
-                      style={{ backgroundColor: 'rgba(212, 196, 196, 0.2)' }}
+                      style={{ backgroundColor: 'rgba(220, 200, 200, 0.3)' }}
                     >
                       <div 
                         className="h-full rounded-full transition-all"
                         style={{ 
                           width: `${utilization}%`,
-                          background: `linear-gradient(90deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                          background: 'linear-gradient(90deg, #d4c0c0 0%, #b8a0a0 100%)',
                         }}
                       />
                     </div>
