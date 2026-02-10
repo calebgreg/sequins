@@ -209,13 +209,18 @@ export default function PlanMode({
       </div>
 
       {/* Studio Overview List */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div 
+        className="flex-1 overflow-y-auto p-6"
+        style={{
+          background: 'linear-gradient(180deg, rgba(253, 242, 242, 0.6) 0%, rgba(248, 228, 228, 0.4) 100%)',
+        }}
+      >
         {rooms.length === 0 ? (
           <div 
-            className="text-center py-16 rounded-2xl"
+            className="text-center py-16 rounded-3xl"
             style={{
-              background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-              border: '1px dashed rgba(200, 160, 160, 0.4)',
+              background: 'rgba(255, 255, 255, 0.6)',
+              boxShadow: '0 4px 20px rgba(168, 152, 152, 0.1)',
             }}
           >
             <p style={{ color: colors.muted }}>No studios configured. Set up rooms in Settings.</p>
