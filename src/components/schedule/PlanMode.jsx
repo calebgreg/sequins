@@ -128,8 +128,8 @@ export default function PlanMode({
       <div 
         className="px-6 py-4 flex-shrink-0 flex items-center justify-between"
         style={{
-          background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-          borderBottom: '1px solid rgba(255, 200, 200, 0.3)',
+          background: 'linear-gradient(135deg, rgba(253, 242, 242, 0.95) 0%, rgba(248, 228, 228, 0.9) 100%)',
+          borderBottom: '1px solid rgba(212, 196, 196, 0.2)',
         }}
       >
         <div className="flex gap-2">
