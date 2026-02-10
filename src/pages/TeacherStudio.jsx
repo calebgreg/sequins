@@ -707,17 +707,28 @@ export default function TeacherStudio() {
 
   // Find the teacher record that matches this user's email
   const { data: teacherRecord } = useQuery({
-    queryKey: ['myTeacherRecord', currentUser?.email],
+    queryKey: ['myTeacherRecord', currentUser?.email, studioId],
     queryFn: async () => {
-      if (!currentUser?.email) return null;
-      const teachers = await base44.entities.Teacher.filter({ email: currentUser.email });
+      if (!currentUser?.email || !studioId) return null;
+      const teachers = await base44.entities.Teacher.filter({ 
+        email: currentUser.email,
+        studio_id: studioId 
+      });
       return teachers?.[0] || null;
     },
-    enabled: !!currentUser?.email,
+    enabled: !!currentUser?.email && !!studioId,
   });
   
   // Use teacher name from Teacher entity if found, otherwise fall back to user's full_name
   const currentTeacherName = teacherRecord?.name || currentUser?.full_name;
+  
+  // Debug: Log what's happening with teacher lookup
+  console.log('Teacher Studio Debug:', {
+    userEmail: currentUser?.email,
+    studioId,
+    teacherRecord: teacherRecord?.name,
+    currentTeacherName
+  });
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', studioId],
