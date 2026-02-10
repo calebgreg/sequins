@@ -288,7 +288,7 @@ export default function PlanMode({
                         className="h-full rounded-full transition-all"
                         style={{ 
                           width: `${utilization}%`,
-                          backgroundColor: '#c4a0a0',
+                          backgroundColor: '#e8c8cc',
                         }}
                       />
                     </div>
