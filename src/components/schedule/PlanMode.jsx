@@ -223,9 +223,9 @@ export default function PlanMode({
                     isHighlighted ? 'ring-2 ring-amber-300' : ''
                   }`}
                   style={{
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(252, 245, 245, 0.95) 100%)',
-                    border: '1px solid rgba(200, 160, 160, 0.15)',
-                    boxShadow: '0 4px 20px rgba(180, 120, 120, 0.08)',
+                    background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(253, 242, 248, 0.9) 100%)',
+                    border: '1px solid rgba(244, 114, 182, 0.12)',
+                    boxShadow: '0 4px 20px rgba(244, 114, 182, 0.06)',
                   }}
                 >
                   {/* Header */}
