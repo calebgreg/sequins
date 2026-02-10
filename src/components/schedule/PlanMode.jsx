@@ -19,8 +19,8 @@ const EtchedText = ({ children, size = 'md', className = '' }) => {
     <span
       className={`${sizes[size]} font-semibold tracking-tight ${className}`}
       style={{
-        color: '#c8b8b8',
-        textShadow: '0 1px 1px rgba(255,255,255,0.8), 0 -1px 1px rgba(180,160,160,0.3)',
+        color: '#bfaeb0',
+        textShadow: '0 2px 3px rgba(255,255,255,0.9), 0 -1px 2px rgba(140,120,125,0.4)',
       }}
     >
       {children}
