@@ -31,8 +31,6 @@ export default function ClassManager() {
   const dayMap = ['U', 'M', 'T', 'W', 'R', 'F', 'S'];
   const todayIndex = DAYS.indexOf(dayMap[new Date().getDay()]);
   const [selectedDay, setSelectedDay] = useState(DAYS[todayIndex >= 0 ? todayIndex : 0]);
-  const [viewMode, setViewMode] = useState('room');
-  const [summaryExpanded, setSummaryExpanded] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -129,11 +127,7 @@ export default function ClassManager() {
           teachers={teachers}
           selectedDay={selectedDay}
           setSelectedDay={setSelectedDay}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
           setIsImportOpen={setIsImportOpen}
-          summaryExpanded={summaryExpanded}
-          setSummaryExpanded={setSummaryExpanded}
           DAYS={DAYS}
         />
       )}
