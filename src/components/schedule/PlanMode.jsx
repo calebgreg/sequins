@@ -147,57 +147,49 @@ export default function PlanMode({
 
       {/* Issue Summary Bar */}
       <div 
-        className="px-6 py-3 flex items-center gap-6 border-b"
-        style={{ backgroundColor: 'rgba(255,255,255,0.5)', borderColor: colors.border }}
+        className="px-6 py-3 flex items-center gap-3 border-b overflow-x-auto"
+        style={{ backgroundColor: 'rgba(255,255,255,0.6)', borderColor: 'rgba(200, 160, 160, 0.15)' }}
       >
+        <span className="text-xs font-medium" style={{ color: colors.muted }}>Filter:</span>
         <button
           onClick={() => setActiveFilter(activeFilter === 'conflicts' ? null : 'conflicts')}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            activeFilter === 'conflicts' ? 'ring-2 ring-red-300' : ''
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            activeFilter === 'conflicts' ? 'ring-1 ring-offset-1' : ''
           }`}
           style={{ 
-            backgroundColor: totalConflicts > 0 ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
-            color: totalConflicts > 0 ? colors.danger : colors.muted 
+            backgroundColor: activeFilter === 'conflicts' ? 'rgba(200, 160, 160, 0.2)' : 'rgba(200, 160, 160, 0.08)',
+            color: colors.etchDark,
+            ringColor: colors.etchDark,
           }}
         >
-          <AlertTriangle size={14} />
+          <AlertTriangle size={12} />
           {totalConflicts} conflicts
         </button>
         <button
           onClick={() => setActiveFilter(activeFilter === 'unstaffed' ? null : 'unstaffed')}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            activeFilter === 'unstaffed' ? 'ring-2 ring-orange-300' : ''
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            activeFilter === 'unstaffed' ? 'ring-1 ring-offset-1' : ''
           }`}
           style={{ 
-            backgroundColor: totalUnstaffed > 0 ? 'rgba(245, 158, 11, 0.1)' : 'transparent',
-            color: totalUnstaffed > 0 ? colors.warning : colors.muted 
+            backgroundColor: activeFilter === 'unstaffed' ? 'rgba(200, 160, 160, 0.2)' : 'rgba(200, 160, 160, 0.08)',
+            color: colors.etchDark,
           }}
         >
-          <UserX size={14} />
+          <UserX size={12} />
           {totalUnstaffed} unstaffed
         </button>
         <button
           onClick={() => setActiveFilter(activeFilter === 'low_enrollment' ? null : 'low_enrollment')}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            activeFilter === 'low_enrollment' ? 'ring-2 ring-orange-300' : ''
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            activeFilter === 'low_enrollment' ? 'ring-1 ring-offset-1' : ''
           }`}
           style={{ 
-            backgroundColor: totalLowEnrollment > 0 ? 'rgba(245, 158, 11, 0.1)' : 'transparent',
-            color: totalLowEnrollment > 0 ? colors.warning : colors.muted 
+            backgroundColor: activeFilter === 'low_enrollment' ? 'rgba(200, 160, 160, 0.2)' : 'rgba(200, 160, 160, 0.08)',
+            color: colors.etchDark,
           }}
         >
-          <Users size={14} />
-          {totalLowEnrollment} low enrollment
-        </button>
-        <button
-          onClick={() => setActiveFilter(activeFilter === 'gaps' ? null : 'gaps')}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            activeFilter === 'gaps' ? 'ring-2 ring-gray-300' : ''
-          }`}
-          style={{ color: colors.muted }}
-        >
-          <Clock size={14} />
-          {totalGaps} empty slots
+          <Users size={12} />
+          {totalLowEnrollment} low
         </button>
       </div>
 
