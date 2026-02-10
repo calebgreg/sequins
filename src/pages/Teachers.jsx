@@ -35,7 +35,7 @@ export default function Teachers() {
     queryFn: () => base44.auth.me(),
   });
 
-  const studioId = currentUser?.studio_id;
+  const studioId = currentUser?.studio_id || currentUser?.data?.studio_id || currentUser?.data?.data?.studio_id;
 
   const { data: teachers = [] } = useQuery({
     queryKey: ['teachers', studioId],
