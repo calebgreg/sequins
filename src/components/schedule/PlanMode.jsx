@@ -253,20 +253,20 @@ export default function PlanMode({
                       <span className="text-xs" style={{ color: colors.muted }}>Utilization</span>
                       <span 
                         className="text-sm font-semibold"
-                        style={{ color: utilization >= 70 ? colors.etchDark : colors.muted }}
+                        style={{ color: colors.ink }}
                       >
                         {utilization}%
                       </span>
                     </div>
                     <div 
-                      className="h-2 rounded-full overflow-hidden"
-                      style={{ backgroundColor: 'rgba(200, 160, 160, 0.12)' }}
+                      className="h-1.5 rounded-full overflow-hidden"
+                      style={{ backgroundColor: 'rgba(244, 114, 182, 0.1)' }}
                     >
                       <div 
                         className="h-full rounded-full transition-all"
                         style={{ 
                           width: `${utilization}%`,
-                          background: `linear-gradient(90deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                          background: 'linear-gradient(90deg, #fda4af 0%, #f472b6 100%)',
                         }}
                       />
                     </div>
