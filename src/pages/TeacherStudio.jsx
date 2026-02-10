@@ -773,19 +773,18 @@ export default function TeacherStudio() {
               <div className="flex flex-wrap justify-end items-center gap-3 mb-6 md:mb-10">
                  {/* Right: Quick Actions */}
                  <div className="flex items-center gap-2">
-                   {/* Coverage Request Link */}
-                   <Link to={createPageUrl('TeacherTimeManagement') + '?tab=coverage'}>
-                     <button 
-                       className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center transition-all active:scale-95"
-                       style={{
-                         background: 'rgba(255,255,255,0.6)',
-                         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
-                         color: '#b5a599',
-                       }}
-                     >
-                       <CalendarX className="w-4 h-4" />
-                     </button>
-                   </Link>
+                   {/* Sub Request Button */}
+                   <button 
+                     onClick={() => setIsSubRequestOpen(true)}
+                     className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                     style={{
+                       background: 'rgba(255,255,255,0.6)',
+                       boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+                       color: '#b5a599',
+                     }}
+                   >
+                     <Clock className="w-4 h-4" />
+                   </button>
                  </div>
               </div>
 
