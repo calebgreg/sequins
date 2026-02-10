@@ -81,7 +81,7 @@ export default function Students() {
     retry: false
   });
 
-  const studioId = currentUser?.studio_id;
+  const studioId = currentUser?.studio_id || currentUser?.data?.studio_id || currentUser?.data?.data?.studio_id;
 
   const { data: students = [] } = useQuery({
     queryKey: ['students', studioId],
