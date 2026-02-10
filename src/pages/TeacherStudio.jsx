@@ -702,10 +702,22 @@ export default function TeacherStudio() {
     queryFn: () => base44.auth.me(),
     retry: false
   });
-  
-  const currentTeacherName = currentUser?.full_name || "Sarah Miller";
 
   const studioId = currentUser?.studio_id;
+
+  // Find the teacher record that matches this user's email
+  const { data: teacherRecord } = useQuery({
+    queryKey: ['myTeacherRecord', currentUser?.email],
+    queryFn: async () => {
+      if (!currentUser?.email) return null;
+      const teachers = await base44.entities.Teacher.filter({ email: currentUser.email });
+      return teachers?.[0] || null;
+    },
+    enabled: !!currentUser?.email,
+  });
+  
+  // Use teacher name from Teacher entity if found, otherwise fall back to user's full_name
+  const currentTeacherName = teacherRecord?.name || currentUser?.full_name;
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', studioId],
