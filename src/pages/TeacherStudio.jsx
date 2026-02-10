@@ -773,8 +773,8 @@ export default function TeacherStudio() {
               <div className="flex flex-wrap justify-end items-center gap-3 mb-6 md:mb-10">
                  {/* Right: Quick Actions */}
                  <div className="flex items-center gap-2">
-                   {/* Time Management Link */}
-                   <Link to={createPageUrl('TeacherTimeManagement')}>
+                   {/* Coverage Request Link */}
+                   <Link to={createPageUrl('TeacherTimeManagement') + '?tab=coverage'}>
                      <button 
                        className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center transition-all active:scale-95"
                        style={{
@@ -783,7 +783,7 @@ export default function TeacherStudio() {
                          color: '#b5a599',
                        }}
                      >
-                       <Clock className="w-4 h-4" />
+                       <CalendarX className="w-4 h-4" />
                      </button>
                    </Link>
                  </div>
