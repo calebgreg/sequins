@@ -73,7 +73,7 @@ export default function SuperAdmin() {
     }
   });
 
-  // Delete studio handler
+  // Delete studio handler - uses batched approach to avoid timeouts
   const handleDeleteStudio = async () => {
     if (!deleteStudio || deleteConfirmName !== deleteStudio.name) {
       toast.error('Please type the studio name to confirm deletion');
@@ -81,23 +81,36 @@ export default function SuperAdmin() {
     }
     
     setIsDeleting(true);
+    const studioId = deleteStudio.id;
+    const totalBatches = 5;
+    
     try {
-      const response = await base44.functions.invoke('deleteStudio', { studio_id: deleteStudio.id });
+      // Delete data in batches
+      for (let batch = 0; batch < totalBatches; batch++) {
+        toast.loading(`Deleting data... (${batch + 1}/${totalBatches})`, { id: 'delete-progress' });
+        await base44.functions.invoke('deleteStudio', { studio_id: studioId, entity_batch: batch });
+      }
+      
+      // Finally delete the studio itself
+      toast.loading('Removing studio...', { id: 'delete-progress' });
+      await base44.functions.invoke('deleteStudio', { studio_id: studioId });
       
       // If current studio was deleted, clear it from user
-      if (currentUser?.studio_id === deleteStudio.id) {
+      if (currentUser?.studio_id === studioId) {
         await base44.auth.updateMe({ studio_id: null });
       }
       
+      toast.dismiss('delete-progress');
       queryClient.invalidateQueries({ queryKey: ['allStudios'] });
       toast.success('Studio and all data deleted successfully');
       setDeleteStudio(null);
       setDeleteConfirmName('');
       
-      if (currentUser?.studio_id === deleteStudio.id) {
+      if (currentUser?.studio_id === studioId) {
         window.location.reload();
       }
     } catch (err) {
+      toast.dismiss('delete-progress');
       toast.error('Failed to delete studio: ' + err.message);
     } finally {
       setIsDeleting(false);

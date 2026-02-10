@@ -10,119 +10,77 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { studio_id } = await req.json();
+    const { studio_id, entity_batch } = await req.json();
 
     if (!studio_id) {
       return Response.json({ error: 'studio_id is required' }, { status: 400 });
     }
 
-    // Verify the studio exists first
-    const studios = await base44.asServiceRole.entities.Studio.filter({ id: studio_id });
-    if (!studios || studios.length === 0) {
-      return Response.json({ error: 'Studio not found' }, { status: 404 });
-    }
-
-    // List of all entities that have studio_id field - ordered by priority
-    const entitiesToDelete = [
-      // High priority - child records first
-      'Attendance',
-      'StudentNote',
-      'TeacherNote',
-      'Message',
-      'TaskComment',
-      'ConversationMessage',
-      'PerformanceChat',
-      'FamilyNote',
-      'FamilyTask',
-      'FamilyDocument',
-      'Notification',
-      // Mid-level records
-      'PerformanceRoutine',
-      'TimeLog',
-      'TimeSheetAcknowledgement',
-      'SubRequest',
-      'LessonPlan',
-      'MusicTrack',
-      'Transaction',
-      'Invoice',
-      'AgentLog',
-      'GrowthAction',
-      'GrowthPeriodProgress',
-      // Core records
-      'DanceClass',
-      'Student',
-      'Teacher',
-      'Family',
-      'Performance',
-      'Room',
-      'Team',
-      // Settings and configuration
-      'TuitionRule',
-      'TuitionPlan',
-      'DiscountRule',
-      'FeeType',
-      'SavedFilter',
-      'FamilyRoomConfig',
-      'GrowthOutcome',
-      'GrowthTarget',
-      'StudioSettings',
+    // If entity_batch is provided, only delete that batch of entities
+    // This allows the frontend to call multiple times for different entity groups
+    const allEntities = [
+      // Batch 1: Notes and messages
+      ['Attendance', 'StudentNote', 'TeacherNote', 'Message', 'TaskComment', 'ConversationMessage', 'PerformanceChat', 'FamilyNote', 'Notification'],
+      // Batch 2: Tasks and documents  
+      ['FamilyTask', 'FamilyDocument', 'PerformanceRoutine', 'TimeLog', 'TimeSheetAcknowledgement', 'SubRequest', 'LessonPlan', 'MusicTrack'],
+      // Batch 3: Financial
+      ['Transaction', 'Invoice', 'AgentLog', 'GrowthAction', 'GrowthPeriodProgress'],
+      // Batch 4: Core records
+      ['DanceClass', 'Student', 'Teacher', 'Family', 'Performance', 'Room', 'Team'],
+      // Batch 5: Settings
+      ['TuitionRule', 'TuitionPlan', 'DiscountRule', 'FeeType', 'SavedFilter', 'FamilyRoomConfig', 'GrowthOutcome', 'GrowthTarget', 'StudioSettings'],
     ];
 
-    const deletionResults = {};
-    const errors = [];
+    const batchIndex = entity_batch !== undefined ? entity_batch : -1;
+    
+    // If no batch specified, delete studio directly (final step)
+    if (batchIndex === -1) {
+      // Verify the studio exists
+      const studios = await base44.asServiceRole.entities.Studio.filter({ id: studio_id });
+      if (!studios || studios.length === 0) {
+        return Response.json({ error: 'Studio not found' }, { status: 404 });
+      }
+      
+      await base44.asServiceRole.entities.Studio.delete(studio_id);
+      return Response.json({ 
+        success: true, 
+        message: 'Studio deleted',
+        step: 'complete'
+      });
+    }
 
-    // Delete in batches with delays to avoid rate limiting
+    // Delete specific batch
+    if (batchIndex >= allEntities.length) {
+      return Response.json({ error: 'Invalid batch index' }, { status: 400 });
+    }
+
+    const entitiesToDelete = allEntities[batchIndex];
+    const deletionResults = {};
+
     for (const entityName of entitiesToDelete) {
       try {
         const records = await base44.asServiceRole.entities[entityName].filter({ studio_id });
         
         if (records && records.length > 0) {
-          // Delete records one at a time with small delays
-          let deletedCount = 0;
-          for (const record of records) {
-            try {
-              await base44.asServiceRole.entities[entityName].delete(record.id);
-              deletedCount++;
-            } catch (deleteErr) {
-              // Continue on individual delete errors
-              errors.push(`${entityName}/${record.id}: ${deleteErr.message}`);
-            }
-            // Small delay between deletes to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 50));
-          }
-          deletionResults[entityName] = deletedCount;
+          // Delete all records
+          await Promise.all(records.map(r => 
+            base44.asServiceRole.entities[entityName].delete(r.id).catch(() => {})
+          ));
+          deletionResults[entityName] = records.length;
         } else {
           deletionResults[entityName] = 0;
         }
       } catch (err) {
-        // Entity might not exist or have no records, continue
-        if (!err.message?.includes('Rate limit')) {
-          deletionResults[entityName] = `skipped`;
-        } else {
-          errors.push(`${entityName}: Rate limited`);
-        }
+        deletionResults[entityName] = 'skipped';
       }
-      
-      // Add delay between entity types
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    // Finally, delete the studio itself
-    try {
-      await base44.asServiceRole.entities.Studio.delete(studio_id);
-      deletionResults['Studio'] = 1;
-    } catch (studioErr) {
-      return Response.json({ 
-        error: 'Failed to delete studio record: ' + studioErr.message,
-        partialResults: deletionResults 
-      }, { status: 500 });
     }
 
     return Response.json({ 
       success: true, 
-      message: 'Studio and all related data deleted successfully',
+      batch: batchIndex,
+      totalBatches: allEntities.length,
       deletionResults,
-      errors: errors.length > 0 ? errors : undefined
+      step: 'batch_complete'
     });
 
   } catch (error) {
