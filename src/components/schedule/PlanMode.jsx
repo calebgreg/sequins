@@ -244,8 +244,8 @@ export default function PlanMode({
                     isHighlighted ? 'ring-2 ring-amber-300' : ''
                   }`}
                   style={{
-                    background: 'linear-gradient(135deg, rgba(253, 232, 235, 0.95) 0%, rgba(252, 225, 228, 0.9) 100%)',
-                    boxShadow: '0 4px 20px rgba(200, 160, 170, 0.15)',
+                    backgroundColor: '#fef7f7',
+                    boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
                   }}
                 >
                   {/* Header */}
