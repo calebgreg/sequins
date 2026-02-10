@@ -161,18 +161,18 @@ export default function PlanMode({
       {/* Issue Summary Bar */}
       <div 
         className="px-6 py-3 flex items-center gap-3 border-b overflow-x-auto"
-        style={{ backgroundColor: 'rgba(255,255,255,0.6)', borderColor: 'rgba(200, 160, 160, 0.15)' }}
+        style={{ backgroundColor: 'rgba(255,255,255,0.4)', borderColor: 'rgba(212, 196, 196, 0.2)' }}
       >
         <span className="text-xs font-medium" style={{ color: colors.muted }}>Filter:</span>
         <button
           onClick={() => setActiveFilter(activeFilter === 'conflicts' ? null : 'conflicts')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
             activeFilter === 'conflicts' ? 'ring-1 ring-offset-1' : ''
           }`}
           style={{ 
-            backgroundColor: activeFilter === 'conflicts' ? 'rgba(200, 160, 160, 0.2)' : 'rgba(200, 160, 160, 0.08)',
+            backgroundColor: activeFilter === 'conflicts' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)',
             color: colors.etchDark,
-            ringColor: colors.etchDark,
+            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.1)',
           }}
         >
           <AlertTriangle size={12} />
@@ -180,12 +180,13 @@ export default function PlanMode({
         </button>
         <button
           onClick={() => setActiveFilter(activeFilter === 'unstaffed' ? null : 'unstaffed')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
             activeFilter === 'unstaffed' ? 'ring-1 ring-offset-1' : ''
           }`}
           style={{ 
-            backgroundColor: activeFilter === 'unstaffed' ? 'rgba(200, 160, 160, 0.2)' : 'rgba(200, 160, 160, 0.08)',
+            backgroundColor: activeFilter === 'unstaffed' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)',
             color: colors.etchDark,
+            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.1)',
           }}
         >
           <UserX size={12} />
@@ -193,12 +194,13 @@ export default function PlanMode({
         </button>
         <button
           onClick={() => setActiveFilter(activeFilter === 'low_enrollment' ? null : 'low_enrollment')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
             activeFilter === 'low_enrollment' ? 'ring-1 ring-offset-1' : ''
           }`}
           style={{ 
-            backgroundColor: activeFilter === 'low_enrollment' ? 'rgba(200, 160, 160, 0.2)' : 'rgba(200, 160, 160, 0.08)',
+            backgroundColor: activeFilter === 'low_enrollment' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)',
             color: colors.etchDark,
+            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.1)',
           }}
         >
           <Users size={12} />
