@@ -301,8 +301,9 @@ export default function PlanMode({
                         <span 
                           className="px-4 py-2 rounded-2xl text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.85)', 
-                            color: '#c8b0b4',
+                            backgroundColor: '#fff', 
+                            color: '#1a1a1a',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                           }}
                         >
                           <AlertTriangle size={12} />
@@ -313,8 +314,9 @@ export default function PlanMode({
                         <span 
                           className="px-4 py-2 rounded-2xl text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.85)', 
-                            color: '#c8b0b4',
+                            backgroundColor: '#fff', 
+                            color: '#1a1a1a',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                           }}
                         >
                           <UserX size={12} />
@@ -325,8 +327,9 @@ export default function PlanMode({
                         <span 
                           className="px-4 py-2 rounded-2xl text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.85)', 
-                            color: '#c8b0b4',
+                            backgroundColor: '#fff', 
+                            color: '#1a1a1a',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                           }}
                         >
                           <Users size={12} />
@@ -337,7 +340,7 @@ export default function PlanMode({
                   ) : (
                     <div 
                       className="text-xs font-medium"
-                      style={{ color: '#c8b0b4' }}
+                      style={{ color: '#8a8478' }}
                     >
                       ✓ No issues
                     </div>
