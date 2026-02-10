@@ -31,28 +31,8 @@ export default function StudioDayDetail({ room, metrics, selectedDay, students, 
     classes: [], conflicts: [], unstaffed: [], lowEnrollment: [], gaps: [] 
   };
 
-  // Build time slots
-  const timeSlots = [];
-  for (let h = STUDIO_HOURS.start; h < STUDIO_HOURS.end; h++) {
-    const classAtHour = roomClasses.find(c => {
-      const start = c.start_time;
-      const end = c.start_time + (c.duration || 1);
-      return h >= start && h < end;
-    });
-
-    // Only add if this is the start of a class or an empty slot
-    const isClassStart = classAtHour && Math.floor(classAtHour.start_time) === h;
-    const isEmpty = !classAtHour;
-
-    if (isClassStart || isEmpty) {
-      timeSlots.push({
-        hour: h,
-        class: classAtHour,
-        isEmpty,
-        isGap: gaps.includes(h),
-      });
-    }
-  }
+  // Just use the classes directly, sorted by start time
+  const sortedClasses = [...roomClasses].sort((a, b) => a.start_time - b.start_time);
 
   // Check if a class has issues
   const hasConflict = (cls) => conflicts.some(c => c.classA.id === cls.id || c.classB.id === cls.id);
