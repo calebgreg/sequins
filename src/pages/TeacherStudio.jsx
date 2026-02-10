@@ -37,11 +37,22 @@ const getActualStudentCount = (cls, students) => {
 const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = [] }) => {
   const todayCode = getTodayDayCode();
   
+  console.log('DEBUG: Today code =', todayCode, '| Total classes =', classes.length);
+  
   // Filter by today AND by teacher (teacher name appears in the teacher field)
-  const todaysClasses = classes.filter(c => c.day === todayCode);
+  const todaysClasses = classes.filter(c => {
+    const match = c.day === todayCode;
+    if (!match) console.log('Filtered out (wrong day):', c.title, 'day:', c.day);
+    return match;
+  });
+  
+  console.log('DEBUG: Classes for today =', todaysClasses.length);
+  
   const myTodaysClasses = todaysClasses.filter(c => 
     c.teacher?.toLowerCase().includes(currentTeacherName?.toLowerCase()) || !c.teacher
   );
+  
+  console.log('DEBUG: My classes for today =', myTodaysClasses.length);
 
   return (
     <div className="space-y-4 md:space-y-6">
