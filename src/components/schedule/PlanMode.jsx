@@ -287,9 +287,9 @@ export default function PlanMode({
                         <span 
                           className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.5)', 
-                            color: '#c4b0b0',
-                            borderColor: 'rgba(200, 180, 180, 0.3)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+                            color: '#c9a8ab',
+                            borderColor: 'rgba(210, 180, 185, 0.4)',
                           }}
                         >
                           <AlertTriangle size={12} />
@@ -300,9 +300,9 @@ export default function PlanMode({
                         <span 
                           className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.5)', 
-                            color: '#c4b0b0',
-                            borderColor: 'rgba(200, 180, 180, 0.3)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+                            color: '#c9a8ab',
+                            borderColor: 'rgba(210, 180, 185, 0.4)',
                           }}
                         >
                           <UserX size={12} />
@@ -313,9 +313,9 @@ export default function PlanMode({
                         <span 
                           className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border"
                           style={{ 
-                            backgroundColor: 'rgba(255, 255, 255, 0.5)', 
-                            color: '#c4b0b0',
-                            borderColor: 'rgba(200, 180, 180, 0.3)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+                            color: '#c9a8ab',
+                            borderColor: 'rgba(210, 180, 185, 0.4)',
                           }}
                         >
                           <Users size={12} />
@@ -326,7 +326,7 @@ export default function PlanMode({
                   ) : (
                     <div 
                       className="text-xs font-medium"
-                      style={{ color: '#c4b0b0' }}
+                      style={{ color: '#c9a8ab' }}
                     >
                       ✓ No issues
                     </div>
