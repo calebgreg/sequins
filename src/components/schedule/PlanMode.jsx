@@ -10,20 +10,17 @@ const colors = {
   ink: '#1a1a1a',
   paper: '#faf9f7',
   muted: '#c4b8b8',
-  etchLight: '#e8d8d8',
-  etchDark: '#c4b0b0',
+  etchBase: '#d8c8c8',
 };
 
 const EtchedText = ({ children, size = 'md', className = '' }) => {
   const sizes = { sm: 'text-sm', md: 'text-lg', lg: 'text-2xl', xl: 'text-3xl' };
   return (
     <span
-      className={`${sizes[size]} font-bold tracking-tight ${className}`}
+      className={`${sizes[size]} font-semibold tracking-tight ${className}`}
       style={{
-        color: 'transparent',
-        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
-        backgroundClip: 'text',
-        WebkitBackgroundClip: 'text',
+        color: '#c8b8b8',
+        textShadow: '0 1px 1px rgba(255,255,255,0.8), 0 -1px 1px rgba(180,160,160,0.3)',
       }}
     >
       {children}
