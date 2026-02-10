@@ -279,8 +279,8 @@ export default function PlanMode({
                         <span 
                           className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
-                            color: colors.etchDark 
+                            backgroundColor: 'rgba(244, 114, 182, 0.08)', 
+                            color: '#be185d' 
                           }}
                         >
                           <AlertTriangle size={11} />
@@ -291,8 +291,8 @@ export default function PlanMode({
                         <span 
                           className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
-                            color: colors.etchDark 
+                            backgroundColor: 'rgba(244, 114, 182, 0.08)', 
+                            color: '#be185d' 
                           }}
                         >
                           <UserX size={11} />
@@ -303,8 +303,8 @@ export default function PlanMode({
                         <span 
                           className="px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5"
                           style={{ 
-                            backgroundColor: 'rgba(200, 160, 160, 0.12)', 
-                            color: colors.etchDark 
+                            backgroundColor: 'rgba(244, 114, 182, 0.08)', 
+                            color: '#be185d' 
                           }}
                         >
                           <Users size={11} />
@@ -315,7 +315,7 @@ export default function PlanMode({
                   ) : (
                     <div 
                       className="text-xs font-medium"
-                      style={{ color: colors.etchDark }}
+                      style={{ color: '#059669' }}
                     >
                       ✓ No issues
                     </div>
