@@ -240,8 +240,8 @@ export default function PlanMode({
                     isHighlighted ? 'ring-2 ring-amber-300' : ''
                   }`}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.7)',
-                    boxShadow: '0 4px 20px rgba(168, 152, 152, 0.1)',
+                    background: 'linear-gradient(135deg, rgba(253, 232, 235, 0.95) 0%, rgba(252, 225, 228, 0.9) 100%)',
+                    boxShadow: '0 4px 20px rgba(200, 160, 170, 0.15)',
                   }}
                 >
                   {/* Header */}
