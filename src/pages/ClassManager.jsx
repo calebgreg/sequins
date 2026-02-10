@@ -65,30 +65,6 @@ export default function ClassManager() {
     enabled: !!studioId,
   });
 
-  // Auto-scroll to current time
-  useEffect(() => {
-    if (scrollContainerRef.current && classes.length > 0) {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinutes = now.getMinutes();
-      
-      // Calculate scroll position
-      const scrollPosition = ((currentHour - 6) * HOUR_HEIGHT) + ((currentMinutes / 60) * HOUR_HEIGHT);
-      
-      scrollContainerRef.current.scrollTop = Math.max(0, scrollPosition);
-    }
-  }, [selectedDay, classes.length]);
-
-  const dayClasses = classes.filter(c => c.day === selectedDay);
-
-  const getClassStyle = (cls) => {
-    const startHour = cls.start_time;
-    const duration = cls.duration;
-    const top = ((startHour - 6) * HOUR_HEIGHT) + 'px';
-    const height = (duration * HOUR_HEIGHT) + 'px';
-    return { top, height };
-  };
-
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]" style={{ backgroundColor: colors.paper }}>
       {/* Frosted Header */}
