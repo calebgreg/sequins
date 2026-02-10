@@ -52,7 +52,7 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = 
     if (!currentTeacherName) return false;
     // Exact match, case-insensitive
     return c.teacher.trim().toLowerCase() === currentTeacherName.trim().toLowerCase();
-  });
+  }).sort((a, b) => a.start_time - b.start_time);
 
   return (
     <div className="space-y-4 md:space-y-6">
