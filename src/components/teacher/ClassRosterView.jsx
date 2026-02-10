@@ -12,8 +12,9 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
   const [selectedStudentForMessage, setSelectedStudentForMessage] = useState(null);
   const [selectedStudentForActivity, setSelectedStudentForActivity] = useState(null);
 
-  // Filter students that are in this class
+  // Filter students that ACTUALLY EXIST in the database AND are in this class's student_names
   const classStudents = students.filter(s => classData.student_names?.includes(s.name));
+  const actualStudentCount = classStudents.length;
 
   return (
     <div className="flex flex-col h-full bg-[#F4F4F6]">
@@ -30,7 +31,7 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
           </Button>
           <div>
             <h2 className="font-serif text-3xl text-[#333333]">Class Roster</h2>
-            <p className="text-gray-400 font-serif text-lg">{classData.title} • {classStudents.length} Students</p>
+            <p className="text-gray-400 font-serif text-lg">{classData.title} • {actualStudentCount} Students</p>
           </div>
         </div>
       </div>
