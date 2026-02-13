@@ -116,7 +116,7 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, s
               <div className="min-w-0 flex-1">
                 <h3 className="font-medium truncate" style={{ color: '#8b7d72' }}>{cls.title}</h3>
                 <p className="text-xs md:text-sm mt-0.5 truncate" style={{ color: '#b5a599' }}>
-                  {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {cls.duration || 1}hr · {getActualStudentCount(cls, students)} students
+                  {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {Math.round((cls.duration || 1) * 60)} min · {getActualStudentCount(cls, students)} students
                 </p>
               </div>
             </div>
@@ -475,7 +475,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
                     {classData.title}
                   </h3>
                   <p className="text-sm md:text-lg mt-1" style={{ color: '#a8998e' }}>
-                    {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} · {Number(classData.duration || 1).toFixed(1)} hrs
+                    {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} · {Math.round((classData.duration || 1) * 60)} min
                   </p>
                   <div className="flex flex-wrap gap-2 mt-3 md:mt-4">
                     <span 
