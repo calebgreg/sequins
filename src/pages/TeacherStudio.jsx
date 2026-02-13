@@ -830,27 +830,29 @@ export default function TeacherStudio() {
                      </SelectContent>
                    </Select>
 
-                   {/* Teacher Selector */}
-                   <Select value={selectedTeacher || ''} onValueChange={setSelectedTeacher}>
-                     <SelectTrigger 
-                       className="w-[150px] border-none"
-                       style={{
-                         background: 'rgba(255,255,255,0.6)',
-                         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
-                         color: '#8b7d72',
-                       }}
-                     >
-                       <SelectValue placeholder="Select teacher" />
-                     </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="all">All Teachers</SelectItem>
-                       {teachers.map(teacher => (
-                         <SelectItem key={teacher.id} value={teacher.name}>
-                           {teacher.name}
-                         </SelectItem>
-                       ))}
-                     </SelectContent>
-                   </Select>
+                   {/* Teacher Selector - Only visible to super admins */}
+                   {currentUser?.role === 'admin' && (
+                     <Select value={selectedTeacher || ''} onValueChange={setSelectedTeacher}>
+                       <SelectTrigger 
+                         className="w-[150px] border-none"
+                         style={{
+                           background: 'rgba(255,255,255,0.6)',
+                           boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+                           color: '#8b7d72',
+                         }}
+                       >
+                         <SelectValue placeholder="Select teacher" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="all">All Teachers</SelectItem>
+                         {teachers.map(teacher => (
+                           <SelectItem key={teacher.id} value={teacher.name}>
+                             {teacher.name}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   )}
                  </div>
 
                  {/* Right: Quick Actions */}
