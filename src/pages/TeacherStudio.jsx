@@ -678,7 +678,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
              );
           })}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Floating Footer */}
       <div className="fixed bottom-6 md:bottom-8 left-0 right-0 flex justify-center px-4 z-20">
