@@ -56,13 +56,13 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, s
     return c.type !== 'admin'; // Default to regular classes
   });
   
-  // Filter by teacher - "all" shows all, otherwise exact match (case-insensitive) or unassigned
+  // Filter by teacher - "all" shows all, otherwise check if teacher name is included (handles multiple teachers)
   const filteredClasses = typeFilteredClasses.filter(c => {
     if (selectedTeacher === 'all') return true;
     if (!c.teacher) return true; // Show unassigned classes
     if (!selectedTeacher) return false;
-    // Exact match, case-insensitive
-    return c.teacher.trim().toLowerCase() === selectedTeacher.trim().toLowerCase();
+    // Check if the selected teacher's name appears in the teacher field (handles "Teacher A, Teacher B" format)
+    return c.teacher.toLowerCase().includes(selectedTeacher.toLowerCase());
   }).sort((a, b) => a.start_time - b.start_time);
 
   const isToday = selectedDay === getTodayDayCode();
