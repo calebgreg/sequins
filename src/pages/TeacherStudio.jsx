@@ -20,11 +20,23 @@ import { WeekView, MonthView } from '../components/teacher/ScheduleViews';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // --- HELPER: Get today's day code ---
 const getTodayDayCode = () => {
   const dayMap = { 0: 'U', 1: 'M', 2: 'T', 3: 'W', 4: 'R', 5: 'F', 6: 'S' };
   return dayMap[new Date().getDay()];
+};
+
+// --- HELPER: Day code to full name ---
+const dayCodeToName = {
+  'M': 'Monday',
+  'T': 'Tuesday',
+  'W': 'Wednesday',
+  'R': 'Thursday',
+  'F': 'Friday',
+  'S': 'Saturday',
+  'U': 'Sunday'
 };
 
 // --- HELPER: Count actual students that exist in database ---
@@ -34,25 +46,26 @@ const getActualStudentCount = (cls, students) => {
 };
 
 // --- SUB-COMPONENT: Class List View ---
-const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = [], filterType = 'class' }) => {
-  const todayCode = getTodayDayCode();
-  
-  // Filter by today first
-  const todaysClasses = classes.filter(c => c.day === todayCode);
+const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, students = [], filterType = 'class' }) => {
+  // Filter by selected day
+  const dayFilteredClasses = classes.filter(c => c.day === selectedDay);
   
   // Filter by type (class vs admin)
-  const typeFilteredClasses = todaysClasses.filter(c => {
+  const typeFilteredClasses = dayFilteredClasses.filter(c => {
     if (filterType === 'admin') return c.type === 'admin';
     return c.type !== 'admin'; // Default to regular classes
   });
   
-  // Filter by teacher - exact match (case-insensitive) or unassigned
-  const myTodaysClasses = typeFilteredClasses.filter(c => {
+  // Filter by teacher - "all" shows all, otherwise exact match (case-insensitive) or unassigned
+  const filteredClasses = typeFilteredClasses.filter(c => {
+    if (selectedTeacher === 'all') return true;
     if (!c.teacher) return true; // Show unassigned classes
-    if (!currentTeacherName) return false;
+    if (!selectedTeacher) return false;
     // Exact match, case-insensitive
-    return c.teacher.trim().toLowerCase() === currentTeacherName.trim().toLowerCase();
+    return c.teacher.trim().toLowerCase() === selectedTeacher.trim().toLowerCase();
   }).sort((a, b) => a.start_time - b.start_time);
+
+  const isToday = selectedDay === getTodayDayCode();
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -66,13 +79,15 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = 
             WebkitBackgroundClip: 'text',
           }}
         >
-          Today's Classes
+          {isToday ? "Today's Classes" : `${dayCodeToName[selectedDay]} Classes`}
         </h1>
-        <p className="text-sm mt-1" style={{ color: '#b5a599' }}>{format(new Date(), 'EEEE, MMMM do, yyyy')}</p>
+        <p className="text-sm mt-1" style={{ color: '#b5a599' }}>
+          {isToday ? format(new Date(), 'EEEE, MMMM do, yyyy') : dayCodeToName[selectedDay]}
+        </p>
       </div>
       
       <div className="space-y-3">
-        {myTodaysClasses.map((cls, idx) => (
+        {filteredClasses.map((cls, idx) => (
           <motion.div
             key={cls.id}
             initial={{ opacity: 0, y: 10 }}
@@ -125,9 +140,9 @@ const ClassListView = ({ classes, onSelectClass, currentTeacherName, students = 
           </motion.div>
         ))}
         
-        {myTodaysClasses.length === 0 && (
+        {filteredClasses.length === 0 && (
           <div className="text-center py-12" style={{ color: '#b5a599' }}>
-            No classes scheduled for you today
+            No classes scheduled {selectedTeacher !== 'all' ? 'for this teacher ' : ''}on {dayCodeToName[selectedDay]}
           </div>
         )}
       </div>
@@ -697,6 +712,8 @@ export default function TeacherStudio() {
   const [activeTab, setActiveTab] = useState('classes'); // 'classes', 'admin'
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(getTodayDayCode());
+  const [selectedTeacher, setSelectedTeacher] = useState(null); // null = current user, 'all' = all teachers
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -724,7 +741,18 @@ export default function TeacherStudio() {
   // Use teacher name from Teacher entity if found, otherwise fall back to user's full_name
   const currentTeacherName = teacherRecord?.name || currentUser?.full_name;
   
+  // Set default selected teacher to current user on first load
+  useEffect(() => {
+    if (currentTeacherName && selectedTeacher === null) {
+      setSelectedTeacher(currentTeacherName);
+    }
+  }, [currentTeacherName, selectedTeacher]);
 
+  const { data: teachers = [] } = useQuery({
+    queryKey: ['teachers', studioId],
+    queryFn: () => base44.entities.Teacher.filter({ studio_id: studioId }),
+    enabled: !!studioId,
+  });
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', studioId],
@@ -771,7 +799,55 @@ export default function TeacherStudio() {
               className="flex-1 p-4 md:p-6 pt-16 md:pt-10 max-w-4xl mx-auto w-full"
             >
               {/* Header Controls */}
-              <div className="flex flex-wrap justify-end items-center gap-3 mb-6 md:mb-10">
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-10">
+                 {/* Left: Filters */}
+                 <div className="flex items-center gap-2 flex-wrap">
+                   {/* Day Selector */}
+                   <Select value={selectedDay} onValueChange={setSelectedDay}>
+                     <SelectTrigger 
+                       className="w-[130px] border-none"
+                       style={{
+                         background: 'rgba(255,255,255,0.6)',
+                         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+                         color: '#8b7d72',
+                       }}
+                     >
+                       <SelectValue placeholder="Select day" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="M">Monday</SelectItem>
+                       <SelectItem value="T">Tuesday</SelectItem>
+                       <SelectItem value="W">Wednesday</SelectItem>
+                       <SelectItem value="R">Thursday</SelectItem>
+                       <SelectItem value="F">Friday</SelectItem>
+                       <SelectItem value="S">Saturday</SelectItem>
+                       <SelectItem value="U">Sunday</SelectItem>
+                     </SelectContent>
+                   </Select>
+
+                   {/* Teacher Selector */}
+                   <Select value={selectedTeacher || ''} onValueChange={setSelectedTeacher}>
+                     <SelectTrigger 
+                       className="w-[150px] border-none"
+                       style={{
+                         background: 'rgba(255,255,255,0.6)',
+                         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+                         color: '#8b7d72',
+                       }}
+                     >
+                       <SelectValue placeholder="Select teacher" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="all">All Teachers</SelectItem>
+                       {teachers.map(teacher => (
+                         <SelectItem key={teacher.id} value={teacher.name}>
+                           {teacher.name}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                 </div>
+
                  {/* Right: Quick Actions */}
                  <div className="flex items-center gap-2">
                    {/* Sub Request Button */}
@@ -800,7 +876,8 @@ export default function TeacherStudio() {
                   classes={classes} 
                   students={students}
                   onSelectClass={setSelectedClass} 
-                  currentTeacherName={currentTeacherName}
+                  selectedTeacher={selectedTeacher}
+                  selectedDay={selectedDay}
                   filterType="class"
                 />
               </div>
