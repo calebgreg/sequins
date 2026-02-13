@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Mail, AlertCircle, Activity } from 'lucide-react';
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import MessageParentModal from './MessageParentModal';
 import StudentActivityModal from './StudentActivityModal';
 
