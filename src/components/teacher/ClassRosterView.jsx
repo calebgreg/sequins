@@ -27,7 +27,7 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
 
   return (
     <div 
-      className="flex flex-col min-h-screen relative overflow-hidden"
+      className="flex flex-col h-screen relative"
       style={{ 
         fontFamily: "'DM Sans', -apple-system, sans-serif",
         background: '#ffffff',
