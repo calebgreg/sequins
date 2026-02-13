@@ -70,7 +70,7 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
       </div>
 
       {/* Content */}
-      <ScrollArea className="relative flex-1 px-4 md:px-8">
+      <div className="relative flex-1 px-4 md:px-8 overflow-y-auto">
         <div className="space-y-3 pb-8 max-w-2xl mx-auto">
           {classStudents.map((student, i) => (
             <motion.div
@@ -190,7 +190,7 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       <MessageParentModal 
         isOpen={!!selectedStudentForMessage}
