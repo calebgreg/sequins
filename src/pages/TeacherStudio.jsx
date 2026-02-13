@@ -614,9 +614,9 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
         </div>
       </div>
 
-      {/* Student List */}
-      <div className="relative flex-1 px-4 md:px-8 overflow-y-auto">
-        <div className="space-y-2 md:space-y-3 pb-28 md:pb-32 max-w-2xl mx-auto">
+      {/* Student List - scrollable area with bottom padding for button */}
+      <div className="flex-1 px-4 md:px-8 overflow-y-auto pb-32">
+        <div className="space-y-2 md:space-y-3 max-w-2xl mx-auto">
           {classData.student_names?.map((name, i) => {
              const status = attendance[name] || 'present';
              
@@ -680,8 +680,11 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
         </div>
       </div>
 
-      {/* Floating Footer */}
-      <div className="fixed bottom-24 md:bottom-28 left-0 right-0 flex justify-center px-4 z-20">
+      {/* Bottom Fixed Footer - anchored to bottom of this component */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 p-4 pb-6 flex justify-center z-20"
+        style={{ background: 'linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0))' }}
+      >
         <button 
           onClick={handleSubmitAttendance}
           disabled={isSubmitting || submitSuccess}
