@@ -562,7 +562,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
   // Active class attendance view
   return (
     <div 
-      className="flex flex-col min-h-screen relative overflow-hidden"
+      className="flex flex-col h-screen relative"
       style={{ 
         fontFamily: "'DM Sans', -apple-system, sans-serif",
         background: '#ffffff',
@@ -579,7 +579,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
       />
 
       {/* Header */}
-      <div className="relative px-4 md:px-8 py-6 md:py-8 flex items-center justify-between">
+      <div className="relative px-4 md:px-8 py-6 md:py-8 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
           <button 
             onClick={() => setMode('dashboard')} 
@@ -615,7 +615,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
       </div>
 
       {/* Student List */}
-      <ScrollArea className="relative flex-1 px-4 md:px-8">
+      <div className="relative flex-1 px-4 md:px-8 overflow-y-auto">
         <div className="space-y-2 md:space-y-3 pb-28 md:pb-32 max-w-2xl mx-auto">
           {classData.student_names?.map((name, i) => {
              const status = attendance[name] || 'present';
