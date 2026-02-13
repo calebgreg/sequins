@@ -302,7 +302,7 @@ export default function GlobalAiChat() {
     };
 
     return (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-4 font-sans text-gray-900 pointer-events-none">
+        <div className="fixed bottom-6 left-1/2 md:left-[calc(50%+48px)] -translate-x-1/2 z-50 w-full max-w-[420px] px-4 font-sans text-gray-900 pointer-events-none">
             <svg width="0" height="0" className="absolute">
                 <filter id="liquid-glass">
                     <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="1" result="turbulence" />
