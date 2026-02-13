@@ -681,7 +681,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
       </div>
 
       {/* Floating Footer */}
-      <div className="fixed bottom-6 md:bottom-8 left-0 right-0 flex justify-center px-4 z-20">
+      <div className="fixed bottom-24 md:bottom-28 left-0 right-0 flex justify-center px-4 z-20">
         <button 
           onClick={handleSubmitAttendance}
           disabled={isSubmitting || submitSuccess}
