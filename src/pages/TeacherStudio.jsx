@@ -475,7 +475,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
                     {classData.title}
                   </h3>
                   <p className="text-sm md:text-lg mt-1" style={{ color: '#a8998e' }}>
-                    {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} · {classData.duration} hrs
+                    {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} · {Number(classData.duration || 1).toFixed(1)} hrs
                   </p>
                   <div className="flex flex-wrap gap-2 mt-3 md:mt-4">
                     <span 
