@@ -682,9 +682,10 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
 
       {/* Bottom Fixed Footer - anchored to bottom of this component */}
       <div 
-        className="absolute bottom-0 left-0 right-0 p-4 pb-6 flex justify-center z-20"
+        className="absolute bottom-0 left-0 right-0 p-4 pb-6 z-20"
         style={{ background: 'linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0))' }}
       >
+        <div className="flex justify-center max-w-2xl mx-auto">
         <button 
           onClick={handleSubmitAttendance}
           disabled={isSubmitting || submitSuccess}
@@ -695,6 +696,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
             {isSubmitting ? "Analyzing..." : submitSuccess ? "Saved ✓" : "Complete Class"}
           </span>
         </button>
+        </div>
       </div>
 
       {isSubRequestOpen && (
