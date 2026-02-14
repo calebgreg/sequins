@@ -122,7 +122,8 @@ Be SPECIFIC about what you extracted from the uploaded content.
         }
       });
 
-      if (res) {
+      console.log("LLM Response:", res);
+      if (res && res.theme && res.timeline) {
         const newPlan = {
           ...res,
           class_id: classData.id,
@@ -130,10 +131,14 @@ Be SPECIFIC about what you extracted from the uploaded content.
           notes: ''
         };
         setActivePlan(newPlan);
-        // Don't auto-save yet, let them review
+        setUploadedFiles([]); // Clear files after successful generation
+      } else {
+        console.error("Invalid response structure:", res);
+        alert("Generation failed - please try again");
       }
     } catch (e) {
       console.error("Plan generation failed", e);
+      alert("Generation failed: " + (e.message || "Unknown error"));
     } finally {
       setIsGenerating(false);
     }
