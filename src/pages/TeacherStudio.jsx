@@ -809,7 +809,7 @@ export default function TeacherStudio() {
 
   return (
     <div 
-      className="min-h-screen relative overflow-hidden"
+      className="min-h-screen relative"
       style={{ 
         fontFamily: "'DM Sans', -apple-system, sans-serif",
         background: '#ffffff',
@@ -826,7 +826,7 @@ export default function TeacherStudio() {
       />
 
       {/* Main Content Area */}
-      <div className="relative flex-1 flex flex-col max-w-[100vw] overflow-x-hidden">
+      <div className="relative flex-1 flex flex-col">
 
         <AnimatePresence mode="wait">
           {!selectedClass ? (
@@ -966,7 +966,7 @@ export default function TeacherStudio() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="h-screen overflow-hidden" 
+              className="min-h-screen" 
             >
               <ClassDetailView 
                 classData={selectedClass} 
