@@ -15,6 +15,7 @@ import VoiceNoteIntake from '../components/teacher/VoiceNoteIntake';
 import ClassRosterView from '../components/teacher/ClassRosterView';
 import StudentProfileView from '../components/teacher/StudentProfileView';
 import SubRequestFlow from '../components/teachers/SubRequestFlow';
+import AdminSubAssignment from '../components/teachers/AdminSubAssignment';
 import { analyzeAttendance } from '../components/teacher/useNoteAI';
 import { WeekView, MonthView } from '../components/teacher/ScheduleViews';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -46,7 +47,18 @@ const getActualStudentCount = (cls, students) => {
 };
 
 // --- SUB-COMPONENT: Class List View ---
-const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, students = [], filterType = 'class' }) => {
+const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, students = [], filterType = 'class', subAssignments = [] }) => {
+  // Get today's date for sub assignment checking
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  
+  // Helper to get effective teacher for a class on a given date
+  const getEffectiveTeacher = (cls) => {
+    const subAssignment = subAssignments.find(
+      sa => sa.class_id === cls.id && sa.date === todayStr && sa.status === 'scheduled'
+    );
+    return subAssignment ? subAssignment.sub_teacher : cls.teacher;
+  };
+  
   // Filter by selected day
   const dayFilteredClasses = classes.filter(c => c.day === selectedDay);
   
@@ -56,14 +68,24 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, s
     return c.type !== 'admin'; // Default to regular classes
   });
   
-  // Filter by teacher - "all" shows all, otherwise check if teacher name is included (handles multiple teachers)
+  // Filter by teacher - considering sub assignments for today
   const filteredClasses = typeFilteredClasses.filter(c => {
     if (selectedTeacher === 'all') return true;
-    if (!c.teacher) return true; // Show unassigned classes
     if (!selectedTeacher) return false;
-    // Check if the selected teacher's name appears in the teacher field (handles "Teacher A, Teacher B" format)
-    return c.teacher.toLowerCase().includes(selectedTeacher.toLowerCase());
+    
+    const effectiveTeacher = getEffectiveTeacher(c);
+    if (!effectiveTeacher) return true; // Show unassigned classes
+    
+    // Check if the selected teacher is the effective teacher (original or sub)
+    return effectiveTeacher.toLowerCase().includes(selectedTeacher.toLowerCase());
   }).sort((a, b) => a.start_time - b.start_time);
+  
+  // Helper to check if class has a sub today
+  const hasSubToday = (cls) => {
+    return subAssignments.some(
+      sa => sa.class_id === cls.id && sa.date === todayStr && sa.status === 'scheduled'
+    );
+  };
 
   const isToday = selectedDay === getTodayDayCode();
 
@@ -117,6 +139,11 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, s
                 <h3 className="font-medium truncate" style={{ color: '#8b7d72' }}>{cls.title}</h3>
                 <p className="text-xs md:text-sm mt-0.5 truncate" style={{ color: '#b5a599' }}>
                   {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {Math.round((cls.duration || 1) * 60)} min · {getActualStudentCount(cls, students)} students
+                  {hasSubToday(cls) && (
+                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(126,184,154,0.2)', color: '#7eb89a' }}>
+                      Sub: {getEffectiveTeacher(cls)?.split(' ')[0]}
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
