@@ -68,6 +68,7 @@ const AdminSubAssignment = ({ onClose, studioId }) => {
     const dayMap = { 'U': 0, 'M': 1, 'T': 2, 'W': 3, 'R': 4, 'F': 5, 'S': 6 };
     const targetDay = dayMap[selectedClass.day];
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset to start of day so today is included
     const weekStart = startOfWeek(addDays(today, weekOffset * 7), { weekStartsOn: 0 });
     
     const dates = [];
