@@ -326,7 +326,11 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
   };
 
   if (mode === 'lesson_plan') {
-    return <LessonPlanner classData={classData} onBack={() => setMode('dashboard')} />;
+    return (
+      <div className="min-h-screen overflow-auto" style={{ background: '#ffffff' }}>
+        <LessonPlanner classData={classData} onBack={() => setMode('dashboard')} />
+      </div>
+    );
   }
 
   if (mode === 'music') {
