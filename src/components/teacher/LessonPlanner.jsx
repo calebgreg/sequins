@@ -179,24 +179,14 @@ Be SPECIFIC about what you extracted from the uploaded content.
 
   return (
     <div 
-      className="min-h-screen flex flex-col relative overflow-auto"
+      className="absolute inset-0 overflow-y-auto"
       style={{ 
         fontFamily: "'DM Sans', -apple-system, sans-serif",
         background: '#ffffff',
       }}
     >
-      {/* Ambient background shapes */}
-      <div 
-        className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
-      />
-      <div 
-        className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
-      />
-
       {/* Header */}
-      <div className="relative px-8 py-8 flex items-center justify-between">
+      <div className="sticky top-0 z-10 px-4 md:px-8 py-4 md:py-6 flex items-center justify-between bg-white/90 backdrop-blur-sm">
         <div className="flex items-center gap-4">
           <button 
             onClick={onBack} 
@@ -232,11 +222,11 @@ Be SPECIFIC about what you extracted from the uploaded content.
         )}
       </div>
 
-      <div className="relative flex-1 px-4 md:px-8 pb-8 overflow-visible">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="px-4 md:px-8 pb-8">
+        <div className="flex flex-col gap-6">
           
-          {/* Left Col: Generator & History */}
-          <div className="lg:col-span-1 flex flex-col gap-6">
+          {/* Generator Card */}
+          <div className="flex flex-col gap-6">
             
             {/* AI Generator Card */}
             <div className="rounded-3xl p-6" style={cardStyle}>
@@ -364,154 +354,136 @@ Be SPECIFIC about what you extracted from the uploaded content.
               </div>
             </div>
 
-            {/* Past Plans List */}
-            <div className="flex-1 rounded-3xl p-6 flex flex-col min-h-0" style={cardStyle}>
-              <h3 className="font-medium mb-4" style={{ color: '#8b7d72' }}>Previous Plans</h3>
-              <ScrollArea className="flex-1 -mr-4 pr-4">
-                <div className="space-y-3">
-                  {plans.map(plan => (
-                    <div 
-                      key={plan.id}
-                      onClick={() => setActivePlan(plan)}
-                      className="p-4 rounded-2xl cursor-pointer transition-all"
-                      style={{
-                        background: activePlan?.id === plan.id 
-                          ? 'linear-gradient(145deg, rgba(244,206,206,0.4) 0%, rgba(232,180,180,0.3) 100%)'
-                          : 'rgba(255,255,255,0.5)',
-                        boxShadow: activePlan?.id === plan.id 
-                          ? 'inset 0 1px 1px rgba(255,255,255,0.5), 0 4px 12px -4px rgba(200,160,160,0.2)'
-                          : 'inset 0 1px 1px rgba(255,255,255,0.7)',
-                      }}
-                    >
-                      <div className="font-medium truncate" style={{ color: '#8b7d72' }}>{plan.theme}</div>
-                      <div className="text-xs mt-1 flex items-center gap-2" style={{ color: '#b5a599' }}>
-                        <Clock className="w-3 h-3" />
-                        {format(new Date(plan.created_date), 'MMM d, yyyy')}
-                      </div>
-                    </div>
-                  ))}
-                  {plans.length === 0 && (
-                    <div className="text-center py-8 text-sm" style={{ color: '#b5a599' }}>No saved plans yet.</div>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
           </div>
 
-          {/* Right Col: Plan Detail View */}
-          <div className="lg:col-span-2 rounded-3xl p-4 md:p-8 flex flex-col min-h-[400px]" style={cardStyle}>
-            {currentDisplayPlan ? (
-              <div className="flex-1 overflow-auto">
-                <div className="max-w-3xl mx-auto space-y-8 pb-8">
-                  
-                  <div className="text-center space-y-3 pb-8" style={{ borderBottom: '1px solid rgba(200,180,170,0.15)' }}>
-                    <span 
-                      className="inline-block px-4 py-1.5 rounded-full text-xs font-medium"
-                      style={{
-                        background: 'linear-gradient(145deg, rgba(180,160,190,0.15) 0%, rgba(160,140,170,0.1) 100%)',
-                        color: '#9a8aad',
-                      }}
-                    >
-                      {classData.duration} Minutes • {classData.level || 'All Levels'}
-                    </span>
-                    <h1 
-                      className="text-3xl font-bold tracking-tight"
-                      style={textGradient}
-                    >
-                      {currentDisplayPlan.theme}
-                    </h1>
-                    {currentDisplayPlan.level_adjustments && (
-                      <p className="italic max-w-lg mx-auto" style={{ color: '#a8998e' }}>
-                        "{currentDisplayPlan.level_adjustments}"
-                      </p>
-                    )}
-                    {currentDisplayPlan.inspiration_notes && (
-                      <div 
-                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm"
-                        style={{ 
-                          background: 'linear-gradient(145deg, rgba(180,160,190,0.12) 0%, rgba(160,140,170,0.08) 100%)',
-                          color: '#8a7d90',
-                        }}
-                      >
-                        <Image className="w-4 h-4" />
-                        <span>{currentDisplayPlan.inspiration_notes}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-6">
-                    {currentDisplayPlan.timeline?.map((segment, idx) => (
-                      <motion.div 
-                        key={idx}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="relative pl-8 pb-8 last:pb-0"
-                        style={{ borderLeft: '2px solid rgba(244,206,206,0.6)' }}
-                      >
-                        <div 
-                          className="absolute -left-[9px] top-0 w-4 h-4 rounded-full"
-                          style={{ 
-                            background: 'linear-gradient(145deg, rgba(244,206,206,0.8) 0%, rgba(232,180,180,0.6) 100%)',
-                            boxShadow: '0 0 0 4px white',
-                          }}
-                        />
-                        
-                        <div className="flex items-baseline justify-between mb-3">
-                          <h3 className="text-lg font-medium" style={{ color: '#8b7d72' }}>{segment.section}</h3>
-                          <span className="text-sm font-medium" style={{ color: '#b5a599' }}>{segment.duration_minutes} min</span>
-                        </div>
-                        
-                        <div 
-                          className="rounded-2xl p-5 mb-3"
-                          style={{
-                            background: 'rgba(255,255,255,0.5)',
-                            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
-                          }}
-                        >
-                          <p className="leading-relaxed whitespace-pre-wrap" style={{ color: '#6b5d52' }}>
-                            {segment.description}
-                          </p>
-                        </div>
-
-                        {segment.music_suggestion && (
-                          <div 
-                            className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full"
-                            style={{
-                              background: 'rgba(255,255,255,0.6)',
-                              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.08)',
-                              color: '#a8998e',
-                            }}
-                          >
-                            <Music className="w-4 h-4" style={{ color: '#9a8aad' }} />
-                            <span>Vibe: {segment.music_suggestion}</span>
-                          </div>
-                        )}
-                      </motion.div>
-                    ))}
-                  </div>
-
-                </div>
-              </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center p-10">
-                <div 
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6"
+          {/* Generated Plan Display */}
+          {currentDisplayPlan && (
+            <div className="rounded-3xl p-4 md:p-6" style={cardStyle}>
+              <div className="text-center space-y-3 pb-6 mb-6" style={{ borderBottom: '1px solid rgba(200,180,170,0.15)' }}>
+                <span 
+                  className="inline-block px-4 py-1.5 rounded-full text-xs font-medium"
                   style={{
-                    background: 'rgba(255,255,255,0.5)',
-                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                    background: 'linear-gradient(145deg, rgba(180,160,190,0.15) 0%, rgba(160,140,170,0.1) 100%)',
+                    color: '#9a8aad',
                   }}
                 >
-                  <Wand2 className="w-8 h-8" style={{ color: '#d4c4ba' }} />
-                </div>
-                <h3 className="text-xl font-medium mb-2" style={textGradient}>Ready to Plan?</h3>
-                <p className="max-w-xs" style={{ color: '#b5a599' }}>
-                  Select a past plan from the left or use the AI assistant to generate a fresh structure for today's class.
-                </p>
+                  {classData.duration} Minutes • {classData.level || 'All Levels'}
+                </span>
+                <h1 
+                  className="text-2xl md:text-3xl font-bold tracking-tight"
+                  style={textGradient}
+                >
+                  {currentDisplayPlan.theme}
+                </h1>
+                {currentDisplayPlan.level_adjustments && (
+                  <p className="italic text-sm" style={{ color: '#a8998e' }}>
+                    "{currentDisplayPlan.level_adjustments}"
+                  </p>
+                )}
+                {currentDisplayPlan.inspiration_notes && (
+                  <div 
+                    className="mt-4 flex items-start gap-2 px-4 py-2 rounded-xl text-sm text-left"
+                    style={{ 
+                      background: 'linear-gradient(145deg, rgba(180,160,190,0.12) 0%, rgba(160,140,170,0.08) 100%)',
+                      color: '#8a7d90',
+                    }}
+                  >
+                    <Image className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>{currentDisplayPlan.inspiration_notes}</span>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
+              <div className="space-y-6">
+                {currentDisplayPlan.timeline?.map((segment, idx) => (
+                  <div 
+                    key={idx}
+                    className="relative pl-6 pb-6 last:pb-0"
+                    style={{ borderLeft: '2px solid rgba(244,206,206,0.6)' }}
+                  >
+                    <div 
+                      className="absolute -left-[7px] top-0 w-3 h-3 rounded-full"
+                      style={{ 
+                        background: 'linear-gradient(145deg, rgba(244,206,206,0.8) 0%, rgba(232,180,180,0.6) 100%)',
+                        boxShadow: '0 0 0 3px white',
+                      }}
+                    />
+                    
+                    <div className="flex items-baseline justify-between mb-2">
+                      <h3 className="text-base font-medium" style={{ color: '#8b7d72' }}>{segment.section}</h3>
+                      <span className="text-xs font-medium" style={{ color: '#b5a599' }}>{segment.duration_minutes} min</span>
+                    </div>
+                    
+                    <div 
+                      className="rounded-xl p-4 mb-2"
+                      style={{
+                        background: 'rgba(255,255,255,0.5)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                      }}
+                    >
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#6b5d52' }}>
+                        {segment.description}
+                      </p>
+                    </div>
+
+                    {segment.music_suggestion && (
+                      <div 
+                        className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full"
+                        style={{
+                          background: 'rgba(255,255,255,0.6)',
+                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+                          color: '#a8998e',
+                        }}
+                      >
+                        <Music className="w-3 h-3" style={{ color: '#9a8aad' }} />
+                        <span>{segment.music_suggestion}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Save button at bottom of plan */}
+              {!currentDisplayPlan.id && (
+                <button 
+                  onClick={handleSave} 
+                  className="w-full mt-6 py-4 rounded-2xl text-sm font-medium transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                  style={buttonStyle}
+                >
+                  <Save className="w-4 h-4" style={{ color: '#c9a99c' }} />
+                  <span style={textGradient}>Save This Plan</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Previous Plans */}
+          {plans.length > 0 && (
+            <div className="rounded-3xl p-4 md:p-6" style={cardStyle}>
+              <h3 className="font-medium mb-4" style={{ color: '#8b7d72' }}>Previous Plans</h3>
+              <div className="space-y-3">
+                {plans.map(plan => (
+                  <div 
+                    key={plan.id}
+                    onClick={() => setActivePlan(plan)}
+                    className="p-4 rounded-2xl cursor-pointer transition-all active:scale-[0.98]"
+                    style={{
+                      background: activePlan?.id === plan.id 
+                        ? 'linear-gradient(145deg, rgba(244,206,206,0.4) 0%, rgba(232,180,180,0.3) 100%)'
+                        : 'rgba(255,255,255,0.5)',
+                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                    }}
+                  >
+                    <div className="font-medium truncate" style={{ color: '#8b7d72' }}>{plan.theme}</div>
+                    <div className="text-xs mt-1 flex items-center gap-2" style={{ color: '#b5a599' }}>
+                      <Clock className="w-3 h-3" />
+                      {format(new Date(plan.created_date), 'MMM d, yyyy')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
