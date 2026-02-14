@@ -38,11 +38,20 @@ export default function TeacherTimeManagement() {
     retry: false
   });
 
+  const studioId = currentUser?.studio_id;
   const teacherName = currentUser?.full_name || "Teacher";
 
   const { data: classes = [] } = useQuery({
-    queryKey: ['classes'],
-    queryFn: () => base44.entities.DanceClass.list(),
+    queryKey: ['classes', studioId],
+    queryFn: () => base44.entities.DanceClass.filter({ studio_id: studioId }),
+    enabled: !!studioId,
+  });
+
+  // Fetch sub assignments - both where this teacher is subbing AND where they're being subbed out
+  const { data: subAssignments = [] } = useQuery({
+    queryKey: ['subAssignments', studioId],
+    queryFn: () => base44.entities.SubAssignment.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   const myClasses = classes.filter(c => c.teacher === teacherName);
@@ -128,7 +137,7 @@ export default function TeacherTimeManagement() {
     });
   };
 
-  // Calculate weekly hours based on scheduled classes
+  // Calculate weekly hours based on scheduled classes + sub assignments
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
   const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
@@ -137,30 +146,54 @@ export default function TeacherTimeManagement() {
     return weekDays.map(day => {
       const dayOfWeek = day.getDay();
       const dayClasses = myClasses.filter(cls => dayMap[cls.day] === dayOfWeek);
-      
-      // Check if any of these classes have filled sub requests for this specific date
       const dateStr = format(day, 'yyyy-MM-dd');
+      
+      // Check if any of these classes have filled sub requests for this specific date (old system)
       const filledSubsForDay = subRequests.filter(
         req => req.status === 'filled' && format(new Date(req.date || req.created_date), 'yyyy-MM-dd') === dateStr
       );
       
+      // NEW: Check for sub assignments where THIS teacher is subbed OUT (loses hours)
+      const subbedOutAssignments = subAssignments.filter(
+        sa => sa.original_teacher === teacherName && sa.date === dateStr && sa.status === 'scheduled'
+      );
+      
+      // NEW: Check for sub assignments where THIS teacher is subbing IN (gains hours)
+      const subbingInAssignments = subAssignments.filter(
+        sa => sa.sub_teacher === teacherName && sa.date === dateStr && sa.status === 'scheduled'
+      );
+      
       const scheduledHours = dayClasses.reduce((sum, cls) => sum + (cls.duration || 0), 0);
-      const subbedHours = filledSubsForDay.reduce((sum, req) => {
+      
+      // Hours lost from old sub request system
+      const oldSubbedHours = filledSubsForDay.reduce((sum, req) => {
         const cls = dayClasses.find(c => c.id === req.class_id);
         return sum + (cls?.duration || 0);
       }, 0);
+      
+      // Hours lost from new sub assignment system (being subbed out)
+      const subbedOutHours = subbedOutAssignments.reduce((sum, sa) => sum + (sa.duration || 0), 0);
+      
+      // Hours GAINED from subbing for others
+      const subbingInHours = subbingInAssignments.reduce((sum, sa) => sum + (sa.duration || 0), 0);
+      
+      const totalSubbedHours = oldSubbedHours + subbedOutHours;
+      const netHours = scheduledHours - totalSubbedHours + subbingInHours;
       
       return {
         day: format(day, 'EEE'),
         date: format(day, 'MMM d'),
         scheduledHours,
-        subbedHours,
-        netHours: scheduledHours - subbedHours,
+        subbedHours: totalSubbedHours,
+        subbingInHours,
+        netHours,
         classes: dayClasses,
-        subbedClasses: filledSubsForDay
+        subbedClasses: filledSubsForDay,
+        subbedOutAssignments,
+        subbingInAssignments
       };
     });
-  }, [weekDays, myClasses, subRequests]);
+  }, [weekDays, myClasses, subRequests, subAssignments, teacherName]);
 
   const totalWeekHours = weeklyBreakdown.reduce((sum, d) => sum + d.netHours, 0);
 
@@ -260,9 +293,11 @@ export default function TeacherTimeManagement() {
                           </div>
                           <div className="text-right">
                             <p className="text-2xl font-serif text-[#333333]">{day.netHours.toFixed(1)} hrs</p>
-                            {day.subbedHours > 0 && (
+                            {(day.subbedHours > 0 || day.subbingInHours > 0) && (
                               <p className="text-xs text-gray-400">
-                                {day.scheduledHours.toFixed(1)} - {day.subbedHours.toFixed(1)} subbed
+                                {day.scheduledHours.toFixed(1)}
+                                {day.subbedHours > 0 && ` - ${day.subbedHours.toFixed(1)} out`}
+                                {day.subbingInHours > 0 && ` + ${day.subbingInHours.toFixed(1)} sub`}
                               </p>
                             )}
                           </div>
@@ -271,7 +306,11 @@ export default function TeacherTimeManagement() {
                         {day.classes.length > 0 && (
                           <div className="space-y-2 mt-3">
                             {day.classes.map((cls) => {
-                              const isSubbed = day.subbedClasses.some(req => req.class_id === cls.id);
+                              const isSubbedOld = day.subbedClasses.some(req => req.class_id === cls.id);
+                              const isSubbedNew = day.subbedOutAssignments.some(sa => sa.class_id === cls.id);
+                              const isSubbed = isSubbedOld || isSubbedNew;
+                              const subAssignment = day.subbedOutAssignments.find(sa => sa.class_id === cls.id);
+                              
                               return (
                                 <div
                                   key={cls.id}
@@ -287,6 +326,7 @@ export default function TeacherTimeManagement() {
                                       </p>
                                       <p className="text-xs text-gray-400">
                                         {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')}
+                                        {subAssignment && <span className="ml-1 text-red-400">→ {subAssignment.sub_teacher?.split(' ')[0]}</span>}
                                       </p>
                                     </div>
                                   </div>
@@ -296,6 +336,34 @@ export default function TeacherTimeManagement() {
                                 </div>
                               );
                             })}
+                          </div>
+                        )}
+                        
+                        {/* Show classes this teacher is subbing for others */}
+                        {day.subbingInAssignments.length > 0 && (
+                          <div className="space-y-2 mt-3">
+                            <p className="text-xs font-medium text-green-600 uppercase tracking-wide">Covering for others</p>
+                            {day.subbingInAssignments.map((sa) => (
+                              <div
+                                key={sa.id}
+                                className="flex items-center justify-between p-3 rounded-xl bg-green-50 border border-green-100"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center text-xs">+</div>
+                                  <div>
+                                    <p className="text-sm font-medium text-green-700">
+                                      {sa.class_name}
+                                    </p>
+                                    <p className="text-xs text-green-500">
+                                      Covering for {sa.original_teacher?.split(' ')[0]}
+                                    </p>
+                                  </div>
+                                </div>
+                                <p className="text-sm font-medium text-green-600">
+                                  +{sa.duration?.toFixed(1)} hrs
+                                </p>
+                              </div>
+                            ))}
                           </div>
                         )}
 
