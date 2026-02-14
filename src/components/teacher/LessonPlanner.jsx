@@ -179,18 +179,18 @@ Be SPECIFIC about what you extracted from the uploaded content.
 
   return (
     <div 
-      className="absolute inset-0 overflow-y-auto"
+      className="min-h-screen w-full pb-safe"
       style={{ 
         fontFamily: "'DM Sans', -apple-system, sans-serif",
         background: '#ffffff',
       }}
     >
       {/* Header */}
-      <div className="sticky top-0 z-10 px-4 md:px-8 py-4 md:py-6 flex items-center justify-between bg-white/90 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
+      <div className="sticky top-0 z-10 px-4 py-4 flex items-center justify-between bg-white/95 backdrop-blur-sm border-b border-gray-100">
+        <div className="flex items-center gap-3 min-w-0">
           <button 
             onClick={onBack} 
-            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 active:scale-95"
             style={{
               background: 'rgba(255,255,255,0.6)',
               boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
@@ -199,30 +199,19 @@ Be SPECIFIC about what you extracted from the uploaded content.
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div>
+          <div className="min-w-0">
             <h2 
-              className="text-2xl font-bold tracking-tight"
+              className="text-xl font-bold tracking-tight truncate"
               style={textGradient}
             >
               Lesson Planner
             </h2>
-            <p className="text-sm" style={{ color: '#b5a599' }}>{classData.title}</p>
+            <p className="text-xs truncate" style={{ color: '#b5a599' }}>{classData.title}</p>
           </div>
         </div>
-        
-        {currentDisplayPlan && !currentDisplayPlan.id && (
-          <button 
-            onClick={handleSave} 
-            className="px-6 py-3 rounded-2xl text-sm font-medium transition-all hover:scale-[1.02] flex items-center gap-2"
-            style={buttonStyle}
-          >
-            <Save className="w-4 h-4" style={{ color: '#c9a99c' }} />
-            <span style={textGradient}>Save Plan</span>
-          </button>
-        )}
       </div>
 
-      <div className="px-4 md:px-8 pb-8">
+      <div className="px-4 pb-8 pt-4">
         <div className="flex flex-col gap-6">
           
           {/* Generator Card */}
