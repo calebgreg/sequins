@@ -179,7 +179,7 @@ Be SPECIFIC about what you extracted from the uploaded content.
 
   return (
     <div 
-      className="min-h-screen w-full pb-safe"
+      className="h-full w-full overflow-y-auto"
       style={{ 
         fontFamily: "'DM Sans', -apple-system, sans-serif",
         background: '#ffffff',
