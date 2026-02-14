@@ -446,33 +446,40 @@ Be SPECIFIC about what you extracted from the uploaded content.
             </div>
           )}
 
-          {/* Previous Plans */}
-          {plans.length > 0 && (
-            <div className="rounded-3xl p-4 md:p-6" style={cardStyle}>
-              <h3 className="font-medium mb-4" style={{ color: '#8b7d72' }}>Previous Plans</h3>
-              <div className="space-y-3">
+          {/* Previous Plans - Always show section */}
+          <div className="rounded-2xl p-4" style={cardStyle}>
+            <h3 className="font-semibold mb-3 text-base" style={{ color: '#8b7d72' }}>Saved Plans</h3>
+            {plans.length > 0 ? (
+              <div className="space-y-2">
                 {plans.map(plan => (
                   <div 
                     key={plan.id}
                     onClick={() => setActivePlan(plan)}
-                    className="p-4 rounded-2xl cursor-pointer transition-all active:scale-[0.98]"
+                    className="p-3 rounded-xl cursor-pointer transition-all active:scale-[0.98] flex items-center justify-between"
                     style={{
                       background: activePlan?.id === plan.id 
-                        ? 'linear-gradient(145deg, rgba(244,206,206,0.4) 0%, rgba(232,180,180,0.3) 100%)'
-                        : 'rgba(255,255,255,0.5)',
+                        ? 'linear-gradient(145deg, rgba(244,206,206,0.5) 0%, rgba(232,180,180,0.4) 100%)'
+                        : 'rgba(255,255,255,0.6)',
                       boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
                     }}
                   >
-                    <div className="font-medium truncate" style={{ color: '#8b7d72' }}>{plan.theme}</div>
-                    <div className="text-xs mt-1 flex items-center gap-2" style={{ color: '#b5a599' }}>
-                      <Clock className="w-3 h-3" />
-                      {format(new Date(plan.created_date), 'MMM d, yyyy')}
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium truncate text-sm" style={{ color: '#8b7d72' }}>{plan.theme}</div>
+                      <div className="text-xs mt-0.5 flex items-center gap-1" style={{ color: '#b5a599' }}>
+                        <Clock className="w-3 h-3" />
+                        {format(new Date(plan.created_date), 'MMM d')}
+                      </div>
                     </div>
+                    <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: '#c4b5ab' }} />
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-sm text-center py-4" style={{ color: '#b5a599' }}>
+                No saved plans yet. Generate one above!
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
