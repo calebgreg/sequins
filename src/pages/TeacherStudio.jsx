@@ -744,6 +744,7 @@ export default function TeacherStudio() {
   const [activeTab, setActiveTab] = useState('classes'); // 'classes', 'admin'
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
+  const [isAdminSubOpen, setIsAdminSubOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(getTodayDayCode());
   const [selectedTeacher, setSelectedTeacher] = useState(null); // null = current user, 'all' = all teachers
   
@@ -795,6 +796,12 @@ export default function TeacherStudio() {
   const { data: students = [] } = useQuery({
     queryKey: ['students', studioId],
     queryFn: () => base44.entities.Student.filter({ studio_id: studioId }),
+    enabled: !!studioId,
+  });
+
+  const { data: subAssignments = [] } = useQuery({
+    queryKey: ['subAssignments', studioId],
+    queryFn: () => base44.entities.SubAssignment.filter({ studio_id: studioId }),
     enabled: !!studioId,
   });
 
@@ -884,7 +891,23 @@ export default function TeacherStudio() {
 
                  {/* Right: Quick Actions */}
                  <div className="flex items-center gap-2">
-                   {/* Sub Request Button */}
+                   {/* Admin: Assign Sub Button */}
+                   {currentUser?.role === 'admin' && (
+                     <button 
+                       onClick={() => setIsAdminSubOpen(true)}
+                       className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-xl text-xs md:text-sm font-medium transition-all active:scale-95"
+                       style={{
+                         background: 'linear-gradient(145deg, rgba(126,184,154,0.15) 0%, rgba(140,190,165,0.1) 100%)',
+                         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(126,184,154,0.1)',
+                         color: '#5a7d6a',
+                         border: '1px solid rgba(126,184,154,0.2)',
+                       }}
+                     >
+                       <User className="w-4 h-4" />
+                       <span className="hidden sm:inline">Assign Sub</span>
+                     </button>
+                   )}
+                   {/* Teacher: Sub Request Button */}
                    <button 
                      onClick={() => setIsSubRequestOpen(true)}
                      className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center transition-all active:scale-95"
@@ -893,6 +916,7 @@ export default function TeacherStudio() {
                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
                        color: '#b5a599',
                      }}
+                     title="Request Coverage"
                    >
                      <Clock className="w-4 h-4" />
                    </button>
@@ -909,6 +933,7 @@ export default function TeacherStudio() {
                 <ClassListView 
                   classes={classes} 
                   students={students}
+                  subAssignments={subAssignments}
                   onSelectClass={setSelectedClass} 
                   selectedTeacher={selectedTeacher}
                   selectedDay={selectedDay}
@@ -925,6 +950,13 @@ export default function TeacherStudio() {
                     return c.teacher.trim().toLowerCase() === currentTeacherName.trim().toLowerCase();
                   })}
                   teacherName={currentTeacherName}
+                />
+              )}
+
+              {isAdminSubOpen && (
+                <AdminSubAssignment 
+                  onClose={() => setIsAdminSubOpen(false)}
+                  studioId={studioId}
                 />
               )}
             </motion.div>
