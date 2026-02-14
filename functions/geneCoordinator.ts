@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
                 - TuitionPlan: Pricing plans, billing info.
                 - FamilyTask: Tasks, to-dos.
                 - FamilyNote: Notes on families.
+                - SubAssignment: Substitute teacher assignments - who is subbing for whom on what date.
                 
                 SPECIAL CASES:
                 - If the user talks about "planning a show", "production", "costumes", "run sheet", or "the producer", you NEED: 'Performance', 'DanceClass', 'StudioSettings'.
