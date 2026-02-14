@@ -317,102 +317,98 @@ Be SPECIFIC about what you extracted from the uploaded content.
 
           </div>
 
-          {/* Generated Plan Display */}
+          {/* Generated/Active Plan Display */}
           {currentDisplayPlan && (
-            <div className="rounded-3xl p-4 md:p-6" style={cardStyle}>
-              <div className="text-center space-y-3 pb-6 mb-6" style={{ borderBottom: '1px solid rgba(200,180,170,0.15)' }}>
+            <div className="rounded-2xl p-4" style={cardStyle}>
+              {/* Plan Header */}
+              <div className="text-center pb-4 mb-4" style={{ borderBottom: '1px solid rgba(200,180,170,0.2)' }}>
                 <span 
-                  className="inline-block px-4 py-1.5 rounded-full text-xs font-medium"
+                  className="inline-block px-3 py-1 rounded-full text-[10px] font-medium mb-2"
                   style={{
                     background: 'linear-gradient(145deg, rgba(180,160,190,0.15) 0%, rgba(160,140,170,0.1) 100%)',
                     color: '#9a8aad',
                   }}
                 >
-                  {classData.duration} Minutes • {classData.level || 'All Levels'}
+                  {classData.duration || 60} min • {classData.level || 'All Levels'}
                 </span>
-                <h1 
-                  className="text-2xl md:text-3xl font-bold tracking-tight"
+                <h2 
+                  className="text-xl font-bold tracking-tight"
                   style={textGradient}
                 >
                   {currentDisplayPlan.theme}
-                </h1>
+                </h2>
                 {currentDisplayPlan.level_adjustments && (
-                  <p className="italic text-sm" style={{ color: '#a8998e' }}>
-                    "{currentDisplayPlan.level_adjustments}"
+                  <p className="italic text-xs mt-1" style={{ color: '#a8998e' }}>
+                    {currentDisplayPlan.level_adjustments}
                   </p>
-                )}
-                {currentDisplayPlan.inspiration_notes && (
-                  <div 
-                    className="mt-4 flex items-start gap-2 px-4 py-2 rounded-xl text-sm text-left"
-                    style={{ 
-                      background: 'linear-gradient(145deg, rgba(180,160,190,0.12) 0%, rgba(160,140,170,0.08) 100%)',
-                      color: '#8a7d90',
-                    }}
-                  >
-                    <Image className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>{currentDisplayPlan.inspiration_notes}</span>
-                  </div>
                 )}
               </div>
 
-              <div className="space-y-6">
+              {/* Timeline - Mobile optimized */}
+              <div className="space-y-4">
                 {currentDisplayPlan.timeline?.map((segment, idx) => (
                   <div 
                     key={idx}
-                    className="relative pl-6 pb-6 last:pb-0"
+                    className="relative pl-5 pb-4 last:pb-0"
                     style={{ borderLeft: '2px solid rgba(244,206,206,0.6)' }}
                   >
                     <div 
-                      className="absolute -left-[7px] top-0 w-3 h-3 rounded-full"
+                      className="absolute -left-[5px] top-0 w-2 h-2 rounded-full"
                       style={{ 
-                        background: 'linear-gradient(145deg, rgba(244,206,206,0.8) 0%, rgba(232,180,180,0.6) 100%)',
-                        boxShadow: '0 0 0 3px white',
+                        background: 'rgba(244,180,180,0.8)',
+                        boxShadow: '0 0 0 2px white',
                       }}
                     />
                     
-                    <div className="flex items-baseline justify-between mb-2">
-                      <h3 className="text-base font-medium" style={{ color: '#8b7d72' }}>{segment.section}</h3>
-                      <span className="text-xs font-medium" style={{ color: '#b5a599' }}>{segment.duration_minutes} min</span>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <h4 className="text-sm font-semibold" style={{ color: '#8b7d72' }}>{segment.section}</h4>
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/50" style={{ color: '#b5a599' }}>
+                        {segment.duration_minutes} min
+                      </span>
                     </div>
                     
                     <div 
-                      className="rounded-xl p-4 mb-2"
-                      style={{
-                        background: 'rgba(255,255,255,0.5)',
-                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
-                      }}
+                      className="rounded-lg p-3 mb-2"
+                      style={{ background: 'rgba(255,255,255,0.5)' }}
                     >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: '#6b5d52' }}>
+                      <p className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: '#6b5d52' }}>
                         {segment.description}
                       </p>
                     </div>
 
                     {segment.music_suggestion && (
                       <div 
-                        className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full"
-                        style={{
-                          background: 'rgba(255,255,255,0.6)',
-                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
-                          color: '#a8998e',
-                        }}
+                        className="inline-flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-full"
+                        style={{ background: 'rgba(255,255,255,0.6)', color: '#a8998e' }}
                       >
                         <Music className="w-3 h-3" style={{ color: '#9a8aad' }} />
-                        <span>{segment.music_suggestion}</span>
+                        <span className="truncate max-w-[200px]">{segment.music_suggestion}</span>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
 
-              {/* Save button at bottom of plan */}
+              {/* Save button - only for unsaved plans */}
               {!currentDisplayPlan.id && (
                 <button 
                   onClick={handleSave} 
-                  className="w-full mt-6 py-4 rounded-2xl text-sm font-medium transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                  className="w-full mt-4 py-3 rounded-xl text-sm font-semibold active:scale-[0.98] flex items-center justify-center gap-2"
                   style={buttonStyle}
                 >
                   <Save className="w-4 h-4" style={{ color: '#c9a99c' }} />
                   <span style={textGradient}>Save This Plan</span>
+                </button>
+              )}
+
+              {/* Close/Back button for viewing saved plans */}
+              {currentDisplayPlan.id && (
+                <button 
+                  onClick={() => setActivePlan(null)} 
+                  className="w-full mt-4 py-2.5 rounded-xl text-xs font-medium active:scale-[0.98]"
+                  style={{ background: 'rgba(255,255,255,0.5)', color: '#a8998e' }}
+                >
+                  Close Plan
                 </button>
               )}
             </div>
