@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
                     intent: { type: "string", description: "Brief description of intent" },
                     entities_needed: { 
                         type: "array", 
-                        items: { type: "string", enum: ["Student", "DanceClass", "StudioSettings", "TuitionPlan", "Teacher", "Performance", "FamilyTask", "FamilyNote", "PerformanceChat"] }
+                        items: { type: "string", enum: ["Student", "DanceClass", "StudioSettings", "TuitionPlan", "Teacher", "Performance", "FamilyTask", "FamilyNote", "PerformanceChat", "SubAssignment"] }
                     }
                 },
                 required: ["entities_needed"]
