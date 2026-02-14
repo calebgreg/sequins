@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Clock, Plus, Save, ArrowLeft, Wand2, Music, PlayCircle, ChevronRight } from 'lucide-react';
+import { Sparkles, Clock, Plus, Save, ArrowLeft, Wand2, Music, PlayCircle, ChevronRight, Upload, Image, X, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 
@@ -15,8 +15,37 @@ export default function LessonPlanner({ classData, onBack }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [activePlan, setActivePlan] = useState(null);
   const [prompt, setPrompt] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState([]); // Array of {url, name, type}
+  const [isUploading, setIsUploading] = useState(false);
   
   const queryClient = useQueryClient();
+
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    setIsUploading(true);
+    try {
+      const newFiles = [];
+      for (const file of files) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        newFiles.push({
+          url: file_url,
+          name: file.name,
+          type: file.type.startsWith('image/') ? 'image' : 'document'
+        });
+      }
+      setUploadedFiles(prev => [...prev, ...newFiles]);
+    } catch (err) {
+      console.error('File upload failed', err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeFile = (index) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   // Fetch today's plan if exists
   const { data: plans = [] } = useQuery({
@@ -35,27 +64,48 @@ export default function LessonPlanner({ classData, onBack }) {
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
+      // Build context about uploaded files
+      const fileContext = uploadedFiles.length > 0 
+        ? `\n\nThe teacher has uploaded ${uploadedFiles.length} reference file(s) for inspiration. Analyze these carefully and incorporate any exercises, drills, combinations, music ideas, or teaching concepts you can extract from them into the lesson plan. Be specific about what you see and how you're using it.`
+        : '';
+
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: `
-          Create a detailed, professional dance lesson plan for a ${classData.duration}-hour ${classData.style || 'Dance'} class.
+          Create a detailed, professional dance lesson plan for a ${classData.duration || 1}-hour ${classData.style || 'Dance'} class.
           Level: ${classData.level || 'Mixed Level'}.
           Focus/Theme: ${prompt || 'Technique and Artistry'}.
+          ${fileContext}
+
+          ${uploadedFiles.length > 0 ? `
+IMPORTANT: The teacher has shared reference images/documents. Study them carefully:
+- If you see choreography notes, extract the movements and incorporate them
+- If you see exercise diagrams or photos, describe those specific exercises in detail
+- If you see music playlists or song names, use those exact songs as suggestions
+- If you see inspiration images, capture that aesthetic and energy in your descriptions
+- If you see existing lesson plans, adapt and improve upon them
+- If you see technique breakdowns, use that terminology and progression
+
+Be SPECIFIC about what you extracted from the uploaded content.
+          ` : ''}
           
           Structure the response as a JSON object with:
-          - theme: A catchy title for the lesson focus
+          - theme: A catchy title for the lesson focus (incorporate inspiration from uploads if relevant)
           - level_adjustments: Tips for modifying for different abilities
+          - inspiration_notes: If files were uploaded, briefly describe what you extracted from them (set to null if no files)
           - timeline: Array of segments (Warmup, Center, Across Floor, Combo, Cool Down). 
             Each segment should have: 
             - section (name)
             - duration_minutes (number)
-            - description (detailed exercises)
-            - music_suggestion (vibe or song type)
+            - description (detailed exercises - be very specific with counts, positions, and transitions)
+            - music_suggestion (specific song or vibe - use songs from uploads if you spotted any)
         `,
+        file_urls: uploadedFiles.length > 0 ? uploadedFiles.map(f => f.url) : undefined,
         response_json_schema: {
           type: "object",
           properties: {
             theme: { type: "string" },
             level_adjustments: { type: "string" },
+            inspiration_notes: { type: "string" },
             timeline: {
               type: "array",
               items: {
@@ -208,6 +258,81 @@ export default function LessonPlanner({ classData, onBack }) {
                     }}
                   />
                 </div>
+
+                {/* File Upload Area */}
+                <div>
+                  <label className="text-xs uppercase font-medium tracking-wider mb-2 block" style={{ color: '#b5a599' }}>Inspiration (optional)</label>
+                  <label 
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl cursor-pointer transition-all hover:scale-[1.01]"
+                    style={{
+                      background: 'rgba(255,255,255,0.6)',
+                      boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.08)',
+                      border: '2px dashed rgba(200,180,170,0.3)',
+                      color: '#a8998e',
+                    }}
+                  >
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept="image/*,.pdf,.doc,.docx"
+                      multiple
+                      onChange={handleFileUpload}
+                      disabled={isUploading}
+                    />
+                    {isUploading ? (
+                      <span className="text-sm">Uploading...</span>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        <span className="text-sm">Drop images, screenshots, docs</span>
+                      </>
+                    )}
+                  </label>
+                  
+                  {/* Uploaded Files Preview */}
+                  {uploadedFiles.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {uploadedFiles.map((file, idx) => (
+                        <div 
+                          key={idx}
+                          className="relative group"
+                        >
+                          {file.type === 'image' ? (
+                            <div 
+                              className="w-16 h-16 rounded-lg bg-cover bg-center"
+                              style={{ 
+                                backgroundImage: `url(${file.url})`,
+                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.5), 0 2px 6px rgba(180,150,140,0.15)',
+                              }}
+                            />
+                          ) : (
+                            <div 
+                              className="w-16 h-16 rounded-lg flex items-center justify-center"
+                              style={{ 
+                                background: 'rgba(255,255,255,0.7)',
+                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.5), 0 2px 6px rgba(180,150,140,0.15)',
+                              }}
+                            >
+                              <FileText className="w-6 h-6" style={{ color: '#b5a599' }} />
+                            </div>
+                          )}
+                          <button
+                            onClick={() => removeFile(idx)}
+                            className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            style={{ background: 'rgba(180,100,100,0.9)', color: 'white' }}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <p className="text-[10px] mt-2" style={{ color: '#c4b5ab' }}>
+                    AI will extract exercises, combos & ideas from your uploads
+                  </p>
+                </div>
+
                 <button 
                   onClick={handleGenerate}
                   disabled={isGenerating}
@@ -215,11 +340,15 @@ export default function LessonPlanner({ classData, onBack }) {
                   style={buttonStyle}
                 >
                   {isGenerating ? (
-                    <span style={textGradient}>Generating...</span>
+                    <span style={textGradient}>
+                      {uploadedFiles.length > 0 ? 'Analyzing & Generating...' : 'Generating...'}
+                    </span>
                   ) : (
                     <>
                       <Wand2 className="w-4 h-4" style={{ color: '#c9a99c' }} />
-                      <span style={textGradient}>Generate Plan</span>
+                      <span style={textGradient}>
+                        {uploadedFiles.length > 0 ? 'Generate from Inspo' : 'Generate Plan'}
+                      </span>
                     </>
                   )}
                 </button>
@@ -286,6 +415,18 @@ export default function LessonPlanner({ classData, onBack }) {
                       <p className="italic max-w-lg mx-auto" style={{ color: '#a8998e' }}>
                         "{currentDisplayPlan.level_adjustments}"
                       </p>
+                    )}
+                    {currentDisplayPlan.inspiration_notes && (
+                      <div 
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm"
+                        style={{ 
+                          background: 'linear-gradient(145deg, rgba(180,160,190,0.12) 0%, rgba(160,140,170,0.08) 100%)',
+                          color: '#8a7d90',
+                        }}
+                      >
+                        <Image className="w-4 h-4" />
+                        <span>{currentDisplayPlan.inspiration_notes}</span>
+                      </div>
                     )}
                   </div>
 
