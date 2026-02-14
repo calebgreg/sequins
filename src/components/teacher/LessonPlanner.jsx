@@ -125,13 +125,17 @@ Be SPECIFIC about what you extracted from the uploaded content.
       console.log("LLM Response:", res);
       if (res && res.theme && res.timeline) {
         const newPlan = {
-          ...res,
+          theme: res.theme,
+          level_adjustments: res.level_adjustments || '',
+          inspiration_notes: res.inspiration_notes || null,
+          timeline: res.timeline,
           class_id: classData.id,
           date: new Date().toISOString().split('T')[0],
           notes: ''
         };
-        setActivePlan(newPlan);
+        console.log("Setting active plan:", newPlan);
         setUploadedFiles([]); // Clear files after successful generation
+        setActivePlan(newPlan);
       } else {
         console.error("Invalid response structure:", res);
         alert("Generation failed - please try again");
