@@ -126,6 +126,21 @@ Deno.serve(async (req) => {
             dynamicContext += `\nPRICING PLANS: ` + dataMap["TuitionPlan"].map(p => `${p.name} ($${p.amount})`).join(', ') + `\n`;
         }
 
+        if (dataMap["SubAssignment"]) {
+            const today = new Date().toISOString().split('T')[0];
+            const todaySubs = dataMap["SubAssignment"].filter(sa => sa.date === today && sa.status === 'scheduled');
+            const upcomingSubs = dataMap["SubAssignment"].filter(sa => sa.date >= today && sa.status === 'scheduled');
+            
+            if (todaySubs.length > 0) {
+                dynamicContext += `\nTODAY'S SUB ASSIGNMENTS (${today}):\n` + 
+                    todaySubs.map(sa => `• ${sa.sub_teacher} is subbing for ${sa.original_teacher} in "${sa.class_name}"`).join('\n') + '\n';
+            }
+            if (upcomingSubs.length > 0) {
+                dynamicContext += `\nUPCOMING SUB ASSIGNMENTS:\n` + 
+                    upcomingSubs.map(sa => `• ${sa.date}: ${sa.sub_teacher} covers "${sa.class_name}" for ${sa.original_teacher}`).join('\n') + '\n';
+            }
+        }
+
         const systemContext = `
             You are ${aiName}, the intelligent coordinator for ${settings.name || 'the dance studio'}.
             Assisting user: ${user.full_name || 'Staff'}.
