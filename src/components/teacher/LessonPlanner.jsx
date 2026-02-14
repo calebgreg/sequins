@@ -179,7 +179,7 @@ Be SPECIFIC about what you extracted from the uploaded content.
 
   return (
     <div 
-      className="h-full flex flex-col relative overflow-hidden"
+      className="min-h-screen flex flex-col relative overflow-auto"
       style={{ 
         fontFamily: "'DM Sans', -apple-system, sans-serif",
         background: '#ffffff',
@@ -232,8 +232,8 @@ Be SPECIFIC about what you extracted from the uploaded content.
         )}
       </div>
 
-      <div className="relative flex-1 px-8 pb-8 overflow-hidden">
-        <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="relative flex-1 px-4 md:px-8 pb-8 overflow-visible">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Left Col: Generator & History */}
           <div className="lg:col-span-1 flex flex-col gap-6">
@@ -399,9 +399,9 @@ Be SPECIFIC about what you extracted from the uploaded content.
           </div>
 
           {/* Right Col: Plan Detail View */}
-          <div className="lg:col-span-2 rounded-3xl p-8 overflow-hidden flex flex-col" style={cardStyle}>
+          <div className="lg:col-span-2 rounded-3xl p-4 md:p-8 flex flex-col min-h-[400px]" style={cardStyle}>
             {currentDisplayPlan ? (
-              <ScrollArea className="flex-1 -mr-6 pr-6">
+              <div className="flex-1 overflow-auto">
                 <div className="max-w-3xl mx-auto space-y-8 pb-8">
                   
                   <div className="text-center space-y-3 pb-8" style={{ borderBottom: '1px solid rgba(200,180,170,0.15)' }}>
@@ -492,7 +492,7 @@ Be SPECIFIC about what you extracted from the uploaded content.
                   </div>
 
                 </div>
-              </ScrollArea>
+              </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center p-10">
                 <div 
