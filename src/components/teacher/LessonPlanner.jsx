@@ -71,33 +71,32 @@ export default function LessonPlanner({ classData, onBack }) {
 
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: `
-          Create a detailed, professional dance lesson plan for a ${classData.duration || 1}-hour ${classData.style || 'Dance'} class.
+          Create a practical, scannable dance lesson plan for a ${Math.round((classData.duration || 1) * 60)}-minute ${classData.style || 'Dance'} class.
           Level: ${classData.level || 'Mixed Level'}.
           Focus/Theme: ${prompt || 'Technique and Artistry'}.
           ${fileContext}
 
           ${uploadedFiles.length > 0 ? `
-IMPORTANT: The teacher has shared reference images/documents. Study them carefully:
-- If you see choreography notes, extract the movements and incorporate them
-- If you see exercise diagrams or photos, describe those specific exercises in detail
-- If you see music playlists or song names, use those exact songs as suggestions
-- If you see inspiration images, capture that aesthetic and energy in your descriptions
-- If you see existing lesson plans, adapt and improve upon them
-- If you see technique breakdowns, use that terminology and progression
-
-Be SPECIFIC about what you extracted from the uploaded content.
+IMPORTANT: The teacher has shared reference images/documents. Study them carefully and incorporate what you see.
           ` : ''}
           
+          CRITICAL FORMAT RULES:
+          - Each segment description MUST be a bullet-point list, NOT paragraphs
+          - Use short, actionable items (e.g. "• Plié sequence: 2 demi, 1 grand each position")
+          - Include counts/reps (e.g. "• 8-count grapevine x4 each direction")
+          - Keep each bullet under 15 words
+          - 4-8 bullets per segment max
+          
           Structure the response as a JSON object with:
-          - theme: A catchy title for the lesson focus (incorporate inspiration from uploads if relevant)
-          - level_adjustments: Tips for modifying for different abilities
-          - inspiration_notes: If files were uploaded, briefly describe what you extracted from them (set to null if no files)
+          - theme: A catchy 3-5 word title
+          - level_adjustments: One short sentence about modifications
+          - inspiration_notes: null (unless files uploaded, then brief note)
           - timeline: Array of segments (Warmup, Center, Across Floor, Combo, Cool Down). 
             Each segment should have: 
             - section (name)
             - duration_minutes (number)
-            - description (detailed exercises - be very specific with counts, positions, and transitions)
-            - music_suggestion (specific song or vibe - use songs from uploads if you spotted any)
+            - description (BULLET LIST as a string with • symbols and line breaks, NOT paragraphs)
+            - music_suggestion (specific song name or 2-3 word vibe)
         `,
         file_urls: uploadedFiles.length > 0 ? uploadedFiles.map(f => f.url) : undefined,
         response_json_schema: {
@@ -329,7 +328,7 @@ Be SPECIFIC about what you extracted from the uploaded content.
                     color: '#9a8aad',
                   }}
                 >
-                  {classData.duration || 60} min • {classData.level || 'All Levels'}
+                  {Math.round((classData.duration || 1) * 60)} min • {classData.level || 'All Levels'}
                 </span>
                 <h2 
                   className="text-xl font-bold tracking-tight"
