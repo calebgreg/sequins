@@ -217,126 +217,98 @@ Be SPECIFIC about what you extracted from the uploaded content.
           {/* Generator Card */}
           <div className="flex flex-col gap-6">
             
-            {/* AI Generator Card */}
-            <div className="rounded-3xl p-6" style={cardStyle}>
-              <div className="flex items-center gap-3 mb-5">
+            {/* AI Generator Card - Compact for mobile */}
+            <div className="rounded-2xl p-4" style={cardStyle}>
+              <div className="flex items-center gap-2 mb-4">
                 <div 
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
                   style={{
                     background: 'linear-gradient(145deg, rgba(180,160,190,0.2) 0%, rgba(160,140,170,0.15) 100%)',
                   }}
                 >
-                  <Sparkles className="w-5 h-5" style={{ color: '#9a8aad' }} />
+                  <Sparkles className="w-4 h-4" style={{ color: '#9a8aad' }} />
                 </div>
-                <h3 className="font-medium" style={{ color: '#8b7d72' }}>AI Assistant</h3>
+                <h3 className="font-semibold text-base" style={{ color: '#8b7d72' }}>Generate New Plan</h3>
               </div>
               
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs uppercase font-medium tracking-wider mb-2 block" style={{ color: '#b5a599' }}>Focus / Theme</label>
-                  <input 
-                    placeholder="e.g. Pirouettes, Musicality, Softness..." 
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl outline-none transition-all"
-                    style={{
-                      background: 'rgba(255,255,255,0.6)',
-                      boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.08)',
-                      color: '#6b5d52',
-                    }}
-                  />
-                </div>
+              <div className="space-y-3">
+                <input 
+                  placeholder="Focus: e.g. Pirouettes, Musicality..." 
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl outline-none text-sm"
+                  style={{
+                    background: 'rgba(255,255,255,0.6)',
+                    boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.08)',
+                    color: '#6b5d52',
+                  }}
+                />
 
-                {/* File Upload Area */}
-                <div>
-                  <label className="text-xs uppercase font-medium tracking-wider mb-2 block" style={{ color: '#b5a599' }}>Inspiration (optional)</label>
-                  <label 
-                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl cursor-pointer transition-all hover:scale-[1.01]"
-                    style={{
-                      background: 'rgba(255,255,255,0.6)',
-                      boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.08)',
-                      border: '2px dashed rgba(200,180,170,0.3)',
-                      color: '#a8998e',
-                    }}
-                  >
-                    <input 
-                      type="file" 
-                      className="hidden" 
-                      accept="image/*,.pdf,.doc,.docx"
-                      multiple
-                      onChange={handleFileUpload}
-                      disabled={isUploading}
-                    />
-                    {isUploading ? (
-                      <span className="text-sm">Uploading...</span>
-                    ) : (
-                      <>
-                        <Upload className="w-4 h-4" />
-                        <span className="text-sm">Drop images, screenshots, docs</span>
-                      </>
-                    )}
-                  </label>
-                  
-                  {/* Uploaded Files Preview */}
-                  {uploadedFiles.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {uploadedFiles.map((file, idx) => (
-                        <div 
-                          key={idx}
-                          className="relative group"
-                        >
-                          {file.type === 'image' ? (
-                            <div 
-                              className="w-16 h-16 rounded-lg bg-cover bg-center"
-                              style={{ 
-                                backgroundImage: `url(${file.url})`,
-                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.5), 0 2px 6px rgba(180,150,140,0.15)',
-                              }}
-                            />
-                          ) : (
-                            <div 
-                              className="w-16 h-16 rounded-lg flex items-center justify-center"
-                              style={{ 
-                                background: 'rgba(255,255,255,0.7)',
-                                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.5), 0 2px 6px rgba(180,150,140,0.15)',
-                              }}
-                            >
-                              <FileText className="w-6 h-6" style={{ color: '#b5a599' }} />
-                            </div>
-                          )}
-                          <button
-                            onClick={() => removeFile(idx)}
-                            className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            style={{ background: 'rgba(180,100,100,0.9)', color: 'white' }}
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                {/* File Upload - Compact */}
+                <label 
+                  className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-xl cursor-pointer active:scale-[0.98]"
+                  style={{
+                    background: 'rgba(255,255,255,0.6)',
+                    border: '2px dashed rgba(200,180,170,0.3)',
+                    color: '#a8998e',
+                  }}
+                >
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*,.pdf,.doc,.docx"
+                    multiple
+                    onChange={handleFileUpload}
+                    disabled={isUploading}
+                  />
+                  {isUploading ? (
+                    <span className="text-sm">Uploading...</span>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      <span className="text-sm">Add inspiration files</span>
+                    </>
                   )}
-                  
-                  <p className="text-[10px] mt-2" style={{ color: '#c4b5ab' }}>
-                    AI will extract exercises, combos & ideas from your uploads
-                  </p>
-                </div>
+                </label>
+                
+                {/* Uploaded Files Preview */}
+                {uploadedFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {uploadedFiles.map((file, idx) => (
+                      <div key={idx} className="relative">
+                        {file.type === 'image' ? (
+                          <div 
+                            className="w-12 h-12 rounded-lg bg-cover bg-center"
+                            style={{ backgroundImage: `url(${file.url})` }}
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-white/70">
+                            <FileText className="w-5 h-5" style={{ color: '#b5a599' }} />
+                          </div>
+                        )}
+                        <button
+                          onClick={() => removeFile(idx)}
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center bg-red-400 text-white"
+                        >
+                          <X className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <button 
                   onClick={handleGenerate}
                   disabled={isGenerating}
-                  className="w-full py-4 rounded-2xl text-sm font-medium transition-all hover:scale-[1.02] disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl text-sm font-semibold active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
                   style={buttonStyle}
                 >
                   {isGenerating ? (
-                    <span style={textGradient}>
-                      {uploadedFiles.length > 0 ? 'Analyzing & Generating...' : 'Generating...'}
-                    </span>
+                    <span style={textGradient}>Generating...</span>
                   ) : (
                     <>
                       <Wand2 className="w-4 h-4" style={{ color: '#c9a99c' }} />
-                      <span style={textGradient}>
-                        {uploadedFiles.length > 0 ? 'Generate from Inspo' : 'Generate Plan'}
-                      </span>
+                      <span style={textGradient}>Generate Plan</span>
                     </>
                   )}
                 </button>
