@@ -435,7 +435,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
   if (mode === 'dashboard') {
     return (
       <div 
-        className="flex flex-col min-h-screen relative overflow-hidden"
+        className="flex flex-col min-h-screen relative overflow-y-auto"
         style={{ 
           fontFamily: "'DM Sans', -apple-system, sans-serif",
           background: '#ffffff',
