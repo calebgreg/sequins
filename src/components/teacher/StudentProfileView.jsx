@@ -355,6 +355,7 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
               >
                  {[
                    { id: 'activity', label: 'Activity' },
+                   { id: 'attendance', label: 'Attendance' },
                    { id: 'classes', label: 'Classes' },
                    { id: 'notes', label: 'Journal' },
                    { id: 'measurements', label: 'Measurements' },
@@ -522,6 +523,105 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                      </div>
                   </div>
                </div>
+            </TabsContent>
+
+            {/* ATTENDANCE TAB */}
+            <TabsContent value="attendance" className="space-y-6">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { label: 'Present', count: attendance.filter(a => a.status === 'present').length, color: '#7fb9a8' },
+                  { label: 'Absent', count: attendance.filter(a => a.status === 'absent').length, color: '#c9867a' },
+                  { label: 'Excused', count: attendance.filter(a => a.status === 'excused').length, color: '#d4a574' },
+                  { label: 'Made Up', count: attendance.filter(a => a.status === 'made_up').length, color: '#8b7d9a' },
+                ].map((stat) => (
+                  <div 
+                    key={stat.label}
+                    className="rounded-2xl p-4 text-center"
+                    style={{
+                      background: 'rgba(255,255,255,0.4)',
+                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                    }}
+                  >
+                    <p className="text-2xl font-light" style={{ color: stat.color }}>{stat.count}</p>
+                    <p className="text-xs mt-1" style={{ color: '#b5a599' }}>{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Full Attendance List */}
+              <div 
+                className="rounded-2xl p-5"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(253,238,236,0.6) 0%, rgba(250,232,228,0.4) 100%)',
+                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+                }}
+              >
+                <h3 className="text-lg font-medium mb-4" style={{ color: '#8b7d72' }}>All Records</h3>
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {attendance.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <p style={{ color: '#b5a599' }}>No attendance records yet</p>
+                    </div>
+                  ) : (
+                    attendance.map((record, i) => {
+                      const statusColors = {
+                        present: { bg: 'rgba(127,185,168,0.15)', color: '#7fb9a8', icon: '✓' },
+                        absent: { bg: 'rgba(201,134,122,0.15)', color: '#c9867a', icon: '✗' },
+                        excused: { bg: 'rgba(212,165,116,0.15)', color: '#d4a574', icon: '!' },
+                        late: { bg: 'rgba(212,165,116,0.15)', color: '#d4a574', icon: '◐' },
+                        made_up: { bg: 'rgba(139,125,154,0.15)', color: '#8b7d9a', icon: '↻' },
+                      };
+                      const status = statusColors[record.status] || statusColors.present;
+                      
+                      return (
+                        <motion.div
+                          key={record.id || i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.02 }}
+                          className="flex items-center gap-3 p-3 rounded-xl"
+                          style={{ background: 'rgba(255,255,255,0.5)' }}
+                        >
+                          <div 
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ background: status.bg }}
+                          >
+                            <span style={{ color: status.color, fontSize: '12px' }}>{status.icon}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate" style={{ color: '#8b7d72' }}>{record.class_name}</p>
+                            <p className="text-xs" style={{ color: '#b5a599' }}>{format(new Date(record.date), 'EEEE, MMM d, yyyy')}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span 
+                              className="text-xs capitalize px-2 py-1 rounded-full"
+                              style={{ background: status.bg, color: status.color }}
+                            >
+                              {record.status === 'made_up' ? 'Made Up' : record.status}
+                            </span>
+                            {(record.status === 'absent' || record.status === 'excused') && !record.makeup_class_id && (
+                              <button
+                                onClick={() => {
+                                  setSelectedAbsence(record);
+                                  setMakeupModalOpen(true);
+                                }}
+                                className="text-xs px-2 py-1 rounded-full transition-all hover:scale-105"
+                                style={{
+                                  background: 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(180,160,200,0.15) 100%)',
+                                  color: '#8b7d9a',
+                                }}
+                              >
+                                + Makeup
+                              </button>
+                            )}
+                          </div>
+                        </motion.div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
             </TabsContent>
 
             {/* CLASSES TAB */}
