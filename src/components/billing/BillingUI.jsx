@@ -263,7 +263,7 @@ export function BillingOverview({ onSelectFamily }) {
       : families.filter(f => f.status === 'overdue' || f.status === 'failed');
 
   return (
-    <div className="min-h-screen p-4 md:p-8" style={{ backgroundColor: colors.paper }}>
+    <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
         
         {/* Header */}
