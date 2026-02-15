@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
 import { ArrowLeft } from 'lucide-react';
-import UserMenu from '../components/layout/UserMenu';
 
 import ImportScheduleModal from '../components/manager/ImportScheduleModal';
 import StudentRecommender from '../components/manager/StudentRecommender';
@@ -109,8 +108,6 @@ export default function ClassManager() {
               Plan
             </button>
           </div>
-        </div>
-        <UserMenu />
       </div>
 
       {displayMode === 'now' ? (
