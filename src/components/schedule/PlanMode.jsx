@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Users, UserX, Clock, ChevronLeft, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import StudioDayDetail from './StudioDayDetail';
 
@@ -159,55 +159,7 @@ export default function PlanMode({
         </Button>
       </div>
 
-      {/* Issue Summary Bar */}
-      <div 
-        className="px-6 py-3 flex items-center gap-3 border-b overflow-x-auto"
-        style={{ backgroundColor: 'rgba(255,255,255,0.4)', borderColor: 'rgba(212, 196, 196, 0.2)' }}
-      >
-        <span className="text-xs font-medium" style={{ color: colors.muted }}>Filter:</span>
-        <button
-          onClick={() => setActiveFilter(activeFilter === 'conflicts' ? null : 'conflicts')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-            activeFilter === 'conflicts' ? 'ring-1 ring-offset-1' : ''
-          }`}
-          style={{ 
-            backgroundColor: activeFilter === 'conflicts' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)',
-            color: colors.etchDark,
-            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.1)',
-          }}
-        >
-          <AlertTriangle size={12} />
-          {totalConflicts} conflicts
-        </button>
-        <button
-          onClick={() => setActiveFilter(activeFilter === 'unstaffed' ? null : 'unstaffed')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-            activeFilter === 'unstaffed' ? 'ring-1 ring-offset-1' : ''
-          }`}
-          style={{ 
-            backgroundColor: activeFilter === 'unstaffed' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)',
-            color: colors.etchDark,
-            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.1)',
-          }}
-        >
-          <UserX size={12} />
-          {totalUnstaffed} unstaffed
-        </button>
-        <button
-          onClick={() => setActiveFilter(activeFilter === 'low_enrollment' ? null : 'low_enrollment')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-            activeFilter === 'low_enrollment' ? 'ring-1 ring-offset-1' : ''
-          }`}
-          style={{ 
-            backgroundColor: activeFilter === 'low_enrollment' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)',
-            color: colors.etchDark,
-            boxShadow: '0 2px 8px rgba(168, 152, 152, 0.1)',
-          }}
-        >
-          <Users size={12} />
-          {totalLowEnrollment} low
-        </button>
-      </div>
+
 
       {/* Studio Overview List */}
       <div 
@@ -294,57 +246,7 @@ export default function PlanMode({
                     </div>
                   </div>
 
-                  {/* Issue Pills */}
-                  {hasIssues ? (
-                    <div className="flex flex-wrap gap-2">
-                      {conflicts.length > 0 && (
-                        <span 
-                          className="px-4 py-2 rounded-2xl text-xs font-medium flex items-center gap-1.5"
-                          style={{ 
-                            backgroundColor: '#fff', 
-                            color: '#1a1a1a',
-                            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                          }}
-                        >
-                          <AlertTriangle size={12} />
-                          {conflicts.length} {conflicts.length === 1 ? 'conflict' : 'conflicts'}
-                        </span>
-                      )}
-                      {unstaffed.length > 0 && (
-                        <span 
-                          className="px-4 py-2 rounded-2xl text-xs font-medium flex items-center gap-1.5"
-                          style={{ 
-                            backgroundColor: '#fff', 
-                            color: '#1a1a1a',
-                            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                          }}
-                        >
-                          <UserX size={12} />
-                          {unstaffed.length} unstaffed
-                        </span>
-                      )}
-                      {lowEnrollment.length > 0 && (
-                        <span 
-                          className="px-4 py-2 rounded-2xl text-xs font-medium flex items-center gap-1.5"
-                          style={{ 
-                            backgroundColor: '#fff', 
-                            color: '#1a1a1a',
-                            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                          }}
-                        >
-                          <Users size={12} />
-                          {lowEnrollment.length} low
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <div 
-                      className="text-xs font-medium"
-                      style={{ color: '#8a8478' }}
-                    >
-                      ✓ No issues
-                    </div>
-                  )}
+
                 </button>
               );
             })}
