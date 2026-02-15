@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 
 export default function AppleMusicSettings() {
   const [isConnecting, setIsConnecting] = useState(false);
-  const [musicKit, setMusicKit] = useState(null);
+  const [isReady, setIsReady] = useState(false);
   const [developerToken, setDeveloperToken] = useState(null);
   const queryClient = useQueryClient();
 
@@ -29,58 +29,37 @@ export default function AppleMusicSettings() {
         setDeveloperToken(response.data.token);
       } catch (error) {
         console.error('Failed to fetch Apple Music developer token:', error);
-        toast.error('Failed to initialize Apple Music');
       }
     };
-
     fetchDeveloperToken();
   }, []);
 
-  // Initialize MusicKit when developer token is available
+  // Load MusicKit script
   useEffect(() => {
     if (!developerToken) return;
+    
+    // Add the script with proper configuration
+    const script = document.createElement('script');
+    script.src = 'https://js-cdn.music.apple.com/musickit/v1/musickit.js';
+    script.async = true;
+    document.head.appendChild(script);
 
-    const initMusicKit = async () => {
-      try {
-        // Check if MusicKit is already loaded
-        if (window.MusicKit) {
-          const music = await window.MusicKit.configure({
-            developerToken: developerToken,
-            app: { name: 'Sequins', build: '1.0.0' }
-          });
-          setMusicKit(music);
-          console.log('MusicKit configured from existing instance');
-          return;
+    const configureHandler = () => {
+      window.MusicKit.configure({
+        developerToken: developerToken,
+        app: {
+          name: 'Sequins',
+          build: '1.0.0'
         }
-
-        // Load MusicKit script
-        const script = document.createElement('script');
-        script.src = 'https://js-cdn.music.apple.com/musickit/v1/musickit.js';
-        script.async = true;
-        document.head.appendChild(script);
-
-        script.onload = () => {
-          // MusicKit v1 uses musickitloaded event
-          document.addEventListener('musickitloaded', async () => {
-            try {
-              const music = await window.MusicKit.configure({
-                developerToken: developerToken,
-                app: { name: 'Sequins', build: '1.0.0' }
-              });
-              setMusicKit(music);
-              console.log('MusicKit v1 initialized successfully');
-            } catch (e) {
-              console.error('MusicKit configure error:', e);
-            }
-          });
-        };
-
-      } catch (error) {
-        console.error('MusicKit initialization error:', error);
-      }
+      });
+      setIsReady(true);
     };
 
-    initMusicKit();
+    document.addEventListener('musickitloaded', configureHandler);
+    
+    return () => {
+      document.removeEventListener('musickitloaded', configureHandler);
+    };
   }, [developerToken]);
 
   const updateSettingsMutation = useMutation({
@@ -97,26 +76,14 @@ export default function AppleMusicSettings() {
   });
 
   const handleConnect = async () => {
+    if (!isReady || !window.MusicKit) {
+      toast.error('Apple Music is still loading. Please wait a moment.');
+      return;
+    }
+
     setIsConnecting(true);
     try {
-      let music = musicKit;
-      
-      // Try to configure MusicKit if not already done
-      if (!music && window.MusicKit) {
-        music = await window.MusicKit.configure({
-          developerToken: developerToken,
-          app: { name: 'Sequins', build: '1.0.0' }
-        });
-        setMusicKit(music);
-      }
-      
-      if (!music) {
-        toast.error('Apple Music is still loading. Please wait a moment and try again.');
-        setIsConnecting(false);
-        return;
-      }
-
-      // This opens the Apple ID login popup
+      const music = window.MusicKit.getInstance();
       const userToken = await music.authorize();
       
       if (userToken) {
@@ -128,7 +95,7 @@ export default function AppleMusicSettings() {
       }
     } catch (error) {
       console.error('Apple Music authorization error:', error);
-      toast.error('Failed to connect Apple Music. Please try again.');
+      toast.error('Authorization was cancelled or failed.');
     } finally {
       setIsConnecting(false);
     }
@@ -136,8 +103,9 @@ export default function AppleMusicSettings() {
 
   const handleDisconnect = async () => {
     try {
-      if (musicKit) {
-        await musicKit.unauthorize();
+      if (window.MusicKit) {
+        const music = window.MusicKit.getInstance();
+        await music.unauthorize();
       }
 
       await updateSettingsMutation.mutateAsync({
@@ -225,13 +193,18 @@ export default function AppleMusicSettings() {
 
               <Button
                 onClick={handleConnect}
-                disabled={isConnecting}
+                disabled={isConnecting || !isReady}
                 className="w-full rounded-full bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white h-12 shadow-lg"
               >
                 {isConnecting ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                     Connecting...
+                  </>
+                ) : !isReady ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Loading...
                   </>
                 ) : (
                   <>
