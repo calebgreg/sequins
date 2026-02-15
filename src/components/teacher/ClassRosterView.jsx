@@ -135,10 +135,55 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
                   </div>
                 </div>
                 
-                {/* Quick Actions */}
-                <div className="flex gap-1.5 flex-shrink-0">
+                {/* Attendance Summary */}
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <TooltipProvider>
+                    {(() => {
+                      const studentAttendance = attendanceRecords
+                        .filter(r => r.student_name === student.name)
+                        .sort((a, b) => new Date(b.date) - new Date(a.date))
+                        .slice(0, 5);
+                      
+                      if (studentAttendance.length === 0) {
+                        return (
+                          <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(180,150,140,0.1)', color: '#b5a599' }}>
+                            No records
+                          </span>
+                        );
+                      }
+
+                      return studentAttendance.reverse().map((record, idx) => {
+                        const statusConfig = {
+                          present: { icon: Check, color: '#22c55e', bg: 'rgba(34,197,94,0.15)', label: 'Present' },
+                          absent: { icon: X, color: '#ef4444', bg: 'rgba(239,68,68,0.15)', label: 'Absent' },
+                          late: { icon: Clock, color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', label: 'Late' },
+                          excused: { icon: Check, color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', label: 'Excused' },
+                          made_up: { icon: Check, color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)', label: 'Made Up' },
+                        };
+                        const config = statusConfig[record.status] || statusConfig.present;
+                        const Icon = config.icon;
+                        
+                        return (
+                          <Tooltip key={record.id || idx}>
+                            <TooltipTrigger asChild>
+                              <div
+                                className="w-6 h-6 rounded-full flex items-center justify-center"
+                                style={{ background: config.bg }}
+                              >
+                                <Icon className="w-3 h-3" style={{ color: config.color }} />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">{config.label} - {new Date(record.date).toLocaleDateString()}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      });
+                    })()}
+                  </TooltipProvider>
+                  
                   <button 
-                    className="w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                    className="w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 ml-2"
                     style={{
                       background: 'rgba(255,255,255,0.5)',
                       boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
@@ -148,18 +193,6 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
                     title="Message Parent"
                   >
                     <Mail className="w-4 h-4" />
-                  </button>
-                  <button 
-                    className="w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95"
-                    style={{
-                      background: 'rgba(255,255,255,0.5)',
-                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
-                      color: '#c9a99c',
-                    }}
-                    onClick={(e) => { e.stopPropagation(); setSelectedStudentForActivity(student); }}
-                    title="View Activity"
-                  >
-                    <Activity className="w-4 h-4" />
                   </button>
                 </div>
               </div>
