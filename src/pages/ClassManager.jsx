@@ -68,10 +68,9 @@ export default function ClassManager() {
     <div className="flex flex-col min-h-screen" style={{ backgroundColor: colors.paper }}>
       {/* Header with Mode Toggle */}
       <div 
-        className="px-4 py-2 flex-shrink-0 flex items-center justify-between rounded-2xl"
+        className="px-4 py-2 flex-shrink-0 flex items-center justify-between"
         style={{
           background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-          border: '1px solid rgba(255, 200, 200, 0.3)',
         }}
       >
         <div className="flex items-center gap-3">
