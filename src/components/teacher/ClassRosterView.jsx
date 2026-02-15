@@ -183,15 +183,17 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
               )}
 
               {/* Parent Info */}
-              <div 
-                className="mt-4 pt-3 flex items-center justify-between text-xs"
-                style={{ 
-                  borderTop: '1px solid rgba(180,150,140,0.1)',
-                  color: '#b5a599',
-                }}
-              >
-                <span className="truncate">Parent: {student.parent_email || 'N/A'}</span>
-              </div>
+              {student.parent_name && (
+                <div 
+                  className="mt-4 pt-3 flex items-center justify-between text-xs"
+                  style={{ 
+                    borderTop: '1px solid rgba(180,150,140,0.1)',
+                    color: '#b5a599',
+                  }}
+                >
+                  <span className="truncate">Parent: {student.parent_name}</span>
+                </div>
+              )}
             </motion.div>
           ))}
 
