@@ -182,7 +182,7 @@ import MusicManager from '../components/teacher/MusicManager';
 import StudentNotePrompt from '../components/teacher/StudentNotePrompt';
 
 // --- SUB-COMPONENT: Class Detail View ---
-const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) => {
+const ClassDetailView = ({ classData, students, onBack, currentTeacherName, studioId }) => {
   const [mode, setMode] = useState('dashboard');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [attendance, setAttendance] = useState({});
@@ -235,6 +235,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName }) =>
     try {
       const todayDate = new Date().toISOString().split('T')[0];
       const records = Object.entries(attendance).map(([name, status]) => ({
+        studio_id: studioId,
         class_id: classData.id,
         class_name: classData.title,
         student_name: name,
@@ -977,6 +978,7 @@ export default function TeacherStudio() {
                 students={students}
                 onBack={() => setSelectedClass(null)}
                 currentTeacherName={currentTeacherName}
+                studioId={studioId}
               />
             </motion.div>
           )}
