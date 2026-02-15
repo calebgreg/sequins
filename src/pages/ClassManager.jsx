@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
 import { ArrowLeft } from 'lucide-react';
-import UserMenu from '../components/layout/UserMenu';
+
 import ImportScheduleModal from '../components/manager/ImportScheduleModal';
 import StudentRecommender from '../components/manager/StudentRecommender';
 import AttendanceModal from '../components/manager/AttendanceModal';
@@ -65,7 +65,7 @@ export default function ClassManager() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen p-4 md:p-6" style={{ backgroundColor: colors.paper }}>
+    <div className="flex flex-col min-h-screen" style={{ backgroundColor: colors.paper }}>
       {/* Header with Mode Toggle */}
       <div 
         className="px-4 py-2 flex-shrink-0 flex items-center justify-between rounded-2xl"
@@ -109,7 +109,6 @@ export default function ClassManager() {
             </button>
           </div>
         </div>
-        <UserMenu />
       </div>
 
       {displayMode === 'now' ? (
