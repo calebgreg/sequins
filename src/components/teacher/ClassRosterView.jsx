@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { motion } from 'framer-motion';
 import { ChevronLeft, Mail, AlertCircle } from 'lucide-react';
 
-import MessageParentModal from './MessageParentModal';
+import MessageStudentModal from '../crm/MessageStudentModal';
 import StudentActivityModal from './StudentActivityModal';
 
 export default function ClassRosterView({ classData, students, onBack, onSelectStudent }) {
@@ -203,7 +203,7 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
         </div>
       </div>
 
-      <MessageParentModal 
+      <MessageStudentModal 
         isOpen={!!selectedStudentForMessage}
         onOpenChange={(open) => !open && setSelectedStudentForMessage(null)}
         student={selectedStudentForMessage}
