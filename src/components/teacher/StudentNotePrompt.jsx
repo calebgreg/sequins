@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, ArrowRight, SkipForward, Mic, Square, TrendingUp, Tag } from 'lucide-react';
+import { Sparkles, ArrowRight, SkipForward, Mic, Square, TrendingUp } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { motion } from 'framer-motion';
@@ -25,6 +25,25 @@ export default function StudentNotePrompt({
 
   const currentStudent = studentsToPrompt[currentIndex];
   const isLastStudent = currentIndex === studentsToPrompt.length - 1;
+
+  // Frosted glass styles
+  const cardStyle = {
+    background: 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)',
+    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 15px 50px -15px rgba(180,150,140,0.15)',
+  };
+
+  const buttonStyle = {
+    background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+    boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+    border: '1px solid rgba(255, 220, 210, 0.5)',
+  };
+
+  const textGradient = {
+    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+    backgroundClip: 'text',
+    WebkitBackgroundClip: 'text',
+    color: 'transparent',
+  };
 
   // Fetch recent notes and generate smart prompt when student changes
   useEffect(() => {
@@ -134,111 +153,205 @@ export default function StudentNotePrompt({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#F4F4F6]">
-      <div className="px-8 py-8">
-        <div className="flex items-center justify-between mb-2">
+    <div 
+      className="flex flex-col min-h-screen relative overflow-hidden"
+      style={{ 
+        fontFamily: "'DM Sans', -apple-system, sans-serif",
+        background: '#ffffff',
+      }}
+    >
+      {/* Ambient background shapes */}
+      <div 
+        className="fixed top-[-20%] right-[-10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+      />
+      <div 
+        className="fixed bottom-[-30%] left-[-15%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+      />
+
+      {/* Header */}
+      <div className="relative px-4 md:px-8 py-6 md:py-8">
+        <div className="flex items-center justify-between max-w-3xl mx-auto">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-indigo-600" />
+            <div 
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(145deg, rgba(180,160,190,0.2) 0%, rgba(160,140,170,0.15) 100%)',
+              }}
+            >
+              <Sparkles className="w-5 h-5" style={{ color: '#9a8aad' }} />
             </div>
             <div>
-              <h2 className="font-serif text-2xl text-[#333333]">Quick Note</h2>
-              <p className="text-sm text-gray-400">Student {currentIndex + 1} of {studentsToPrompt.length}</p>
+              <h2 
+                className="text-xl md:text-2xl font-bold tracking-tight"
+                style={textGradient}
+              >
+                Quick Note
+              </h2>
+              <p className="text-xs" style={{ color: '#b5a599' }}>
+                Student {currentIndex + 1} of {studentsToPrompt.length}
+              </p>
             </div>
           </div>
-          <div className="flex gap-1">
+          
+          {/* Progress dots */}
+          <div className="flex gap-1.5">
             {studentsToPrompt.map((_, idx) => (
               <div
                 key={idx}
-                className={`h-2 w-8 rounded-full transition-colors ${
-                  idx < currentIndex ? 'bg-indigo-600' : idx === currentIndex ? 'bg-indigo-400' : 'bg-gray-200'
-                }`}
+                className="h-2 w-6 md:w-8 rounded-full transition-all"
+                style={{
+                  background: idx < currentIndex 
+                    ? 'linear-gradient(145deg, rgba(180,160,190,0.6) 0%, rgba(160,140,170,0.5) 100%)'
+                    : idx === currentIndex 
+                    ? 'linear-gradient(145deg, rgba(244,180,180,0.8) 0%, rgba(232,160,160,0.7) 100%)'
+                    : 'rgba(220,210,205,0.3)',
+                }}
               />
             ))}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 px-8 pb-8 flex flex-col max-w-3xl mx-auto w-full justify-center">
+      {/* Main Content */}
+      <div className="relative flex-1 px-4 md:px-8 pb-8 flex flex-col max-w-3xl mx-auto w-full justify-center">
         <motion.div
           key={currentStudent.id}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="bg-white rounded-[32px] p-8 shadow-lg space-y-6"
+          className="rounded-2xl md:rounded-3xl p-5 md:p-8 space-y-6"
+          style={cardStyle}
         >
-          <div className="text-center mb-6">
-            <div className="w-20 h-20 rounded-full bg-[#F4F4F6] flex items-center justify-center text-3xl font-serif text-[#333333] mx-auto mb-4">
+          {/* Student Info */}
+          <div className="text-center mb-4">
+            <div 
+              className="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center text-2xl md:text-3xl font-medium mx-auto mb-4"
+              style={{
+                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                boxShadow: '0 8px 32px -8px rgba(180,150,140,0.25), inset 0 1px 1px rgba(255,255,255,1)',
+                color: '#c9a99c',
+              }}
+            >
               {currentStudent.name.charAt(0)}
             </div>
-            <h3 className="font-serif text-3xl text-[#333333] mb-2">{currentStudent.name}</h3>
-            <p className="text-gray-500 font-serif text-lg">{smartPrompt}</p>
+            <h3 
+              className="text-2xl md:text-3xl font-bold tracking-tight mb-2"
+              style={textGradient}
+            >
+              {currentStudent.name}
+            </h3>
+            <p className="text-base md:text-lg" style={{ color: '#a8998e' }}>{smartPrompt}</p>
+            
             {recentNotes.length > 0 && recentNotes[0].sentiment === 'constructive' && (
-              <div className="mt-3 flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full">
-                <TrendingUp className="w-4 h-4" />
-                <span>Last note: {recentNotes[0].content.slice(0, 40)}...</span>
+              <div 
+                className="mt-4 inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(212,165,116,0.15) 0%, rgba(212,165,116,0.1) 100%)',
+                  color: '#c9a574',
+                }}
+              >
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>Last: {recentNotes[0].content.slice(0, 35)}...</span>
               </div>
             )}
           </div>
 
-          <div className="relative mb-4">
-            <div className={`h-24 rounded-2xl flex items-center justify-center transition-colors duration-300 ${isRecording ? 'bg-red-50 border-2 border-red-200' : 'bg-gray-50 border-2 border-dashed border-gray-200'}`}>
+          {/* Voice Recording Area */}
+          <div className="relative mb-6">
+            <div 
+              className="h-20 md:h-24 rounded-xl flex items-center justify-center transition-all duration-300"
+              style={{
+                background: isRecording 
+                  ? 'linear-gradient(145deg, rgba(212,165,116,0.15) 0%, rgba(212,165,116,0.1) 100%)'
+                  : 'rgba(255,255,255,0.5)',
+                border: isRecording 
+                  ? '2px solid rgba(212,165,116,0.3)'
+                  : '2px dashed rgba(200,180,170,0.3)',
+                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+              }}
+            >
               {isRecording ? (
                 <div className="flex gap-1 items-center">
                   {[1,2,3,4,5].map(i => (
                     <motion.div
                       key={i}
-                      animate={{ height: [10, 30, 10] }}
+                      animate={{ height: [8, 24, 8] }}
                       transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }}
-                      className="w-2 bg-red-400 rounded-full"
+                      className="w-1.5 rounded-full"
+                      style={{ background: '#d4a574' }}
                     />
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-400 text-sm">Tap mic to dictate or type below</p>
+                <p className="text-sm" style={{ color: '#b5a599' }}>Tap mic to dictate or type below</p>
               )}
             </div>
+            
+            {/* Mic Button */}
             <div className="absolute -bottom-5 left-1/2 -translate-x-1/2">
-              <Button
-                size="icon"
+              <button
                 type="button"
-                className={`h-12 w-12 rounded-full shadow-lg transition-all ${isRecording ? 'bg-red-500 hover:bg-red-600 scale-110' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                 onClick={toggleRecording}
                 disabled={isLoading}
+                className="w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95"
+                style={{
+                  background: isRecording 
+                    ? 'linear-gradient(145deg, rgba(212,165,116,0.9) 0%, rgba(180,140,100,0.85) 100%)'
+                    : 'linear-gradient(145deg, rgba(180,160,190,0.9) 0%, rgba(160,140,170,0.85) 100%)',
+                  boxShadow: '0 8px 24px -4px rgba(180,150,140,0.4), inset 0 1px 2px rgba(255,255,255,0.3)',
+                  color: '#ffffff',
+                }}
               >
                 {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
-              </Button>
+              </button>
             </div>
           </div>
 
-          <div className="pt-4">
-            <Textarea
+          {/* Text Input */}
+          <div className="pt-2">
+            <textarea
               placeholder="Or type your notes here..."
               value={noteContent}
               onChange={(e) => setNoteContent(e.target.value)}
-              className="min-h-[120px] bg-gray-50 border-gray-200 focus:bg-white transition-colors text-lg p-4 resize-none"
               disabled={isLoading}
+              className="w-full min-h-[100px] md:min-h-[120px] rounded-xl p-4 text-base resize-none outline-none transition-all"
+              style={{
+                background: 'rgba(255,255,255,0.6)',
+                boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.08)',
+                color: '#6b5d52',
+                border: 'none',
+              }}
             />
           </div>
 
-          <div className="flex gap-3">
-            <Button
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-2">
+            <button
               onClick={handleSkip}
-              variant="outline"
-              className="flex-1 rounded-full h-14 text-lg font-serif border-gray-200 hover:bg-gray-50"
               disabled={isLoading}
+              className="flex-1 h-12 md:h-14 rounded-xl flex items-center justify-center gap-2 text-sm md:text-base font-medium transition-all active:scale-[0.98] disabled:opacity-50"
+              style={{
+                background: 'rgba(255,255,255,0.6)',
+                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+                color: '#a8998e',
+              }}
             >
-              <SkipForward className="w-5 h-5 mr-2" />
+              <SkipForward className="w-4 h-4" />
               Skip
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handleSubmitNote}
-              className="flex-1 rounded-full bg-[#333333] text-white hover:bg-black h-14 text-lg font-serif shadow-lg"
               disabled={isLoading}
+              className="flex-1 h-12 md:h-14 rounded-xl flex items-center justify-center gap-2 text-sm md:text-base font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
+              style={buttonStyle}
             >
-              {isLoading ? 'Saving...' : isLastStudent ? 'Finish' : 'Next'}
-              {!isLoading && <ArrowRight className="w-5 h-5 ml-2" />}
-            </Button>
+              <span style={textGradient}>
+                {isLoading ? 'Saving...' : isLastStudent ? 'Finish' : 'Next'}
+              </span>
+              {!isLoading && <ArrowRight className="w-4 h-4" style={{ color: '#c4a0a0' }} />}
+            </button>
           </div>
         </motion.div>
       </div>
