@@ -67,30 +67,28 @@ export default function ClassManager() {
     <div className="flex flex-col min-h-[calc(100vh-4rem)]" style={{ backgroundColor: colors.paper }}>
       {/* Header with Mode Toggle */}
       <div 
-        className="px-6 py-4 flex-shrink-0 flex items-center justify-between"
+        className="px-4 py-2 flex-shrink-0 flex items-center justify-between"
         style={{
           background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-          backdropFilter: 'blur(16px)',
           borderBottom: '1px solid rgba(255, 200, 200, 0.3)',
-          boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
         }}
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link 
             to={createPageUrl('Home')} 
-            className="p-2 rounded-full transition-all hover:scale-105"
+            className="p-1.5 rounded-full transition-all hover:scale-105"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
           >
             <ArrowLeft className="w-4 h-4" style={{ color: colors.etchDark }} />
           </Link>
           {/* Display Mode Toggle */}
           <div 
-            className="flex items-center p-1 rounded-full"
+            className="flex items-center p-0.5 rounded-full"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}
           >
             <button
               onClick={() => setDisplayMode('now')}
-              className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
+              className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
               style={{
                 backgroundColor: displayMode === 'now' ? colors.ink : 'transparent',
                 color: displayMode === 'now' ? '#fff' : colors.muted,
@@ -100,7 +98,7 @@ export default function ClassManager() {
             </button>
             <button
               onClick={() => setDisplayMode('plan')}
-              className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
+              className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
               style={{
                 backgroundColor: displayMode === 'plan' ? colors.ink : 'transparent',
                 color: displayMode === 'plan' ? '#fff' : colors.muted,
