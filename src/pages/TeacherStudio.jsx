@@ -136,7 +136,15 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, s
               </div>
               
               <div className="min-w-0 flex-1">
-                <h3 className="font-medium truncate" style={{ color: '#8b7d72' }}>{cls.title}</h3>
+                <h3 
+                  className="font-semibold truncate"
+                  style={{ 
+                    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    color: 'transparent',
+                  }}
+                >{cls.title}</h3>
                 <p className="text-xs md:text-sm mt-0.5 truncate" style={{ color: '#b5a599' }}>
                   {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {Math.round((cls.duration || 1) * 60)} min · {getActualStudentCount(cls, students)} students
                   {hasSubToday(cls) && (
