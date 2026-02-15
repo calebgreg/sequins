@@ -104,7 +104,15 @@ export default function NowMode({ classes, students, teachers, rooms }) {
                     {classStartTime} - {classEndTime}
                   </div>
                 </div>
-                <h3 className="text-xl font-bold mb-2" style={{ color: colors.ink }}>{cls.title}</h3>
+                <h3 
+                  className="text-xl font-bold mb-2 tracking-tight"
+                  style={{
+                    color: 'transparent',
+                    backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                  }}
+                >{cls.title}</h3>
                 <p className="text-sm" style={{ color: colors.muted }}>
                   <span className="font-semibold">{cls.teacher || 'No teacher assigned'}</span>
                 </p>
