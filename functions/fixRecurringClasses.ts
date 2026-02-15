@@ -1,5 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+// Known recurring class patterns based on the imported schedule
+// Format: { title pattern -> [days it should occur, correct duration per session] }
+const RECURRING_CLASS_CORRECTIONS = {
+  'Pre-Pro Ballet A': { days: ['T', 'R'], duration: 2.916666666666668, start_time: 16.5 },
+  'Pre-Pro Ballet B': { days: ['M', 'W'], duration: 2.916666666666668, start_time: 18.0 },
+  'Pre-Pro Ballet C': { days: ['T', 'R'], duration: 2.916666666666668, start_time: 16.5 },
+  'Pre-Pro Ballet D': { days: ['M', 'W'], duration: 2.916666666666668, start_time: 18.0 },
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -21,73 +30,49 @@ Deno.serve(async (req) => {
     // Fetch all classes for this studio
     const allClasses = await base44.asServiceRole.entities.DanceClass.filter({ studio_id: studioId });
 
-    // Day mapping from common formats to our single-letter format
-    const dayMap = {
-      'M': 'M', 'Mo': 'M', 'Mon': 'M', 'Monday': 'M',
-      'T': 'T', 'Tu': 'T', 'Tue': 'T', 'Tues': 'T', 'Tuesday': 'T',
-      'W': 'W', 'We': 'W', 'Wed': 'W', 'Wednesday': 'W',
-      'R': 'R', 'Th': 'R', 'Thu': 'R', 'Thur': 'R', 'Thurs': 'R', 'Thursday': 'R',
-      'F': 'F', 'Fr': 'F', 'Fri': 'F', 'Friday': 'F',
-      'S': 'S', 'Sa': 'S', 'Sat': 'S', 'Saturday': 'S',
-      'U': 'U', 'Su': 'U', 'Sun': 'U', 'Sunday': 'U'
-    };
-
-    const validSingleDays = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
-
     const results = {
       processed: 0,
       split: 0,
       created: [],
       deleted: [],
+      skipped: [],
       errors: []
     };
 
     for (const cls of allClasses) {
-      const dayField = cls.day?.trim();
-
-      // Skip if no day or already a valid single day
-      if (!dayField || validSingleDays.includes(dayField)) {
-        continue;
+      // Check if this class matches any of our known recurring patterns
+      const correction = RECURRING_CLASS_CORRECTIONS[cls.title];
+      
+      if (!correction) {
+        continue; // Not a class we need to fix
       }
 
       results.processed++;
 
-      // Parse multiple days from formats like "Tu Th", "M W F", "Tu/Th", "T/R"
-      const dayParts = dayField.split(/[\s\/,]+/).filter(Boolean);
-      const parsedDays = [];
+      // Check if this class already exists on all required days
+      const existingDaysForTitle = allClasses
+        .filter(c => c.title === cls.title && c.studio_id === studioId)
+        .map(c => c.day);
 
-      for (const part of dayParts) {
-        const normalized = dayMap[part];
-        if (normalized && !parsedDays.includes(normalized)) {
-          parsedDays.push(normalized);
-        }
-      }
-
-      if (parsedDays.length <= 1) {
-        // Could not parse multiple days, skip or try single day normalization
-        if (parsedDays.length === 1 && parsedDays[0] !== cls.day) {
-          // Just normalize the single day
-          await base44.asServiceRole.entities.DanceClass.update(cls.id, { day: parsedDays[0] });
-        }
+      // If class already exists on all required days, skip
+      const missingDays = correction.days.filter(d => !existingDaysForTitle.includes(d));
+      
+      if (missingDays.length === 0) {
+        results.skipped.push({ title: cls.title, reason: 'Already has all days' });
         continue;
       }
 
-      // Calculate duration per occurrence
-      // If duration was combined (e.g., 2.5 hours for a class that meets twice), divide it
-      // But more likely, the duration is per session - we'll keep it as-is per day
-      const durationPerDay = cls.duration;
-
-      // Create a new class record for each day
+      // Create missing day entries
       const newClasses = [];
-      for (const day of parsedDays) {
+      for (const day of missingDays) {
         const newClass = {
           studio_id: cls.studio_id,
           title: cls.title,
           type: cls.type || 'class',
           style: cls.style,
           day: day,
-          start_time: cls.start_time,
-          duration: durationPerDay,
+          start_time: correction.start_time,
+          duration: correction.duration,
           student_names: cls.student_names || [],
           teacher: cls.teacher,
           room: cls.room,
@@ -97,24 +82,20 @@ Deno.serve(async (req) => {
         newClasses.push(newClass);
       }
 
-      try {
-        // Create the new split classes
-        const created = await base44.asServiceRole.entities.DanceClass.bulkCreate(newClasses);
-        results.created.push(...created.map(c => ({ id: c.id, title: c.title, day: c.day })));
-
-        // Delete the original consolidated class
-        await base44.asServiceRole.entities.DanceClass.delete(cls.id);
-        results.deleted.push({ id: cls.id, title: cls.title, originalDay: dayField });
-
-        results.split++;
-      } catch (err) {
-        results.errors.push({ classId: cls.id, title: cls.title, error: err.message });
+      if (newClasses.length > 0) {
+        try {
+          const created = await base44.asServiceRole.entities.DanceClass.bulkCreate(newClasses);
+          results.created.push(...created.map(c => ({ id: c.id, title: c.title, day: c.day })));
+          results.split++;
+        } catch (err) {
+          results.errors.push({ classId: cls.id, title: cls.title, error: err.message });
+        }
       }
     }
 
     return Response.json({
       success: true,
-      message: `Processed ${results.processed} classes, split ${results.split} recurring classes.`,
+      message: `Processed ${results.processed} classes, created ${results.created.length} new class entries.`,
       details: results
     });
 
