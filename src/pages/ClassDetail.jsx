@@ -3,9 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Users, Clock, MapPin, User, CheckCircle2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Users, Clock, MapPin, User, Trash2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import AttendanceModal from '../components/manager/AttendanceModal';
 import { toast } from 'sonner';
 
 const DAY_NAMES = { M: 'Monday', T: 'Tuesday', W: 'Wednesday', R: 'Thursday', F: 'Friday', S: 'Saturday', U: 'Sunday' };
@@ -29,6 +28,8 @@ const EtchedText = ({ children, size = 'md', className = '' }) => {
         backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
         backgroundClip: 'text',
         WebkitBackgroundClip: 'text',
+        textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+        filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
       }}
     >
       {children}
@@ -37,9 +38,10 @@ const EtchedText = ({ children, size = 'md', className = '' }) => {
 };
 
 const formatTime = (hour) => {
-  const period = hour >= 12 ? 'pm' : 'am';
-  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-  const minutes = Math.round((hour % 1) * 60);
+  const h = Math.floor(hour);
+  const period = h >= 12 ? 'pm' : 'am';
+  const displayHour = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  const minutes = Math.round((hour - h) * 60);
   return minutes > 0 ? `${displayHour}:${minutes.toString().padStart(2, '0')}${period}` : `${displayHour}${period}`;
 };
 
@@ -47,7 +49,7 @@ export default function ClassDetail() {
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
+
   
   const classId = new URLSearchParams(location.search).get('id');
 
@@ -132,15 +134,6 @@ export default function ClassDetail() {
 
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => setIsAttendanceOpen(true)}
-            size="sm"
-            className="rounded-full gap-2 font-semibold"
-            style={{ backgroundColor: colors.ink, color: '#fff' }}
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            Attendance
-          </Button>
-          <Button 
             variant="ghost" 
             size="icon"
             onClick={() => deleteMutation.mutate()}
@@ -219,7 +212,7 @@ export default function ClassDetail() {
               <div>
                 <p className="text-xs" style={{ color: colors.muted }}>Duration</p>
                 <p className="font-semibold text-sm" style={{ color: colors.ink }}>
-                  {(classData.duration || 1) * 60} min
+                  {Math.round((classData.duration || 1) * 60)} min
                 </p>
               </div>
             </div>
@@ -255,12 +248,23 @@ export default function ClassDetail() {
                   style={{ backgroundColor: 'rgba(200, 160, 160, 0.06)' }}
                 >
                   <div 
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold"
+                    className="w-9 h-9 rounded-full flex items-center justify-center"
                     style={{ 
-                      background: `linear-gradient(135deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+                      background: 'linear-gradient(145deg, #faf4f4 0%, #f5ebeb 100%)',
+                      boxShadow: '4px 4px 10px rgba(210, 190, 190, 0.2), -4px -4px 10px rgba(255, 255, 255, 0.9)',
                     }}
                   >
-                    {student.name?.charAt(0) || '?'}
+                    <span style={{
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: 'transparent',
+                      backgroundImage: 'linear-gradient(180deg, #c4a8a8 0%, #9a7878 100%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      textShadow: '0 1px 2px rgba(255,255,255,0.8)',
+                    }}>
+                      {student.name?.charAt(0) || '?'}
+                    </span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate" style={{ color: colors.ink }}>
@@ -277,12 +281,7 @@ export default function ClassDetail() {
         </div>
       </div>
 
-      <AttendanceModal 
-        isOpen={isAttendanceOpen}
-        onOpenChange={setIsAttendanceOpen}
-        classData={classData}
-        students={students}
-      />
+
     </div>
   );
 }
