@@ -120,28 +120,49 @@ export default function AppleMusicSettings() {
   });
 
   const handleConnect = async () => {
-    if (!musicKit) {
-      toast.error('Apple Music is still initializing. Please try again.');
-      return;
-    }
-
     setIsConnecting(true);
     try {
-      // Authorize user with Apple Music - this should open a popup automatically
-      const userToken = await musicKit.authorize();
-
-      if (userToken) {
-        // Save user token to settings
-        await updateSettingsMutation.mutateAsync({
-          apple_music_user_token: userToken,
-          apple_music_connected_at: new Date().toISOString()
-        });
-
-        toast.success('Apple Music connected successfully!');
+      // If MusicKit initialized, use it
+      if (musicKit) {
+        const userToken = await musicKit.authorize();
+        if (userToken) {
+          await updateSettingsMutation.mutateAsync({
+            apple_music_user_token: userToken,
+            apple_music_connected_at: new Date().toISOString()
+          });
+          toast.success('Apple Music connected successfully!');
+        }
+      } else {
+        // MusicKit didn't init (common in iframes) - try direct initialization
+        toast.info('Opening Apple Music authorization...');
+        
+        // Try one more time with inline config
+        if (window.MusicKit) {
+          try {
+            const music = await window.MusicKit.configure({
+              developerToken: developerToken,
+              app: { name: 'Sequins', build: '1.0.0' }
+            });
+            const userToken = await music.authorize();
+            if (userToken) {
+              await updateSettingsMutation.mutateAsync({
+                apple_music_user_token: userToken,
+                apple_music_connected_at: new Date().toISOString()
+              });
+              toast.success('Apple Music connected successfully!');
+              setMusicKit(music);
+            }
+          } catch (e) {
+            console.error('Direct MusicKit init failed:', e);
+            toast.error('Please open this page in a new browser tab (not the preview) to connect Apple Music.');
+          }
+        } else {
+          toast.error('Please open this page in a new browser tab to connect Apple Music.');
+        }
       }
     } catch (error) {
       console.error('Apple Music authorization error:', error);
-      toast.error('Failed to connect Apple Music. Please try again.');
+      toast.error('Failed to connect. Try opening in a new browser tab.');
     } finally {
       setIsConnecting(false);
     }
