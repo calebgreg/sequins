@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
             if (cleanedTitle !== cls.title && cleanedTitle.length > 0) {
                 await base44.asServiceRole.entities.DanceClass.update(cls.id, { title: cleanedTitle });
                 updatedClasses.push({ id: cls.id, oldTitle: cls.title, newTitle: cleanedTitle });
-                await sleep(100); // Small delay to avoid rate limiting
+                await sleep(500); // Delay to avoid rate limiting
             }
         }
 
