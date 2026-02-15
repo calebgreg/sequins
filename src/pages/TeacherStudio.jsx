@@ -897,9 +897,9 @@ export default function TeacherStudio() {
                          <SelectItem 
                            key={opt.value} 
                            value={opt.value}
-                           className={opt.isToday ? 'font-semibold' : opt.isPast ? 'opacity-60' : ''}
+                           className={opt.isPast ? 'opacity-60' : ''}
                          >
-                           {opt.label} {opt.isToday && '(Today)'}
+                           {opt.label}
                          </SelectItem>
                        ))}
                      </SelectContent>
