@@ -212,7 +212,7 @@ export default function AppleMusicSettings() {
       {!developerToken ? (
         <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl">
           <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-          <p className="text-gray-600">Initializing Apple Music...</p>
+          <p className="text-gray-600">Loading Apple Music...</p>
         </div>
       ) : (
         <>
