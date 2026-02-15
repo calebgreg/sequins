@@ -22,7 +22,7 @@ export default function AppleMusicSettings() {
   const currentSettings = settings[0] || {};
   const isConnected = !!currentSettings.apple_music_user_token;
 
-  // Initialize MusicKit
+  // Initialize - get developer token and check connection status
   const initializeMusicKit = useCallback(async () => {
     try {
       setStatus('loading');
@@ -46,53 +46,9 @@ export default function AppleMusicSettings() {
         return;
       }
 
-      // Load MusicKit JS
-      if (!document.getElementById('musickit-script')) {
-        const script = document.createElement('script');
-        script.id = 'musickit-script';
-        script.src = 'https://js-cdn.music.apple.com/musickit/v3/musickit.js';
-        script.async = true;
-        script.crossOrigin = 'anonymous';
-        document.head.appendChild(script);
-      }
-
-      // Wait for MusicKit to load with timeout
-      const waitForMusicKit = () => new Promise((resolve, reject) => {
-        let attempts = 0;
-        const maxAttempts = 50; // 5 seconds
-        
-        const check = () => {
-          attempts++;
-          if (window.MusicKit) {
-            resolve(window.MusicKit);
-          } else if (attempts >= maxAttempts) {
-            reject(new Error('MusicKit failed to load'));
-          } else {
-            setTimeout(check, 100);
-          }
-        };
-        check();
-      });
-
-      try {
-        const MusicKit = await waitForMusicKit();
-        
-        // Configure MusicKit
-        const instance = await MusicKit.configure({
-          developerToken: token,
-          app: {
-            name: 'Sequins Dance Studio',
-            build: '1.0.0'
-          }
-        });
-
-        musicKitRef.current = instance;
-        setStatus('ready');
-      } catch (mkError) {
-        console.warn('MusicKit init warning:', mkError);
-        // MusicKit may not work in iframe, but we can still show the connect button
-        setStatus('ready');
-      }
+      // Don't load MusicKit in the main app - it crashes in iframes
+      // We'll load it only in the popup window where it works properly
+      setStatus('ready');
 
     } catch (error) {
       console.error('Init error:', error);
@@ -116,26 +72,7 @@ export default function AppleMusicSettings() {
     setStatus('connecting');
 
     try {
-      // Try MusicKit authorize if available
-      if (musicKitRef.current?.authorize) {
-        const userToken = await musicKitRef.current.authorize();
-        
-        if (userToken) {
-          // Save to backend
-          await base44.functions.invoke('appleMusicAuth', { 
-            action: 'saveUserToken',
-            musicUserToken: userToken
-          });
-          
-          await refetchSettings();
-          queryClient.invalidateQueries({ queryKey: ['studioSettings'] });
-          setStatus('connected');
-          toast.success('Apple Music connected!');
-          return;
-        }
-      }
-
-      // Fallback: Open Apple Music auth in new window
+      // Open Apple Music auth in new window
       // This creates a popup that handles the OAuth flow
       const width = 600;
       const height = 700;
