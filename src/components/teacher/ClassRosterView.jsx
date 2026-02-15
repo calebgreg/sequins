@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { motion } from 'framer-motion';
-import { ChevronLeft, Mail, AlertCircle, Check, X, Clock } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ChevronLeft, Mail, AlertCircle } from 'lucide-react';
 
 import MessageParentModal from './MessageParentModal';
 import StudentActivityModal from './StudentActivityModal';
