@@ -60,7 +60,7 @@ function LayoutContent({ children }) {
          <div className="fixed top-4 right-4 md:top-6 md:right-6 z-50">
            <UserMenu />
          </div>
-         <div className="w-full max-w-[1400px] mx-auto">
+         <div className="w-full max-w-[1400px] mx-auto bg-white rounded-2xl min-h-[calc(100dvh-3rem)]">
             {children}
          </div>
       </main>
