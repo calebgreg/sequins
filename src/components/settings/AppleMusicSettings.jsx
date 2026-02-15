@@ -38,27 +38,48 @@ export default function AppleMusicSettings() {
   useEffect(() => {
     if (!developerToken) return;
     
-    // Add the script with proper configuration
+    const configureMusicKit = () => {
+      if (window.MusicKit && window.MusicKit.configure) {
+        window.MusicKit.configure({
+          developerToken: developerToken,
+          app: { name: 'Sequins', build: '1.0.0' }
+        });
+        setIsReady(true);
+        return true;
+      }
+      return false;
+    };
+
+    // If MusicKit already loaded
+    if (configureMusicKit()) return;
+
+    // Add the script
     const script = document.createElement('script');
     script.src = 'https://js-cdn.music.apple.com/musickit/v1/musickit.js';
     script.async = true;
     document.head.appendChild(script);
 
-    const configureHandler = () => {
-      window.MusicKit.configure({
-        developerToken: developerToken,
-        app: {
-          name: 'Sequins',
-          build: '1.0.0'
-        }
-      });
-      setIsReady(true);
-    };
-
+    // Listen for musickitloaded event
+    const configureHandler = () => configureMusicKit();
     document.addEventListener('musickitloaded', configureHandler);
+
+    // Fallback: poll for MusicKit availability
+    const pollInterval = setInterval(() => {
+      if (configureMusicKit()) {
+        clearInterval(pollInterval);
+      }
+    }, 500);
+
+    // Cleanup after 10 seconds if still not loaded
+    const timeout = setTimeout(() => {
+      clearInterval(pollInterval);
+      setIsReady(true); // Allow button click anyway
+    }, 10000);
     
     return () => {
       document.removeEventListener('musickitloaded', configureHandler);
+      clearInterval(pollInterval);
+      clearTimeout(timeout);
     };
   }, [developerToken]);
 
