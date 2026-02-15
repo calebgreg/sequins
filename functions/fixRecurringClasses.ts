@@ -22,9 +22,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const studioId = user.studio_id;
+    // Get studio_id from request body or fall back to user's studio
+    const body = await req.json().catch(() => ({}));
+    const studioId = body.studio_id || user.studio_id;
+    
     if (!studioId) {
-      return Response.json({ error: 'No studio_id found for user' }, { status: 400 });
+      return Response.json({ error: 'No studio_id provided or found for user' }, { status: 400 });
     }
 
     // Fetch all classes for this studio
