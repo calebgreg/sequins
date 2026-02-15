@@ -42,16 +42,12 @@ export default function UserMenu() {
     <div className="flex items-center gap-3">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/50 transition-colors outline-none">
+          <button className="p-0.5 rounded-full hover:ring-2 hover:ring-gray-200 transition-all outline-none">
             <Avatar className="w-8 h-8 border-2 border-white shadow-sm">
               <AvatarFallback className="bg-gradient-to-br from-[#f4e8e4] to-[#ecdad4] text-[#8a7070] font-medium text-sm">
                 {currentUser?.full_name?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
-            <span className="hidden md:block text-sm font-medium text-gray-700">
-              {currentUser?.full_name || 'User'}
-            </span>
-            <ChevronDown className="w-4 h-4 text-gray-400" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">

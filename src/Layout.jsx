@@ -56,12 +56,10 @@ function LayoutContent({ children }) {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 overflow-y-auto h-[100dvh]">
-         {/* Top Header with User Menu */}
-         <div className="sticky top-0 z-40 bg-[#F4F4F6]/80 backdrop-blur-sm border-b border-gray-200/50">
-           <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 py-3 flex justify-end">
-             <UserMenu />
-           </div>
+      <main className="flex-1 min-w-0 overflow-y-auto h-[100dvh] relative">
+         {/* Floating User Menu */}
+         <div className="absolute top-4 right-4 md:right-8 z-40">
+           <UserMenu />
          </div>
          <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8">
             {children}
