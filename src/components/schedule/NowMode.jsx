@@ -15,15 +15,13 @@ const colors = {
 };
 
 const EtchedText = ({ children, size = 'md', className = '' }) => {
-  const sizes = { sm: 'text-sm', md: 'text-lg', lg: 'text-2xl' };
+  const sizes = { sm: 'text-sm', md: 'text-lg', lg: 'text-2xl', xl: 'text-3xl' };
   return (
     <span
       className={`${sizes[size]} font-bold tracking-tight ${className}`}
       style={{
-        color: 'transparent',
-        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
-        backgroundClip: 'text',
-        WebkitBackgroundClip: 'text',
+        color: '#d4c4c4',
+        textShadow: '0 1px 1px rgba(255,255,255,0.8), 0 -1px 1px rgba(120,100,100,0.25)',
       }}
     >
       {children}
