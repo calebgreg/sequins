@@ -221,19 +221,6 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                     <Users className="w-3.5 h-3.5" /> Family
                   </Button>
                 )}
-                <Button 
-                  onClick={() => setIsNewEntryOpen(true)} 
-                  size="sm"
-                  className="rounded-full gap-1.5 h-8 px-3 text-xs font-medium transition-all hover:scale-105"
-                  style={{
-                    background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-                    boxShadow: '0 4px 12px -2px rgba(180,150,140,0.25), inset 0 1px 2px rgba(255,255,255,0.8)',
-                    border: '1px solid rgba(255, 220, 210, 0.5)',
-                    color: '#8a7070',
-                  }}
-                >
-                  <Quote className="w-3.5 h-3.5" /> Log Journal
-                </Button>
               </div>
             </div>
             
