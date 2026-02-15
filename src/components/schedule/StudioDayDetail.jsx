@@ -20,9 +20,10 @@ const colors = {
 };
 
 const formatTime = (hour) => {
-  const period = hour >= 12 ? 'pm' : 'am';
-  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-  const minutes = Math.round((hour % 1) * 60);
+  const h = Math.floor(hour);
+  const period = h >= 12 ? 'pm' : 'am';
+  const displayHour = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  const minutes = Math.round((hour - h) * 60);
   return minutes > 0 ? `${displayHour}:${minutes.toString().padStart(2, '0')}${period}` : `${displayHour}${period}`;
 };
 
