@@ -108,6 +108,7 @@ export default function ClassManager() {
               Plan
             </button>
           </div>
+        </div>
       </div>
 
       {displayMode === 'now' ? (
