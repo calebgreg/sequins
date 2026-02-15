@@ -391,7 +391,7 @@ export default function MusicManager({ classData, onBack }) {
           </div>
 
           {/* Results */}
-          <ScrollArea className="flex-1 min-h-0 max-h-[250px]">
+          <div className="flex-1 min-h-0 overflow-y-auto" style={{ maxHeight: '200px' }}>
             <div className="px-6 pb-4 space-y-2">
               {appleResults.map(song => (
                 <motion.div
@@ -461,7 +461,7 @@ export default function MusicManager({ classData, onBack }) {
                 </div>
               )}
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Tag Selection (only when track selected) */}
           <AnimatePresence>
