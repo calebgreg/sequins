@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from "@/api/base44Client";
 import { motion } from 'framer-motion';
-import { ChevronLeft, Mail, AlertCircle, Activity } from 'lucide-react';
+import { ChevronLeft, Mail, AlertCircle, Check, X, Clock } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import MessageParentModal from './MessageParentModal';
 import StudentActivityModal from './StudentActivityModal';
@@ -8,6 +11,15 @@ import StudentActivityModal from './StudentActivityModal';
 export default function ClassRosterView({ classData, students, onBack, onSelectStudent }) {
   const [selectedStudentForMessage, setSelectedStudentForMessage] = useState(null);
   const [selectedStudentForActivity, setSelectedStudentForActivity] = useState(null);
+
+  // Fetch attendance records for this class
+  const { data: attendanceRecords = [] } = useQuery({
+    queryKey: ['classAttendance', classData.id],
+    queryFn: async () => {
+      const records = await base44.entities.Attendance.filter({ class_id: classData.id }, '-date', 500);
+      return records;
+    },
+  });
 
   // Filter students that ACTUALLY EXIST in the database AND are in this class's student_names
   const classStudents = students.filter(s => classData.student_names?.includes(s.name));
