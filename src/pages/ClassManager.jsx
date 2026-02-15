@@ -64,13 +64,13 @@ export default function ClassManager() {
   });
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)]" style={{ backgroundColor: colors.paper }}>
+    <div className="flex flex-col min-h-screen p-4 md:p-6" style={{ backgroundColor: colors.paper }}>
       {/* Header with Mode Toggle */}
       <div 
-        className="px-4 py-2 flex-shrink-0 flex items-center justify-between"
+        className="px-4 py-2 flex-shrink-0 flex items-center justify-between rounded-2xl"
         style={{
           background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-          borderBottom: '1px solid rgba(255, 200, 200, 0.3)',
+          border: '1px solid rgba(255, 200, 200, 0.3)',
         }}
       >
         <div className="flex items-center gap-3">
