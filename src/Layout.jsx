@@ -56,11 +56,11 @@ function LayoutContent({ children }) {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 overflow-y-auto h-[100dvh]">
+      <main className="flex-1 min-w-0 overflow-y-auto h-[100dvh] relative">
+         <div className="fixed top-4 right-4 md:right-8 z-50">
+           <UserMenu />
+         </div>
          <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8">
-            <div className="flex justify-end mb-2">
-              <UserMenu />
-            </div>
             {children}
          </div>
       </main>
