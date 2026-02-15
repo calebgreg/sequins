@@ -57,7 +57,7 @@ function LayoutContent({ children }) {
 
       {/* Main Content */}
       <main className="flex-1 min-w-0 overflow-y-auto h-[100dvh] relative">
-         <div className="fixed top-3 right-3 z-50">
+         <div className="fixed top-6 right-6 z-50">
            <UserMenu />
          </div>
          <div className="w-full max-w-[1400px] mx-auto">
