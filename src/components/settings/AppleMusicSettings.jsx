@@ -43,9 +43,17 @@ export default function AppleMusicSettings() {
     const initMusicKit = async () => {
       try {
         // Check if MusicKit is already configured
-        if (window.MusicKit && window.MusicKit.getInstance()) {
-          setMusicKit(window.MusicKit.getInstance());
-          return;
+        if (window.MusicKit) {
+          try {
+            const existing = window.MusicKit.getInstance();
+            if (existing) {
+              setMusicKit(existing);
+              console.log('Using existing MusicKit instance');
+              return;
+            }
+          } catch (e) {
+            // No instance yet, will configure below
+          }
         }
 
         // Load MusicKit JS if not already loaded
@@ -53,6 +61,7 @@ export default function AppleMusicSettings() {
           const script = document.createElement('script');
           script.src = 'https://js-cdn.music.apple.com/musickit/v3/musickit.js';
           script.async = true;
+          script.crossOrigin = 'anonymous';
           
           const loadPromise = new Promise((resolve, reject) => {
             script.onload = resolve;
@@ -62,18 +71,27 @@ export default function AppleMusicSettings() {
           document.body.appendChild(script);
           await loadPromise;
 
-          // Wait for MusicKit global to be ready
-          await new Promise((resolve) => {
-            if (window.MusicKit) {
+          // Wait for MusicKit global to be ready with timeout
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('MusicKit load timeout')), 10000);
+            
+            const checkReady = () => {
+              if (window.MusicKit) {
+                clearTimeout(timeout);
+                resolve();
+              }
+            };
+            
+            checkReady();
+            document.addEventListener('musickitloaded', () => {
+              clearTimeout(timeout);
               resolve();
-            } else {
-              document.addEventListener('musickitloaded', resolve, { once: true });
-            }
+            }, { once: true });
           });
         }
 
         // Configure MusicKit
-        await window.MusicKit.configure({
+        const music = await window.MusicKit.configure({
           developerToken: developerToken,
           app: {
             name: 'Sequins',
@@ -81,14 +99,12 @@ export default function AppleMusicSettings() {
           }
         });
 
-        // Get the configured instance
-        const music = window.MusicKit.getInstance();
         setMusicKit(music);
         console.log('MusicKit initialized successfully');
 
       } catch (error) {
         console.error('MusicKit initialization error:', error);
-        toast.error('Failed to initialize Apple Music');
+        toast.error('Failed to initialize Apple Music: ' + error.message);
       }
     };
 
