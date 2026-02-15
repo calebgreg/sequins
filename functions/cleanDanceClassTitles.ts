@@ -12,6 +12,8 @@ Deno.serve(async (req) => {
         const classes = await base44.asServiceRole.entities.DanceClass.list();
 
         const updatedClasses = [];
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        
         for (const cls of classes) {
             // Remove patterns like "1401.F2601" or "0090.P2506" from titles
             const cleanedTitle = cls.title.replace(/\s*-?\s*\d+\.[A-Z]?\d+\s*/gi, '').trim();
@@ -19,6 +21,7 @@ Deno.serve(async (req) => {
             if (cleanedTitle !== cls.title && cleanedTitle.length > 0) {
                 await base44.asServiceRole.entities.DanceClass.update(cls.id, { title: cleanedTitle });
                 updatedClasses.push({ id: cls.id, oldTitle: cls.title, newTitle: cleanedTitle });
+                await sleep(100); // Small delay to avoid rate limiting
             }
         }
 
