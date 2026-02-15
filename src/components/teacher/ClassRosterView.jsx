@@ -142,7 +142,7 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
                     const present = studentAttendance.filter(r => ['present', 'late', 'made_up'].includes(r.status)).length;
                     const pct = total > 0 ? Math.round((present / total) * 100) : 100;
                     
-                    const color = pct >= 90 ? '#22c55e' : pct >= 75 ? '#f59e0b' : '#ef4444';
+                    const color = pct >= 90 ? '#7fb9a8' : pct >= 75 ? '#d4a574' : '#c9867a';
                     return (
                       <span className="text-sm font-semibold" style={{ color }}>{pct}%</span>
                     );
