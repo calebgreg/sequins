@@ -344,7 +344,7 @@ export default function MusicManager({ classData, onBack }) {
       {/* Add Track Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent 
-          className="max-w-lg p-0 border-none overflow-hidden"
+          className="max-w-lg p-0 border-none overflow-hidden flex flex-col max-h-[85vh]"
           style={{ 
             background: '#ffffff',
             borderRadius: '24px',
@@ -391,7 +391,7 @@ export default function MusicManager({ classData, onBack }) {
           </div>
 
           {/* Results */}
-          <ScrollArea className="max-h-[300px]">
+          <ScrollArea className="flex-1 min-h-0 max-h-[250px]">
             <div className="px-6 pb-4 space-y-2">
               {appleResults.map(song => (
                 <motion.div
