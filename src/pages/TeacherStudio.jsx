@@ -104,7 +104,19 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, s
           {isToday ? "Today's Classes" : `${dayCodeToName[selectedDay]} Classes`}
         </h1>
         <p className="text-sm mt-1" style={{ color: '#b5a599' }}>
-          {isToday ? format(new Date(), 'EEEE, MMMM do, yyyy') : dayCodeToName[selectedDay]}
+          {(() => {
+            // Calculate the date for the selected day
+            const today = new Date();
+            const todayDayIndex = today.getDay(); // 0 = Sunday
+            const dayIndexMap = { 'U': 0, 'M': 1, 'T': 2, 'W': 3, 'R': 4, 'F': 5, 'S': 6 };
+            const selectedDayIndex = dayIndexMap[selectedDay];
+            let diff = selectedDayIndex - todayDayIndex;
+            if (diff < 0) diff += 7; // Show next occurrence if day has passed this week
+            if (diff === 0) diff = 0; // Today
+            const targetDate = new Date(today);
+            targetDate.setDate(today.getDate() + diff);
+            return format(targetDate, 'EEEE, MMMM do, yyyy');
+          })()}
         </p>
       </div>
       
