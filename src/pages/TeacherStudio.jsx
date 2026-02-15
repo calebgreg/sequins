@@ -23,13 +23,37 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// --- HELPER: Get today's day code ---
-const getTodayDayCode = () => {
-  const dayMap = { 0: 'U', 1: 'M', 2: 'T', 3: 'W', 4: 'R', 5: 'F', 6: 'S' };
-  return dayMap[new Date().getDay()];
+// --- HELPER: Get today's date string (YYYY-MM-DD) ---
+const getTodayDateString = () => {
+  return format(new Date(), 'yyyy-MM-dd');
 };
 
-// --- HELPER: Day code to full name ---
+// --- HELPER: Get day code from date ---
+const getDayCodeFromDate = (dateStr) => {
+  const date = new Date(dateStr + 'T12:00:00');
+  const dayMap = { 0: 'U', 1: 'M', 2: 'T', 3: 'W', 4: 'R', 5: 'F', 6: 'S' };
+  return dayMap[date.getDay()];
+};
+
+// --- HELPER: Generate date options (past and future) ---
+const generateDateOptions = (centerDate, range = 30) => {
+  const dates = [];
+  const center = new Date(centerDate + 'T12:00:00');
+  
+  for (let i = -range; i <= range; i++) {
+    const date = new Date(center);
+    date.setDate(center.getDate() + i);
+    dates.push({
+      value: format(date, 'yyyy-MM-dd'),
+      label: format(date, 'EEEE, MMM do'),
+      isToday: format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'),
+      isPast: date < new Date(new Date().setHours(0,0,0,0))
+    });
+  }
+  return dates;
+};
+
+// --- HELPER: Day code to full name (kept for compatibility) ---
 const dayCodeToName = {
   'M': 'Monday',
   'T': 'Tuesday',
@@ -47,14 +71,14 @@ const getActualStudentCount = (cls, students) => {
 };
 
 // --- SUB-COMPONENT: Class List View ---
-const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, students = [], filterType = 'class', subAssignments = [] }) => {
-  // Get today's date for sub assignment checking
-  const todayStr = format(new Date(), 'yyyy-MM-dd');
+const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, students = [], filterType = 'class', subAssignments = [] }) => {
+  // Get selected day code from the date
+  const selectedDay = getDayCodeFromDate(selectedDate);
   
   // Helper to get effective teacher for a class on a given date
   const getEffectiveTeacher = (cls) => {
     const subAssignment = subAssignments.find(
-      sa => sa.class_id === cls.id && sa.date === todayStr && sa.status === 'scheduled'
+      sa => sa.class_id === cls.id && sa.date === selectedDate && sa.status === 'scheduled'
     );
     return subAssignment ? subAssignment.sub_teacher : cls.teacher;
   };
@@ -80,14 +104,15 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, s
     return effectiveTeacher.toLowerCase().includes(selectedTeacher.toLowerCase());
   }).sort((a, b) => a.start_time - b.start_time);
   
-  // Helper to check if class has a sub today
-  const hasSubToday = (cls) => {
+  // Helper to check if class has a sub on selected date
+  const hasSubOnDate = (cls) => {
     return subAssignments.some(
-      sa => sa.class_id === cls.id && sa.date === todayStr && sa.status === 'scheduled'
+      sa => sa.class_id === cls.id && sa.date === selectedDate && sa.status === 'scheduled'
     );
   };
 
-  const isToday = selectedDay === getTodayDayCode();
+  const isToday = selectedDate === format(new Date(), 'yyyy-MM-dd');
+  const selectedDateObj = new Date(selectedDate + 'T12:00:00');
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -104,19 +129,7 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, s
           {isToday ? "Today's Classes" : `${dayCodeToName[selectedDay]} Classes`}
         </h1>
         <p className="text-sm mt-1" style={{ color: '#b5a599' }}>
-          {(() => {
-            // Calculate the date for the selected day
-            const today = new Date();
-            const todayDayIndex = today.getDay(); // 0 = Sunday
-            const dayIndexMap = { 'U': 0, 'M': 1, 'T': 2, 'W': 3, 'R': 4, 'F': 5, 'S': 6 };
-            const selectedDayIndex = dayIndexMap[selectedDay];
-            let diff = selectedDayIndex - todayDayIndex;
-            if (diff < 0) diff += 7; // Show next occurrence if day has passed this week
-            if (diff === 0) diff = 0; // Today
-            const targetDate = new Date(today);
-            targetDate.setDate(today.getDate() + diff);
-            return format(targetDate, 'EEEE, MMMM do, yyyy');
-          })()}
+          {format(selectedDateObj, 'EEEE, MMMM do, yyyy')}
         </p>
       </div>
       
@@ -158,12 +171,12 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDay, s
                   }}
                 >{cls.title}</h3>
                 <p className="text-xs md:text-sm mt-0.5 truncate" style={{ color: '#b5a599' }}>
-                  {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {Math.round((cls.duration || 1) * 60)} min · {getActualStudentCount(cls, students)} students
-                  {hasSubToday(cls) && (
-                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(126,184,154,0.2)', color: '#7eb89a' }}>
-                      Sub: {getEffectiveTeacher(cls)?.split(' ')[0]}
-                    </span>
-                  )}
+                {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {Math.round((cls.duration || 1) * 60)} min · {getActualStudentCount(cls, students)} students
+                {hasSubOnDate(cls) && (
+                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(126,184,154,0.2)', color: '#7eb89a' }}>
+                    Sub: {getEffectiveTeacher(cls)?.split(' ')[0]}
+                  </span>
+                )}
                 </p>
               </div>
             </div>
@@ -770,7 +783,8 @@ export default function TeacherStudio() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
   const [isAdminSubOpen, setIsAdminSubOpen] = useState(false);
-  const [selectedDay, setSelectedDay] = useState(getTodayDayCode());
+  const [selectedDate, setSelectedDate] = useState(getTodayDateString());
+  const [dateOptions, setDateOptions] = useState(() => generateDateOptions(getTodayDateString()));
   const [selectedTeacher, setSelectedTeacher] = useState(null); // null = current user, 'all' = all teachers
   
   const { data: currentUser } = useQuery({
@@ -866,26 +880,28 @@ export default function TeacherStudio() {
               <div className="flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-10">
                  {/* Left: Filters */}
                  <div className="flex items-center gap-2 flex-wrap">
-                   {/* Day Selector */}
-                   <Select value={selectedDay} onValueChange={setSelectedDay}>
+                   {/* Date Selector */}
+                   <Select value={selectedDate} onValueChange={setSelectedDate}>
                      <SelectTrigger 
-                       className="w-[130px] border-none"
+                       className="w-[180px] border-none"
                        style={{
                          background: 'rgba(255,255,255,0.6)',
                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
                          color: '#8b7d72',
                        }}
                      >
-                       <SelectValue placeholder="Select day" />
+                       <SelectValue placeholder="Select date" />
                      </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="M">Monday</SelectItem>
-                       <SelectItem value="T">Tuesday</SelectItem>
-                       <SelectItem value="W">Wednesday</SelectItem>
-                       <SelectItem value="R">Thursday</SelectItem>
-                       <SelectItem value="F">Friday</SelectItem>
-                       <SelectItem value="S">Saturday</SelectItem>
-                       <SelectItem value="U">Sunday</SelectItem>
+                     <SelectContent className="max-h-[300px]">
+                       {dateOptions.map((opt) => (
+                         <SelectItem 
+                           key={opt.value} 
+                           value={opt.value}
+                           className={opt.isToday ? 'font-semibold' : opt.isPast ? 'opacity-60' : ''}
+                         >
+                           {opt.label} {opt.isToday && '(Today)'}
+                         </SelectItem>
+                       ))}
                      </SelectContent>
                    </Select>
 
@@ -961,7 +977,7 @@ export default function TeacherStudio() {
                   subAssignments={subAssignments}
                   onSelectClass={setSelectedClass} 
                   selectedTeacher={selectedTeacher}
-                  selectedDay={selectedDay}
+                  selectedDate={selectedDate}
                   filterType="class"
                 />
               </div>
