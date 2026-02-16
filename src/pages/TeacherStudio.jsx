@@ -72,12 +72,14 @@ const getActualStudentCount = (cls, students) => {
 
 // --- SUB-COMPONENT: Class List View ---
 const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, students = [], filterType = 'class', subAssignments = [] }) => {
-  // Etched text style - EXACT copy from Billing page
+  // Etched text style - EXACT copy from Billing page line 298-305
   const etchedTextStyle = {
     color: 'transparent',
     backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
+    textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+    filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
   };
 
   // Get selected day code from the date
@@ -235,12 +237,14 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
     border: '1px solid rgba(255, 220, 210, 0.5)',
   };
   
-  // Etched text style - EXACT copy from Billing page
+  // Etched text style - EXACT copy from Billing page line 298-305
   const etchedText = {
     color: 'transparent',
     backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
+    textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+    filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
   };
 
   // Initialize attendance
