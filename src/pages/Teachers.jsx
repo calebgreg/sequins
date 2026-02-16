@@ -397,75 +397,77 @@ export default function Teachers() {
         </>
       )}
 
-      {/* Teams Section */}
-      <div className="px-8 py-12 mt-8" style={{ borderTop: '1px solid rgba(255, 200, 200, 0.3)' }}>
-        <div className="flex items-center justify-between mb-5">
-          <h2 
-            className="text-[15px] font-bold tracking-tight"
-            style={{
-              color: 'transparent',
-              backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-            }}
-          >
-            Teams
-          </h2>
-          <Button
-            onClick={() => setCreateTeamModalOpen(true)}
-            className="text-sm text-white rounded-full px-5"
-            style={{ backgroundColor: '#1a1a1a' }}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Create Team
-          </Button>
-        </div>
-
-        <div className="flex gap-4 flex-wrap">
-          {teams.map((team) => {
-            const teamMembers = teachers.filter(t =>
-              t.team_ids?.includes(team.id)
-            );
-            return (
-              <TeamCard
-                key={team.id}
-                team={team}
-                memberCount={teamMembers.length}
-                onClick={() => {
-                  // Navigate to team view
-                }}
-              />
-            );
-          })}
-
-          {/* Ghost Card for adding new team */}
-          <div
-            onClick={() => setCreateTeamModalOpen(true)}
-            className="rounded-2xl border-2 border-dashed p-5 min-w-[200px] cursor-pointer transition-all flex flex-col items-center justify-center hover:opacity-100 opacity-60"
-            style={{ 
-              minHeight: '118px',
-              borderColor: 'rgba(200, 160, 160, 0.4)',
-              backgroundColor: 'transparent',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(254, 247, 247, 0.6)';
-              e.currentTarget.style.borderColor = '#c4a0a0';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.borderColor = 'rgba(200, 160, 160, 0.4)';
-            }}
-          >
-            <div 
-              className="w-10 h-10 rounded-lg border-2 border-dashed flex items-center justify-center mb-3"
-              style={{ borderColor: '#c4a0a0', color: '#c4a0a0' }}
+      {/* Teams Section - Admin only */}
+      {currentUser?.role === 'admin' && (
+        <div className="px-8 py-12 mt-8" style={{ borderTop: '1px solid rgba(255, 200, 200, 0.3)' }}>
+          <div className="flex items-center justify-between mb-5">
+            <h2 
+              className="text-[15px] font-bold tracking-tight"
+              style={{
+                color: 'transparent',
+                backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+              }}
             >
-              <Plus size={20} />
+              Teams
+            </h2>
+            <Button
+              onClick={() => setCreateTeamModalOpen(true)}
+              className="text-sm text-white rounded-full px-5"
+              style={{ backgroundColor: '#1a1a1a' }}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Create Team
+            </Button>
+          </div>
+
+          <div className="flex gap-4 flex-wrap">
+            {teams.map((team) => {
+              const teamMembers = allTeachers.filter(t =>
+                t.team_ids?.includes(team.id)
+              );
+              return (
+                <TeamCard
+                  key={team.id}
+                  team={team}
+                  memberCount={teamMembers.length}
+                  onClick={() => {
+                    // Navigate to team view
+                  }}
+                />
+              );
+            })}
+
+            {/* Ghost Card for adding new team */}
+            <div
+              onClick={() => setCreateTeamModalOpen(true)}
+              className="rounded-2xl border-2 border-dashed p-5 min-w-[200px] cursor-pointer transition-all flex flex-col items-center justify-center hover:opacity-100 opacity-60"
+              style={{ 
+                minHeight: '118px',
+                borderColor: 'rgba(200, 160, 160, 0.4)',
+                backgroundColor: 'transparent',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(254, 247, 247, 0.6)';
+                e.currentTarget.style.borderColor = '#c4a0a0';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.borderColor = 'rgba(200, 160, 160, 0.4)';
+              }}
+            >
+              <div 
+                className="w-10 h-10 rounded-lg border-2 border-dashed flex items-center justify-center mb-3"
+                style={{ borderColor: '#c4a0a0', color: '#c4a0a0' }}
+              >
+                <Plus size={20} />
+              </div>
+              <div className="text-xs font-medium" style={{ color: '#8a8478' }}>Add team</div>
             </div>
-            <div className="text-xs font-medium" style={{ color: '#8a8478' }}>Add team</div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Bulk Action Bar */}
       <BulkActionBar
