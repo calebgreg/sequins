@@ -970,8 +970,8 @@ export default function TeacherStudio() {
               <div 
                 className="rounded-2xl md:rounded-3xl p-4 md:p-8"
                 style={{
-                  background: 'linear-gradient(145deg, rgba(253,238,236,0.6) 0%, rgba(250,232,228,0.4) 50%, rgba(252,243,240,0.5) 100%)',
-                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6), 0 15px 50px -15px rgba(180,150,140,0.12)',
+                  backgroundColor: '#fef7f7',
+                  boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
                 }}
               >
                 <ClassListView 
