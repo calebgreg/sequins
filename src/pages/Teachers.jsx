@@ -293,32 +293,34 @@ export default function Teachers() {
               </div>
             ))}
 
-            {/* Add Staff Ghost Card */}
-            <div
-              onClick={() => setAddModalOpen(true)}
-              className="rounded-2xl border-2 border-dashed p-5 cursor-pointer transition-all flex flex-col items-center justify-center hover:opacity-100 opacity-60"
-              style={{ 
-                minHeight: '160px',
-                borderColor: 'rgba(200, 160, 160, 0.4)',
-                backgroundColor: 'transparent',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(254, 247, 247, 0.6)';
-                e.currentTarget.style.borderColor = '#c4a0a0';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.borderColor = 'rgba(200, 160, 160, 0.4)';
-              }}
-            >
-              <div 
-                className="w-12 h-12 rounded-full border-2 border-dashed flex items-center justify-center mb-3"
-                style={{ borderColor: '#c4a0a0', color: '#c4a0a0' }}
+            {/* Add Staff Ghost Card - Admin only */}
+            {currentUser?.role === 'admin' && (
+              <div
+                onClick={() => setAddModalOpen(true)}
+                className="rounded-2xl border-2 border-dashed p-5 cursor-pointer transition-all flex flex-col items-center justify-center hover:opacity-100 opacity-60"
+                style={{ 
+                  minHeight: '160px',
+                  borderColor: 'rgba(200, 160, 160, 0.4)',
+                  backgroundColor: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(254, 247, 247, 0.6)';
+                  e.currentTarget.style.borderColor = '#c4a0a0';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.borderColor = 'rgba(200, 160, 160, 0.4)';
+                }}
               >
-                <Plus size={24} />
+                <div 
+                  className="w-12 h-12 rounded-full border-2 border-dashed flex items-center justify-center mb-3"
+                  style={{ borderColor: '#c4a0a0', color: '#c4a0a0' }}
+                >
+                  <Plus size={24} />
+                </div>
+                <div className="text-sm font-medium" style={{ color: '#8a8478' }}>Add Staff</div>
               </div>
-              <div className="text-sm font-medium" style={{ color: '#8a8478' }}>Add Staff</div>
-            </div>
+            )}
           </div>
         </div>
       )}
