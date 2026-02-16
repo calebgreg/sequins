@@ -966,6 +966,21 @@ export default function TeacherStudio() {
                    >
                      <Clock className="w-4 h-4" />
                    </button>
+                   {/* My Profile Button - for teachers to access their own details */}
+                   {teacherRecord && (
+                     <Link 
+                       to={createPageUrl(`TeacherDetails?id=${teacherRecord.id}`)}
+                       className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center transition-all active:scale-95"
+                       style={{
+                         background: 'rgba(255,255,255,0.6)',
+                         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+                         color: '#b5a599',
+                       }}
+                       title="My Profile"
+                     >
+                       <User className="w-4 h-4" />
+                     </Link>
+                   )}
                  </div>
               </div>
 
