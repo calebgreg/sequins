@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import AdminOnly from '../components/layout/AdminOnly';
 
 // Design tokens matching the Billing page aesthetic
 const colors = {

@@ -11,8 +11,9 @@ import RoomSetupWizard from '../components/settings/RoomSetupWizard';
 import RoomList from '../components/settings/RoomList';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useSearchParams } from 'react-router-dom';
+import AdminOnly from '../components/layout/AdminOnly';
 
-export default function Settings() {
+function SettingsContent() {
   const [searchParams, setSearchParams] = useSearchParams();
   const showWizard = searchParams.get('wizard') === 'rooms';
   const showBillingWizard = searchParams.get('wizard') === 'billing';
