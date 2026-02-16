@@ -91,7 +91,7 @@ export default function EditStaffModal({ isOpen, onClose, teacher, onSave }) {
         }}
       >
         {/* Header */}
-        <div className="px-6 py-5 flex items-center justify-between border-b" style={{ borderColor: 'rgba(200,180,170,0.2)' }}>
+        <div className="px-6 py-5 border-b" style={{ borderColor: 'rgba(200,180,170,0.2)' }}>
           <h2 
             className="text-lg font-semibold"
             style={{ 
@@ -103,16 +103,6 @@ export default function EditStaffModal({ isOpen, onClose, teacher, onSave }) {
           >
             Edit Staff
           </h2>
-          <button 
-            onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-105"
-            style={{
-              background: 'rgba(255,255,255,0.6)',
-              color: '#b5a599',
-            }}
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
 
         {/* Content */}
