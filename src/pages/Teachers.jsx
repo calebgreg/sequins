@@ -37,11 +37,20 @@ export default function Teachers() {
 
   const studioId = currentUser?.studio_id || currentUser?.data?.studio_id || currentUser?.data?.data?.studio_id;
 
-  const { data: teachers = [] } = useQuery({
+  const { data: allTeachers = [] } = useQuery({
     queryKey: ['teachers', studioId],
     queryFn: () => base44.entities.Teacher.filter({ studio_id: studioId }),
     enabled: !!studioId,
   });
+
+  // For non-admin users (teachers), filter to only show their own record
+  const teachers = useMemo(() => {
+    if (currentUser?.role === 'admin') {
+      return allTeachers;
+    }
+    // Filter to only show the teacher's own record based on email match
+    return allTeachers.filter(t => t.email === currentUser?.email);
+  }, [allTeachers, currentUser]);
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams', studioId],
