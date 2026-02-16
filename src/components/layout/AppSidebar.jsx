@@ -133,11 +133,11 @@ export default function AppSidebar({ className = "", onSearchClick }) {
         className={`group relative flex flex-col py-6 m-4 h-[calc(100dvh-32px)] sticky top-4 overflow-hidden transition-all duration-200 ${className}`}
         style={{
           width: collapsed ? 80 : 220,
-          background: 'linear-gradient(180deg, rgba(253,238,236,0.95) 0%, rgba(250,232,228,0.9) 50%, rgba(252,243,240,0.95) 100%)',
+          background: 'linear-gradient(180deg, rgba(254,247,247,0.95) 0%, rgba(253,244,244,0.9) 50%, rgba(254,248,248,0.95) 100%)',
           boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), inset 0 -1px 2px rgba(200,180,170,0.1), 0 20px 60px -20px rgba(180,150,140,0.25)',
           backdropFilter: 'blur(20px)',
           borderRadius: '24px',
-          border: '1px solid rgba(255,220,210,0.3)',
+          border: '1px solid rgba(255,230,230,0.3)',
         }}
       >
         {/* Inner glow */}
