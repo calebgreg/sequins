@@ -237,10 +237,14 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
     border: '1px solid rgba(255, 220, 210, 0.5)',
   };
   
-  // Etched/embossed text style - 3D effect with highlights and shadows
+  // Etched text style - matching Billing page
   const etchedText = {
-    color: '#c5b5b2',
-    textShadow: '0 1px 1px rgba(255,255,255,0.8), 0 -1px 1px rgba(120,100,100,0.15)',
+    color: 'transparent',
+    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+    backgroundClip: 'text',
+    WebkitBackgroundClip: 'text',
+    textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+    filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
   };
 
   // Initialize attendance
