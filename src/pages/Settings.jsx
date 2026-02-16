@@ -86,3 +86,11 @@ function SettingsContent() {
     </div>
   );
 }
+
+export default function Settings() {
+  return (
+    <AdminOnly>
+      <SettingsContent />
+    </AdminOnly>
+  );
+}

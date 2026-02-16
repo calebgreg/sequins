@@ -533,7 +533,7 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
 }
 
 // Main Dashboard
-export default function Growth() {
+function GrowthContent() {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
