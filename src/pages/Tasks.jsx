@@ -134,11 +134,10 @@ export default function TasksPage() {
         low: { color: 'text-blue-600 bg-blue-50 border-blue-100', label: 'Low' }
     };
 
-    const textGradient = {
-        backgroundImage: 'linear-gradient(180deg, #c9a8a8 0%, #a08080 100%)',
-        backgroundClip: 'text',
-        WebkitBackgroundClip: 'text',
-        color: 'transparent',
+    // Etched/embossed text style - 3D effect with highlights and shadows
+    const etchedText = {
+        color: '#c5b5b2',
+        textShadow: '0 1px 1px rgba(255,255,255,0.8), 0 -1px 1px rgba(120,100,100,0.15)',
     };
 
     const cardStyle = {
@@ -170,7 +169,7 @@ export default function TasksPage() {
                     <div>
                         <h1 
                             className="text-2xl md:text-3xl font-bold tracking-tight"
-                            style={textGradient}
+                            style={etchedText}
                         >
                             Tasks
                         </h1>
