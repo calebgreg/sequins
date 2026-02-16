@@ -469,13 +469,15 @@ export default function Teachers() {
         </div>
       )}
 
-      {/* Bulk Action Bar */}
-      <BulkActionBar
-        selectedCount={selectedIds.size}
-        onMessage={() => setMessageModalOpen(true)}
-        onAddToTeam={() => setAddToTeamModalOpen(true)}
-        onClear={() => setSelectedIds(new Set())}
-      />
+      {/* Bulk Action Bar - Admin only */}
+      {currentUser?.role === 'admin' && (
+        <BulkActionBar
+          selectedCount={selectedIds.size}
+          onMessage={() => setMessageModalOpen(true)}
+          onAddToTeam={() => setAddToTeamModalOpen(true)}
+          onClear={() => setSelectedIds(new Set())}
+        />
+      )}
 
       {/* Modals */}
       <AddStaffModal
