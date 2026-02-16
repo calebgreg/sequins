@@ -72,10 +72,14 @@ const getActualStudentCount = (cls, students) => {
 
 // --- SUB-COMPONENT: Class List View ---
 const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, students = [], filterType = 'class', subAssignments = [] }) => {
-  // Etched/embossed text style
-  const etchedText = {
-    color: '#c5b5b2',
-    textShadow: '0 1px 1px rgba(255,255,255,0.8), 0 -1px 1px rgba(120,100,100,0.15)',
+  // Etched text style - matching Billing page
+  const etchedTextStyle = {
+    color: 'transparent',
+    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+    backgroundClip: 'text',
+    WebkitBackgroundClip: 'text',
+    textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+    filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
   };
 
   // Get selected day code from the date
@@ -125,7 +129,7 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, 
       <div className="mb-6 md:mb-8">
         <h1 
           className="text-2xl md:text-3xl font-bold tracking-tight"
-          style={etchedText}
+          style={etchedTextStyle}
         >
           {isToday ? "Today's Classes" : `${dayCodeToName[selectedDay]} Classes`}
         </h1>
@@ -164,7 +168,7 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, 
               <div className="min-w-0 flex-1">
                 <h3 
                   className="font-semibold truncate"
-                  style={etchedText}
+                  style={{ color: '#8b7d72' }}
                 >{cls.title}</h3>
                 <p className="text-xs md:text-sm mt-0.5 truncate" style={{ color: '#b5a599' }}>
                 {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {Math.round((cls.duration || 1) * 60)} min · {getActualStudentCount(cls, students)} students
