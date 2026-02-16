@@ -494,7 +494,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
             </button>
             <h2 
               className="text-xl md:text-2xl font-bold tracking-tight truncate"
-              style={textGradient}
+              style={etchedText}
             >
               {classData.title}
             </h2>
@@ -524,7 +524,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
                 <div className="flex-1 min-w-0">
                   <h3 
                     className="text-xl md:text-3xl font-bold tracking-tight truncate"
-                    style={textGradient}
+                    style={etchedText}
                   >
                     {classData.title}
                   </h3>
