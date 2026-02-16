@@ -72,6 +72,12 @@ const getActualStudentCount = (cls, students) => {
 
 // --- SUB-COMPONENT: Class List View ---
 const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, students = [], filterType = 'class', subAssignments = [] }) => {
+  // Etched/embossed text style
+  const etchedText = {
+    color: '#c5b5b2',
+    textShadow: '0 1px 1px rgba(255,255,255,0.8), 0 -1px 1px rgba(120,100,100,0.15)',
+  };
+
   // Get selected day code from the date
   const selectedDay = getDayCodeFromDate(selectedDate);
   
