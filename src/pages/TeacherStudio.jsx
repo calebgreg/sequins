@@ -561,8 +561,8 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
                 className="w-full px-6 md:px-8 py-4 rounded-2xl text-base font-bold tracking-tight transition-all active:scale-[0.98] md:hover:scale-[1.02]"
                 style={buttonStyle}
               >
-                <span style={textGradient} className="flex items-center justify-center gap-2">
-                  <Play className="w-4 h-4 fill-current" style={{ color: '#c4a0a0' }} /> Start Class
+                <span style={etchedText} className="flex items-center justify-center gap-2">
+                  <Play className="w-4 h-4 fill-current" style={{ color: '#c5b5b2' }} /> Start Class
                 </span>
               </button>
             </div>
@@ -746,7 +746,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
           className="w-full max-w-sm md:w-auto px-8 md:px-10 py-4 rounded-2xl text-base font-bold tracking-tight transition-all active:scale-[0.98] md:hover:scale-[1.02] disabled:opacity-70"
           style={buttonStyle}
         >
-          <span style={textGradient}>
+          <span style={etchedText}>
             {isSubmitting ? "Analyzing..." : submitSuccess ? "Saved ✓" : "Complete Class"}
           </span>
         </button>
