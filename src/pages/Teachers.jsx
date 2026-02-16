@@ -223,14 +223,16 @@ export default function Teachers() {
             </button>
           ))}
         </div>
-        <Button
-          onClick={() => setAddModalOpen(true)}
-          className="text-sm text-white rounded-full px-5"
-          style={{ backgroundColor: '#1a1a1a' }}
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          Add Staff
-        </Button>
+{currentUser?.role === 'admin' && (
+          <Button
+            onClick={() => setAddModalOpen(true)}
+            className="text-sm text-white rounded-full px-5"
+            style={{ backgroundColor: '#1a1a1a' }}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Add Staff
+          </Button>
+        )}
       </div>
 
       {/* LIST VIEW */}
