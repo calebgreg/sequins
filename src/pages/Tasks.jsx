@@ -135,7 +135,7 @@ export default function TasksPage() {
     };
 
     const textGradient = {
-        backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+        backgroundImage: 'linear-gradient(180deg, #c9a8a8 0%, #a08080 100%)',
         backgroundClip: 'text',
         WebkitBackgroundClip: 'text',
         color: 'transparent',
