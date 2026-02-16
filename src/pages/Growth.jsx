@@ -837,3 +837,11 @@ function GrowthContent() {
     </div>
   );
 }
+
+export default function Growth() {
+  return (
+    <AdminOnly>
+      <GrowthContent />
+    </AdminOnly>
+  );
+}
