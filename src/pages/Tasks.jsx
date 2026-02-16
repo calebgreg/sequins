@@ -134,86 +134,140 @@ export default function TasksPage() {
         low: { color: 'text-blue-600 bg-blue-50 border-blue-100', label: 'Low' }
     };
 
+    const textGradient = {
+        backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        color: 'transparent',
+    };
+
+    const cardStyle = {
+        background: 'rgba(255,255,255,0.5)',
+        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 16px -8px rgba(180,150,140,0.15)',
+    };
+
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-serif text-[#333333]">Tasks</h1>
-                    <p className="text-gray-500 text-sm mt-1">Manage reminders and to-dos across the studio.</p>
-                </div>
-                
-                <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-gray-100 shadow-sm">
-                    {['active', 'completed', 'all'].map(f => (
-                        <button
-                            key={f}
-                            onClick={() => setFilter(f)}
-                            className={`
-                                px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all
-                                ${filter === f ? 'bg-[#333333] text-white shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}
-                            `}
+        <div 
+            className="min-h-screen relative p-4 md:p-8"
+            style={{ 
+                fontFamily: "'DM Sans', -apple-system, sans-serif",
+                background: '#ffffff',
+            }}
+        >
+            {/* Ambient background shapes */}
+            <div 
+                className="fixed top-[-20%] right-[-10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+            />
+            <div 
+                className="fixed bottom-[-30%] left-[-15%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+            />
+
+            <div className="max-w-4xl mx-auto space-y-6 relative">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 
+                            className="text-2xl md:text-3xl font-bold tracking-tight"
+                            style={textGradient}
                         >
-                            {f}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Quick Add Bar */}
-            <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 transition-colors duration-300">
-                    {isProcessing ? <Sparkles className="w-5 h-5 animate-pulse text-indigo-500" /> : <Plus className="w-5 h-5" />}
-                </div>
-                <Input 
-                    ref={inputRef}
-                    value={quickAddTitle}
-                    onChange={(e) => setQuickAddTitle(e.target.value)}
-                    onKeyDown={handleQuickAdd}
-                    disabled={isProcessing}
-                    placeholder={`Add a new task or ask @${aiName}...`}
-                    className={`
-                        pl-12 h-14 border-transparent shadow-sm rounded-2xl text-base transition-all
-                        ${quickAddTitle.includes('@') ? 'bg-indigo-50/50 text-indigo-900 focus:bg-indigo-50 focus:border-indigo-200' : 'bg-white focus:ring-2 focus:ring-[#333333]/5'}
-                    `}
-                />
-            </div>
-
-            {/* Search */}
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search tasks..."
-                    className="pl-9 bg-transparent border-gray-200 rounded-xl h-10"
-                />
-            </div>
-
-            {/* Task List */}
-            <div className="space-y-2 pb-10">
-                {filteredTasks.length === 0 ? (
-                    <div className="py-20 flex flex-col items-center justify-center text-gray-300 text-center border-2 border-dashed border-gray-100 rounded-3xl bg-gray-50/50">
-                        <CheckSquare className="w-12 h-12 mb-3 opacity-20" />
-                        <p className="text-sm">No tasks found.</p>
+                            Tasks
+                        </h1>
+                        <p className="text-sm mt-1" style={{ color: '#b5a599' }}>
+                            Manage reminders and to-dos across the studio.
+                        </p>
                     </div>
-                ) : (
-                    <AnimatePresence mode="popLayout">
-                        {filteredTasks.map(task => (
-                            <TaskItem 
-                                key={task.id}
-                                task={task}
-                                currentUser={currentUser}
-                                onUpdate={handleUpdate}
-                                onDelete={handleDelete}
-                                onToggleStatus={toggleStatus}
-                                onTogglePriority={togglePriority}
-                                expandedTaskId={expandedTaskId}
-                                setExpandedTaskId={setExpandedTaskId}
-                                priorityConfig={priorityConfig}
-                            />
+                    
+                    <div 
+                        className="flex items-center gap-1 p-1 rounded-xl"
+                        style={cardStyle}
+                    >
+                        {['active', 'completed', 'all'].map(f => (
+                            <button
+                                key={f}
+                                onClick={() => setFilter(f)}
+                                className="px-4 py-1.5 rounded-lg text-xs font-medium uppercase tracking-wider transition-all"
+                                style={{
+                                    background: filter === f 
+                                        ? 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)'
+                                        : 'transparent',
+                                    boxShadow: filter === f 
+                                        ? '0 2px 8px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,1)'
+                                        : 'none',
+                                    color: filter === f ? '#8a7070' : '#b5a599',
+                                }}
+                            >
+                                {f}
+                            </button>
                         ))}
-                    </AnimatePresence>
-                )}
+                    </div>
+                </div>
+
+                {/* Quick Add Bar */}
+                <div 
+                    className="relative group rounded-2xl overflow-hidden"
+                    style={cardStyle}
+                >
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300" style={{ color: '#c9a99c' }}>
+                        {isProcessing ? <Sparkles className="w-5 h-5 animate-pulse" style={{ color: '#c4a0a0' }} /> : <Plus className="w-5 h-5" />}
+                    </div>
+                    <Input 
+                        ref={inputRef}
+                        value={quickAddTitle}
+                        onChange={(e) => setQuickAddTitle(e.target.value)}
+                        onKeyDown={handleQuickAdd}
+                        disabled={isProcessing}
+                        placeholder={`Add a new task or ask @${aiName}...`}
+                        className="pl-12 h-14 border-none bg-transparent text-base focus:ring-0 focus-visible:ring-0"
+                        style={{ color: '#8b7d72' }}
+                    />
+                </div>
+
+                {/* Search */}
+                <div 
+                    className="relative rounded-xl overflow-hidden"
+                    style={cardStyle}
+                >
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#c9a99c' }} />
+                    <Input 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search tasks..."
+                        className="pl-9 bg-transparent border-none h-10 focus:ring-0 focus-visible:ring-0"
+                        style={{ color: '#8b7d72' }}
+                    />
+                </div>
+
+                {/* Task List */}
+                <div className="space-y-3 pb-10">
+                    {filteredTasks.length === 0 ? (
+                        <div 
+                            className="py-20 flex flex-col items-center justify-center text-center rounded-2xl"
+                            style={cardStyle}
+                        >
+                            <CheckSquare className="w-12 h-12 mb-3" style={{ color: '#d4c4ba', opacity: 0.5 }} />
+                            <p className="text-sm" style={{ color: '#b5a599' }}>No tasks found.</p>
+                        </div>
+                    ) : (
+                        <AnimatePresence mode="popLayout">
+                            {filteredTasks.map(task => (
+                                <TaskItem 
+                                    key={task.id}
+                                    task={task}
+                                    currentUser={currentUser}
+                                    onUpdate={handleUpdate}
+                                    onDelete={handleDelete}
+                                    onToggleStatus={toggleStatus}
+                                    onTogglePriority={togglePriority}
+                                    expandedTaskId={expandedTaskId}
+                                    setExpandedTaskId={setExpandedTaskId}
+                                    priorityConfig={priorityConfig}
+                                />
+                            ))}
+                        </AnimatePresence>
+                    )}
+                </div>
             </div>
         </div>
     );
