@@ -11,7 +11,7 @@ import RoomSetupWizard from '../components/settings/RoomSetupWizard';
 import RoomList from '../components/settings/RoomList';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useSearchParams } from 'react-router-dom';
-import AdminOnly from '../components/layout/AdminOnly';
+import AdminOnly from '@/components/layout/AdminOnly';
 
 function SettingsContent() {
   const [searchParams, setSearchParams] = useSearchParams();
