@@ -52,6 +52,20 @@ export default function EditStaffModal({ isOpen, onClose, teacher, onSave }) {
     setInviting(true);
     try {
       await base44.users.inviteUser(formData.email, 'user');
+      
+      // Immediately sync the studio_id to the new user via the backend function
+      if (teacher?.studio_id) {
+        try {
+          await base44.functions.invoke('linkTeacherToUser', { 
+            email: formData.email, 
+            studio_id: teacher.studio_id,
+            name: formData.name
+          });
+        } catch (syncErr) {
+          console.log('Studio sync will happen on next login', syncErr);
+        }
+      }
+      
       toast.success(`Invite sent to ${formData.email}`);
     } catch (error) {
       toast.error('Failed to send invite - they may already have an account');
