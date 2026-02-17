@@ -790,7 +790,7 @@ export default function TeacherStudio() {
   const [dateOptions, setDateOptions] = useState(() => generateDateOptions(getTodayDateString()));
   const [selectedTeacher, setSelectedTeacher] = useState(null); // null = current user, 'all' = all teachers
   
-  const { data: currentUser } = useQuery({
+  const { data: currentUser, refetch: refetchUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     retry: false
@@ -800,18 +800,30 @@ export default function TeacherStudio() {
   const studioId = currentUser?.studio_id || currentUser?.data?.studio_id || currentUser?.data?.data?.studio_id;
 
   // Find the teacher record that matches this user's email (case-insensitive)
+  // If user has no studio_id, we search ALL teachers to find a match and auto-assign
   const { data: teacherRecord } = useQuery({
     queryKey: ['myTeacherRecord', currentUser?.email, studioId],
     queryFn: async () => {
-      if (!currentUser?.email || !studioId) return null;
-      const teachers = await base44.entities.Teacher.filter({ 
-        studio_id: studioId 
-      });
+      if (!currentUser?.email) return null;
+      
+      // If user has studio_id, filter by it; otherwise search all teachers
+      const teachers = studioId 
+        ? await base44.entities.Teacher.filter({ studio_id: studioId })
+        : await base44.entities.Teacher.filter({});
+      
       // Case-insensitive email matching
       const userEmailLower = currentUser.email.toLowerCase();
-      return teachers.find(t => t.email?.toLowerCase() === userEmailLower) || null;
+      const match = teachers.find(t => t.email?.toLowerCase() === userEmailLower);
+      
+      // Auto-assign studio_id if user doesn't have one but teacher record does
+      if (match?.studio_id && !studioId) {
+        await base44.auth.updateMe({ studio_id: match.studio_id });
+        refetchUser(); // Refresh user data after update
+      }
+      
+      return match || null;
     },
-    enabled: !!currentUser?.email && !!studioId,
+    enabled: !!currentUser?.email,
   });
   
   // Use teacher name from Teacher entity if found, otherwise fall back to user's full_name
