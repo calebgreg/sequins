@@ -57,8 +57,7 @@ Deno.serve(async (req) => {
     return Response.json({ 
       synced: true, 
       user_email: teacherEmail,
-      studio_id: data.studio_id,
-      teacher_name: data.name 
+      studio_id: studioId
     });
 
   } catch (error) {
