@@ -1,21 +1,29 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * Entity automation: When a Teacher is created or updated, find their matching User record
- * and copy the studio_id to the User record.
+ * Links a Teacher to their User record by syncing the studio_id.
+ * Called either:
+ * 1. From entity automation when Teacher is created/updated
+ * 2. Directly from the frontend when inviting a user (with email, studio_id, name in payload)
  */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
     
+    // Support both automation payload (event/data) and direct call (email/studio_id)
     const { event, data } = payload;
     
-    if (!data?.email || !data?.studio_id) {
-      return Response.json({ skipped: true, reason: 'Teacher has no email or studio_id' });
+    // Direct call from frontend: { email, studio_id, name }
+    const directEmail = payload.email;
+    const directStudioId = payload.studio_id;
+    
+    const teacherEmail = (directEmail || data?.email)?.toLowerCase();
+    const studioId = directStudioId || data?.studio_id;
+    
+    if (!teacherEmail || !studioId) {
+      return Response.json({ skipped: true, reason: 'No email or studio_id provided' });
     }
-
-    const teacherEmail = data.email.toLowerCase();
     
     // Find a User record matching this email
     const allUsers = await base44.asServiceRole.entities.User.filter({});
