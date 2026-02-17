@@ -799,16 +799,17 @@ export default function TeacherStudio() {
   // studio_id might be at top level or in data object depending on how it was set
   const studioId = currentUser?.studio_id || currentUser?.data?.studio_id || currentUser?.data?.data?.studio_id;
 
-  // Find the teacher record that matches this user's email
+  // Find the teacher record that matches this user's email (case-insensitive)
   const { data: teacherRecord } = useQuery({
     queryKey: ['myTeacherRecord', currentUser?.email, studioId],
     queryFn: async () => {
       if (!currentUser?.email || !studioId) return null;
       const teachers = await base44.entities.Teacher.filter({ 
-        email: currentUser.email,
         studio_id: studioId 
       });
-      return teachers?.[0] || null;
+      // Case-insensitive email matching
+      const userEmailLower = currentUser.email.toLowerCase();
+      return teachers.find(t => t.email?.toLowerCase() === userEmailLower) || null;
     },
     enabled: !!currentUser?.email && !!studioId,
   });
