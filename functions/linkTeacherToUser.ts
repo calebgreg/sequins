@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
 
     // Check if user already has this studio_id
     const existingStudioId = matchingUser.studio_id || matchingUser.data?.studio_id;
-    if (existingStudioId === data.studio_id) {
+    if (existingStudioId === studioId) {
       return Response.json({ 
         synced: false, 
         reason: 'User already has correct studio_id',
@@ -49,10 +49,10 @@ Deno.serve(async (req) => {
 
     // Update the User record with the studio_id
     await base44.asServiceRole.entities.User.update(matchingUser.id, {
-      studio_id: data.studio_id
+      studio_id: studioId
     });
 
-    console.log(`Linked user ${teacherEmail} to studio ${data.studio_id} via teacher ${data.name}`);
+    console.log(`Linked user ${teacherEmail} to studio ${studioId}`);
 
     return Response.json({ 
       synced: true, 
