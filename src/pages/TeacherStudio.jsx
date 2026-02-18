@@ -218,6 +218,7 @@ import StudentNotePrompt from '../components/teacher/StudentNotePrompt';
 const ClassDetailView = ({ classData, students, onBack, currentTeacherName, studioId, selectedDate }) => {
   const [mode, setMode] = useState('attendance'); // Go directly to attendance
   const [showPostClassNotes, setShowPostClassNotes] = useState(false);
+  const [notePromptDismissed, setNotePromptDismissed] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [attendance, setAttendance] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -266,9 +267,9 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
       const classEndHour = classData.start_time + (classData.duration || 1);
       const currentHour = now.getHours() + now.getMinutes() / 60;
       
-      // Only trigger if we're on today's date and class has ended
+      // Only trigger if we're on today's date, class has ended, and not already dismissed
       const today = format(new Date(), 'yyyy-MM-dd');
-      if (selectedDate === today && currentHour >= classEndHour && !showPostClassNotes && mode === 'attendance') {
+      if (selectedDate === today && currentHour >= classEndHour && !showPostClassNotes && !notePromptDismissed && mode === 'attendance') {
         // Class has ended, show note prompt
         setShowPostClassNotes(true);
       }
@@ -646,7 +647,10 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
             <div className="flex gap-3 mt-4">
               <Button 
                 variant="outline" 
-                onClick={() => setShowPostClassNotes(false)}
+                onClick={() => {
+                  setShowPostClassNotes(false);
+                  setNotePromptDismissed(true);
+                }}
                 className="flex-1"
               >
                 Skip
