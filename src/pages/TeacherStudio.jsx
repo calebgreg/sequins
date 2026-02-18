@@ -260,26 +260,18 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
     }
   }, [classData]);
 
-  // Check if class has ended and prompt for notes
+  // Check if class has ended - only once on mount
   useEffect(() => {
-    const checkClassEnd = () => {
-      const now = new Date();
-      const classEndHour = classData.start_time + (classData.duration || 1);
-      const currentHour = now.getHours() + now.getMinutes() / 60;
-      
-      // Only trigger if we're on today's date, class has ended, and not already dismissed
-      const today = format(new Date(), 'yyyy-MM-dd');
-      if (selectedDate === today && currentHour >= classEndHour && !showPostClassNotes && !notePromptDismissed && mode === 'attendance') {
-        // Class has ended, show note prompt
-        setShowPostClassNotes(true);
-      }
-    };
-
-    // Check immediately and then every minute
-    checkClassEnd();
-    const interval = setInterval(checkClassEnd, 60000);
-    return () => clearInterval(interval);
-  }, [classData, selectedDate, showPostClassNotes, mode]);
+    const now = new Date();
+    const classEndHour = classData.start_time + (classData.duration || 1);
+    const currentHour = now.getHours() + now.getMinutes() / 60;
+    const today = format(new Date(), 'yyyy-MM-dd');
+    
+    // Only show prompt once on initial load if class has ended today
+    if (selectedDate === today && currentHour >= classEndHour) {
+      setShowPostClassNotes(true);
+    }
+  }, []); // Empty deps - only run once on mount
 
   const toggleStatus = (studentName) => {
     setAttendance(prev => {
