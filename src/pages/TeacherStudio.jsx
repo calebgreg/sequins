@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText, Menu, LayoutGrid, List, Calendar as CalendarIcon, Music, Disc, UserCheck, User } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ const getActualStudentCount = (cls, students) => {
 };
 
 // --- SUB-COMPONENT: Class List View ---
-const ClassListView = ({ classes, onSelectClass, onTakeAttendance, selectedTeacher, selectedDate, students = [], filterType = 'class', subAssignments = [] }) => {
+const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, students = [], filterType = 'class', subAssignments = [] }) => {
   // Etched text style - EXACT copy from Billing page line 298-305
   const etchedTextStyle = {
     color: 'transparent',
@@ -145,16 +145,14 @@ const ClassListView = ({ classes, onSelectClass, onTakeAttendance, selectedTeach
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className="rounded-2xl p-4 md:p-5 flex items-center justify-between transition-all"
+            onClick={() => onSelectClass(cls)}
+            className="rounded-2xl p-4 md:p-5 flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] md:hover:scale-[1.01]"
             style={{
               background: 'rgba(255,255,255,0.5)',
               boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 16px -8px rgba(180,150,140,0.15)',
             }}
           >
-            <div 
-              className="flex items-center gap-3 md:gap-5 flex-1 min-w-0 cursor-pointer"
-              onClick={() => onSelectClass(cls)}
-            >
+            <div className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
               <div 
                 className="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{
@@ -184,23 +182,7 @@ const ClassListView = ({ classes, onSelectClass, onTakeAttendance, selectedTeach
             </div>
             
             <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onTakeAttendance(cls);
-                }}
-                className="px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95"
-                style={{
-                  background: 'linear-gradient(145deg, rgba(126,184,154,0.2) 0%, rgba(126,184,154,0.1) 100%)',
-                  color: '#5a7d6a',
-                }}
-              >
-                Attendance
-              </button>
-              <div 
-                className="hidden sm:flex -space-x-2 cursor-pointer"
-                onClick={() => onSelectClass(cls)}
-              >
+              <div className="hidden sm:flex -space-x-2">
                 {cls.student_names?.slice(0, 3).map((name, i) => (
                   <div 
                     key={i} 
@@ -211,14 +193,7 @@ const ClassListView = ({ classes, onSelectClass, onTakeAttendance, selectedTeach
                   </div>
                 ))}
               </div>
-              <svg 
-                className="w-4 h-4 cursor-pointer" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
-                style={{ color: '#d4c4ba' }}
-                onClick={() => onSelectClass(cls)}
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
               </svg>
             </div>
@@ -241,7 +216,7 @@ import StudentNotePrompt from '../components/teacher/StudentNotePrompt';
 
 // --- SUB-COMPONENT: Class Detail View ---
 const ClassDetailView = ({ classData, students, onBack, currentTeacherName, studioId, selectedDate }) => {
-  const [mode, setMode] = useState('attendance'); // Go directly to attendance
+  const [mode, setMode] = useState('dashboard'); // Start at class dashboard
   const [showPostClassNotes, setShowPostClassNotes] = useState(false);
   const [notePromptDismissed, setNotePromptDismissed] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -373,7 +348,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
       setSubmitSuccess(true);
       setTimeout(() => {
         setSubmitSuccess(false);
-        onBack(); // Go back to class list after saving
+        setMode('dashboard'); // Go back to class dashboard after saving
       }, 1500);
     } catch (error) {
       console.error("Attendance save failed", error);
@@ -435,6 +410,128 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
           setCurrentPromptIndex(0);
         }}
       />
+    );
+  }
+
+  // Attendance View
+  if (mode === 'attendance') {
+    return (
+      <div 
+        className="flex flex-col h-screen relative"
+        style={{ 
+          fontFamily: "'DM Sans', -apple-system, sans-serif",
+          background: '#ffffff',
+        }}
+      >
+        <div 
+          className="fixed top-[-20%] right-[-10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+        />
+        <div 
+          className="fixed bottom-[-30%] left-[-15%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+        />
+
+        <div className="relative px-4 md:px-8 py-6 md:py-8 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+            <button 
+              onClick={() => setMode('dashboard')} 
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
+              style={{
+                background: 'rgba(255,255,255,0.6)',
+                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+                color: '#b5a599',
+              }}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight truncate" style={etchedText}>
+              Attendance
+            </h2>
+          </div>
+        </div>
+
+        <div className="flex-1 px-4 md:px-8 overflow-y-auto pb-32">
+          <div className="space-y-2 md:space-y-3 max-w-2xl mx-auto">
+            {classData.student_names?.map((name, i) => {
+               const status = attendance[name] || 'present';
+               return (
+                 <motion.div 
+                   key={name}
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: i * 0.03 }}
+                   className="rounded-xl md:rounded-2xl p-3 md:p-4 flex items-center justify-between gap-3"
+                   style={{
+                     background: 'rgba(255,255,255,0.5)',
+                     boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                   }}
+                 >
+                   <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                      <div 
+                        className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{
+                          background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
+                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,1)',
+                        }}
+                      >
+                        <span className="text-sm font-medium" style={{ color: '#c9a99c' }}>{name.charAt(0)}</span>
+                      </div>
+                      <span 
+                        className={`font-medium text-sm md:text-base truncate ${status === 'absent' ? 'line-through' : ''}`}
+                        style={{ color: status === 'absent' ? '#d4c4ba' : '#8b7d72' }}
+                      >
+                        {name}
+                      </span>
+                   </div>
+                   <div className="flex gap-1.5 md:gap-2 flex-shrink-0">
+                      {['present', 'absent', 'late'].map(s => (
+                          <button
+                              key={s}
+                              onClick={() => setAttendance(prev => ({...prev, [name]: s}))}
+                              className="px-2.5 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-medium transition-all active:scale-95"
+                              style={{
+                                background: status === s 
+                                  ? (s === 'present' 
+                                    ? 'linear-gradient(145deg, rgba(126,184,154,0.2) 0%, rgba(126,184,154,0.1) 100%)'
+                                    : s === 'absent'
+                                    ? 'linear-gradient(145deg, rgba(212,165,116,0.2) 0%, rgba(212,165,116,0.1) 100%)'
+                                    : 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(164,139,196,0.1) 100%)')
+                                  : 'transparent',
+                                color: status === s 
+                                  ? (s === 'present' ? '#7eb89a' : s === 'absent' ? '#d4a574' : '#a48bc4')
+                                  : '#c4b5ab',
+                                boxShadow: status === s ? 'inset 0 1px 1px rgba(255,255,255,0.5)' : 'none',
+                              }}
+                          >
+                              {s === 'present' ? 'Here' : s === 'absent' ? 'Out' : 'Late'}
+                          </button>
+                      ))}
+                   </div>
+                 </motion.div>
+               );
+            })}
+          </div>
+        </div>
+
+        <div 
+          className="absolute bottom-0 left-0 right-0 p-4 pb-6 z-20"
+          style={{ background: 'linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0))' }}
+        >
+          <div className="flex justify-center max-w-2xl mx-auto">
+          <button 
+            onClick={handleSubmitAttendance}
+            disabled={isSubmitting || submitSuccess}
+            className="w-full max-w-sm md:w-auto px-8 md:px-10 py-4 rounded-2xl text-base font-bold tracking-tight transition-all active:scale-[0.98] md:hover:scale-[1.02] disabled:opacity-70"
+            style={buttonStyle}
+          >
+            <span style={etchedText}>
+              {isSubmitting ? "Saving..." : submitSuccess ? "Saved ✓" : "Save Attendance"}
+            </span>
+          </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -521,16 +618,15 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
 
 
 
-  // Active class attendance view
+  // Class Dashboard View (default mode)
   return (
     <div 
-      className="flex flex-col h-screen relative"
+      className="flex flex-col min-h-screen relative overflow-hidden"
       style={{ 
         fontFamily: "'DM Sans', -apple-system, sans-serif",
         background: '#ffffff',
       }}
     >
-      {/* Ambient background shapes */}
       <div 
         className="fixed top-[-20%] right-[-10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
         style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
@@ -554,12 +650,14 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h2 
-            className="text-xl md:text-2xl font-bold tracking-tight truncate"
-            style={etchedText}
-          >
-            {classData.title}
-          </h2>
+          <div className="min-w-0">
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight truncate" style={etchedText}>
+              {classData.title}
+            </h2>
+            <p className="text-xs md:text-sm" style={{ color: '#b5a599' }}>
+              {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} · {Math.round((classData.duration || 1) * 60)} min
+            </p>
+          </div>
         </div>
         <div className="flex gap-2 md:gap-3 flex-shrink-0">
           <button 
@@ -576,88 +674,113 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
         </div>
       </div>
 
-      {/* Student List - scrollable area with bottom padding for button */}
-      <div className="flex-1 px-4 md:px-8 overflow-y-auto pb-32">
-        <div className="space-y-2 md:space-y-3 max-w-2xl mx-auto">
-          {classData.student_names?.map((name, i) => {
-             const status = attendance[name] || 'present';
-             
-             return (
-               <motion.div 
-                 key={name}
-                 initial={{ opacity: 0, y: 10 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ delay: i * 0.03 }}
-                 className="rounded-xl md:rounded-2xl p-3 md:p-4 flex items-center justify-between gap-3"
-                 style={{
-                   background: 'rgba(255,255,255,0.5)',
-                   boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
-                 }}
-               >
-                 <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                    <div 
-                      className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{
-                        background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
-                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,1)',
-                      }}
-                    >
-                      <span className="text-sm font-medium" style={{ color: '#c9a99c' }}>{name.charAt(0)}</span>
-                    </div>
-                    <span 
-                      className={`font-medium text-sm md:text-base truncate ${status === 'absent' ? 'line-through' : ''}`}
-                      style={{ color: status === 'absent' ? '#d4c4ba' : '#8b7d72' }}
-                    >
-                      {name}
-                    </span>
-                 </div>
+      {/* Action Cards */}
+      <div className="relative flex-1 px-4 md:px-8 pb-8">
+        <div className="max-w-2xl mx-auto space-y-4">
+          {/* Attendance Card */}
+          <button
+            onClick={() => setMode('attendance')}
+            className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left"
+            style={cardStyle}
+          >
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(145deg, rgba(126,184,154,0.2) 0%, rgba(126,184,154,0.1) 100%)' }}
+            >
+              <CheckCircle2 className="w-6 h-6" style={{ color: '#7eb89a' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold" style={{ color: '#8b7d72' }}>Take Attendance</h3>
+              <p className="text-sm" style={{ color: '#b5a599' }}>{classData.student_names?.length || 0} students enrolled</p>
+            </div>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
 
-                 <div className="flex gap-1.5 md:gap-2 flex-shrink-0">
-                    {['present', 'absent', 'late'].map(s => (
-                        <button
-                            key={s}
-                            onClick={() => setAttendance(prev => ({...prev, [name]: s}))}
-                            className="px-2.5 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-medium transition-all active:scale-95"
-                            style={{
-                              background: status === s 
-                                ? (s === 'present' 
-                                  ? 'linear-gradient(145deg, rgba(126,184,154,0.2) 0%, rgba(126,184,154,0.1) 100%)'
-                                  : s === 'absent'
-                                  ? 'linear-gradient(145deg, rgba(212,165,116,0.2) 0%, rgba(212,165,116,0.1) 100%)'
-                                  : 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(164,139,196,0.1) 100%)')
-                                : 'transparent',
-                              color: status === s 
-                                ? (s === 'present' ? '#7eb89a' : s === 'absent' ? '#d4a574' : '#a48bc4')
-                                : '#c4b5ab',
-                              boxShadow: status === s ? 'inset 0 1px 1px rgba(255,255,255,0.5)' : 'none',
-                            }}
-                        >
-                            {s === 'present' ? 'Here' : s === 'absent' ? 'Out' : 'Late'}
-                        </button>
-                    ))}
-                 </div>
-               </motion.div>
-             );
-          })}
-        </div>
-      </div>
+          {/* Roster Card */}
+          <button
+            onClick={() => setMode('roster')}
+            className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left"
+            style={cardStyle}
+          >
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(145deg, rgba(180,160,190,0.2) 0%, rgba(160,140,170,0.15) 100%)' }}
+            >
+              <Users className="w-6 h-6" style={{ color: '#9a8aad' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold" style={{ color: '#8b7d72' }}>View Roster</h3>
+              <p className="text-sm" style={{ color: '#b5a599' }}>Student profiles & history</p>
+            </div>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
 
-      {/* Bottom Fixed Footer - anchored to bottom of this component */}
-      <div 
-        className="absolute bottom-0 left-0 right-0 p-4 pb-6 z-20"
-        style={{ background: 'linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0))' }}
-      >
-        <div className="flex justify-center max-w-2xl mx-auto">
-        <button 
-          onClick={handleSubmitAttendance}
-          disabled={isSubmitting || submitSuccess}
-          className="w-full max-w-sm md:w-auto px-8 md:px-10 py-4 rounded-2xl text-base font-bold tracking-tight transition-all active:scale-[0.98] md:hover:scale-[1.02] disabled:opacity-70"
-          style={buttonStyle}
-        >
-          <span style={etchedText}>
-            {isSubmitting ? "Saving..." : submitSuccess ? "Saved ✓" : "Save Attendance"}
-          </span>
-        </button>
+          {/* Lesson Plan Card */}
+          <button
+            onClick={() => setMode('lesson_plan')}
+            className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left"
+            style={cardStyle}
+          >
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(145deg, rgba(212,165,116,0.2) 0%, rgba(212,165,116,0.1) 100%)' }}
+            >
+              <FileText className="w-6 h-6" style={{ color: '#d4a574' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold" style={{ color: '#8b7d72' }}>Lesson Plan</h3>
+              <p className="text-sm" style={{ color: '#b5a599' }}>Plan & organize your class</p>
+            </div>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          {/* Music Card */}
+          <button
+            onClick={() => setMode('music')}
+            className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left"
+            style={cardStyle}
+          >
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(145deg, rgba(244,180,180,0.2) 0%, rgba(232,160,160,0.15) 100%)' }}
+            >
+              <Music className="w-6 h-6" style={{ color: '#d4a0a0' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold" style={{ color: '#8b7d72' }}>Music</h3>
+              <p className="text-sm" style={{ color: '#b5a599' }}>Class playlist & tracks</p>
+            </div>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          {/* Notes Card */}
+          <button
+            onClick={() => setMode('notes')}
+            className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left"
+            style={cardStyle}
+          >
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(164,139,196,0.1) 100%)' }}
+            >
+              <Mic className="w-6 h-6" style={{ color: '#a48bc4' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold" style={{ color: '#8b7d72' }}>Class Notes</h3>
+              <p className="text-sm" style={{ color: '#b5a599' }}>Voice or text notes</p>
+            </div>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -711,7 +834,6 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
 // --- MAIN PAGE COMPONENT ---
 // Force redeploy v2
 export default function TeacherStudio() {
-  const navigate = useNavigate();
   const [selectedClass, setSelectedClass] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list', 'week', 'month'
   const [activeTab, setActiveTab] = useState('classes'); // 'classes', 'admin'
@@ -931,8 +1053,7 @@ export default function TeacherStudio() {
                   classes={classes} 
                   students={students}
                   subAssignments={subAssignments}
-                  onSelectClass={(cls) => navigate(`${createPageUrl('ClassDetail')}?id=${cls.id}`)}
-                  onTakeAttendance={setSelectedClass}
+                  onSelectClass={setSelectedClass}
                   selectedTeacher={selectedTeacher}
                   selectedDate={selectedDate}
                   filterType="class"
