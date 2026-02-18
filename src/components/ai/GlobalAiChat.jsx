@@ -356,14 +356,14 @@ export default function GlobalAiChat() {
                 {!isExpanded && !hasBulkSelection && (
                     <button
                         onClick={handleExpand}
-                        className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ease-out hover:scale-110 active:scale-95 shadow-lg"
+                        className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ease-out hover:scale-110 active:scale-95"
                         style={{
-                            background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
-                            border: '1px solid rgba(255, 200, 200, 0.4)',
-                            boxShadow: '0 8px 24px rgba(180, 120, 120, 0.25), 0 0 0 1px rgba(255,255,255,0.5) inset',
+                            background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+                            border: '1px solid rgba(255, 200, 200, 0.3)',
+                            boxShadow: '0 4px 12px rgba(180, 120, 120, 0.15)',
                         }}
                     >
-                        <Sparkles className="w-5 h-5 text-[#8a7070]" />
+                        <Sparkles className="w-4 h-4 text-[#a08080]" />
                     </button>
                 )}
 
