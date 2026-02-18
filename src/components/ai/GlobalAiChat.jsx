@@ -165,7 +165,8 @@ export function useBulkSelection() {
 }
 
 export default function GlobalAiChat() {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false); // Collapsed icon vs expanded bar
+    const [isOpen, setIsOpen] = useState(false); // Chat history panel open
     const [inputValue, setInputValue] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const [messages, setMessages] = useState([]);
