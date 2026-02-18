@@ -837,7 +837,7 @@ export default function TeacherStudio() {
     }
   }, [teacherName, selectedTeacher]);
 
-  // Loading state
+  // Loading state - simplified, no teacher query needed
   if (isLoadingUser) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#ffffff' }}>
