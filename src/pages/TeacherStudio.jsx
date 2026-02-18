@@ -791,79 +791,29 @@ export default function TeacherStudio() {
   const [dateOptions, setDateOptions] = useState(() => generateDateOptions(getTodayDateString()));
   const [selectedTeacher, setSelectedTeacher] = useState(null); // null = current user, 'all' = all teachers
   
-  const { data: currentUser, refetch: refetchUser } = useQuery({
+  const { data: currentUser, isLoading: isLoadingUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     retry: false
   });
 
   // Find the teacher record that matches this user's email (case-insensitive)
-  // Search ALL teachers to find a match - this gives us studio_id reliably
   const { data: teacherRecord, isLoading: isLoadingTeacher } = useQuery({
     queryKey: ['myTeacherRecord', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return null;
-      
-      // Search all teachers to find match by email
       const teachers = await base44.entities.Teacher.filter({});
-      
-      // Case-insensitive email matching
       const userEmailLower = currentUser.email.toLowerCase();
-      const match = teachers.find(t => t.email?.toLowerCase() === userEmailLower);
-      
-      return match || null;
+      return teachers.find(t => t.email?.toLowerCase() === userEmailLower) || null;
     },
     enabled: !!currentUser?.email,
   });
 
-  // Resolve studioId from multiple sources - teacher record is most reliable
-  const studioId = teacherRecord?.studio_id || currentUser?.studio_id || currentUser?.data?.studio_id || currentUser?.data?.data?.studio_id;
-  
-  // Use teacher name from Teacher entity if found, otherwise fall back to user's full_name
+  // Resolve studioId - teacher record is the source of truth
+  const studioId = teacherRecord?.studio_id;
   const currentTeacherName = teacherRecord?.name || currentUser?.full_name;
 
-  // CRITICAL: Don't render anything until we have studioId resolved
-  // Wait for both currentUser AND teacherRecord queries to complete
-  const isStillLoading = !currentUser || isLoadingTeacher;
-  
-  if (isStillLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#ffffff' }}>
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-[#c9a99c] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p style={{ color: '#b5a599' }}>Loading your studio...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // After loading, if we STILL don't have studioId, show error - don't proceed with broken data
-  if (!studioId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#ffffff' }}>
-        <div className="text-center max-w-md px-6">
-          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-8 h-8 text-red-500" />
-          </div>
-          <h2 className="text-xl font-semibold mb-2" style={{ color: '#8b7d72' }}>Studio Not Found</h2>
-          <p className="text-sm mb-4" style={{ color: '#b5a599' }}>
-            We couldn't identify your studio. Please contact your studio administrator to ensure your account is properly set up.
-          </p>
-          <p className="text-xs" style={{ color: '#d4c4ba' }}>
-            Logged in as: {currentUser?.email}
-          </p>
-        </div>
-      </div>
-    );
-  }
-  
-  // Set default selected teacher to current user on first load
-  useEffect(() => {
-    if (currentTeacherName && selectedTeacher === null) {
-      setSelectedTeacher(currentTeacherName);
-    }
-  }, [currentTeacherName, selectedTeacher]);
-
+  // Fetch all studio data - only runs when studioId is available
   const { data: teachers = [] } = useQuery({
     queryKey: ['teachers', studioId],
     queryFn: () => base44.entities.Teacher.filter({ studio_id: studioId }),
@@ -887,6 +837,47 @@ export default function TeacherStudio() {
     queryFn: () => base44.entities.SubAssignment.filter({ studio_id: studioId }),
     enabled: !!studioId,
   });
+
+  // Set default selected teacher to current user on first load
+  useEffect(() => {
+    if (currentTeacherName && selectedTeacher === null) {
+      setSelectedTeacher(currentTeacherName);
+    }
+  }, [currentTeacherName, selectedTeacher]);
+
+  // Loading state - all hooks called above, safe to return early now
+  const isStillLoading = isLoadingUser || (currentUser?.email && isLoadingTeacher);
+  
+  if (isStillLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#ffffff' }}>
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[#c9a99c] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p style={{ color: '#b5a599' }}>Loading your studio...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // No teacher record found for this user
+  if (!studioId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#ffffff' }}>
+        <div className="text-center max-w-md px-6">
+          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2" style={{ color: '#8b7d72' }}>Studio Not Found</h2>
+          <p className="text-sm mb-4" style={{ color: '#b5a599' }}>
+            Your account isn't linked to a studio yet. Please contact your studio administrator.
+          </p>
+          <p className="text-xs" style={{ color: '#d4c4ba' }}>
+            Logged in as: {currentUser?.email}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
 
 
