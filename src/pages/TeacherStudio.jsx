@@ -444,23 +444,21 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
           style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
         />
 
-        <div className="relative px-4 md:px-8 py-6 md:py-8 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-            <button 
-              onClick={() => setMode('dashboard')} 
-              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
-              style={{
-                background: 'rgba(255,255,255,0.6)',
-                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
-                color: '#b5a599',
-              }}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight truncate" style={etchedText}>
-              Attendance
-            </h2>
-          </div>
+        <div className="relative px-4 md:px-8 py-6 md:py-8 flex flex-col items-center flex-shrink-0">
+          <button 
+            onClick={() => setMode('dashboard')} 
+            className="w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 mb-3"
+            style={{
+              background: 'rgba(255,255,255,0.7)',
+              boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+              color: '#c4a0a0',
+            }}
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight" style={etchedText}>
+            Attendance
+          </h2>
         </div>
 
         <div className="flex-1 px-4 md:px-8 overflow-y-auto pb-32">
