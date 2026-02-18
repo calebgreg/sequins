@@ -780,6 +780,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
       };
 
 // --- MAIN PAGE COMPONENT ---
+// Force redeploy v2
 export default function TeacherStudio() {
   const [selectedClass, setSelectedClass] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list', 'week', 'month'
