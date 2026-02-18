@@ -799,7 +799,7 @@ export default function TeacherStudio() {
 
   // Find the teacher record that matches this user's email (case-insensitive)
   // Search ALL teachers to find a match - this gives us studio_id reliably
-  const { data: teacherRecord } = useQuery({
+  const { data: teacherRecord, isLoading: isLoadingTeacher } = useQuery({
     queryKey: ['myTeacherRecord', currentUser?.email],
     queryFn: async () => {
       if (!currentUser?.email) return null;
@@ -821,6 +821,18 @@ export default function TeacherStudio() {
   
   // Use teacher name from Teacher entity if found, otherwise fall back to user's full_name
   const currentTeacherName = teacherRecord?.name || currentUser?.full_name;
+
+  // CRITICAL: Don't render anything until we have studioId resolved
+  if (isLoadingTeacher || (!studioId && currentUser)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#ffffff' }}>
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[#c9a99c] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p style={{ color: '#b5a599' }}>Loading your studio...</p>
+        </div>
+      </div>
+    );
+  }
   
   // Set default selected teacher to current user on first load
   useEffect(() => {
