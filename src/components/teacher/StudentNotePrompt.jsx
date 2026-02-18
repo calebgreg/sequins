@@ -12,6 +12,7 @@ export default function StudentNotePrompt({
   studentsToPrompt,
   currentIndex,
   teacherName,
+  studioId,
   onNext,
   onComplete,
 }) {
@@ -113,6 +114,7 @@ export default function StudentNotePrompt({
         });
 
         const noteData = {
+          studio_id: studioId,
           student_name: currentStudent.name,
           class_name: classData.title,
           teacher_name: teacherName,
