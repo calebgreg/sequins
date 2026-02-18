@@ -832,10 +832,10 @@ export default function TeacherStudio() {
 
   // Set default selected teacher to current user on first load
   useEffect(() => {
-    if (currentTeacherName && selectedTeacher === null) {
-      setSelectedTeacher(currentTeacherName);
+    if (teacherName && selectedTeacher === null) {
+      setSelectedTeacher(teacherName);
     }
-  }, [currentTeacherName, selectedTeacher]);
+  }, [teacherName, selectedTeacher]);
 
   // Loading state - all hooks called above, safe to return early now
   const isStillLoading = isLoadingUser || (currentUser?.email && isLoadingTeacher);
