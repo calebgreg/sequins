@@ -215,8 +215,9 @@ import MusicManager from '../components/teacher/MusicManager';
 import StudentNotePrompt from '../components/teacher/StudentNotePrompt';
 
 // --- SUB-COMPONENT: Class Detail View ---
-const ClassDetailView = ({ classData, students, onBack, currentTeacherName, studioId }) => {
-  const [mode, setMode] = useState('dashboard');
+const ClassDetailView = ({ classData, students, onBack, currentTeacherName, studioId, selectedDate }) => {
+  const [mode, setMode] = useState('attendance'); // Go directly to attendance
+  const [showPostClassNotes, setShowPostClassNotes] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [attendance, setAttendance] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -258,6 +259,27 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
     }
   }, [classData]);
 
+  // Check if class has ended and prompt for notes
+  useEffect(() => {
+    const checkClassEnd = () => {
+      const now = new Date();
+      const classEndHour = classData.start_time + (classData.duration || 1);
+      const currentHour = now.getHours() + now.getMinutes() / 60;
+      
+      // Only trigger if we're on today's date and class has ended
+      const today = format(new Date(), 'yyyy-MM-dd');
+      if (selectedDate === today && currentHour >= classEndHour && !showPostClassNotes && mode === 'attendance') {
+        // Class has ended, show note prompt
+        setShowPostClassNotes(true);
+      }
+    };
+
+    // Check immediately and then every minute
+    checkClassEnd();
+    const interval = setInterval(checkClassEnd, 60000);
+    return () => clearInterval(interval);
+  }, [classData, selectedDate, showPostClassNotes, mode]);
+
   const toggleStatus = (studentName) => {
     setAttendance(prev => {
       const current = prev[studentName];
@@ -269,23 +291,22 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
   const handleSubmitAttendance = async () => {
     setIsSubmitting(true);
     try {
-      const todayDate = new Date().toISOString().split('T')[0];
+      const dateToSave = selectedDate || new Date().toISOString().split('T')[0];
       const records = Object.entries(attendance).map(([name, status]) => ({
         studio_id: studioId,
         class_id: classData.id,
         class_name: classData.title,
         student_name: name,
-        date: todayDate,
+        date: dateToSave,
         status: status
       }));
       await base44.entities.Attendance.bulkCreate(records);
 
       // Check for students who are attending as a makeup
-      // Find any absence records with this class scheduled as makeup for today
       const allAttendance = await base44.entities.Attendance.list();
       const makeupRecords = allAttendance.filter(a => 
         a.makeup_class_id === classData.id && 
-        a.makeup_date === todayDate &&
+        a.makeup_date === dateToSave &&
         (a.status === 'absent' || a.status === 'excused')
       );
       
@@ -298,57 +319,46 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
         }
       }
 
-      // Use the powerful AI attendance analyzer
-      const analysis = await analyzeAttendance({
-        attendance,
-        classData,
-        students,
-      });
-
-      if (analysis?.updates) {
-        await Promise.all(analysis.updates.map(async (update) => {
-          const student = students.find(s => s.name === update.student_name);
-          if (student && update.flag) {
-            await base44.entities.Student.update(student.id, {
-              attendance_alert: true,
-              attendance_summary: update.summary
-            });
-            // Only create high-severity alerts as messages
-            if (update.severity === 'high' || update.severity === 'medium') {
-              await base44.entities.Message.create({
-                content: `Attendance Alert: ${update.summary}${update.suggested_action ? ` — ${update.suggested_action}` : ''}`,
-                sender: 'system',
-                student_id: student.id,
-                timestamp: new Date().toISOString(),
-                is_alert: true
+      // Use the AI attendance analyzer (runs in background)
+      analyzeAttendance({ attendance, classData, students }).then(analysis => {
+        if (analysis?.updates) {
+          analysis.updates.forEach(async (update) => {
+            const student = students.find(s => s.name === update.student_name);
+            if (student && update.flag) {
+              await base44.entities.Student.update(student.id, {
+                attendance_alert: true,
+                attendance_summary: update.summary
               });
             }
-          }
-        }));
-      }
+          });
+        }
+      });
       
-      // Only prompt for notes on students who attended (marked present)
-      const classStudents = students.filter(s => classData.student_names?.includes(s.name));
-      const presentStudents = classStudents.filter(s => attendance[s.name] === 'present');
-      const shuffled = [...presentStudents].sort(() => Math.random() - 0.5);
-      const selectedForNotes = shuffled.slice(0, Math.min(3, shuffled.length));
-      
-      if (selectedForNotes.length > 0) {
-        setStudentsToPrompt(selectedForNotes);
-        setCurrentPromptIndex(0);
-        setMode('student_note_prompt');
-      } else {
-        setSubmitSuccess(true);
-        setTimeout(() => {
-          setSubmitSuccess(false);
-          setMode('dashboard');
-        }, 2000);
-      }
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        onBack(); // Go back to class list after saving
+      }, 1500);
     } catch (error) {
       console.error("Attendance save failed", error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Handle starting the note prompt flow (triggered by time or manually)
+  const handleStartNotePrompt = () => {
+    const classStudents = students.filter(s => classData.student_names?.includes(s.name));
+    const presentStudents = classStudents.filter(s => attendance[s.name] === 'present');
+    const shuffled = [...presentStudents].sort(() => Math.random() - 0.5);
+    const selectedForNotes = shuffled.slice(0, Math.min(3, shuffled.length));
+    
+    if (selectedForNotes.length > 0) {
+      setStudentsToPrompt(selectedForNotes);
+      setCurrentPromptIndex(0);
+      setMode('student_note_prompt');
+    }
+    setShowPostClassNotes(false);
   };
 
   const handleNotesProcessed = (notes) => {
@@ -473,160 +483,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
      );
   }
 
-  // Dashboard View
-  if (mode === 'dashboard') {
-    return (
-      <div 
-        className="flex flex-col min-h-screen relative overflow-y-auto"
-        style={{ 
-          fontFamily: "'DM Sans', -apple-system, sans-serif",
-          background: '#ffffff',
-        }}
-      >
-        {/* Ambient background shapes */}
-        <div 
-          className="fixed top-[-20%] right-[-10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
-        />
-        <div 
-          className="fixed bottom-[-30%] left-[-15%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
-        />
 
-        {/* Header */}
-        <div className="relative px-4 md:px-8 py-6 md:py-8 flex items-center justify-between">
-          <div className="flex items-center gap-3 md:gap-4">
-            <button 
-              onClick={onBack} 
-              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
-              style={{
-                background: 'rgba(255,255,255,0.6)',
-                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
-                color: '#b5a599',
-              }}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <h2 
-              className="text-xl md:text-2xl font-bold tracking-tight truncate"
-              style={etchedText}
-            >
-              {classData.title}
-            </h2>
-          </div>
-        </div>
-
-        <div className="relative flex-1 px-4 md:px-8 pb-8 flex flex-col max-w-4xl mx-auto w-full">
-          
-          {/* Main Status Card */}
-          <div 
-            className="rounded-2xl md:rounded-3xl p-5 md:p-8 mb-4 md:mb-6"
-            style={cardStyle}
-          >
-            <div className="flex flex-col gap-5 md:gap-6">
-              <div className="flex items-start gap-4 md:gap-6">
-                <div 
-                  className="w-14 h-14 md:w-20 md:h-20 rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
-                    boxShadow: '0 8px 32px -8px rgba(180,150,140,0.25), inset 0 1px 1px rgba(255,255,255,1)',
-                  }}
-                >
-                  <span className="text-xl md:text-2xl font-medium" style={{ color: '#c9a99c' }}>
-                    {classData.title.charAt(0)}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 
-                    className="text-xl md:text-3xl font-bold tracking-tight truncate"
-                    style={etchedText}
-                  >
-                    {classData.title}
-                  </h3>
-                  <p className="text-sm md:text-lg mt-1" style={{ color: '#a8998e' }}>
-                    {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} · {Math.round((classData.duration || 1) * 60)} min
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-3 md:mt-4">
-                    <span 
-                      className="px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm"
-                      style={{
-                        background: 'rgba(255,255,255,0.5)',
-                        color: '#9a8b80',
-                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
-                      }}
-                    >
-                      {classData.student_names?.length || 0} Students
-                    </span>
-                    <span 
-                      className="px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm"
-                      style={{
-                        background: 'rgba(255,255,255,0.5)',
-                        color: '#9a8b80',
-                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
-                      }}
-                    >
-                      Studio {classData.room || 'A'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <button 
-                onClick={() => setMode('active_class')}
-                className="w-full px-6 md:px-8 py-4 rounded-2xl text-base font-bold tracking-tight transition-all active:scale-[0.98] md:hover:scale-[1.02]"
-                style={buttonStyle}
-              >
-                <span style={etchedText} className="flex items-center justify-center gap-2">
-                  <Play className="w-4 h-4 fill-current" style={{ color: '#c5b5b2' }} /> Start Class
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Actions Grid */}
-          <div className="grid grid-cols-3 gap-2 md:gap-4">
-            {[
-              { icon: CalendarX, label: 'Coverage', onClick: () => setIsSubRequestOpen(true) },
-              { icon: Mic, label: 'Notes', onClick: () => setMode('notes') },
-              { icon: Users, label: 'Roster', onClick: () => setMode('roster') },
-              { icon: Sparkles, label: 'Lesson', onClick: () => setMode('lesson_plan') },
-              { icon: Music, label: 'Music', onClick: () => setMode('music') },
-              { icon: MoreVertical, label: 'More', onClick: () => {} },
-            ].map((action) => (
-              <button
-                key={action.label}
-                onClick={action.onClick}
-                className="aspect-square md:h-32 md:aspect-auto rounded-xl md:rounded-2xl flex flex-col items-center justify-center gap-2 md:gap-3 transition-all active:scale-[0.95] md:hover:scale-[1.02]"
-                style={{
-                  background: 'rgba(255,255,255,0.5)',
-                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 16px -8px rgba(180,150,140,0.12)',
-                }}
-              >
-                <div 
-                  className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center"
-                  style={{
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
-                    boxShadow: '0 4px 12px -4px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,1)',
-                  }}
-                >
-                  <action.icon className="w-4 h-4 md:w-5 md:h-5" style={{ color: '#c9a99c' }} />
-                </div>
-                <span className="text-xs md:text-sm font-medium" style={{ color: '#8b7d72' }}>{action.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {isSubRequestOpen && (
-          <SubRequestFlow 
-            onClose={() => setIsSubRequestOpen(false)}
-            classes={[classData]}
-            teacherName={currentTeacherName}
-          />
-        )}
-      </div>
-    );
-  }
 
   // Active class attendance view
   return (
@@ -762,7 +619,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
           style={buttonStyle}
         >
           <span style={etchedText}>
-            {isSubmitting ? "Analyzing..." : submitSuccess ? "Saved ✓" : "Complete Class"}
+            {isSubmitting ? "Saving..." : submitSuccess ? "Saved ✓" : "Save Attendance"}
           </span>
         </button>
         </div>
@@ -774,6 +631,39 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
           classes={[classData]}
           teacherName={currentTeacherName}
         />
+      )}
+
+      {/* Post-class notes prompt dialog */}
+      {showPostClassNotes && (
+        <Dialog open={showPostClassNotes} onOpenChange={setShowPostClassNotes}>
+          <DialogContent className="sm:max-w-md" style={{ background: '#fffaf9' }}>
+            <DialogHeader>
+              <DialogTitle style={{ color: '#8b7d72' }}>Class Ended</DialogTitle>
+              <DialogDescription style={{ color: '#b5a599' }}>
+                {classData.title} has finished. Would you like to add quick notes about a few students?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-3 mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowPostClassNotes(false)}
+                className="flex-1"
+              >
+                Skip
+              </Button>
+              <Button 
+                onClick={handleStartNotePrompt}
+                className="flex-1"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(180,160,190,0.9) 0%, rgba(160,140,170,0.85) 100%)',
+                  color: '#fff',
+                }}
+              >
+                Add Notes
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
@@ -1041,6 +931,7 @@ export default function TeacherStudio() {
                 onBack={() => setSelectedClass(null)}
                 currentTeacherName={teacherName}
                 studioId={studioId}
+                selectedDate={selectedDate}
               />
             </motion.div>
           )}
