@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText, Menu, LayoutGrid, List, Calendar as CalendarIcon, Music, Disc, UserCheck, User } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ const getActualStudentCount = (cls, students) => {
 };
 
 // --- SUB-COMPONENT: Class List View ---
-const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, students = [], filterType = 'class', subAssignments = [] }) => {
+const ClassListView = ({ classes, onSelectClass, onTakeAttendance, selectedTeacher, selectedDate, students = [], filterType = 'class', subAssignments = [] }) => {
   // Etched text style - EXACT copy from Billing page line 298-305
   const etchedTextStyle = {
     color: 'transparent',
@@ -145,14 +145,16 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
-            onClick={() => onSelectClass(cls)}
-            className="rounded-2xl p-4 md:p-5 flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] md:hover:scale-[1.01]"
+            className="rounded-2xl p-4 md:p-5 flex items-center justify-between transition-all"
             style={{
               background: 'rgba(255,255,255,0.5)',
               boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 16px -8px rgba(180,150,140,0.15)',
             }}
           >
-            <div className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
+            <div 
+              className="flex items-center gap-3 md:gap-5 flex-1 min-w-0 cursor-pointer"
+              onClick={() => onSelectClass(cls)}
+            >
               <div 
                 className="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{
@@ -182,7 +184,23 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, 
             </div>
             
             <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-              <div className="hidden sm:flex -space-x-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTakeAttendance(cls);
+                }}
+                className="px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(126,184,154,0.2) 0%, rgba(126,184,154,0.1) 100%)',
+                  color: '#5a7d6a',
+                }}
+              >
+                Attendance
+              </button>
+              <div 
+                className="hidden sm:flex -space-x-2 cursor-pointer"
+                onClick={() => onSelectClass(cls)}
+              >
                 {cls.student_names?.slice(0, 3).map((name, i) => (
                   <div 
                     key={i} 
@@ -193,7 +211,14 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, 
                   </div>
                 ))}
               </div>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
+              <svg 
+                className="w-4 h-4 cursor-pointer" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24" 
+                style={{ color: '#d4c4ba' }}
+                onClick={() => onSelectClass(cls)}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
               </svg>
             </div>
@@ -686,6 +711,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
 // --- MAIN PAGE COMPONENT ---
 // Force redeploy v2
 export default function TeacherStudio() {
+  const navigate = useNavigate();
   const [selectedClass, setSelectedClass] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list', 'week', 'month'
   const [activeTab, setActiveTab] = useState('classes'); // 'classes', 'admin'
@@ -905,7 +931,8 @@ export default function TeacherStudio() {
                   classes={classes} 
                   students={students}
                   subAssignments={subAssignments}
-                  onSelectClass={setSelectedClass} 
+                  onSelectClass={(cls) => navigate(`${createPageUrl('ClassDetail')}?id=${cls.id}`)}
+                  onTakeAttendance={setSelectedClass}
                   selectedTeacher={selectedTeacher}
                   selectedDate={selectedDate}
                   filterType="class"
