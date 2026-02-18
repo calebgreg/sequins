@@ -1038,7 +1038,7 @@ export default function TeacherStudio() {
                 classData={selectedClass} 
                 students={students}
                 onBack={() => setSelectedClass(null)}
-                currentTeacherName={currentTeacherName}
+                currentTeacherName={teacherName}
                 studioId={studioId}
               />
             </motion.div>
