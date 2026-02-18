@@ -302,8 +302,27 @@ export default function GlobalAiChat() {
         setIsOpen(true);
     };
 
+    const handleExpand = () => {
+        setIsExpanded(true);
+        setTimeout(() => inputRef.current?.focus(), 100);
+    };
+
+    const handleCollapse = () => {
+        if (!inputValue.trim() && messages.length === 0) {
+            setIsExpanded(false);
+            setIsOpen(false);
+        }
+    };
+
+    // Auto-expand when bulk selection is active
+    useEffect(() => {
+        if (hasBulkSelection) {
+            setIsExpanded(true);
+        }
+    }, [hasBulkSelection]);
+
     return (
-        <div className="fixed bottom-6 left-1/2 md:left-[calc(50%+48px)] -translate-x-1/2 z-50 w-full max-w-[420px] px-4 font-sans text-gray-900 pointer-events-none">
+        <div className="fixed bottom-6 left-1/2 md:left-[calc(50%+48px)] -translate-x-1/2 z-50 font-sans text-gray-900 pointer-events-none">
             <svg width="0" height="0" className="absolute">
                 <filter id="liquid-glass">
                     <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="1" result="turbulence" />
@@ -313,8 +332,8 @@ export default function GlobalAiChat() {
             <div ref={containerRef} className="pointer-events-auto flex flex-col items-center">
                 
                 {/* Chat History Panel (Appears Above) */}
-                {isOpen && (messages.length > 0 || isThinking) && (
-                    <div className="w-full mb-2 bg-white/10 backdrop-blur-[20px] border border-white/40 shadow-xl rounded-2xl overflow-hidden ring-1 ring-black/5 animate-in slide-in-from-bottom-2 fade-in duration-200" style={{filter: 'url(#liquid-glass)'}}>
+                {isExpanded && isOpen && (messages.length > 0 || isThinking) && (
+                    <div className="w-full max-w-[420px] mb-2 bg-white/10 backdrop-blur-[20px] border border-white/40 shadow-xl rounded-2xl overflow-hidden ring-1 ring-black/5 animate-in slide-in-from-bottom-2 fade-in duration-200" style={{filter: 'url(#liquid-glass)'}}>
                         <div 
                             ref={scrollRef}
                             className="max-h-[40vh] overflow-y-auto p-4 scroll-smooth"
@@ -333,91 +352,116 @@ export default function GlobalAiChat() {
                     </div>
                 )}
 
-                {/* Input Bar - wraps with bulk selection header when active */}
-                <div 
-                    className={`
-                        w-full backdrop-blur-[20px] transition-all duration-300
-                        ${hasBulkSelection 
-                            ? 'rounded-[24px] p-4' 
-                            : 'bg-pink-50/30 shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)] border-b border-pink-100/40 ring-1 ring-pink-200/20 rounded-full px-3 py-2'
-                        }
-                        ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-90 hover:scale-100 hover:opacity-100'}
-                    `}
-                    style={{
-                        filter: hasBulkSelection ? 'none' : 'url(#liquid-glass)',
-                        ...(hasBulkSelection ? {
-                            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
+                {/* Collapsed Icon Button */}
+                {!isExpanded && !hasBulkSelection && (
+                    <button
+                        onClick={handleExpand}
+                        className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ease-out hover:scale-110 active:scale-95 shadow-lg"
+                        style={{
+                            background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
                             border: '1px solid rgba(255, 200, 200, 0.4)',
-                            boxShadow: '0 8px 32px rgba(180, 120, 120, 0.2), 0 0 0 1px rgba(255,255,255,0.5) inset',
-                        } : {})
-                    }}
-                >
-                    {/* Bulk Selection Header */}
-                    {hasBulkSelection && (
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[#1a1a1a] text-white">
-                                    {selectedStudents.length}
-                                </span>
-                                <span className="text-sm text-[#8a8478]">
-                                    {selectedStudents.slice(0, 3).map(s => s.name).join(', ')}
-                                    {selectedStudents.length > 3 && `, +${selectedStudents.length - 3} more`}
-                                </span>
-                            </div>
-                            <button 
-                                onClick={clearSelection}
-                                className="p-1.5 rounded-full transition-all hover:scale-105"
-                                style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
-                            >
-                                <X className="w-4 h-4 text-[#8a7070]" />
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Input Row - The Gene Chat Field */}
-                    <div 
-                        className={`flex items-center gap-2.5 ${hasBulkSelection ? 'px-4 py-3 rounded-xl' : ''}`}
-                        style={hasBulkSelection ? {
-                            backgroundColor: 'rgba(255,255,255,0.7)',
-                            border: '1px solid rgba(200,180,170,0.2)',
-                        } : {}}
+                            boxShadow: '0 8px 24px rgba(180, 120, 120, 0.25), 0 0 0 1px rgba(255,255,255,0.5) inset',
+                        }}
                     >
-                        <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center shrink-0">
-                            {isThinking ? (
-                                <div className="w-3 h-3 border-2 border-gray-400 border-t-black rounded-full animate-spin" />
-                            ) : (
-                                <Sparkles className="w-3 h-3 text-gray-600" />
-                            )}
-                        </div>
+                        <Sparkles className="w-5 h-5 text-[#8a7070]" />
+                    </button>
+                )}
 
-                        <input
-                            ref={inputRef}
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onFocus={handleFocus}
-                            onKeyDown={handleKeyDown}
-                            placeholder={hasBulkSelection ? "What do you want to do?" : ""}
-                            className="flex-1 bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none h-full font-medium"
-                        />
-
-                        <div className="flex items-center gap-2">
-                            {inputValue.trim() && (
+                {/* Expanded Input Bar */}
+                {(isExpanded || hasBulkSelection) && (
+                    <div 
+                        className={`
+                            w-[calc(100vw-32px)] max-w-[420px] backdrop-blur-[20px] transition-all duration-300 ease-out
+                            ${hasBulkSelection 
+                                ? 'rounded-[24px] p-4' 
+                                : 'bg-pink-50/30 shadow-[inset_0_2px_6px_rgba(0,0,0,0.1)] border-b border-pink-100/40 ring-1 ring-pink-200/20 rounded-full px-3 py-2'
+                            }
+                            animate-in fade-in zoom-in-95 duration-200
+                        `}
+                        style={{
+                            filter: hasBulkSelection ? 'none' : 'url(#liquid-glass)',
+                            ...(hasBulkSelection ? {
+                                background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.98) 0%, rgba(252, 231, 231, 0.95) 100%)',
+                                border: '1px solid rgba(255, 200, 200, 0.4)',
+                                boxShadow: '0 8px 32px rgba(180, 120, 120, 0.2), 0 0 0 1px rgba(255,255,255,0.5) inset',
+                            } : {})
+                        }}
+                    >
+                        {/* Bulk Selection Header */}
+                        {hasBulkSelection && (
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[#1a1a1a] text-white">
+                                        {selectedStudents.length}
+                                    </span>
+                                    <span className="text-sm text-[#8a8478]">
+                                        {selectedStudents.slice(0, 3).map(s => s.name).join(', ')}
+                                        {selectedStudents.length > 3 && `, +${selectedStudents.length - 3} more`}
+                                    </span>
+                                </div>
                                 <button 
-                                    onClick={handleSend}
-                                    className={`flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${hasBulkSelection ? 'w-9 h-9 rounded-xl' : 'w-6 h-6 rounded-full'} bg-black text-white`}
+                                    onClick={clearSelection}
+                                    className="p-1.5 rounded-full transition-all hover:scale-105"
+                                    style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
                                 >
-                                    <ArrowUp className={hasBulkSelection ? "w-4 h-4" : "w-3 h-3"} />
+                                    <X className="w-4 h-4 text-[#8a7070]" />
                                 </button>
-                            )}
+                            </div>
+                        )}
+
+                        {/* Input Row - The Gene Chat Field */}
+                        <div 
+                            className={`flex items-center gap-2.5 ${hasBulkSelection ? 'px-4 py-3 rounded-xl' : ''}`}
+                            style={hasBulkSelection ? {
+                                backgroundColor: 'rgba(255,255,255,0.7)',
+                                border: '1px solid rgba(200,180,170,0.2)',
+                            } : {}}
+                        >
+                            <div className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center shrink-0">
+                                {isThinking ? (
+                                    <div className="w-3 h-3 border-2 border-gray-400 border-t-black rounded-full animate-spin" />
+                                ) : (
+                                    <Sparkles className="w-3 h-3 text-gray-600" />
+                                )}
+                            </div>
+
+                            <input
+                                ref={inputRef}
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleCollapse}
+                                onKeyDown={handleKeyDown}
+                                placeholder={hasBulkSelection ? "What do you want to do?" : "Ask Gene anything..."}
+                                className="flex-1 bg-transparent border-none text-[13px] text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none h-full font-medium"
+                            />
+
+                            <div className="flex items-center gap-2">
+                                {inputValue.trim() ? (
+                                    <button 
+                                        onClick={handleSend}
+                                        className={`flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${hasBulkSelection ? 'w-9 h-9 rounded-xl' : 'w-6 h-6 rounded-full'} bg-black text-white`}
+                                    >
+                                        <ArrowUp className={hasBulkSelection ? "w-4 h-4" : "w-3 h-3"} />
+                                    </button>
+                                ) : !hasBulkSelection && (
+                                    <button 
+                                        onClick={() => setIsExpanded(false)}
+                                        className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center hover:bg-black/10 transition-all"
+                                    >
+                                        <X className="w-3 h-3 text-gray-500" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
-                {/* Optional "Close" hit area when open but empty, to make it feel dismissible */}
-                {isOpen && messages.length > 0 && (
-                    <div className="absolute -bottom-8">
+                {/* Optional "Close" hit area when chat history is open */}
+                {isExpanded && isOpen && messages.length > 0 && (
+                    <div className="mt-2">
                         <button 
-                            onClick={() => { setIsOpen(false); setMessages([]); }} 
+                            onClick={() => { setIsOpen(false); setMessages([]); setIsExpanded(false); }} 
                             className="text-[10px] text-gray-400 hover:text-gray-600 font-medium bg-white/50 px-3 py-1 rounded-full backdrop-blur-sm"
                         >
                             Close Chat
