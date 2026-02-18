@@ -801,12 +801,16 @@ export default function TeacherStudio() {
   const studioId = currentUser?.studio_id || currentUser?.data?.studio_id || currentUser?.data?.data?.studio_id;
   const currentTeacherName = currentUser?.full_name;
 
-  // Fetch all studio data - only runs when studioId is available
+  // Find the teacher name for the current user (for display purposes)
   const { data: teachers = [] } = useQuery({
     queryKey: ['teachers', studioId],
     queryFn: () => base44.entities.Teacher.filter({ studio_id: studioId }),
     enabled: !!studioId,
   });
+  
+  // Get teacher name from Teacher record if exists, otherwise use full_name
+  const matchedTeacher = teachers.find(t => t.email?.toLowerCase() === currentUser?.email?.toLowerCase());
+  const teacherName = matchedTeacher?.name || currentTeacherName;
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes', studioId],
