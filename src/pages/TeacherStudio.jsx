@@ -648,23 +648,8 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
         background: '#ffffff',
       }}
     >
-      {/* Header with back button */}
-      <div className="relative px-4 md:px-8 py-4 flex items-center gap-3">
-        <button 
-          onClick={onBack} 
-          className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
-          style={{
-            background: 'rgba(255,255,255,0.6)',
-            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
-            color: '#b5a599',
-          }}
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-      </div>
-
       {/* Main Card Container */}
-      <div className="flex-1 px-4 md:px-8 pb-8">
+      <div className="flex-1 px-4 md:px-8 py-6 md:py-8">
         <div 
           className="rounded-3xl p-6 md:p-10 max-w-3xl mx-auto"
           style={{
@@ -672,6 +657,21 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
             boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
           }}
         >
+          {/* Back button inside card */}
+          <div className="flex justify-center mb-4">
+            <button 
+              onClick={onBack} 
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95"
+              style={{
+                background: 'rgba(255,255,255,0.7)',
+                boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+                color: '#c4a0a0',
+              }}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          </div>
+
           {/* Class Info Header */}
           <div className="text-center mb-8">
             <p className="text-sm mb-2" style={{ color: '#b5a599' }}>
