@@ -823,12 +823,35 @@ export default function TeacherStudio() {
   const currentTeacherName = teacherRecord?.name || currentUser?.full_name;
 
   // CRITICAL: Don't render anything until we have studioId resolved
-  if (isLoadingTeacher || (!studioId && currentUser)) {
+  // Wait for both currentUser AND teacherRecord queries to complete
+  const isStillLoading = !currentUser || isLoadingTeacher;
+  
+  if (isStillLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#ffffff' }}>
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-[#c9a99c] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
           <p style={{ color: '#b5a599' }}>Loading your studio...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // After loading, if we STILL don't have studioId, show error - don't proceed with broken data
+  if (!studioId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#ffffff' }}>
+        <div className="text-center max-w-md px-6">
+          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2" style={{ color: '#8b7d72' }}>Studio Not Found</h2>
+          <p className="text-sm mb-4" style={{ color: '#b5a599' }}>
+            We couldn't identify your studio. Please contact your studio administrator to ensure your account is properly set up.
+          </p>
+          <p className="text-xs" style={{ color: '#d4c4ba' }}>
+            Logged in as: {currentUser?.email}
+          </p>
         </div>
       </div>
     );
