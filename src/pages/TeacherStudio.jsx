@@ -216,7 +216,7 @@ import StudentNotePrompt from '../components/teacher/StudentNotePrompt';
 
 // --- SUB-COMPONENT: Class Detail View ---
 const ClassDetailView = ({ classData, students, onBack, currentTeacherName, studioId, selectedDate }) => {
-  const [mode, setMode] = useState('dashboard'); // Start at class dashboard
+  const [mode, setMode] = useState('attendance'); // Go directly to attendance
   const [showPostClassNotes, setShowPostClassNotes] = useState(false);
   const [notePromptDismissed, setNotePromptDismissed] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
