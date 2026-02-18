@@ -676,23 +676,23 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
             </p>
           </div>
 
-          {/* 6 Card Grid */}
-          <div className="grid grid-cols-3 gap-3 md:gap-4">
+          {/* 6 Card Grid - 2 cols on mobile, 3 on desktop */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {gridCards.map((card) => {
               const Icon = card.icon;
               return (
                 <button
                   key={card.id}
                   onClick={() => card.action ? card.action() : setMode(card.mode)}
-                  className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-95 hover:scale-[1.02]"
+                  className="rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center gap-3 transition-all active:scale-95 hover:scale-[1.02]"
                   style={{
                     background: 'rgba(255,255,255,0.85)',
                     boxShadow: '0 4px 16px -4px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,1)',
                   }}
                 >
-                  <Icon className="w-6 h-6 md:w-7 md:h-7" style={{ color: '#c4a0a0' }} />
+                  <Icon className="w-7 h-7 md:w-8 md:h-8" style={{ color: '#c4a0a0' }} />
                   <span 
-                    className="text-[10px] md:text-xs font-semibold tracking-wider"
+                    className="text-xs md:text-sm font-semibold tracking-wider text-center"
                     style={{ color: '#a89890' }}
                   >
                     {card.label}
