@@ -797,33 +797,9 @@ export default function TeacherStudio() {
     retry: false
   });
 
-  // Find the teacher record that matches this user's email (case-insensitive)
-  const { data: teacherRecord, isLoading: isLoadingTeacher } = useQuery({
-    queryKey: ['myTeacherRecord', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser?.email) return null;
-      const teachers = await base44.entities.Teacher.filter({});
-      const userEmailLower = currentUser.email.toLowerCase();
-      return teachers.find(t => t.email?.toLowerCase() === userEmailLower) || null;
-    },
-    enabled: !!currentUser?.email,
-  });
-
-  // Resolve studioId - teacher record OR studio owner
-  // For admins who own the studio, get studio by owner_email
-  const { data: ownedStudio } = useQuery({
-    queryKey: ['ownedStudio', currentUser?.email],
-    queryFn: async () => {
-      if (!currentUser?.email) return null;
-      const studios = await base44.entities.Studio.filter({ owner_email: currentUser.email });
-      return studios[0] || null;
-    },
-    enabled: !!currentUser?.email && !teacherRecord,
-  });
-
-  // studioId comes from teacher record first, then owned studio
-  const studioId = teacherRecord?.studio_id || ownedStudio?.id;
-  const currentTeacherName = teacherRecord?.name || currentUser?.full_name;
+  // studioId comes directly from the User record
+  const studioId = currentUser?.studio_id;
+  const currentTeacherName = currentUser?.full_name;
 
   // Fetch all studio data - only runs when studioId is available
   const { data: teachers = [] } = useQuery({
