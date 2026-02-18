@@ -381,6 +381,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
         studentsToPrompt={studentsToPrompt}
         currentIndex={currentPromptIndex}
         teacherName={currentTeacherName}
+        studioId={studioId}
         onNext={() => setCurrentPromptIndex(prev => prev + 1)}
         onComplete={() => {
           setMode('dashboard');
