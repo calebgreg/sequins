@@ -104,29 +104,20 @@ export default function StudentNotePrompt({
     setIsLoading(true);
     try {
       if (noteContent.trim()) {
-        // Use AI to process and enrich the note
-        const processed = await processIndividualNote({
-          rawContent: noteContent,
-          student: currentStudent,
-          classData,
-          teacherName,
-          recentNotes,
-        });
-
+        // Save the note EXACTLY as the teacher typed it - no AI augmentation
         const noteData = {
           studio_id: studioId,
           student_name: currentStudent.name,
           class_name: classData.title,
           teacher_name: teacherName,
-          content: processed?.content || noteContent.trim(),
-          category: processed?.category || 'progress',
-          sentiment: processed?.sentiment || 'neutral',
-          tags: processed?.tags || [],
+          content: noteContent.trim(), // Save verbatim - teacher's words are sacred
+          category: 'general',
+          sentiment: 'neutral',
+          tags: [],
           date: new Date().toISOString().split('T')[0],
         };
 
         await base44.entities.StudentNote.create(noteData);
-        setProcessedNote(processed);
       }
       
       setNoteContent('');
