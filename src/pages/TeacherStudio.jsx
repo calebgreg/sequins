@@ -837,10 +837,8 @@ export default function TeacherStudio() {
     }
   }, [teacherName, selectedTeacher]);
 
-  // Loading state - all hooks called above, safe to return early now
-  const isStillLoading = isLoadingUser || (currentUser?.email && isLoadingTeacher);
-  
-  if (isStillLoading) {
+  // Loading state
+  if (isLoadingUser) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#ffffff' }}>
         <div className="text-center">
