@@ -260,18 +260,36 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
     }
   }, [classData]);
 
-  // Check if class has ended - only once on mount
+  // Check if class ends while viewing - use localStorage to ensure it only shows ONCE ever per class/date
   useEffect(() => {
-    const now = new Date();
-    const classEndHour = classData.start_time + (classData.duration || 1);
-    const currentHour = now.getHours() + now.getMinutes() / 60;
-    const today = format(new Date(), 'yyyy-MM-dd');
+    const storageKey = `note_prompt_${classData.id}_${selectedDate}`;
     
-    // Only show prompt once on initial load if class has ended today
-    if (selectedDate === today && currentHour >= classEndHour) {
-      setShowPostClassNotes(true);
+    // If already shown for this class today, don't show again
+    if (localStorage.getItem(storageKey)) {
+      return;
     }
-  }, []); // Empty deps - only run once on mount
+    
+    const today = format(new Date(), 'yyyy-MM-dd');
+    if (selectedDate !== today) return; // Only for today's classes
+    
+    const classEndHour = classData.start_time + (classData.duration || 1);
+    
+    const checkClassEnd = () => {
+      const now = new Date();
+      const currentHour = now.getHours() + now.getMinutes() / 60;
+      
+      // Only trigger when time crosses the end threshold
+      if (currentHour >= classEndHour && !localStorage.getItem(storageKey)) {
+        localStorage.setItem(storageKey, 'shown');
+        setShowPostClassNotes(true);
+      }
+    };
+
+    // Check every 30 seconds
+    const interval = setInterval(checkClassEnd, 30000);
+    
+    return () => clearInterval(interval);
+  }, [classData.id, classData.start_time, classData.duration, selectedDate]);
 
   const toggleStatus = (studentName) => {
     setAttendance(prev => {
