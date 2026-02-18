@@ -322,7 +322,7 @@ export default function GlobalAiChat() {
     }, [hasBulkSelection]);
 
     return (
-        <div className="fixed bottom-6 left-1/2 md:left-[calc(50%+48px)] -translate-x-1/2 z-50 font-sans text-gray-900 pointer-events-none">
+        <div className={`fixed bottom-6 z-50 font-sans text-gray-900 pointer-events-none ${isExpanded ? 'left-1/2 md:left-[calc(50%+48px)] -translate-x-1/2' : 'right-6'}`}>
             <svg width="0" height="0" className="absolute">
                 <filter id="liquid-glass">
                     <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="1" result="turbulence" />
