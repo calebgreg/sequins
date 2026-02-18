@@ -797,8 +797,16 @@ export default function TeacherStudio() {
     retry: false
   });
 
-  // studio_id might be at top level or in data object depending on how it was set
+  // studio_id might be at top level or nested in data object depending on how it was set
   const studioId = currentUser?.studio_id || currentUser?.data?.studio_id || currentUser?.data?.data?.studio_id;
+  
+  // Debug log to help troubleshoot
+  console.log('TeacherStudio - studioId resolution:', { 
+    topLevel: currentUser?.studio_id, 
+    dataLevel: currentUser?.data?.studio_id, 
+    nestedLevel: currentUser?.data?.data?.studio_id,
+    resolved: studioId 
+  });
 
   // Find the teacher record that matches this user's email (case-insensitive)
   // If user has no studio_id, we search ALL teachers to find a match and auto-assign
