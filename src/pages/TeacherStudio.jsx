@@ -1012,10 +1012,10 @@ export default function TeacherStudio() {
                   onClose={() => setIsSubRequestOpen(false)}
                   classes={classes.filter(c => {
                     if (!c.teacher) return true;
-                    if (!currentTeacherName) return false;
-                    return c.teacher.trim().toLowerCase() === currentTeacherName.trim().toLowerCase();
+                    if (!teacherName) return false;
+                    return c.teacher.trim().toLowerCase() === teacherName.trim().toLowerCase();
                   })}
-                  teacherName={currentTeacherName}
+                  teacherName={teacherName}
                 />
               )}
 
