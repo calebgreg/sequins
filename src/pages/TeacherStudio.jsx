@@ -249,16 +249,28 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
     filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
   };
 
-  // Initialize attendance
+  // Fetch existing attendance for this class/date
+  const { data: existingAttendance = [] } = useQuery({
+    queryKey: ['attendance', classData?.id, selectedDate],
+    queryFn: () => base44.entities.Attendance.filter({ 
+      class_id: classData.id, 
+      date: selectedDate 
+    }),
+    enabled: !!classData?.id && !!selectedDate,
+  });
+
+  // Initialize attendance - use existing records if available
   useEffect(() => {
     if (classData?.student_names) {
       const initial = {};
       classData.student_names.forEach(name => {
-        initial[name] = 'present';
+        // Check if we have a saved record for this student
+        const existingRecord = existingAttendance.find(a => a.student_name === name);
+        initial[name] = existingRecord?.status || 'present';
       });
       setAttendance(initial);
     }
-  }, [classData]);
+  }, [classData, existingAttendance]);
 
   // Check if class ends while viewing - use localStorage to ensure it only shows ONCE ever per class/date
   useEffect(() => {
