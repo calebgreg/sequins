@@ -618,7 +618,16 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
 
 
 
-  // Class Dashboard View (default mode)
+  // Class Dashboard View (default mode) - 6 card grid layout
+  const gridCards = [
+    { id: 'attendance', label: 'ATTENDANCE', icon: CheckCircle2, mode: 'attendance' },
+    { id: 'roster', label: 'ROSTER', icon: Users, mode: 'roster' },
+    { id: 'lesson', label: 'LESSON PLAN', icon: FileText, mode: 'lesson_plan' },
+    { id: 'music', label: 'MUSIC', icon: Music, mode: 'music' },
+    { id: 'notes', label: 'NOTES', icon: Mic, mode: 'notes' },
+    { id: 'sub', label: 'REQUEST SUB', icon: CalendarX, action: () => setIsSubRequestOpen(true) },
+  ];
+
   return (
     <div 
       className="flex flex-col min-h-screen relative overflow-hidden"
@@ -627,160 +636,71 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
         background: '#ffffff',
       }}
     >
-      <div 
-        className="fixed top-[-20%] right-[-10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
-      />
-      <div 
-        className="fixed bottom-[-30%] left-[-15%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
-      />
-
-      {/* Header */}
-      <div className="relative px-4 md:px-8 py-6 md:py-8 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-          <button 
-            onClick={onBack} 
-            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
-            style={{
-              background: 'rgba(255,255,255,0.6)',
-              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
-              color: '#b5a599',
-            }}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div className="min-w-0">
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight truncate" style={etchedText}>
-              {classData.title}
-            </h2>
-            <p className="text-xs md:text-sm" style={{ color: '#b5a599' }}>
-              {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} · {Math.round((classData.duration || 1) * 60)} min
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2 md:gap-3 flex-shrink-0">
-          <button 
-            onClick={() => setIsSubRequestOpen(true)}
-            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
-            style={{
-              background: 'rgba(255,255,255,0.6)',
-              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
-              color: '#b5a599',
-            }}
-          >
-            <CalendarX className="w-5 h-5" />
-          </button>
-        </div>
+      {/* Header with back button */}
+      <div className="relative px-4 md:px-8 py-4 flex items-center gap-3">
+        <button 
+          onClick={onBack} 
+          className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
+          style={{
+            background: 'rgba(255,255,255,0.6)',
+            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+            color: '#b5a599',
+          }}
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
       </div>
 
-      {/* Action Cards */}
-      <div className="relative flex-1 px-4 md:px-8 pb-8">
-        <div className="max-w-2xl mx-auto space-y-4">
-          {/* Attendance Card */}
-          <button
-            onClick={() => setMode('attendance')}
-            className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left"
-            style={cardStyle}
-          >
-            <div 
-              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'linear-gradient(145deg, rgba(126,184,154,0.2) 0%, rgba(126,184,154,0.1) 100%)' }}
+      {/* Main Card Container */}
+      <div className="flex-1 px-4 md:px-8 pb-8">
+        <div 
+          className="rounded-3xl p-6 md:p-10 max-w-3xl mx-auto"
+          style={{
+            background: 'linear-gradient(145deg, rgba(254,240,240,0.95) 0%, rgba(252,235,235,0.9) 50%, rgba(250,242,240,0.85) 100%)',
+            boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
+          }}
+        >
+          {/* Class Info Header */}
+          <div className="text-center mb-8">
+            <p className="text-sm mb-2" style={{ color: '#b5a599' }}>
+              {format(new Date().setHours(Math.floor(classData.start_time), (classData.start_time % 1) * 60), 'h:mm a')} · {Math.round((classData.duration || 1) * 60)} min
+            </p>
+            <h1 
+              className="text-3xl md:text-4xl font-bold tracking-tight"
+              style={etchedText}
             >
-              <CheckCircle2 className="w-6 h-6" style={{ color: '#7eb89a' }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold" style={{ color: '#8b7d72' }}>Take Attendance</h3>
-              <p className="text-sm" style={{ color: '#b5a599' }}>{classData.student_names?.length || 0} students enrolled</p>
-            </div>
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+              {classData.title}
+            </h1>
+            <p className="text-sm mt-2" style={{ color: '#b5a599' }}>
+              {classData.student_names?.length || 0} students enrolled
+            </p>
+          </div>
 
-          {/* Roster Card */}
-          <button
-            onClick={() => setMode('roster')}
-            className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left"
-            style={cardStyle}
-          >
-            <div 
-              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'linear-gradient(145deg, rgba(180,160,190,0.2) 0%, rgba(160,140,170,0.15) 100%)' }}
-            >
-              <Users className="w-6 h-6" style={{ color: '#9a8aad' }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold" style={{ color: '#8b7d72' }}>View Roster</h3>
-              <p className="text-sm" style={{ color: '#b5a599' }}>Student profiles & history</p>
-            </div>
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Lesson Plan Card */}
-          <button
-            onClick={() => setMode('lesson_plan')}
-            className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left"
-            style={cardStyle}
-          >
-            <div 
-              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'linear-gradient(145deg, rgba(212,165,116,0.2) 0%, rgba(212,165,116,0.1) 100%)' }}
-            >
-              <FileText className="w-6 h-6" style={{ color: '#d4a574' }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold" style={{ color: '#8b7d72' }}>Lesson Plan</h3>
-              <p className="text-sm" style={{ color: '#b5a599' }}>Plan & organize your class</p>
-            </div>
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Music Card */}
-          <button
-            onClick={() => setMode('music')}
-            className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left"
-            style={cardStyle}
-          >
-            <div 
-              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'linear-gradient(145deg, rgba(244,180,180,0.2) 0%, rgba(232,160,160,0.15) 100%)' }}
-            >
-              <Music className="w-6 h-6" style={{ color: '#d4a0a0' }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold" style={{ color: '#8b7d72' }}>Music</h3>
-              <p className="text-sm" style={{ color: '#b5a599' }}>Class playlist & tracks</p>
-            </div>
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Notes Card */}
-          <button
-            onClick={() => setMode('notes')}
-            className="w-full rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left"
-            style={cardStyle}
-          >
-            <div 
-              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(164,139,196,0.1) 100%)' }}
-            >
-              <Mic className="w-6 h-6" style={{ color: '#a48bc4' }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold" style={{ color: '#8b7d72' }}>Class Notes</h3>
-              <p className="text-sm" style={{ color: '#b5a599' }}>Voice or text notes</p>
-            </div>
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#d4c4ba' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          {/* 6 Card Grid */}
+          <div className="grid grid-cols-3 gap-3 md:gap-4">
+            {gridCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <button
+                  key={card.id}
+                  onClick={() => card.action ? card.action() : setMode(card.mode)}
+                  className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-95 hover:scale-[1.02]"
+                  style={{
+                    background: 'rgba(255,255,255,0.85)',
+                    boxShadow: '0 4px 16px -4px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,1)',
+                  }}
+                >
+                  <Icon className="w-6 h-6 md:w-7 md:h-7" style={{ color: '#c4a0a0' }} />
+                  <span 
+                    className="text-[10px] md:text-xs font-semibold tracking-wider"
+                    style={{ color: '#a89890' }}
+                  >
+                    {card.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
