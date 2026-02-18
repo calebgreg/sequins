@@ -113,8 +113,17 @@ export default function StudentNotePrompt({
           recentNotes,
         });
 
+        // Get studio_id from prop, or fall back to student's studio_id, or classData's studio_id
+        const resolvedStudioId = studioId || currentStudent?.studio_id || classData?.studio_id;
+        
+        if (!resolvedStudioId) {
+          console.error('Missing studio_id for note:', { studioId, studentStudioId: currentStudent?.studio_id, classStudioId: classData?.studio_id });
+          toast.error('Unable to save note - missing studio ID');
+          return;
+        }
+
         const noteData = {
-          studio_id: studioId,
+          studio_id: resolvedStudioId,
           student_name: currentStudent.name,
           class_name: classData.title,
           teacher_name: teacherName,
