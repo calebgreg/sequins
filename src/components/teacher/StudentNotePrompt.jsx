@@ -113,13 +113,6 @@ export default function StudentNotePrompt({
           recentNotes,
         });
 
-        // studio_id MUST come from the prop - no fallbacks, fail hard if missing
-        if (!studioId) {
-          console.error('CRITICAL: studio_id prop is missing!', { studioId });
-          toast.error('Unable to save note - studio not identified. Please refresh and try again.');
-          return;
-        }
-
         const noteData = {
           studio_id: studioId,
           student_name: currentStudent.name,
