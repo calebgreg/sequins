@@ -797,8 +797,8 @@ export default function TeacherStudio() {
     retry: false
   });
 
-  // studioId comes directly from the User record (handle nested data edge case)
-  const studioId = currentUser?.studio_id || currentUser?.data?.studio_id;
+  // studioId comes directly from the User record
+  const studioId = currentUser?.studio_id || currentUser?.data?.studio_id || currentUser?.data?.data?.studio_id;
   const currentTeacherName = currentUser?.full_name;
 
   // Fetch all studio data - only runs when studioId is available
