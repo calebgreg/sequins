@@ -103,22 +103,14 @@ function GrowthContent() {
       {/* Header */}
       <div className="relative px-6 md:px-10 pt-10 mb-2">
         <div 
-          className="text-[13px] font-medium mb-2"
-          style={{ color: '#C8B8B4', letterSpacing: '0.3px' }}
+          className="text-sm font-medium mb-1"
+          style={{ color: '#b5a599' }}
         >
-          Dashboard / Growth
+          February 2026
         </div>
         <h1 
-          className="text-4xl md:text-[42px] font-semibold italic m-0"
-          style={{
-            color: 'transparent',
-            backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
-            filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
-            letterSpacing: '-1px',
-          }}
+          className="text-3xl md:text-4xl font-bold m-0"
+          style={{ color: '#333333' }}
         >
           Growth Engine
         </h1>
