@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Check, AlertCircle, Clock, ChevronRight, Circle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import AdminOnly from '@/components/layout/AdminOnly';
+import { format, subDays, startOfWeek, startOfMonth } from 'date-fns';
 
-// Etched text style - matching TeacherStudio
 const etchedText = {
   color: 'transparent',
   backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
@@ -16,10 +17,17 @@ const etchedText = {
   filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
 };
 
-function GrowthContent() {
-  const queryClient = useQueryClient();
-  const [currentIndex, setCurrentIndex] = useState(0);
+const AGENTS = [
+  { id: 'connector', name: 'Connector', mission: 'Build partnerships', icon: '🤝' },
+  { id: 'attender', name: 'Attender', mission: 'Find events', icon: '📍' },
+  { id: 'accessor', name: 'Accessor', mission: 'Get into groups', icon: '🚪' },
+  { id: 'offerer', name: 'Offerer', mission: 'Invite new families', icon: '💌' },
+  { id: 'converter', name: 'Converter', mission: 'Convert trials', icon: '✨' },
+  { id: 'retainer', name: 'Retainer', mission: 'Keep families engaged', icon: '💜' },
+  { id: 'referrer', name: 'Referrer', mission: 'Generate referrals', icon: '🔄' },
+];
 
+function GrowthContent() {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -27,50 +35,73 @@ function GrowthContent() {
 
   const studioId = currentUser?.studio_id;
 
-  // Fetch pending actions
-  const { data: actions = [], refetch } = useQuery({
-    queryKey: ['growthActions', studioId],
-    queryFn: () => base44.entities.GrowthAction.filter({ studio_id: studioId, status: 'pending_review' }, '-created_date'),
+  // Fetch outcomes (goals)
+  const { data: outcomes = [] } = useQuery({
+    queryKey: ['growthOutcomes'],
+    queryFn: () => base44.entities.GrowthOutcome.list(),
+  });
+
+  // Fetch recent agent logs
+  const { data: logs = [] } = useQuery({
+    queryKey: ['agentLogs', studioId],
+    queryFn: () => base44.entities.AgentLog.filter({ studio_id: studioId }, '-created_date', 50),
     enabled: !!studioId,
   });
 
-  const currentAction = actions[currentIndex];
-  const hasActions = actions.length > 0;
+  // Fetch pending actions
+  const { data: pendingActions = [] } = useQuery({
+    queryKey: ['pendingActions', studioId],
+    queryFn: () => base44.entities.GrowthAction.filter({ studio_id: studioId, status: 'pending_review' }),
+    enabled: !!studioId,
+  });
 
-  const handleApprove = async () => {
-    if (!currentAction) return;
-    await base44.entities.GrowthAction.update(currentAction.id, {
-      status: 'approved',
-      approved_at: new Date().toISOString(),
-    });
-    toast.success('Approved');
-    if (currentIndex >= actions.length - 1) {
-      setCurrentIndex(Math.max(0, actions.length - 2));
+  // Build agent status from real data
+  const buildAgentStatus = (agentId) => {
+    const agentOutcomes = outcomes.filter(o => o.agent === agentId && o.is_active);
+    const agentLogs = logs.filter(l => l.agent === agentId);
+    const agentPending = pendingActions.filter(a => a.agent === agentId);
+    const lastLog = agentLogs[0];
+    
+    // Check if there are targets set
+    const hasTargets = agentOutcomes.length > 0;
+    
+    // Check if agent has run recently
+    const lastRun = lastLog?.created_date ? new Date(lastLog.created_date) : null;
+    const hoursSinceRun = lastRun ? (Date.now() - lastRun.getTime()) / (1000 * 60 * 60) : null;
+    
+    // Determine status
+    let status = 'not_configured';
+    let statusColor = '#c4b5ab';
+    
+    if (!hasTargets) {
+      status = 'no_targets';
+      statusColor = '#c4b5ab';
+    } else if (!lastRun) {
+      status = 'never_run';
+      statusColor = '#d4a574';
+    } else if (hoursSinceRun > 48) {
+      status = 'stale';
+      statusColor = '#d4a574';
+    } else {
+      status = 'active';
+      statusColor = '#7eb89a';
     }
-    refetch();
+    
+    return {
+      outcomes: agentOutcomes,
+      lastLog,
+      lastRun,
+      hoursSinceRun,
+      pendingCount: agentPending.length,
+      status,
+      statusColor,
+      hasTargets,
+    };
   };
 
-  const handleSkip = async () => {
-    if (!currentAction) return;
-    await base44.entities.GrowthAction.update(currentAction.id, { status: 'dismissed' });
-    toast.success('Skipped');
-    if (currentIndex >= actions.length - 1) {
-      setCurrentIndex(Math.max(0, actions.length - 2));
-    }
-    refetch();
-  };
-
-  const goNext = () => {
-    if (currentIndex < actions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
-
-  const goPrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
+  const totalPending = pendingActions.length;
+  const activeAgents = AGENTS.filter(a => buildAgentStatus(a.id).status === 'active').length;
+  const needsAttention = AGENTS.filter(a => ['no_targets', 'never_run', 'stale'].includes(buildAgentStatus(a.id).status)).length;
 
   return (
     <div 
@@ -80,7 +111,7 @@ function GrowthContent() {
         background: '#ffffff',
       }}
     >
-      {/* Ambient background shapes */}
+      {/* Ambient background */}
       <div 
         className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
         style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
@@ -90,199 +121,179 @@ function GrowthContent() {
         style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
       />
 
-      <div className="relative max-w-2xl mx-auto p-6 md:p-10 pt-10 md:pt-16">
+      <div className="relative max-w-4xl mx-auto p-6 md:p-10 pt-10 md:pt-16">
         
         {/* Header */}
-        <div className="text-center mb-8">
-          <p className="text-sm mb-2" style={{ color: '#b5a599' }}>growth engine</p>
-          <h1 
-            className="text-3xl md:text-4xl font-bold tracking-tight"
-            style={etchedText}
-          >
-            {hasActions ? `${actions.length} to review` : 'All caught up'}
+        <div className="mb-10">
+          <p className="text-sm mb-2" style={{ color: '#b5a599' }}>mission control</p>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight" style={etchedText}>
+            Growth Engine
           </h1>
         </div>
 
-        {/* Main Card */}
+        {/* Status Summary */}
         <div 
-          className="rounded-3xl p-6 md:p-8"
-          style={{
-            background: 'linear-gradient(145deg, rgba(254,240,240,0.95) 0%, rgba(252,235,235,0.9) 50%, rgba(250,242,240,0.85) 100%)',
-            boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
+          className="rounded-2xl p-5 mb-8 flex flex-wrap gap-6"
+          style={{ 
+            background: 'rgba(255,255,255,0.6)',
+            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
           }}
         >
-          {!hasActions ? (
-            <div className="text-center py-12">
-              <div 
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+          <div>
+            <div className="text-2xl font-bold" style={{ color: activeAgents > 0 ? '#7eb89a' : '#c4b5ab' }}>
+              {activeAgents}/7
+            </div>
+            <div className="text-xs" style={{ color: '#b5a599' }}>agents active</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold" style={{ color: totalPending > 0 ? '#5a4f47' : '#c4b5ab' }}>
+              {totalPending}
+            </div>
+            <div className="text-xs" style={{ color: '#b5a599' }}>awaiting review</div>
+          </div>
+          {needsAttention > 0 && (
+            <div>
+              <div className="text-2xl font-bold" style={{ color: '#d4a574' }}>
+                {needsAttention}
+              </div>
+              <div className="text-xs" style={{ color: '#b5a599' }}>need attention</div>
+            </div>
+          )}
+        </div>
+
+        {/* Agent Cards */}
+        <div className="space-y-4">
+          {AGENTS.map((agent, idx) => {
+            const status = buildAgentStatus(agent.id);
+            
+            return (
+              <motion.div
+                key={agent.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="rounded-2xl p-5"
                 style={{
-                  background: 'rgba(255,255,255,0.7)',
-                  boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+                  background: 'linear-gradient(145deg, rgba(254,248,248,0.95) 0%, rgba(252,245,245,0.9) 100%)',
+                  boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.8), 0 4px 16px -8px rgba(180,150,140,0.15)',
                 }}
               >
-                <Check className="w-7 h-7" style={{ color: '#7eb89a' }} />
-              </div>
-              <p className="text-base" style={{ color: '#8b7d72' }}>
-                No actions waiting for your review
-              </p>
-              <p className="text-sm mt-2" style={{ color: '#b5a599' }}>
-                The growth engine is working in the background
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Progress indicator */}
-              <div className="flex justify-center gap-1.5 mb-6">
-                {actions.map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="h-1.5 rounded-full transition-all"
+                <div className="flex items-start gap-4">
+                  {/* Icon */}
+                  <div 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
                     style={{
-                      width: idx === currentIndex ? '24px' : '8px',
-                      background: idx === currentIndex 
-                        ? 'linear-gradient(145deg, #c4a0a0 0%, #a08080 100%)'
-                        : idx < currentIndex 
-                          ? 'rgba(126,184,154,0.4)'
-                          : 'rgba(200,180,170,0.3)',
+                      background: 'rgba(255,255,255,0.8)',
+                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,1)',
                     }}
-                  />
-                ))}
-              </div>
-
-              {/* Action Card */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentAction?.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {/* Agent Badge */}
-                  <div className="flex items-center gap-2 mb-4">
-                    <span 
-                      className="text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-lg"
-                      style={{
-                        background: 'rgba(255,255,255,0.7)',
-                        color: '#a8998e',
-                      }}
-                    >
-                      {currentAction?.agent}
-                    </span>
-                    {currentAction?.priority === 'high' && (
+                  >
+                    {agent.icon}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold" style={{ color: '#5a4f47' }}>{agent.name}</h3>
                       <span 
-                        className="text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-lg"
-                        style={{
-                          background: 'rgba(212,165,116,0.15)',
-                          color: '#c9a574',
+                        className="w-2 h-2 rounded-full"
+                        style={{ background: status.statusColor }}
+                      />
+                    </div>
+                    
+                    {/* Status-specific message */}
+                    {status.status === 'no_targets' && (
+                      <p className="text-sm" style={{ color: '#b5a599' }}>
+                        No targets set. <span style={{ color: '#a8998e' }}>Set goals to activate.</span>
+                      </p>
+                    )}
+                    
+                    {status.status === 'never_run' && (
+                      <p className="text-sm" style={{ color: '#d4a574' }}>
+                        Has targets but hasn't run yet.
+                      </p>
+                    )}
+                    
+                    {status.status === 'stale' && (
+                      <p className="text-sm" style={{ color: '#d4a574' }}>
+                        Hasn't run in {Math.round(status.hoursSinceRun)} hours.
+                      </p>
+                    )}
+                    
+                    {status.status === 'active' && (
+                      <div className="text-sm" style={{ color: '#7a6d62' }}>
+                        {status.lastLog?.summary || agent.mission}
+                      </div>
+                    )}
+                    
+                    {/* Pending actions badge */}
+                    {status.pendingCount > 0 && (
+                      <div className="mt-2 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg"
+                        style={{ 
+                          background: 'rgba(90,79,71,0.08)',
+                          color: '#5a4f47',
                         }}
                       >
-                        Priority
-                      </span>
+                        <Circle className="w-2 h-2 fill-current" />
+                        {status.pendingCount} waiting for review
+                      </div>
+                    )}
+                    
+                    {/* Targets */}
+                    {status.outcomes.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {status.outcomes.map(o => (
+                          <span 
+                            key={o.id}
+                            className="text-xs px-2.5 py-1 rounded-lg"
+                            style={{ 
+                              background: 'rgba(255,255,255,0.6)',
+                              color: '#a8998e',
+                            }}
+                          >
+                            {o.target_count}/{o.target_period}: {o.name}
+                          </span>
+                        ))}
+                      </div>
                     )}
                   </div>
-
-                  {/* Title */}
-                  <h2 className="text-xl md:text-2xl font-semibold mb-2" style={{ color: '#5a4f47' }}>
-                    {currentAction?.title}
-                  </h2>
-                  
-                  {currentAction?.target_name && (
-                    <p className="text-sm mb-4" style={{ color: '#b5a599' }}>
-                      {currentAction.target_name}
-                    </p>
-                  )}
-
-                  {/* Summary */}
-                  {currentAction?.summary && (
-                    <div 
-                      className="rounded-xl p-4 mb-5"
-                      style={{ background: 'rgba(255,255,255,0.5)' }}
-                    >
-                      <p className="text-sm leading-relaxed" style={{ color: '#7a6d62' }}>
-                        {currentAction.summary}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Draft Content */}
-                  {currentAction?.content && (
-                    <div className="mb-6">
-                      <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#b5a599' }}>
-                        Draft {currentAction.action_type === 'email' ? 'Email' : 'Message'}
-                      </div>
-                      {currentAction.subject && (
-                        <div className="text-sm font-medium mb-2" style={{ color: '#6b5d52' }}>
-                          Subject: {currentAction.subject}
-                        </div>
-                      )}
-                      <div 
-                        className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap max-h-[200px] overflow-y-auto"
-                        style={{ 
-                          background: 'rgba(255,255,255,0.7)',
-                          color: '#5a4f47',
-                          border: '1px solid rgba(200,180,170,0.15)',
-                        }}
-                      >
-                        {currentAction.content}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleApprove}
-                      className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold transition-all active:scale-[0.98]"
-                      style={{
-                        background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
-                        boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
-                        border: '1px solid rgba(255, 220, 210, 0.5)',
-                      }}
-                    >
-                      <span style={etchedText}>Approve</span>
-                    </button>
-                    <button
-                      onClick={handleSkip}
-                      className="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-medium transition-all active:scale-[0.98]"
-                      style={{
-                        background: 'rgba(255,255,255,0.6)',
-                        color: '#a8998e',
-                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
-                      }}
-                    >
-                      Skip
-                    </button>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Navigation */}
-              {actions.length > 1 && (
-                <div className="flex justify-between items-center mt-6 pt-4" style={{ borderTop: '1px solid rgba(200,180,170,0.15)' }}>
-                  <button
-                    onClick={goPrev}
-                    disabled={currentIndex === 0}
-                    className="flex items-center gap-1 text-sm font-medium transition-all disabled:opacity-30"
-                    style={{ color: '#a8998e' }}
-                  >
-                    <ChevronLeft size={18} /> Previous
-                  </button>
-                  <span className="text-xs" style={{ color: '#c4b5ab' }}>
-                    {currentIndex + 1} of {actions.length}
-                  </span>
-                  <button
-                    onClick={goNext}
-                    disabled={currentIndex === actions.length - 1}
-                    className="flex items-center gap-1 text-sm font-medium transition-all disabled:opacity-30"
-                    style={{ color: '#a8998e' }}
-                  >
-                    Next <ChevronRight size={18} />
-                  </button>
                 </div>
-              )}
-            </>
-          )}
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Review Queue Link */}
+        {totalPending > 0 && (
+          <Link 
+            to={createPageUrl('GrowthReview')}
+            className="block mt-8 rounded-2xl p-5 transition-all hover:scale-[1.01]"
+            style={{
+              background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+              boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), inset 0 1px 2px rgba(255,255,255,0.8)',
+              border: '1px solid rgba(255, 220, 210, 0.5)',
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-lg font-semibold" style={etchedText}>
+                  {totalPending} actions ready to review
+                </div>
+                <p className="text-sm mt-1" style={{ color: '#a8998e' }}>
+                  Your agents prepared these — just need your OK
+                </p>
+              </div>
+              <ChevronRight className="w-5 h-5" style={{ color: '#c4a0a0' }} />
+            </div>
+          </Link>
+        )}
+
+        {/* Debug Info */}
+        <div className="mt-12 p-4 rounded-xl text-xs" style={{ background: 'rgba(0,0,0,0.02)', color: '#b5a599' }}>
+          <div className="font-medium mb-2" style={{ color: '#8b7d72' }}>System Check</div>
+          <div>Studio ID: {studioId || 'Not found'}</div>
+          <div>Outcomes loaded: {outcomes.length}</div>
+          <div>Outcomes with studio_id: {outcomes.filter(o => o.studio_id).length}</div>
+          <div>Recent logs: {logs.length}</div>
         </div>
       </div>
     </div>
