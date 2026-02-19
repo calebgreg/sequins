@@ -165,20 +165,30 @@ function GrowthContent() {
           ))}
         </div>
 
-        {/* Sidebar - Progress */}
-        <div>
-          <div 
-            className="text-[11px] font-bold uppercase tracking-wider mb-4 mt-8 lg:mt-0"
-            style={{ color: '#C4A8A4', letterSpacing: '1.5px' }}
-          >
-            This week
-          </div>
+        {/* Sidebar - Progress grouped by category */}
+        <div className="space-y-6">
+          {categoryOrder.map(cat => {
+            const items = outcomesByCategory[cat];
+            if (!items || items.length === 0) return null;
+            
+            return (
+              <div key={cat}>
+                <div 
+                  className="text-[11px] font-bold uppercase tracking-wider mb-3 flex items-center gap-2"
+                  style={{ color: '#C4A8A4', letterSpacing: '1.5px' }}
+                >
+                  <span>{categoryIcons[cat]}</span>
+                  {categoryLabels[cat]}
+                </div>
+                
+                {items.map((mission) => (
+                  <MissionProgress key={mission.id} mission={mission} />
+                ))}
+              </div>
+            );
+          })}
           
-          {missions.length > 0 ? (
-            missions.map((mission, i) => (
-              <MissionProgress key={i} mission={mission} />
-            ))
-          ) : (
+          {Object.keys(outcomesByCategory).length === 0 && (
             <div 
               className="rounded-2xl py-5 px-6 text-sm"
               style={{
