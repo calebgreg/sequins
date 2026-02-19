@@ -20,10 +20,11 @@ function GrowthContent() {
     enabled: !!studioId,
   });
 
-  // Fetch outcomes for mission progress
+  // Fetch outcomes for mission progress - filter by studio
   const { data: outcomes = [] } = useQuery({
-    queryKey: ['growthOutcomes'],
-    queryFn: () => base44.entities.GrowthOutcome.list(),
+    queryKey: ['growthOutcomes', studioId],
+    queryFn: () => base44.entities.GrowthOutcome.filter({ studio_id: studioId }),
+    enabled: !!studioId,
   });
 
   // Fetch partners, leads, events for context
