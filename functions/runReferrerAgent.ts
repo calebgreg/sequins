@@ -2,9 +2,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
  * REFERRER AGENT
- * Outcomes:
- * - Send X referrals to partners per week
- * - Give X happy families a reason to share per week
+ * Outcome: Generate X referrals per month (outbound to partners, shareable moments)
+ * Does: Matches family needs to partner offerings, identifies shareable moments
+ * Two paths: Outbound Referrals (to partners) + Shareable Moments (generate word-of-mouth)
  */
 
 Deno.serve(async (req) => {
@@ -16,211 +16,301 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { studio_id, mode = 'analyze' } = await req.json();
+    const { studio_id, mode = 'match' } = await req.json();
     
     if (!studio_id) {
       return Response.json({ error: 'studio_id required' }, { status: 400 });
     }
 
-    const students = await base44.entities.Student.filter({ studio_id });
-    const families = await base44.entities.Family.filter({ studio_id });
-    const partners = await base44.entities.Partner.filter({ studio_id });
-    const referrals = await base44.entities.Referral.filter({ studio_id });
-    const notes = await base44.entities.StudentNote.filter({ studio_id });
-    const attendance = await base44.entities.Attendance.filter({ studio_id });
+    // =========================================
+    // STEP 1: Gather context
+    // =========================================
+    
+    const studios = await base44.entities.Studio.filter({ id: studio_id });
+    const studio = studios[0];
+    
+    if (!studio) {
+      return Response.json({ error: 'Studio not found' }, { status: 404 });
+    }
+    
+    const studioName = studio.name;
 
-    const outcomes = await base44.entities.GrowthOutcome.filter({ studio_id, agent: 'referrer' });
-    const sendToPartnersOutcome = outcomes.find(o => o.name.includes('Send') || o.name.includes('partner'));
-    const shareableOutcome = outcomes.find(o => o.name.includes('share') || o.name.includes('Shareable'));
+    // Get partners with referral data
+    const partners = await base44.entities.Partner.filter({ studio_id });
+    const activePartners = partners.filter(p => 
+      p.status === 'connected' || p.status === 'active_partner'
+    );
+
+    // Get families and students
+    const families = await base44.entities.Family.filter({ studio_id });
+    const students = await base44.entities.Student.filter({ studio_id, status: 'active' });
+
+    // Get recent notes for shareable moments
+    const studentNotes = await base44.entities.StudentNote.filter({ studio_id });
+    const recentNotes = studentNotes.filter(n => {
+      const noteDate = new Date(n.date || n.created_date);
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      return noteDate >= twoWeeksAgo;
+    });
+
+    // Get existing referrals
+    const referrals = await base44.entities.Referral.filter({ studio_id });
+
+    // Get outcome tracking
+    const outcomes = await base44.entities.GrowthOutcome.filter({ 
+      studio_id, 
+      agent: 'referrer' 
+    });
+    const referOutcome = outcomes.find(o => o.name?.toLowerCase().includes('refer'));
+    const monthlyTarget = referOutcome?.target_count || 4;
+
+    // Count this month's referrals
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    
+    const referralsThisMonth = referrals.filter(r => 
+      new Date(r.referral_date) >= monthStart
+    ).length;
 
     const results = {
       mode,
       studio_id,
-      partner_matches_found: 0,
-      shareable_moments_found: 0,
-      actions_created: 0
+      monthly_target: monthlyTarget,
+      current_progress: referralsThisMonth,
+      matches_found: 0,
+      moments_found: 0,
+      actions_created: 0,
+      errors: []
     };
 
-    // Calculate referral balance with each partner
-    const partnerBalances = {};
-    for (const partner of partners.filter(p => p.status === 'connected')) {
-      const sentToThem = referrals.filter(r => r.partner_id === partner.id && r.direction === 'sent').length;
-      const receivedFromThem = referrals.filter(r => r.partner_id === partner.id && r.direction === 'received').length;
-      partnerBalances[partner.id] = {
-        partner,
-        sent: sentToThem,
-        received: receivedFromThem,
-        needsBalancing: receivedFromThem > sentToThem + 2
-      };
-    }
+    // =========================================
+    // STEP 2: MATCH FAMILIES TO PARTNERS
+    // Find referral opportunities
+    // =========================================
+    
+    if (mode === 'match' || mode === 'full') {
+      console.log("Matching families to partner services...");
 
-    if (mode === 'partner_referrals' || mode === 'full') {
-      const partnersToRefer = Object.values(partnerBalances)
-        .filter(pb => pb.needsBalancing || pb.received > 0)
-        .sort((a, b) => b.received - a.received);
+      // Partners we "owe" referrals to (negative balance = they've sent us more)
+      const partnersOwed = activePartners
+        .filter(p => (p.referral_balance || 0) < 0)
+        .sort((a, b) => (a.referral_balance || 0) - (b.referral_balance || 0));
 
-      for (const { partner } of partnersToRefer.slice(0, 3)) {
-        const prompt = `Find opportunities to refer dance studio families to a partner business.
+      for (const partner of partnersOwed.slice(0, 3)) {
+        try {
+          // Find families who might need this partner's services
+          const matchPrompt = `Match families to this partner's services:
 
-Partner: ${partner.name}
-Type: ${partner.type}
+PARTNER:
+- Name: ${partner.name}
+- Type: ${partner.category}
+- Services: ${partner.category === 'pediatrician' ? 'pediatric healthcare' : 
+             partner.category === 'salon' ? 'hair styling, kids haircuts' :
+             partner.category === 'gym' ? 'fitness, family activities' :
+             partner.category === 'daycare' ? 'childcare, preschool' :
+             'family services'}
 
-Think about what situations would make a dance family need this type of service.
-Generate a strategy for identifying and making referrals.
+FAMILIES (sample):
+${families.slice(0, 10).map(f => {
+  const familyStudents = students.filter(s => s.parent_email === f.parent_email);
+  return `- ${f.parent_name}: ${familyStudents.map(s => `${s.name} (${s.age || '?'})`).join(', ')}`;
+}).join('\n')}
+
+Which families might genuinely benefit from this partner's services?
+Consider: age of children, likely needs, good fit.
 
 Return JSON: {
-  "referral_opportunities": [
+  "recommended_families": [
     {
-      "situation": "when a family would need this",
-      "referral_script": "what to say when referring"
+      "parent_name": "name",
+      "reason": "why this family would benefit",
+      "talking_point": "what to say when recommending"
     }
-  ],
-  "proactive_mention": "how to naturally mention this partner to families"
+  ]
 }`;
 
-        const llmResponse = await base44.integrations.Core.InvokeLLM({
-          prompt,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              referral_opportunities: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    situation: { type: "string" },
-                    referral_script: { type: "string" }
+          const matches = await base44.integrations.Core.InvokeLLM({
+            prompt: matchPrompt,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                recommended_families: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      parent_name: { type: "string" },
+                      reason: { type: "string" },
+                      talking_point: { type: "string" }
+                    }
                   }
                 }
-              },
-              proactive_mention: { type: "string" }
+              }
             }
-          }
-        });
-
-        await base44.asServiceRole.entities.GrowthAction.create({
-          studio_id,
-          outcome_id: sendToPartnersOutcome?.id,
-          agent: 'referrer',
-          action_type: 'task',
-          status: 'pending_review',
-          priority: partnerBalances[partner.id]?.needsBalancing ? 'high' : 'medium',
-          target_type: 'partner',
-          target_id: partner.id,
-          target_name: partner.name,
-          title: `Send referrals to ${partner.name}`,
-          summary: `Balance: sent ${partnerBalances[partner.id]?.sent || 0}, received ${partnerBalances[partner.id]?.received || 0}`,
-          content: llmResponse.proactive_mention,
-          context: {
-            referral_opportunities: llmResponse.referral_opportunities,
-            outcome_type: 'partner_referral'
-          }
-        });
-
-        results.partner_matches_found++;
-        results.actions_created++;
-      }
-    }
-
-    if (mode === 'shareable_moments' || mode === 'full') {
-      const happyFamilies = [];
-      const activeStudents = students.filter(s => s.status === 'active');
-
-      for (const student of activeStudents) {
-        const studentAttendance = attendance.filter(a => a.student_name === student.name);
-        const last30 = studentAttendance.filter(a => {
-          const d = new Date(a.date);
-          const ago = new Date();
-          ago.setDate(ago.getDate() - 30);
-          return d >= ago;
-        });
-        const attendanceRate = last30.length > 0 
-          ? (last30.filter(a => a.status === 'present').length / last30.length) * 100 
-          : 0;
-
-        const positiveNotes = notes
-          .filter(n => n.student_name === student.name && n.sentiment === 'positive')
-          .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        const recentWin = positiveNotes.find(n => {
-          const d = new Date(n.date);
-          const weekAgo = new Date();
-          weekAgo.setDate(weekAgo.getDate() - 14);
-          return d >= weekAgo;
-        });
-
-        if (attendanceRate >= 80 && recentWin) {
-          happyFamilies.push({
-            student,
-            recentWin: recentWin.content,
-            family: families.find(f => f.parent_email === student.parent_email)
           });
+
+          for (const match of matches.recommended_families?.slice(0, 2) || []) {
+            const family = families.find(f => 
+              f.parent_name?.toLowerCase().includes(match.parent_name?.toLowerCase())
+            );
+            if (!family) continue;
+
+            results.matches_found++;
+
+            // Check for existing referral action
+            const existingActions = await base44.entities.GrowthAction.filter({
+              studio_id,
+              agent: 'referrer',
+              target_id: family.id,
+              status: 'pending_review'
+            });
+            
+            if (existingActions.length > 0) continue;
+
+            await base44.asServiceRole.entities.GrowthAction.create({
+              studio_id,
+              outcome_id: referOutcome?.id,
+              agent: 'referrer',
+              action_type: 'referral_out',
+              status: 'pending_review',
+              priority: 'medium',
+              target_type: 'family',
+              target_id: family.id,
+              target_name: family.parent_name,
+              title: `Refer ${family.parent_name} to ${partner.name}`,
+              summary: match.reason,
+              content: match.talking_point,
+              context: {
+                action_subtype: 'outbound_referral',
+                partner_id: partner.id,
+                partner_name: partner.name,
+                partner_type: partner.category,
+                referral_balance: partner.referral_balance,
+                talking_point: match.talking_point
+              }
+            });
+
+            results.actions_created++;
+          }
+        } catch (err) {
+          console.error(`Error matching for ${partner.name}:`, err.message);
+          results.errors.push(`Match ${partner.name}: ${err.message}`);
         }
       }
+    }
 
-      for (const data of happyFamilies.slice(0, 5)) {
-        const { student, recentWin, family } = data;
+    // =========================================
+    // STEP 3: IDENTIFY SHAREABLE MOMENTS
+    // Find content worth sharing (generates word-of-mouth)
+    // =========================================
+    
+    if (mode === 'moments' || mode === 'full') {
+      console.log("Finding shareable moments...");
 
-        const prompt = `Create a shareable moment for a happy dance family.
+      // Find exceptional notes worth celebrating publicly
+      const shareableNotes = recentNotes.filter(n => 
+        n.sentiment === 'positive' &&
+        (n.content?.length > 30) && // Substantive note
+        (n.content?.toLowerCase().includes('first') ||
+         n.content?.toLowerCase().includes('amazing') ||
+         n.content?.toLowerCase().includes('breakthrough') ||
+         n.content?.toLowerCase().includes('nailed') ||
+         n.content?.toLowerCase().includes('beautiful'))
+      );
 
-Student: ${student.name}, age ${student.age || 'unknown'}
-Recent win: ${recentWin}
+      for (const note of shareableNotes.slice(0, 3)) {
+        const student = students.find(s => s.name === note.student_name);
+        if (!student) continue;
 
-Create a message that celebrates their progress, includes something shareable, and subtly encourages them to share or refer friends.
-Keep it under 80 words.
+        results.moments_found++;
+
+        // Check for existing shareable moment action
+        const existingActions = await base44.entities.GrowthAction.filter({
+          studio_id,
+          agent: 'referrer',
+          target_id: note.id,
+          status: 'pending_review'
+        });
+        
+        if (existingActions.length > 0) continue;
+
+        try {
+          const momentPrompt = `Create a shareable moment from this dance achievement:
+
+STUDENT: ${student.name} (first name only for privacy)
+ACHIEVEMENT: "${note.content}"
+CLASS: ${note.class_name || 'dance class'}
+TEACHER: ${note.teacher_name || 'their teacher'}
+
+Create:
+1. A parent-friendly message celebrating this moment
+2. Suggest how they can share (social media, tell friends)
+3. A subtle ask for referrals
 
 Return JSON: {
-  "subject": "email subject",
-  "message": "the message",
-  "shareable_hook": "the thing they might share",
-  "call_to_action": "what you want them to do"
+  "celebration_message": "message to the parent (under 80 words)",
+  "share_suggestion": "how they might share this",
+  "referral_nudge": "gentle referral ask",
+  "social_caption": "optional caption if they want to post"
 }`;
 
-        const llmResponse = await base44.integrations.Core.InvokeLLM({
-          prompt,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              subject: { type: "string" },
-              message: { type: "string" },
-              shareable_hook: { type: "string" },
-              call_to_action: { type: "string" }
+          const moment = await base44.integrations.Core.InvokeLLM({
+            prompt: momentPrompt,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                celebration_message: { type: "string" },
+                share_suggestion: { type: "string" },
+                referral_nudge: { type: "string" },
+                social_caption: { type: "string" }
+              }
             }
-          }
-        });
+          });
 
-        await base44.asServiceRole.entities.GrowthAction.create({
-          studio_id,
-          outcome_id: shareableOutcome?.id,
-          agent: 'referrer',
-          action_type: 'email',
-          status: 'pending_review',
-          priority: 'medium',
-          target_type: 'family',
-          target_id: family?.id || student.id,
-          target_name: student.name,
-          target_email: student.parent_email,
-          title: `Give ${family?.parent_name || 'family'} a reason to share`,
-          summary: llmResponse.shareable_hook,
-          subject: llmResponse.subject,
-          content: llmResponse.message,
-          context: {
-            recent_win: recentWin,
-            call_to_action: llmResponse.call_to_action,
-            outcome_type: 'shareable_moment'
-          }
-        });
+          await base44.asServiceRole.entities.GrowthAction.create({
+            studio_id,
+            outcome_id: referOutcome?.id,
+            agent: 'referrer',
+            action_type: 'shareable_moment',
+            status: 'pending_review',
+            priority: 'low',
+            target_type: 'note',
+            target_id: note.id,
+            target_name: student.name,
+            target_email: student.parent_email,
+            title: `Share ${student.name}'s moment`,
+            summary: note.content?.slice(0, 100),
+            content: moment.celebration_message,
+            context: {
+              action_subtype: 'shareable_moment',
+              student_id: student.id,
+              student_name: student.name,
+              note_content: note.content,
+              share_suggestion: moment.share_suggestion,
+              referral_nudge: moment.referral_nudge,
+              social_caption: moment.social_caption
+            }
+          });
 
-        results.shareable_moments_found++;
-        results.actions_created++;
+          results.actions_created++;
+        } catch (err) {
+          console.error(`Error creating moment for ${student.name}:`, err.message);
+          results.errors.push(`Moment ${student.name}: ${err.message}`);
+        }
       }
     }
 
+    // =========================================
+    // STEP 4: Log activity
+    // =========================================
+    
     await base44.asServiceRole.entities.AgentLog.create({
       studio_id,
       agent: 'referrer',
-      event_type: 'draft',
-      summary: `Found ${results.partner_matches_found} partner opportunities, ${results.shareable_moments_found} shareable moments, created ${results.actions_created} actions`,
+      outcome_id: referOutcome?.id,
+      event_type: 'action',
+      summary: `Found ${results.matches_found} referral matches, ${results.moments_found} shareable moments, created ${results.actions_created} actions`,
       details: results
     });
 
