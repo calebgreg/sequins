@@ -1,532 +1,346 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { Sparkles, Check, X, ChevronRight, Play, Zap, Users, Calendar, Gift, Heart, Share2, RefreshCw } from 'lucide-react';
 import AdminOnly from '@/components/layout/AdminOnly';
 
-// Design tokens matching the Billing page aesthetic
+// Design tokens
 const colors = {
   ink: '#1a1a1a',
   paper: '#faf9f7',
-  warm: '#f5f3ef',
   muted: '#8a8478',
-  border: '#e8e6e1',
-  frost: '#fef7f7',
-  frostShadow: 'rgba(180, 120, 120, 0.08)',
-  frostDeep: 'rgba(180, 120, 120, 0.05)',
   etchLight: '#c4a0a0',
   etchDark: '#8a7070',
 };
 
-// Category colors
-const categoryColors = {
-  acquisition: { bg: 'rgba(196, 169, 140, 0.15)', accent: '#8B7355', light: '#C4A98C' },
-  conversion: { bg: 'rgba(140, 169, 196, 0.15)', accent: '#456577', light: '#8CA9C4' },
-  retention: { bg: 'rgba(169, 196, 140, 0.15)', accent: '#577745', light: '#A9C48C' },
-  referral: { bg: 'rgba(196, 140, 169, 0.15)', accent: '#774565', light: '#C48CA9' },
+// Agent metadata
+const agentMeta = {
+  connector: { icon: Users, label: 'Connector', color: '#8B7355' },
+  attender: { icon: Calendar, label: 'Attender', color: '#456577' },
+  accessor: { icon: Zap, label: 'Accessor', color: '#5A4577' },
+  offerer: { icon: Gift, label: 'Offerer', color: '#776545' },
+  converter: { icon: Sparkles, label: 'Converter', color: '#456577' },
+  retainer: { icon: Heart, label: 'Retainer', color: '#577745' },
+  referrer: { icon: Share2, label: 'Referrer', color: '#774565' },
 };
 
-// Etched text component for large numbers
-const EtchedText = ({ children, size = 'md', className = '' }) => {
-  const sizes = {
-    sm: { fontSize: '14px' },
-    md: { fontSize: '18px' },
-    lg: { fontSize: '24px' },
-    xl: { fontSize: '32px' },
-    '2xl': { fontSize: '48px' },
-  };
-  
+// Etched text style
+const etchedStyle = {
+  fontWeight: '700',
+  letterSpacing: '-0.02em',
+  color: 'transparent',
+  backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+  filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+};
+
+// Hero Stats Card
+function HeroCard({ totalOutcomes, onTrackCount, pendingActions, behindCount }) {
   return (
-    <span
-      className={className}
+    <div
       style={{
-        ...sizes[size],
-        fontWeight: '700',
-        letterSpacing: '-0.02em',
-        color: 'transparent',
-        backgroundImage: `linear-gradient(180deg, ${colors.etchLight} 0%, ${colors.etchDark} 100%)`,
-        backgroundClip: 'text',
-        WebkitBackgroundClip: 'text',
-        textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
-        filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+        padding: '32px',
+        borderRadius: '24px',
+        marginBottom: '24px',
+        background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
+        backdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255, 200, 200, 0.3)',
+        boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
       }}
     >
-      {children}
-    </span>
-  );
-};
-
-// Agent badge colors
-const agentColors = {
-  connector: { bg: 'rgba(196, 169, 140, 0.3)', text: '#7A6545' },
-  attender: { bg: 'rgba(140, 180, 196, 0.3)', text: '#456577' },
-  accessor: { bg: 'rgba(180, 169, 196, 0.3)', text: '#5A4577' },
-  offerer: { bg: 'rgba(196, 180, 140, 0.3)', text: '#776545' },
-  converter: { bg: 'rgba(140, 169, 196, 0.3)', text: '#456577' },
-  retainer: { bg: 'rgba(169, 196, 140, 0.3)', text: '#577745' },
-  referrer: { bg: 'rgba(196, 140, 169, 0.3)', text: '#774565' },
-};
-
-// Progress Mini Card
-function ProgressMini({ label, actual, target, status }) {
-  const percent = Math.min((actual / target) * 100, 100);
-  const fillColor = status === 'ahead' ? '#7eb89a' : status === 'behind' ? colors.etchLight : colors.etchDark;
-  
-  return (
-    <div style={{ marginBottom: '14px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-        <span style={{ fontSize: '13px', color: colors.muted }}>{label}</span>
-        <span style={{ fontSize: '14px', fontWeight: '600', color: status === 'behind' ? colors.etchLight : colors.ink }}>
-          {actual}/{target}
-        </span>
-      </div>
-      <div style={{ height: '4px', background: 'rgba(200, 180, 170, 0.15)', borderRadius: '2px', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${percent}%`, background: fillColor, borderRadius: '2px', transition: 'width 0.3s' }} />
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ fontSize: '14px', color: colors.muted, marginBottom: '8px' }}>
+          {totalOutcomes} outcomes tracked
+        </p>
+        <div style={{ ...etchedStyle, fontSize: '48px' }}>
+          {onTrackCount} on track
+        </div>
+        
+        {/* Sub-stats */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: '12px', 
+          marginTop: '24px',
+          flexWrap: 'wrap',
+        }}>
+          <StatCard value={pendingActions} label="PENDING ACTIONS" />
+          <StatCard value={onTrackCount} label="ON TRACK" />
+          <StatCard value={behindCount} label="NEED FOCUS" highlight={behindCount > 0} />
+        </div>
       </div>
     </div>
   );
 }
 
-// Unified Outcomes Card with Tabs
-function OutcomesCard({ acquisitionData, conversionData, retentionData, referralData }) {
-  const [activeTab, setActiveTab] = useState('acquisition');
-  
-  const tabs = [
-    { key: 'acquisition', label: 'Acquisition', data: acquisitionData },
-    { key: 'conversion', label: 'Conversion', data: conversionData },
-    { key: 'retention', label: 'Retention', data: retentionData },
-    { key: 'referral', label: 'Referral', data: referralData },
-  ].filter(t => Object.keys(t.data).length > 0);
-
-  const activeData = tabs.find(t => t.key === activeTab)?.data || {};
-  
-  // Calculate stats per category
-  const getStats = (data) => {
-    const outcomes = Object.values(data);
-    const total = outcomes.length;
-    const onTrack = outcomes.filter(o => o.status === 'ahead' || o.status === 'on_track').length;
-    return { total, onTrack };
-  };
-
+function StatCard({ value, label, highlight }) {
   return (
-    <div style={{
-      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
-      backdropFilter: 'blur(16px)',
-      borderRadius: '24px',
-      border: '1px solid rgba(255, 200, 200, 0.2)',
-      boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08), inset 0 1px 1px rgba(255,255,255,0.8)',
-      overflow: 'hidden',
-    }}>
-      {/* Tab Bar */}
-      <div style={{
-        display: 'flex',
-        borderBottom: '1px solid rgba(200, 180, 170, 0.15)',
-        background: 'rgba(255, 252, 250, 0.5)',
-      }}>
-        {tabs.map((tab) => {
-          const stats = getStats(tab.data);
-          const isActive = activeTab === tab.key;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              style={{
-                flex: 1,
-                padding: '16px 12px',
-                border: 'none',
-                background: isActive ? 'rgba(255, 255, 255, 0.8)' : 'transparent',
-                cursor: 'pointer',
-                position: 'relative',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <div style={{
-                fontSize: '10px',
-                fontWeight: '700',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                color: isActive ? colors.etchDark : colors.muted,
-                marginBottom: '4px',
-              }}>
-                {tab.label}
-              </div>
-              <div style={{
-                fontSize: '18px',
-                fontWeight: '700',
-                color: isActive ? colors.etchDark : colors.muted,
-              }}>
-                {stats.onTrack}/{stats.total}
-              </div>
-              {isActive && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: '20%',
-                  right: '20%',
-                  height: '3px',
-                  background: `linear-gradient(90deg, ${colors.etchLight}, ${colors.etchDark})`,
-                  borderRadius: '3px 3px 0 0',
-                }} />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Content */}
-      <div style={{ padding: '20px' }}>
-        {Object.values(activeData).length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '20px', color: colors.muted }}>
-            No outcomes in this category
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {Object.values(activeData).map((o, i) => (
-              <OutcomeRow key={i} outcome={o} />
-            ))}
-          </div>
-        )}
+    <div
+      style={{
+        padding: '16px 32px',
+        borderRadius: '16px',
+        background: highlight 
+          ? 'linear-gradient(145deg, rgba(196, 160, 160, 0.15) 0%, rgba(196, 160, 160, 0.1) 100%)'
+          : 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
+        boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+        minWidth: '120px',
+      }}
+    >
+      <div style={{ ...etchedStyle, fontSize: '24px' }}>{value}</div>
+      <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginTop: '4px' }}>
+        {label}
       </div>
     </div>
   );
 }
 
-// Single outcome row with visual progress
-function OutcomeRow({ outcome }) {
-  const percent = Math.min((outcome.actual / outcome.target) * 100, 100);
+// Agent Progress Row
+function AgentProgressRow({ agent, progress, isRunning, onRun }) {
+  const meta = agentMeta[agent] || { icon: Zap, label: agent, color: '#666' };
+  const Icon = meta.icon;
+  const percent = progress.target > 0 ? Math.min((progress.current / progress.target) * 100, 100) : 0;
+  const isBehind = progress.status === 'behind';
   const isComplete = percent >= 100;
-  const isBehind = outcome.status === 'behind';
-  
+
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '16px',
-      padding: '12px 16px',
-      borderRadius: '12px',
-      background: isComplete 
-        ? 'rgba(126, 184, 154, 0.1)' 
-        : isBehind 
-          ? 'rgba(196, 160, 160, 0.08)' 
-          : 'rgba(255, 255, 255, 0.5)',
-      border: `1px solid ${isComplete ? 'rgba(126, 184, 154, 0.3)' : 'rgba(200, 180, 170, 0.1)'}`,
-    }}>
-      {/* Progress Circle */}
-      <div style={{ position: 'relative', width: '44px', height: '44px', flexShrink: 0 }}>
-        <svg width="44" height="44" style={{ transform: 'rotate(-90deg)' }}>
-          {/* Background circle */}
-          <circle
-            cx="22"
-            cy="22"
-            r="18"
-            fill="none"
-            stroke="rgba(200, 180, 170, 0.2)"
-            strokeWidth="4"
-          />
-          {/* Progress circle */}
-          <circle
-            cx="22"
-            cy="22"
-            r="18"
-            fill="none"
-            stroke={isComplete ? '#7eb89a' : isBehind ? colors.etchLight : colors.etchDark}
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeDasharray={`${(percent / 100) * 113} 113`}
-            style={{ transition: 'stroke-dasharray 0.5s ease' }}
-          />
-        </svg>
-        <div style={{
-          position: 'absolute',
-          inset: 0,
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        padding: '16px 20px',
+        borderRadius: '16px',
+        background: isComplete 
+          ? 'rgba(126, 184, 154, 0.08)'
+          : isBehind 
+            ? 'rgba(196, 160, 160, 0.08)' 
+            : 'rgba(255, 255, 255, 0.5)',
+        border: `1px solid ${isComplete ? 'rgba(126, 184, 154, 0.2)' : 'rgba(200, 180, 170, 0.1)'}`,
+        marginBottom: '8px',
+      }}
+    >
+      {/* Agent Icon */}
+      <div
+        style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '12px',
+          background: `${meta.color}15`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '11px',
-          fontWeight: '700',
-          color: isComplete ? '#5a9a7a' : isBehind ? colors.etchLight : colors.etchDark,
-        }}>
-          {outcome.actual}
-        </div>
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={20} style={{ color: meta.color }} />
       </div>
 
-      {/* Label */}
+      {/* Agent Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontSize: '14px',
-          fontWeight: '500',
-          color: colors.ink,
-          lineHeight: '1.3',
-        }}>
-          {outcome.label}
-        </div>
-        <div style={{
-          fontSize: '12px',
-          color: colors.muted,
-          marginTop: '2px',
-        }}>
-          {isComplete ? '✓ Complete' : `${outcome.target - outcome.actual} to go`}
+        <div style={{ fontSize: '14px', fontWeight: '600', color: colors.ink }}>{meta.label}</div>
+        <div style={{ fontSize: '12px', color: colors.muted }}>
+          {progress.outcome_name || `${progress.current}/${progress.target} ${progress.period || 'this period'}`}
         </div>
       </div>
 
-      {/* Target */}
-      <div style={{
-        fontSize: '14px',
-        fontWeight: '600',
-        color: colors.muted,
-      }}>
-        /{outcome.target}
+      {/* Progress Bar */}
+      <div style={{ width: '100px', flexShrink: 0 }}>
+        <div style={{ height: '6px', background: 'rgba(200, 180, 170, 0.15)', borderRadius: '3px', overflow: 'hidden' }}>
+          <div
+            style={{
+              height: '100%',
+              width: `${percent}%`,
+              background: isComplete ? '#7eb89a' : isBehind ? colors.etchLight : colors.etchDark,
+              borderRadius: '3px',
+              transition: 'width 0.3s',
+            }}
+          />
+        </div>
+        <div style={{ fontSize: '11px', color: colors.muted, marginTop: '4px', textAlign: 'right' }}>
+          {progress.current}/{progress.target}
+        </div>
       </div>
+
+      {/* Run Button */}
+      <button
+        onClick={() => onRun(agent)}
+        disabled={isRunning}
+        style={{
+          width: '36px',
+          height: '36px',
+          borderRadius: '10px',
+          border: 'none',
+          background: isRunning ? 'rgba(200, 180, 170, 0.1)' : 'rgba(255, 255, 255, 0.8)',
+          boxShadow: '0 2px 8px rgba(180,150,140,0.1)',
+          cursor: isRunning ? 'not-allowed' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        {isRunning ? (
+          <RefreshCw size={16} style={{ color: colors.muted, animation: 'spin 1s linear infinite' }} />
+        ) : (
+          <Play size={16} style={{ color: colors.etchDark }} />
+        )}
+      </button>
     </div>
   );
 }
 
-// Action Card
-function ActionCard({ action, onSend, onEdit, onSkip }) {
+// Action Card for pending review
+function ActionCard({ action, onApprove, onSkip }) {
   const [expanded, setExpanded] = useState(false);
-  const [hover, setHover] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState(action.content || '');
-  const [editedSubject, setEditedSubject] = useState(action.subject || '');
-  
-  const color = categoryColors[action.category] || categoryColors.acquisition;
-  const agentColor = agentColors[action.agent] || agentColors.connector;
-  const urgencyColor = action.urgency === 'now' ? colors.etchLight : action.urgency === 'soon' ? colors.etchDark : colors.muted;
+  const meta = agentMeta[action.agent] || { icon: Zap, label: action.agent, color: '#666' };
+  const isHighPriority = action.priority === 'high';
 
   return (
     <div
       style={{
         background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
-        backdropFilter: 'blur(10px)',
         borderRadius: '16px',
         padding: '20px',
         marginBottom: '12px',
-        border: '1px solid rgba(255, 200, 200, 0.2)',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        transform: hover ? 'translateY(-2px)' : 'none',
-        boxShadow: hover 
-          ? '0 8px 30px rgba(180, 120, 120, 0.12), inset 0 1px 1px rgba(255,255,255,0.8)' 
-          : '0 4px 16px -4px rgba(180,150,140,0.1), inset 0 1px 1px rgba(255,255,255,0.8)',
+        border: isHighPriority ? '1px solid rgba(196, 160, 160, 0.3)' : '1px solid rgba(200, 180, 170, 0.15)',
+        boxShadow: '0 4px 16px -4px rgba(180,150,140,0.1)',
       }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onClick={() => setExpanded(!expanded)}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: urgencyColor, flexShrink: 0 }} />
-        <span style={{
-          fontSize: '10px',
-          fontWeight: '600',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          padding: '4px 10px',
-          borderRadius: '8px',
-          background: agentColor.bg,
-          color: agentColor.text,
-        }}>
-          {action.agent}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+        {isHighPriority && (
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: colors.etchLight }} />
+        )}
+        <span
+          style={{
+            fontSize: '10px',
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            padding: '4px 10px',
+            borderRadius: '8px',
+            background: `${meta.color}15`,
+            color: meta.color,
+          }}
+        >
+          {meta.label}
         </span>
-        <span style={{
-          fontSize: '10px',
-          fontWeight: '500',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          color: colors.muted,
-        }}>
-          {action.category}
+        <span style={{ fontSize: '10px', color: colors.muted, textTransform: 'uppercase' }}>
+          {action.action_type}
         </span>
       </div>
 
       {/* Title */}
-      <div style={{ fontSize: '18px', fontWeight: '600', color: colors.ink, marginBottom: '4px' }}>
+      <div style={{ fontSize: '16px', fontWeight: '600', color: colors.ink, marginBottom: '4px' }}>
         {action.title}
       </div>
       {action.target_name && (
-        <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '12px' }}>{action.target_name}</div>
+        <div style={{ fontSize: '13px', color: colors.muted, marginBottom: '12px' }}>{action.target_name}</div>
       )}
 
-      {/* Reasoning */}
+      {/* Summary */}
       {action.summary && (
-        <div style={{
-          fontSize: '14px',
-          color: colors.muted,
-          lineHeight: '1.5',
-          marginBottom: '12px',
-          padding: '12px 14px',
-          background: 'rgba(200, 180, 170, 0.08)',
-          borderRadius: '12px',
-        }}>
+        <div
+          style={{
+            fontSize: '13px',
+            color: colors.muted,
+            lineHeight: '1.5',
+            padding: '12px',
+            background: 'rgba(200, 180, 170, 0.08)',
+            borderRadius: '10px',
+            marginBottom: '12px',
+          }}
+        >
           {action.summary}
         </div>
       )}
 
-      {/* Draft (expanded) */}
+      {/* Expandable Content */}
+      {action.content && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '12px',
+            color: colors.etchDark,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            marginBottom: expanded ? '12px' : '16px',
+          }}
+        >
+          <ChevronRight size={14} style={{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+          {expanded ? 'Hide draft' : 'View draft'}
+        </button>
+      )}
+
       {expanded && action.content && (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.7)',
-          borderRadius: '12px',
-          padding: '16px',
-          marginBottom: '16px',
-          border: '1px solid rgba(200, 180, 170, 0.15)',
-        }}>
-          <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginBottom: '8px' }}>
-            {action.action_type === 'email' ? 'Email' : action.action_type === 'sms' ? 'Text' : 'Message'}
-          </div>
-          {isEditing ? (
-            <>
-              {action.action_type === 'email' && (
-                <input
-                  type="text"
-                  value={editedSubject}
-                  onChange={(e) => setEditedSubject(e.target.value)}
-                  placeholder="Subject line..."
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    marginBottom: '12px',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(200, 180, 170, 0.3)',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    outline: 'none',
-                  }}
-                />
-              )}
-              <textarea
-                value={editedContent}
-                onChange={(e) => setEditedContent(e.target.value)}
-                style={{
-                  width: '100%',
-                  minHeight: '150px',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(200, 180, 170, 0.3)',
-                  fontSize: '14px',
-                  lineHeight: '1.6',
-                  resize: 'vertical',
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                }}
-              />
-            </>
-          ) : (
-            <>
-              {action.subject && (
-                <div style={{ fontSize: '13px', fontWeight: '500', color: colors.ink, marginBottom: '8px' }}>
-                  Subject: {action.subject}
-                </div>
-              )}
-              <div style={{ fontSize: '14px', color: colors.ink, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                {action.content}
-              </div>
-            </>
+        <div
+          style={{
+            background: 'rgba(255, 255, 255, 0.7)',
+            borderRadius: '10px',
+            padding: '14px',
+            marginBottom: '16px',
+            border: '1px solid rgba(200, 180, 170, 0.15)',
+          }}
+        >
+          {action.subject && (
+            <div style={{ fontSize: '12px', fontWeight: '500', color: colors.ink, marginBottom: '8px' }}>
+              Subject: {action.subject}
+            </div>
           )}
+          <div style={{ fontSize: '13px', color: colors.ink, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+            {action.content}
+          </div>
         </div>
       )}
 
-      {/* Buttons */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }} onClick={(e) => e.stopPropagation()}>
-        {action.content ? (
-          <>
-            {isEditing ? (
-              <>
-                <button style={{
-                  background: colors.ink,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  padding: '12px 20px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                }} onClick={() => {
-                  onEdit(editedContent, editedSubject);
-                  setIsEditing(false);
-                }}>
-                  Save & Send
-                </button>
-                <button style={{
-                  background: 'rgba(255, 255, 255, 0.6)',
-                  color: colors.muted,
-                  border: '1px solid rgba(200, 180, 170, 0.2)',
-                  borderRadius: '12px',
-                  padding: '12px 20px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                }} onClick={() => {
-                  setEditedContent(action.content || '');
-                  setEditedSubject(action.subject || '');
-                  setIsEditing(false);
-                }}>
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <>
-                <button style={{
-                  background: colors.ink,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  padding: '12px 20px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                }} onClick={onSend}>
-                  Send this
-                </button>
-                <button style={{
-                  background: 'rgba(255, 255, 255, 0.6)',
-                  color: colors.ink,
-                  border: '1px solid rgba(200, 180, 170, 0.2)',
-                  borderRadius: '12px',
-                  padding: '12px 20px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                }} onClick={() => {
-                  setExpanded(true);
-                  setIsEditing(true);
-                }}>
-                  Edit first
-                </button>
-              </>
-            )}
-          </>
-        ) : (
-          <button style={{
+      {/* Action Buttons */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          onClick={() => onApprove(action)}
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
             background: colors.ink,
             color: 'white',
             border: 'none',
-            borderRadius: '12px',
-            padding: '12px 20px',
-            fontSize: '14px',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            fontSize: '13px',
             fontWeight: '600',
             cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          }} onClick={onSend}>
-            Do this
-          </button>
-        )}
-        {!isEditing && (
-          <button style={{
+          }}
+        >
+          <Check size={16} /> Approve
+        </button>
+        <button
+          onClick={() => onSkip(action)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
             background: 'rgba(255, 255, 255, 0.6)',
             color: colors.muted,
             border: '1px solid rgba(200, 180, 170, 0.2)',
-            borderRadius: '12px',
-            padding: '12px 20px',
-            fontSize: '14px',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            fontSize: '13px',
             fontWeight: '500',
             cursor: 'pointer',
-          }} onClick={onSkip}>
-            Skip
-          </button>
-        )}
+          }}
+        >
+          <X size={16} /> Skip
+        </button>
       </div>
     </div>
   );
@@ -534,6 +348,9 @@ function ActionCard({ action, onSend, onEdit, onSkip }) {
 
 // Main Dashboard
 function GrowthContent() {
+  const queryClient = useQueryClient();
+  const [runningAgents, setRunningAgents] = useState({});
+
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -541,298 +358,188 @@ function GrowthContent() {
 
   const studioId = currentUser?.studio_id;
 
-  // Fetch outcomes and actions from database
-  const { data: outcomes = [] } = useQuery({
-    queryKey: ['growthOutcomes', studioId],
-    queryFn: () => base44.entities.GrowthOutcome.filter({ studio_id: studioId, is_active: true }),
+  // Fetch orchestrator dashboard
+  const { data: dashboard, refetch: refetchDashboard } = useQuery({
+    queryKey: ['growthDashboard', studioId],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('runOrchestratorAgent', { studio_id: studioId });
+      return res.data?.dashboard || {};
+    },
     enabled: !!studioId,
+    staleTime: 60000,
   });
 
-  const { data: actions = [] } = useQuery({
+  // Fetch pending actions
+  const { data: actions = [], refetch: refetchActions } = useQuery({
     queryKey: ['growthActions', studioId],
     queryFn: () => base44.entities.GrowthAction.filter({ studio_id: studioId, status: 'pending_review' }, '-created_date'),
     enabled: !!studioId,
   });
 
-  const { data: progress = [] } = useQuery({
-    queryKey: ['growthProgress', studioId],
-    queryFn: () => base44.entities.GrowthPeriodProgress.filter({ studio_id: studioId }, '-period_start', 20),
-    enabled: !!studioId,
-  });
-
-  // Build outcome data by category
-  const buildCategoryData = (category) => {
-    const categoryOutcomes = outcomes.filter(o => o.category === category);
-    const result = {};
-    
-    categoryOutcomes.forEach((outcome, index) => {
-      const progressRecord = progress.find(p => p.outcome_id === outcome.id);
-      const actual = progressRecord?.current_count || 0;
-      const target = outcome.target_count;
-      const percent = target > 0 ? actual / target : 0;
-      
-      // Use outcome ID as key to allow multiple outcomes per agent
-      result[outcome.id] = {
-        label: outcome.name.replace(/^\d+\s*/, '').replace(/per (week|month)$/i, '').trim(),
-        actual,
-        target,
-        status: percent >= 1 ? 'ahead' : percent >= 0.6 ? 'on_track' : 'behind',
-        agent: outcome.agent,
-      };
-    });
-    
-    return result;
+  // Run agent
+  const runAgent = async (agent) => {
+    setRunningAgents(prev => ({ ...prev, [agent]: true }));
+    try {
+      const functionName = `run${agent.charAt(0).toUpperCase() + agent.slice(1)}Agent`;
+      await base44.functions.invoke(functionName, { studio_id: studioId, mode: 'full' });
+      toast.success(`${agentMeta[agent]?.label || agent} completed`);
+      refetchDashboard();
+      refetchActions();
+    } catch (err) {
+      toast.error(`Failed to run ${agent}`);
+    } finally {
+      setRunningAgents(prev => ({ ...prev, [agent]: false }));
+    }
   };
 
-  const acquisitionData = buildCategoryData('acquisition');
-  const conversionData = buildCategoryData('conversion');
-  const retentionData = buildCategoryData('retention');
-  const referralData = buildCategoryData('referral');
-
-  // Calculate focus
-  const behindOutcomes = outcomes.filter(o => {
-    const p = progress.find(pr => pr.outcome_id === o.id);
-    const percent = p ? p.current_count / o.target_count : 0;
-    return percent < 0.6;
-  });
-
-  const focusCategory = behindOutcomes.length > 0 ? behindOutcomes[0]?.category : 'acquisition';
-  const focusReason = behindOutcomes.length > 0 
-    ? `You're behind on ${behindOutcomes.length} outcome${behindOutcomes.length > 1 ? 's' : ''}. Let's focus there.`
-    : "You're on track! Keep the momentum going.";
-
-  // Map actions to display format
-  const mappedActions = actions.map(a => ({
-    ...a,
-    urgency: a.priority === 'high' ? 'now' : 'soon',
-    category: outcomes.find(o => o.id === a.outcome_id)?.category || 'acquisition',
-  }));
-
-  const nowActions = mappedActions.filter(a => a.urgency === 'now');
-  const soonActions = mappedActions.filter(a => a.urgency === 'soon');
-
-  const handleSend = async (action) => {
+  // Approve action
+  const handleApprove = async (action) => {
     await base44.entities.GrowthAction.update(action.id, {
       status: 'approved',
       approved_at: new Date().toISOString(),
     });
     toast.success('Action approved!');
+    refetchActions();
   };
 
+  // Skip action
   const handleSkip = async (action) => {
     await base44.entities.GrowthAction.update(action.id, { status: 'dismissed' });
     toast.success('Action skipped');
+    refetchActions();
   };
 
-  const handleEdit = async (action, newContent, newSubject) => {
-    await base44.entities.GrowthAction.update(action.id, {
-      content: newContent,
-      subject: newSubject,
-      status: 'approved',
-      approved_at: new Date().toISOString(),
-    });
-    toast.success('Saved and approved!');
-  };
-
-  const hasOutcomes = Object.keys(acquisitionData).length > 0 || 
-                      Object.keys(conversionData).length > 0 ||
-                      Object.keys(retentionData).length > 0 ||
-                      Object.keys(referralData).length > 0;
-
-  // Calculate total outcomes and progress stats
-  const totalOutcomes = outcomes.length;
-  const onTrackCount = outcomes.filter(o => {
-    const p = progress.find(pr => pr.outcome_id === o.id);
-    const percent = p ? p.current_count / o.target_count : 0;
-    return percent >= 0.6;
+  // Calculate stats
+  const agentProgress = dashboard?.agent_progress || {};
+  const agents = ['connector', 'attender', 'accessor', 'offerer', 'converter', 'retainer', 'referrer'];
+  
+  const totalOutcomes = agents.filter(a => agentProgress[a]?.target > 0).length;
+  const onTrackCount = agents.filter(a => {
+    const p = agentProgress[a];
+    return p && (p.status === 'on_track' || p.status === 'ahead' || p.status === 'complete');
   }).length;
-  const behindCount = totalOutcomes - onTrackCount;
+  const behindCount = agents.filter(a => agentProgress[a]?.status === 'behind').length;
+
+  const highPriorityActions = actions.filter(a => a.priority === 'high');
+  const normalActions = actions.filter(a => a.priority !== 'high');
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: colors.paper,
-      padding: '24px',
-      fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        
-        {/* Hero Stats Card - Matching Billing aesthetic */}
-        <div
-          style={{
-            padding: '32px',
-            borderRadius: '24px',
-            marginBottom: '24px',
-            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 200, 200, 0.3)',
-            boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: '14px', color: colors.muted, marginBottom: '8px' }}>
-              {totalOutcomes} outcomes
-            </p>
-            <EtchedText size="2xl">{onTrackCount} on track</EtchedText>
-            
-            {/* Sub-stats */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              gap: '12px', 
-              marginTop: '24px',
-              flexWrap: 'wrap',
-            }}>
-              <div
+    <div
+      style={{
+        minHeight: '100vh',
+        background: colors.paper,
+        padding: '24px',
+        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+      }}
+    >
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
+      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        {/* Hero Card */}
+        <HeroCard
+          totalOutcomes={totalOutcomes}
+          onTrackCount={onTrackCount}
+          pendingActions={actions.length}
+          behindCount={behindCount}
+        />
+
+        {/* Two Column Layout */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          {/* Left: Agent Progress */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: '600', color: colors.ink }}>Agent Progress</h2>
+              <button
+                onClick={() => refetchDashboard()}
                 style={{
-                  padding: '16px 32px',
-                  borderRadius: '16px',
-                  background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
-                  boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
-                  minWidth: '120px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: colors.muted,
+                  fontSize: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
                 }}
               >
-                <EtchedText size="lg">{Object.keys(acquisitionData).length}</EtchedText>
-                <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginTop: '4px' }}>
-                  Acquisition
-                </div>
-              </div>
-              <div
-                style={{
-                  padding: '16px 32px',
-                  borderRadius: '16px',
-                  background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
-                  boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
-                  minWidth: '120px',
-                }}
-              >
-                <EtchedText size="lg">{Object.keys(conversionData).length}</EtchedText>
-                <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginTop: '4px' }}>
-                  Conversion
-                </div>
-              </div>
-              <div
-                style={{
-                  padding: '16px 32px',
-                  borderRadius: '16px',
-                  background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
-                  boxShadow: '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
-                  minWidth: '120px',
-                }}
-              >
-                <EtchedText size="lg">{behindCount}</EtchedText>
-                <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginTop: '4px' }}>
-                  Need Focus
-                </div>
-              </div>
+                <RefreshCw size={12} /> Refresh
+              </button>
             </div>
+
+            <div
+              style={{
+                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                borderRadius: '20px',
+                padding: '16px',
+                border: '1px solid rgba(200, 180, 170, 0.15)',
+              }}
+            >
+              {agents.map(agent => (
+                <AgentProgressRow
+                  key={agent}
+                  agent={agent}
+                  progress={agentProgress[agent] || { current: 0, target: 0, status: 'no_target' }}
+                  isRunning={runningAgents[agent]}
+                  onRun={runAgent}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Pending Actions */}
+          <div>
+            <h2 style={{ fontSize: '16px', fontWeight: '600', color: colors.ink, marginBottom: '16px' }}>
+              Pending Actions ({actions.length})
+            </h2>
+
+            {actions.length === 0 ? (
+              <div
+                style={{
+                  background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+                  borderRadius: '20px',
+                  padding: '40px',
+                  textAlign: 'center',
+                  border: '1px solid rgba(200, 180, 170, 0.15)',
+                }}
+              >
+                <Sparkles size={32} style={{ color: colors.etchLight, marginBottom: '12px' }} />
+                <div style={{ fontSize: '14px', color: colors.muted }}>
+                  No pending actions. Run agents to generate recommendations.
+                </div>
+              </div>
+            ) : (
+              <div style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '8px' }}>
+                {highPriorityActions.length > 0 && (
+                  <>
+                    <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', color: colors.etchLight, marginBottom: '8px' }}>
+                      High Priority
+                    </div>
+                    {highPriorityActions.map(action => (
+                      <ActionCard key={action.id} action={action} onApprove={handleApprove} onSkip={handleSkip} />
+                    ))}
+                  </>
+                )}
+                {normalActions.length > 0 && (
+                  <>
+                    {highPriorityActions.length > 0 && (
+                      <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', color: colors.muted, marginBottom: '8px', marginTop: '16px' }}>
+                        Normal
+                      </div>
+                    )}
+                    {normalActions.map(action => (
+                      <ActionCard key={action.id} action={action} onApprove={handleApprove} onSkip={handleSkip} />
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Outcomes Card */}
-        {hasOutcomes ? (
-          <div style={{ marginBottom: '24px' }}>
-            <OutcomesCard 
-              acquisitionData={acquisitionData}
-              conversionData={conversionData}
-              retentionData={retentionData}
-              referralData={referralData}
-            />
-          </div>
-        ) : (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-            borderRadius: '24px',
-            padding: '40px',
-            textAlign: 'center',
-            marginBottom: '24px',
-            border: '1px solid rgba(255, 200, 200, 0.3)',
-          }}>
-            <p style={{ color: colors.muted, fontSize: '16px' }}>Loading outcomes...</p>
-          </div>
-        )}
-
-        {/* Focus Banner */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-          borderRadius: '20px',
-          padding: '20px 24px',
-          marginBottom: '24px',
-          border: '1px solid rgba(255, 200, 200, 0.3)',
-          boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
-        }}>
-          <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginBottom: '4px' }}>
-            Today's Focus
-          </div>
-          <div style={{ fontSize: '16px', color: colors.ink, fontWeight: '500' }}>{focusReason}</div>
-        </div>
-
-        {/* Do Today */}
-        {nowActions.length > 0 && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-            backdropFilter: 'blur(16px)',
-            borderRadius: '24px',
-            border: '1px solid rgba(255, 200, 200, 0.3)',
-            boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
-            padding: '24px',
-            marginBottom: '20px',
-          }}>
-            <div style={{ fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginBottom: '16px' }}>
-              Do Today
-            </div>
-            {nowActions.map(action => (
-              <ActionCard
-                key={action.id}
-                action={action}
-                onSend={() => handleSend(action)}
-                onEdit={(content, subject) => handleEdit(action, content, subject)}
-                onSkip={() => handleSkip(action)}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Do This Week */}
-        {soonActions.length > 0 && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-            backdropFilter: 'blur(16px)',
-            borderRadius: '24px',
-            border: '1px solid rgba(255, 200, 200, 0.3)',
-            boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
-            padding: '24px',
-            marginBottom: '20px',
-          }}>
-            <div style={{ fontSize: '13px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: colors.muted, marginBottom: '16px' }}>
-              Do This Week
-            </div>
-            {soonActions.map(action => (
-              <ActionCard
-                key={action.id}
-                action={action}
-                onSend={() => handleSend(action)}
-                onEdit={(content, subject) => handleEdit(action, content, subject)}
-                onSkip={() => handleSkip(action)}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Empty state for actions */}
-        {nowActions.length === 0 && soonActions.length === 0 && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 100%)',
-            borderRadius: '24px',
-            padding: '48px',
-            textAlign: 'center',
-            border: '1px solid rgba(255, 200, 200, 0.3)',
-          }}>
-            <p style={{ color: colors.muted, fontSize: '16px', marginBottom: '8px' }}>No pending actions</p>
-            <p style={{ color: colors.etchLight, fontSize: '14px' }}>Your agents will generate actions as they identify opportunities.</p>
-          </div>
-        )}
       </div>
     </div>
   );
