@@ -1,31 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion } from 'framer-motion';
-import { Check, AlertCircle, Clock, ChevronRight, Circle } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import ActionCard from '@/components/growth/ActionCard';
+import MissionProgress from '@/components/growth/MissionProgress';
 import AdminOnly from '@/components/layout/AdminOnly';
-import { format, subDays, startOfWeek, startOfMonth } from 'date-fns';
-
-const etchedText = {
-  color: 'transparent',
-  backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
-  backgroundClip: 'text',
-  WebkitBackgroundClip: 'text',
-  textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
-  filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
-};
-
-const AGENTS = [
-  { id: 'connector', name: 'Connector', mission: 'Build partnerships', icon: '🤝' },
-  { id: 'attender', name: 'Attender', mission: 'Find events', icon: '📍' },
-  { id: 'accessor', name: 'Accessor', mission: 'Get into groups', icon: '🚪' },
-  { id: 'offerer', name: 'Offerer', mission: 'Invite new families', icon: '💌' },
-  { id: 'converter', name: 'Converter', mission: 'Convert trials', icon: '✨' },
-  { id: 'retainer', name: 'Retainer', mission: 'Keep families engaged', icon: '💜' },
-  { id: 'referrer', name: 'Referrer', mission: 'Generate referrals', icon: '🔄' },
-];
 
 function GrowthContent() {
   const { data: currentUser } = useQuery({
@@ -35,19 +13,6 @@ function GrowthContent() {
 
   const studioId = currentUser?.studio_id;
 
-  // Fetch outcomes (goals)
-  const { data: outcomes = [] } = useQuery({
-    queryKey: ['growthOutcomes'],
-    queryFn: () => base44.entities.GrowthOutcome.list(),
-  });
-
-  // Fetch recent agent logs
-  const { data: logs = [] } = useQuery({
-    queryKey: ['agentLogs', studioId],
-    queryFn: () => base44.entities.AgentLog.filter({ studio_id: studioId }, '-created_date', 50),
-    enabled: !!studioId,
-  });
-
   // Fetch pending actions
   const { data: pendingActions = [] } = useQuery({
     queryKey: ['pendingActions', studioId],
@@ -55,245 +20,143 @@ function GrowthContent() {
     enabled: !!studioId,
   });
 
-  // Build agent status from real data
-  const buildAgentStatus = (agentId) => {
-    const agentOutcomes = outcomes.filter(o => o.agent === agentId && o.is_active);
-    const agentLogs = logs.filter(l => l.agent === agentId);
-    const agentPending = pendingActions.filter(a => a.agent === agentId);
-    const lastLog = agentLogs[0];
-    
-    // Check if there are targets set
-    const hasTargets = agentOutcomes.length > 0;
-    
-    // Check if agent has run recently
-    const lastRun = lastLog?.created_date ? new Date(lastLog.created_date) : null;
-    const hoursSinceRun = lastRun ? (Date.now() - lastRun.getTime()) / (1000 * 60 * 60) : null;
-    
-    // Determine status
-    let status = 'not_configured';
-    let statusColor = '#c4b5ab';
-    
-    if (!hasTargets) {
-      status = 'no_targets';
-      statusColor = '#c4b5ab';
-    } else if (!lastRun) {
-      status = 'never_run';
-      statusColor = '#d4a574';
-    } else if (hoursSinceRun > 48) {
-      status = 'stale';
-      statusColor = '#d4a574';
-    } else {
-      status = 'active';
-      statusColor = '#7eb89a';
-    }
-    
-    return {
-      outcomes: agentOutcomes,
-      lastLog,
-      lastRun,
-      hoursSinceRun,
-      pendingCount: agentPending.length,
-      status,
-      statusColor,
-      hasTargets,
-    };
+  // Fetch outcomes for mission progress
+  const { data: outcomes = [] } = useQuery({
+    queryKey: ['growthOutcomes'],
+    queryFn: () => base44.entities.GrowthOutcome.list(),
+  });
+
+  // Fetch partners, leads, events for context
+  const { data: partners = [] } = useQuery({
+    queryKey: ['partners', studioId],
+    queryFn: () => base44.entities.Partner.filter({ studio_id: studioId }),
+    enabled: !!studioId,
+  });
+
+  const { data: leads = [] } = useQuery({
+    queryKey: ['leads', studioId],
+    queryFn: () => base44.entities.Lead.filter({ studio_id: studioId }),
+    enabled: !!studioId,
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['communityEvents', studioId],
+    queryFn: () => base44.entities.CommunityEvent.filter({ studio_id: studioId }),
+    enabled: !!studioId,
+  });
+
+  const handleActionSubmit = async (actionId, input) => {
+    console.log('Action:', actionId, 'Input:', input);
+    // TODO: Wire up to agent processing
   };
 
-  const totalPending = pendingActions.length;
-  const activeAgents = AGENTS.filter(a => buildAgentStatus(a.id).status === 'active').length;
-  const needsAttention = AGENTS.filter(a => ['no_targets', 'never_run', 'stale'].includes(buildAgentStatus(a.id).status)).length;
+  // Transform pending actions into display format
+  const currentActions = pendingActions.slice(0, 5).map(action => ({
+    id: action.id,
+    category: `${action.agent?.charAt(0).toUpperCase()}${action.agent?.slice(1) || 'Growth'} · ${action.action_type || 'Action'}`,
+    headline: action.title || 'Pending action',
+    subtext: action.target_name || action.summary || '',
+    draft: action.content,
+    draftLabel: action.action_type === 'email' ? 'Draft email' : 'Draft message',
+    channel: action.action_type === 'email' ? 'Email' : action.action_type === 'sms' ? 'Text message' : action.action_type,
+    placeholder: "Looks good / Make it shorter / Skip this one...",
+  }));
+
+  // If no pending actions, show sample actions for demo
+  const displayActions = currentActions.length > 0 ? currentActions : [
+    {
+      id: 'sample-1',
+      category: 'Acquisition · Connect',
+      headline: 'No actions ready yet',
+      subtext: 'Your growth agents are working on it',
+      draft: null,
+      placeholder: "Run agents / Check status...",
+    },
+  ];
+
+  // Build mission progress from outcomes
+  const missions = outcomes.filter(o => o.is_active).map(o => ({
+    title: o.name,
+    actual: 0, // TODO: Calculate from actual data
+    target: o.target_count,
+    period: `this ${o.target_period}`,
+  }));
 
   return (
     <div 
-      className="min-h-screen relative overflow-hidden"
-      style={{ 
-        fontFamily: "'DM Sans', -apple-system, sans-serif",
-        background: '#ffffff',
+      className="min-h-screen"
+      style={{
+        background: 'linear-gradient(165deg, #FFF9F8 0%, #FDF5F4 40%, #FAF0EF 100%)',
+        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
-      {/* Ambient background */}
-      <div 
-        className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
-      />
-      <div 
-        className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
-      />
-
-      <div className="relative max-w-4xl mx-auto p-6 md:p-10 pt-10 md:pt-16">
-        
-        {/* Header */}
-        <div className="mb-10">
-          <p className="text-sm mb-2" style={{ color: '#b5a599' }}>mission control</p>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight" style={etchedText}>
-            Growth Engine
-          </h1>
-        </div>
-
-        {/* Status Summary */}
+      {/* Header */}
+      <div className="px-6 md:px-10 pt-10 mb-2">
         <div 
-          className="rounded-2xl p-5 mb-8 flex flex-wrap gap-6"
-          style={{ 
-            background: 'rgba(255,255,255,0.6)',
-            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)',
+          className="text-[13px] font-medium mb-2"
+          style={{ color: '#C8B8B4', letterSpacing: '0.3px' }}
+        >
+          Dashboard / Growth
+        </div>
+        <h1 
+          className="text-4xl md:text-[42px] font-semibold italic m-0"
+          style={{
+            color: '#E0D0CC',
+            letterSpacing: '-1px',
+            textShadow: `
+              1px 1px 0 rgba(255,255,255,0.9),
+              2px 2px 4px rgba(180,150,145,0.15)
+            `,
           }}
         >
-          <div>
-            <div className="text-2xl font-bold" style={{ color: activeAgents > 0 ? '#7eb89a' : '#c4b5ab' }}>
-              {activeAgents}/7
-            </div>
-            <div className="text-xs" style={{ color: '#b5a599' }}>agents active</div>
+          Growth Engine
+        </h1>
+      </div>
+
+      {/* Main content */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:gap-10 px-6 md:px-10 py-8 pb-16">
+        {/* Main column - Current actions */}
+        <div>
+          <div 
+            className="text-[11px] font-bold uppercase tracking-wider mb-5"
+            style={{ color: '#C4A8A4', letterSpacing: '1.5px' }}
+          >
+            Right now
           </div>
-          <div>
-            <div className="text-2xl font-bold" style={{ color: totalPending > 0 ? '#5a4f47' : '#c4b5ab' }}>
-              {totalPending}
-            </div>
-            <div className="text-xs" style={{ color: '#b5a599' }}>awaiting review</div>
+
+          {displayActions.map(action => (
+            <ActionCard
+              key={action.id}
+              action={action}
+              onSubmit={handleActionSubmit}
+            />
+          ))}
+        </div>
+
+        {/* Sidebar - Progress */}
+        <div>
+          <div 
+            className="text-[11px] font-bold uppercase tracking-wider mb-4 mt-8 lg:mt-0"
+            style={{ color: '#C4A8A4', letterSpacing: '1.5px' }}
+          >
+            This week
           </div>
-          {needsAttention > 0 && (
-            <div>
-              <div className="text-2xl font-bold" style={{ color: '#d4a574' }}>
-                {needsAttention}
-              </div>
-              <div className="text-xs" style={{ color: '#b5a599' }}>need attention</div>
+          
+          {missions.length > 0 ? (
+            missions.map((mission, i) => (
+              <MissionProgress key={i} mission={mission} />
+            ))
+          ) : (
+            <div 
+              className="rounded-2xl py-5 px-6 text-sm"
+              style={{
+                background: 'rgba(255, 252, 251, 0.7)',
+                color: '#A89894',
+              }}
+            >
+              No missions configured yet
             </div>
           )}
-        </div>
-
-        {/* Agent Cards */}
-        <div className="space-y-4">
-          {AGENTS.map((agent, idx) => {
-            const status = buildAgentStatus(agent.id);
-            
-            return (
-              <motion.div
-                key={agent.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="rounded-2xl p-5"
-                style={{
-                  background: 'linear-gradient(145deg, rgba(254,248,248,0.95) 0%, rgba(252,245,245,0.9) 100%)',
-                  boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.8), 0 4px 16px -8px rgba(180,150,140,0.15)',
-                }}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                    style={{
-                      background: 'rgba(255,255,255,0.8)',
-                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,1)',
-                    }}
-                  >
-                    {agent.icon}
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold" style={{ color: '#5a4f47' }}>{agent.name}</h3>
-                      <span 
-                        className="w-2 h-2 rounded-full"
-                        style={{ background: status.statusColor }}
-                      />
-                    </div>
-                    
-                    {/* Status-specific message */}
-                    {status.status === 'no_targets' && (
-                      <p className="text-sm" style={{ color: '#b5a599' }}>
-                        No targets set. <span style={{ color: '#a8998e' }}>Set goals to activate.</span>
-                      </p>
-                    )}
-                    
-                    {status.status === 'never_run' && (
-                      <p className="text-sm" style={{ color: '#d4a574' }}>
-                        Has targets but hasn't run yet.
-                      </p>
-                    )}
-                    
-                    {status.status === 'stale' && (
-                      <p className="text-sm" style={{ color: '#d4a574' }}>
-                        Hasn't run in {Math.round(status.hoursSinceRun)} hours.
-                      </p>
-                    )}
-                    
-                    {status.status === 'active' && (
-                      <div className="text-sm" style={{ color: '#7a6d62' }}>
-                        {status.lastLog?.summary || agent.mission}
-                      </div>
-                    )}
-                    
-                    {/* Pending actions badge */}
-                    {status.pendingCount > 0 && (
-                      <div className="mt-2 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg"
-                        style={{ 
-                          background: 'rgba(90,79,71,0.08)',
-                          color: '#5a4f47',
-                        }}
-                      >
-                        <Circle className="w-2 h-2 fill-current" />
-                        {status.pendingCount} waiting for review
-                      </div>
-                    )}
-                    
-                    {/* Targets */}
-                    {status.outcomes.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {status.outcomes.map(o => (
-                          <span 
-                            key={o.id}
-                            className="text-xs px-2.5 py-1 rounded-lg"
-                            style={{ 
-                              background: 'rgba(255,255,255,0.6)',
-                              color: '#a8998e',
-                            }}
-                          >
-                            {o.target_count}/{o.target_period}: {o.name}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Review Queue Link */}
-        {totalPending > 0 && (
-          <Link 
-            to={createPageUrl('GrowthReview')}
-            className="block mt-8 rounded-2xl p-5 transition-all hover:scale-[1.01]"
-            style={{
-              background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
-              boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), inset 0 1px 2px rgba(255,255,255,0.8)',
-              border: '1px solid rgba(255, 220, 210, 0.5)',
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-lg font-semibold" style={etchedText}>
-                  {totalPending} actions ready to review
-                </div>
-                <p className="text-sm mt-1" style={{ color: '#a8998e' }}>
-                  Your agents prepared these — just need your OK
-                </p>
-              </div>
-              <ChevronRight className="w-5 h-5" style={{ color: '#c4a0a0' }} />
-            </div>
-          </Link>
-        )}
-
-        {/* Debug Info */}
-        <div className="mt-12 p-4 rounded-xl text-xs" style={{ background: 'rgba(0,0,0,0.02)', color: '#b5a599' }}>
-          <div className="font-medium mb-2" style={{ color: '#8b7d72' }}>System Check</div>
-          <div>Studio ID: {studioId || 'Not found'}</div>
-          <div>Outcomes loaded: {outcomes.length}</div>
-          <div>Outcomes with studio_id: {outcomes.filter(o => o.studio_id).length}</div>
-          <div>Recent logs: {logs.length}</div>
         </div>
       </div>
     </div>
