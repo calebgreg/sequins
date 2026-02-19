@@ -11,7 +11,7 @@ function GrowthContent() {
     queryFn: () => base44.auth.me(),
   });
 
-  const studioId = currentUser?.studio_id;
+  const studioId = currentUser?.studio_id || currentUser?.data?.studio_id;
 
   // Fetch pending actions
   const { data: pendingActions = [] } = useQuery({
