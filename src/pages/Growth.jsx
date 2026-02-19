@@ -75,13 +75,34 @@ function GrowthContent() {
     },
   ];
 
-  // Build mission progress from outcomes
-  const missions = outcomes.filter(o => o.is_active).map(o => ({
-    title: o.name,
-    actual: 0, // TODO: Calculate from actual data
-    target: o.target_count,
-    period: `this ${o.target_period}`,
-  }));
+  // Group outcomes by category
+  const outcomesByCategory = outcomes.filter(o => o.is_active).reduce((acc, o) => {
+    const cat = o.category || 'other';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push({
+      id: o.id,
+      title: o.name,
+      actual: 0, // TODO: Calculate from actual data
+      target: o.target_count,
+      period: o.target_period,
+      agent: o.agent,
+    });
+    return acc;
+  }, {});
+
+  const categoryOrder = ['acquisition', 'conversion', 'retention', 'referral'];
+  const categoryLabels = {
+    acquisition: 'Acquisition',
+    conversion: 'Conversion', 
+    retention: 'Retention',
+    referral: 'Referral',
+  };
+  const categoryIcons = {
+    acquisition: '🎯',
+    conversion: '✨',
+    retention: '💜',
+    referral: '🤝',
+  };
 
   return (
     <div 
