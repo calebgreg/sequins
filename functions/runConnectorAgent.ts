@@ -1,114 +1,30 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const CONNECTOR_SYSTEM_PROMPT = `You are the Connector agent for Sequins, a growth engine for dance studios.
+/**
+ * CONNECTOR AGENT
+ * Outcome: Connect with X business owners per week
+ * Does: Finds partners, researches contacts, drafts personalized outreach
+ * "Connect" means they responded and there's a real relationship
+ */
 
-Your job is to help the studio owner CONNECT with local business owners. Not just contact them - actually build real relationships.
+const SERPAPI_KEY = Deno.env.get("SERPAPI_KEY");
 
-"Connect" means: They responded. There's a relationship now. Not just "email sent."
-
-## Your Responsibilities
-
-1. FIND the right people to reach out to
-   - Prioritize by fit (daycares > dentists for a kids dance studio)
-   - Prioritize by proximity (closer is better)
-   - Prioritize warm paths (owner knows someone, mutual connections)
-   - Look for signals of partnership-friendliness (promotes other local businesses)
-
-2. RESEARCH each person (not just the business)
-   - Who is the decision maker?
-   - How long have they been there?
-   - What do they care about?
-   - What do they post about?
-   - Any mutual connections or common ground?
-
-3. RECOMMEND the best approach
-   - Which channel? (Email, Instagram DM, LinkedIn, drop-in, phone)
-   - What's the angle? (Neighbor, fellow parent, Buckeye connection, etc.)
-   - Why this person, why now?
-
-4. DRAFT the actual message TO SEND to the partner
-   - This is the LITERAL message that will be sent to the partner contact
-   - Human to human, not business to business
-   - Reference something real about THEM
-   - Short, warm, clear ask
-   - Sound like the studio owner, not a sales email
-   - Include greeting and sign-off
-   - NEVER explain why you're recommending this - that goes in "reasoning"
-
-5. LEARN what's working
-   - Track response rates by channel, partner type, approach
-   - Identify blockers (low open rates? wrong channel. no replies? wrong angle.)
-   - Adjust strategy based on results
-
-## Voice Guidelines
-
-When writing outreach:
-- Sound like a friendly neighbor, not a sales pitch
-- Keep it under 100 words
-- One clear, easy call to action
-- Reference something specific about them
-- Don't compliment their "great business" - that's generic AI slop
-
-## Output Format
-
-Return a JSON object with:
-{
-  "todaysActions": [...],
-  "inProgress": [...],
-  "insights": {
-    "connectionRate": number,
-    "bestChannel": string,
-    "bestPartnerType": string,
-    "blockers": [...]
+async function searchGooglePlaces(query, location) {
+  if (!SERPAPI_KEY) {
+    console.log("No SERPAPI_KEY - skipping external search");
+    return [];
   }
-}
-
-Each action should have:
-- partnerId: string
-- partnerName: string (the contact person's name)
-- businessName: string
-- headline: string (short action title for the studio owner to see)
-- reasoning: string (explain to the studio owner WHY this person and why now - this is internal)
-- channel: 'email' | 'instagram_dm' | 'linkedin' | 'phone' | 'drop_in'
-- draftMessage: string (THE ACTUAL MESSAGE TO SEND TO THE PARTNER - ready to copy/paste or send directly. Include "Hi [Name]," greeting and signature. NOT reasoning or strategy notes.)
-- urgency: 'now' | 'soon' | 'later'
-
-CRITICAL DISTINCTION:
-- "reasoning" = internal notes for the studio owner explaining the strategy
-- "draftMessage" = the ACTUAL outreach message to send to the partner
-
-Example draftMessage:
-"Hi Maria,
-
-I'm Rachel - I own Sequins Dance Studio right around the corner from Little Steps. I've been meaning to stop by and say hi!
-
-I have a few families who've asked me about preschools and I always love being able to point people toward neighbors I actually know. Would you be open to grabbing coffee sometime?
-
-- Rachel"
-
-NOT this (this is reasoning, not a message):
-"Daycare centers are prime partners for a kids dance studio as their clientele overlaps significantly."
-
-Be specific. Be actionable. Help the owner hit their connection target.`;
-
-function isThisWeek(date) {
-  const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay());
-  startOfWeek.setHours(0, 0, 0, 0);
-  return new Date(date) >= startOfWeek;
-}
-
-function daysLeftInWeek() {
-  return 7 - new Date().getDay();
-}
-
-function formatDate(date) {
-  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function daysSince(date) {
-  return Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
+  
+  const params = new URLSearchParams({
+    q: query,
+    location: location,
+    api_key: SERPAPI_KEY,
+    engine: "google_maps"
+  });
+  
+  const response = await fetch(`https://serpapi.com/search?${params}`);
+  const data = await response.json();
+  return data.local_results || [];
 }
 
 Deno.serve(async (req) => {
@@ -120,175 +36,167 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch studio settings
-    const settings = await base44.entities.StudioSettings.list();
-    const studioName = settings[0]?.name || 'Dance Studio';
+    const { studio_id, mode = 'research' } = await req.json();
+    
+    if (!studio_id) {
+      return Response.json({ error: 'studio_id required' }, { status: 400 });
+    }
 
-    // Fetch growth targets (businesses/partners)
-    const targets = await base44.entities.GrowthTarget.list();
-    const partners = targets.filter(t => t.target_type === 'business' || t.target_type === 'partner');
+    // Get studio info for location context
+    const studios = await base44.entities.Studio.filter({ id: studio_id });
+    const studio = studios[0];
+    const studioLocation = studio?.address || "local area";
 
-    // Fetch growth outcomes to find connection target
-    const outcomes = await base44.entities.GrowthOutcome.filter({ agent: 'connector' });
-    const connectionOutcome = outcomes.find(o => o.name.toLowerCase().includes('connection'));
-    const connectionsTarget = connectionOutcome?.target_count || 4;
+    // Get existing partners to avoid duplicates
+    const existingPartners = await base44.entities.Partner.filter({ studio_id });
+    const existingNames = new Set(existingPartners.map(p => p.name.toLowerCase()));
 
-    // Fetch recent actions to track outreach
-    const recentActions = await base44.entities.GrowthAction.filter({ agent: 'connector' });
+    // Get current week's outcome progress
+    const outcomes = await base44.entities.GrowthOutcome.filter({ 
+      studio_id, 
+      agent: 'connector' 
+    });
+    const connectOutcome = outcomes.find(o => o.name.includes('Connect'));
+    const weeklyTarget = connectOutcome?.target_count || 4;
 
-    // Calculate connections this week
-    const connectedPartners = partners.filter(p => 
-      p.status === 'connected' || p.status === 'partner'
+    // Count this week's connections
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const recentPartners = existingPartners.filter(p => 
+      p.status === 'connected' && 
+      new Date(p.updated_date) >= weekStart
     );
-    const connectionsThisWeek = connectedPartners.filter(p => 
-      p.last_contact_date && isThisWeek(p.last_contact_date)
-    ).length;
+    const currentProgress = recentPartners.length;
 
-    // Segment partners by status
-    const potentialPartners = partners.filter(p => 
-      p.status === 'prospect' || !p.status
-    );
-    const contactedPartners = partners.filter(p => p.status === 'contacted');
+    const results = {
+      mode,
+      studio_id,
+      weekly_target: weeklyTarget,
+      current_progress: currentProgress,
+      actions_created: 0,
+      partners_found: 0,
+      research_performed: []
+    };
 
-    // Build outreach history
-    const outreachHistory = recentActions.filter(a => 
-      a.status === 'sent' || a.status === 'completed'
-    );
+    if (mode === 'research') {
+      // RESEARCH MODE: Find new potential partners
+      const partnerCategories = [
+        { type: 'daycare', query: 'daycare preschool childcare' },
+        { type: 'pediatrician', query: 'pediatrician children doctor' },
+        { type: 'gym', query: 'family gym fitness center' },
+        { type: 'salon', query: 'kids hair salon family salon' },
+        { type: 'church', query: 'church family ministry' },
+        { type: 'school', query: 'elementary school private school' }
+      ];
 
-    const userPrompt = `
-## Studio Context
+      for (const category of partnerCategories) {
+        const places = await searchGooglePlaces(category.query, studioLocation);
+        
+        for (const place of places.slice(0, 3)) {
+          if (existingNames.has(place.title?.toLowerCase())) continue;
 
-**Studio:** ${studioName}
-**Owner:** ${user.full_name}
-
-## Progress This Week
-
-**Connections Target:** ${connectionsTarget}
-**Connections Made:** ${connectionsThisWeek}
-**Remaining:** ${connectionsTarget - connectionsThisWeek}
-**Days Left in Week:** ${daysLeftInWeek()}
-
-## Potential Partners to Reach Out To
-
-${potentialPartners.length === 0 ? 'No potential partners identified yet.' : potentialPartners.slice(0, 10).map(p => `
-### ${p.contact_name || p.name} - ${p.name}
-- **Type:** ${p.category || 'Local Business'}
-- **Email:** ${p.email || 'Unknown'}
-- **Phone:** ${p.phone || 'Unknown'}
-- **Website:** ${p.website || 'Unknown'}
-- **Notes:** ${p.notes || 'None'}
-- **Tags:** ${p.tags?.join(', ') || 'None'}
-- **AI Research:** ${p.ai_research ? JSON.stringify(p.ai_research).slice(0, 200) : 'Not researched yet'}
-`).join('\n')}
-
-## In-Progress (Contacted, Awaiting Response)
-
-${contactedPartners.length === 0 ? 'None' : contactedPartners.map(p => `
-### ${p.contact_name || p.name} - ${p.name}
-- **Last Contacted:** ${p.last_contact_date ? formatDate(p.last_contact_date) : 'Unknown'}
-- **Days Since Contact:** ${p.last_contact_date ? daysSince(p.last_contact_date) : 'Unknown'}
-- **Notes:** ${p.notes || 'None'}
-`).join('\n')}
-
-## Recent Outreach Performance
-
-${outreachHistory.length === 0 ? 'No recent outreach data' : `
-- **Total Sent (Recent):** ${outreachHistory.length}
-- **Completed:** ${outreachHistory.filter(o => o.status === 'completed').length}
-`}
-
-## Your Task
-
-Based on the above context:
-
-1. Recommend 2-3 partners to reach out to TODAY, prioritized by likelihood of connection
-2. For each, explain WHY them and WHY NOW
-3. Recommend the BEST CHANNEL to reach them
-4. Write a DRAFT MESSAGE ready to send
-5. For in-progress partners, recommend next steps (follow up? different angle? move on?)
-6. Share any insights about what's working or not working
-
-Return ONLY valid JSON matching the output format.
-`;
-
-    const agentOutput = await base44.integrations.Core.InvokeLLM({
-      prompt: `${CONNECTOR_SYSTEM_PROMPT}\n\n${userPrompt}`,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          todaysActions: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                partnerId: { type: "string" },
-                partnerName: { type: "string" },
-                businessName: { type: "string" },
-                headline: { type: "string" },
-                reasoning: { type: "string" },
-                channel: { type: "string" },
-                draftMessage: { type: "string" },
-                urgency: { type: "string" }
-              }
+          // Create as prospect first
+          await base44.asServiceRole.entities.Partner.create({
+            studio_id,
+            name: place.title,
+            type: category.type,
+            address: place.address,
+            phone: place.phone,
+            website: place.website,
+            status: 'identified',
+            ai_research: {
+              source: 'google_places',
+              rating: place.rating,
+              reviews: place.reviews,
+              found_at: new Date().toISOString()
             }
-          },
-          inProgress: { type: "array", items: { type: "object" } },
-          insights: {
+          });
+          
+          results.partners_found++;
+        }
+        
+        results.research_performed.push(category.type);
+      }
+    }
+
+    if (mode === 'outreach' || mode === 'full') {
+      // OUTREACH MODE: Draft messages for identified partners
+      const identifiedPartners = await base44.entities.Partner.filter({ 
+        studio_id, 
+        status: 'identified' 
+      });
+
+      // Use LLM to generate personalized outreach
+      for (const partner of identifiedPartners.slice(0, 5)) {
+        const prompt = `You are a friendly dance studio owner reaching out to a local ${partner.type} for a potential partnership.
+
+Business: ${partner.name}
+Type: ${partner.type}
+Location: ${partner.address || 'nearby'}
+${partner.ai_research?.rating ? `Rating: ${partner.ai_research.rating} stars` : ''}
+
+Write a short, warm email introducing yourself and suggesting a simple partnership:
+- For daycares/schools: offer a free demo class for their kids
+- For pediatricians: offer to leave flyers about movement benefits
+- For gyms/salons: suggest cross-promotion
+- For churches: offer a free workshop
+
+Keep it under 100 words. Be genuine, not salesy. Focus on how you can help THEM.
+
+Return JSON: { "subject": "...", "body": "...", "suggested_offer": "..." }`;
+
+        const llmResponse = await base44.integrations.Core.InvokeLLM({
+          prompt,
+          response_json_schema: {
             type: "object",
             properties: {
-              connectionRate: { type: "number" },
-              bestChannel: { type: "string" },
-              bestPartnerType: { type: "string" },
-              blockers: { type: "array", items: { type: "string" } }
+              subject: { type: "string" },
+              body: { type: "string" },
+              suggested_offer: { type: "string" }
             }
           }
-        }
-      }
-    });
+        });
 
-    // Create GrowthActions from agent output
-    const createdActions = [];
-    for (const action of (agentOutput.todaysActions || [])) {
-      const growthAction = await base44.entities.GrowthAction.create({
-        outcome_id: connectionOutcome?.id || outcomes[0]?.id,
-        agent: 'connector',
-        action_type: action.channel === 'email' ? 'email' : action.channel === 'phone' ? 'call' : 'message',
-        status: 'pending_review',
-        priority: action.urgency === 'now' ? 'high' : 'medium',
-        target_type: 'business',
-        target_id: action.partnerId,
-        target_name: `${action.partnerName} - ${action.businessName}`,
-        title: action.headline,
-        summary: action.reasoning,
-        content: action.draftMessage,
-        context: { channel: action.channel },
-      });
-      createdActions.push(growthAction);
+        // Create a GrowthAction for owner review
+        await base44.asServiceRole.entities.GrowthAction.create({
+          studio_id,
+          outcome_id: connectOutcome?.id,
+          agent: 'connector',
+          action_type: 'email',
+          status: 'pending_review',
+          priority: 'medium',
+          target_type: 'business',
+          target_id: partner.id,
+          target_name: partner.name,
+          target_email: partner.email,
+          title: `Connect with ${partner.name}`,
+          summary: `Reach out to this ${partner.type} to start a partnership`,
+          subject: llmResponse.subject,
+          content: llmResponse.body,
+          context: {
+            partner_type: partner.type,
+            suggested_offer: llmResponse.suggested_offer,
+            partner_rating: partner.ai_research?.rating
+          }
+        });
+
+        results.actions_created++;
+      }
     }
 
     // Log agent activity
-    await base44.entities.AgentLog.create({
+    await base44.asServiceRole.entities.AgentLog.create({
+      studio_id,
       agent: 'connector',
-      event_type: 'strategy',
-      summary: `Generated ${createdActions.length} connection actions. Progress: ${connectionsThisWeek}/${connectionsTarget} this week.`,
-      details: {
-        connectionsThisWeek,
-        connectionsTarget,
-        potentialPartners: potentialPartners.length,
-        inProgress: contactedPartners.length,
-        actionsCreated: createdActions.length,
-        insights: agentOutput.insights,
-      },
+      outcome_id: connectOutcome?.id,
+      event_type: mode === 'research' ? 'research' : 'draft',
+      summary: `Found ${results.partners_found} partners, created ${results.actions_created} outreach drafts`,
+      details: results
     });
 
     return Response.json({
       success: true,
-      agent: 'connector',
-      connectionsThisWeek,
-      connectionsTarget,
-      actionsCreated: createdActions.length,
-      inProgress: agentOutput.inProgress || [],
-      insights: agentOutput.insights,
+      ...results
     });
 
   } catch (error) {

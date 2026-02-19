@@ -1,85 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const CONVERTER_SYSTEM_PROMPT = `You are the Converter agent for Sequins, a growth engine for dance studios.
-
-Your job is to help convert trial families into enrolled families. Not by "following up" - by making them FEEL something.
-
-## Your Three Outcomes
-
-### 1. Make every trial student feel special
-Not "send a thank you email." Make them feel SEEN.
-
-What makes a kid feel special:
-- Teacher remembers their name
-- Personalized comment about something they did in class
-- Photo or video moment shared with parents
-- "I noticed Emma really lit up during the across-the-floor section"
-- Shoutout that shows you actually paid attention
-
-### 2. Show value to every no-show family
-They didn't come. Something got in the way. Don't guilt them - give them something.
-
-What shows value without them being there:
-- "Here's what we worked on - Emma would have loved the freeze dance game"
-- Short video clip of the class having fun
-- "The other kids her age were asking about her!"
-- Easy reschedule, no friction, no guilt
-- Something that makes them feel like they missed out (FOMO, but kind)
-
-### 3. Give every trial family a reason to come back
-Not "we'd love to have you." A SPECIFIC reason tied to THEM.
-
-What gives a real reason:
-- "Emma and Sofia really hit it off - Sofia's in our Tuesday class"
-- "I noticed Emma has natural turnout - she'd thrive in our ballet program"
-- "We're starting a new hip hop session next month, perfect timing for beginners"
-- "The spring recital is in April - if she starts now she could be in it"
-- Something specific to the child, the timing, the opportunity
-
-## Voice Guidelines
-
-Warm, personal, observant. You noticed their kid. You're not selling - you're sharing genuine enthusiasm.
-
-Never:
-- "Just following up..."
-- "We'd love to have you back..."
-- "Don't forget to enroll!"
-- Generic compliments ("She did great!")
-
-Always:
-- Specific observations
-- The child's name
-- Something that shows you paid attention
-- A concrete reason or next step
-
-## Output Format
-
-Return a JSON object with:
-{
-  "feelSpecialActions": [...],
-  "showValueActions": [...],
-  "reasonToReturnActions": [...],
-  "insights": {
-    "commonPatterns": [...],
-    "suggestedImprovements": [...]
-  }
-}
-
-Each action should have:
-- familyId: string
-- childName: string
-- type: 'feel_special' | 'show_value' | 'reason_to_return'
-- headline: string (short action title)
-- reasoning: string (why this approach)
-- channel: 'text' | 'email'
-- draftMessage: string (the actual message to send)
-- suggestedMedia?: string (optional media suggestion)
-
-Be specific. Be personal. Make them feel it.`;
-
-function formatDate(date) {
-  return new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-}
+/**
+ * CONVERTER AGENT
+ * Outcomes:
+ * - Make 100% of trial students feel special
+ * - Show value to 100% of no-shows
+ * - Give 100% of trial families a reason to return
+ */
 
 Deno.serve(async (req) => {
   try {
@@ -90,217 +17,240 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch trial families (students with status 'prospect' or recent trials)
-    const students = await base44.entities.Student.filter({ status: 'prospect' });
-    const allStudents = await base44.entities.Student.list();
+    const { studio_id, mode = 'analyze' } = await req.json();
     
-    // Fetch recent attendance to find trial students
-    const recentAttendance = await base44.entities.Attendance.list('-date', 50);
-    
-    // Fetch classes for context
-    const classes = await base44.entities.DanceClass.list();
-    
-    // Fetch studio settings
-    const settings = await base44.entities.StudioSettings.list();
-    const studioName = settings[0]?.name || 'Dance Studio';
-
-    // Build trial families data
-    const trialFamilies = students.map(s => ({
-      id: s.id,
-      childName: s.name,
-      parentName: s.parent_name || 'Parent',
-      parentEmail: s.parent_email,
-      parentPhone: s.phone,
-      trialDate: s.created_date,
-      trialClass: classes.find(c => c.student_names?.includes(s.name))?.title || 'Trial Class',
-      attended: recentAttendance.some(a => a.student_name === s.name && a.status === 'present'),
-      teacherNotes: '',
-      observations: s.tags || [],
-      childAge: s.age || 7,
-      interests: s.interests || [],
-    }));
-
-    // Fetch any student notes for teacher observations
-    const notes = await base44.entities.StudentNote.list('-date', 100);
-    trialFamilies.forEach(f => {
-      const studentNotes = notes.filter(n => n.student_name === f.childName);
-      if (studentNotes.length > 0) {
-        f.teacherNotes = studentNotes.map(n => n.content).join(' | ');
-      }
-    });
-
-    const attended = trialFamilies.filter(f => f.attended);
-    const noShows = trialFamilies.filter(f => !f.attended);
-
-    // Build upcoming classes with openings
-    const upcomingClasses = classes.slice(0, 5).map(c => ({
-      name: c.title,
-      day: c.day,
-      time: `${Math.floor(c.start_time)}:${((c.start_time % 1) * 60).toString().padStart(2, '0')}`,
-      spotsOpen: 10 - (c.student_names?.length || 0),
-    }));
-
-    // Fetch upcoming performances as events
-    const performances = await base44.entities.Performance.filter({ status: 'planning' });
-    const upcomingEvents = performances.slice(0, 3).map(p => ({
-      name: p.title,
-      date: p.date,
-      description: p.description || 'Upcoming performance',
-    }));
-
-    const userPrompt = `
-## Studio Context
-
-**Studio:** ${studioName}
-**Owner:** ${user.full_name}
-
-## Trial Families This Week
-
-### Attended (${attended.length})
-
-${attended.length === 0 ? 'None this week' : attended.map(f => `
-**${f.childName}** (age ${f.childAge})
-- Parent: ${f.parentName}
-- Trial: ${f.trialClass} on ${formatDate(f.trialDate)}
-- Teacher Notes: ${f.teacherNotes || 'None'}
-- Observations: ${f.observations?.join(', ') || 'None'}
-- Interests: ${f.interests?.join(', ') || 'Unknown'}
-- Contact: ${f.parentEmail || f.parentPhone || 'Unknown'}
-`).join('\n')}
-
-### No-Shows (${noShows.length})
-
-${noShows.length === 0 ? 'None this week' : noShows.map(f => `
-**${f.childName}** (age ${f.childAge})
-- Parent: ${f.parentName}
-- Scheduled: ${f.trialClass} on ${formatDate(f.trialDate)}
-- Contact: ${f.parentEmail || f.parentPhone || 'Unknown'}
-`).join('\n')}
-
-## Upcoming Opportunities
-
-**Classes with openings:**
-${upcomingClasses.map(c => `- ${c.name}: ${c.day} at ${c.time} (${c.spotsOpen} spots)`).join('\n')}
-
-**Upcoming events:**
-${upcomingEvents.length > 0 ? upcomingEvents.map(e => `- ${e.name}: ${e.date} - ${e.description}`).join('\n') : 'No upcoming events'}
-
-## Your Task
-
-For each trial family, create personalized actions:
-
-1. **Feel Special** (for those who attended)
-   - What specific thing can we say about their child that shows we noticed them?
-   - Draft a message that makes the parent proud
-
-2. **Show Value** (for no-shows)
-   - What did they miss that would resonate with their kid?
-   - Draft a message that creates FOMO without guilt
-
-3. **Reason to Return** (for everyone)
-   - What's a SPECIFIC reason this family should enroll?
-   - Connect it to their child's interests, age, timing, or something observed
-
-Make every message feel like it was written just for them. No templates.
-
-Return ONLY valid JSON matching the output format.
-`;
-
-    const agentOutput = await base44.integrations.Core.InvokeLLM({
-      prompt: `${CONVERTER_SYSTEM_PROMPT}\n\n${userPrompt}`,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          feelSpecialActions: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                familyId: { type: "string" },
-                childName: { type: "string" },
-                type: { type: "string" },
-                headline: { type: "string" },
-                reasoning: { type: "string" },
-                channel: { type: "string" },
-                draftMessage: { type: "string" },
-                suggestedMedia: { type: "string" }
-              }
-            }
-          },
-          showValueActions: { type: "array", items: { type: "object" } },
-          reasonToReturnActions: { type: "array", items: { type: "object" } },
-          insights: {
-            type: "object",
-            properties: {
-              commonPatterns: { type: "array", items: { type: "string" } },
-              suggestedImprovements: { type: "array", items: { type: "string" } }
-            }
-          }
-        }
-      }
-    });
-
-    // Find the converter outcomes
-    const outcomes = await base44.entities.GrowthOutcome.filter({ agent: 'converter' });
-    
-    // Create GrowthActions from agent output
-    const allActions = [
-      ...(agentOutput.feelSpecialActions || []).map(a => ({ ...a, outcomeType: 'feel_special' })),
-      ...(agentOutput.showValueActions || []).map(a => ({ ...a, outcomeType: 'show_value' })),
-      ...(agentOutput.reasonToReturnActions || []).map(a => ({ ...a, outcomeType: 'reason_to_return' })),
-    ];
-
-    const createdActions = [];
-    for (const action of allActions) {
-      // Find matching outcome
-      const outcome = outcomes.find(o => 
-        (action.outcomeType === 'feel_special' && o.name.toLowerCase().includes('special')) ||
-        (action.outcomeType === 'show_value' && o.name.toLowerCase().includes('no-show')) ||
-        (action.outcomeType === 'reason_to_return' && o.name.toLowerCase().includes('come back'))
-      );
-
-      const growthAction = await base44.entities.GrowthAction.create({
-        outcome_id: outcome?.id || outcomes[0]?.id,
-        agent: 'converter',
-        action_type: action.channel === 'email' ? 'email' : 'sms',
-        status: 'pending_review',
-        priority: 'high',
-        target_type: 'family',
-        target_id: action.familyId,
-        target_name: action.childName,
-        title: action.headline,
-        summary: action.reasoning,
-        content: action.draftMessage,
-        context: {
-          type: action.type,
-          suggestedMedia: action.suggestedMedia,
-        },
-      });
-      createdActions.push(growthAction);
+    if (!studio_id) {
+      return Response.json({ error: 'studio_id required' }, { status: 400 });
     }
 
-    // Log agent activity
-    await base44.entities.AgentLog.create({
+    const students = await base44.entities.Student.filter({ studio_id });
+    const attendance = await base44.entities.Attendance.filter({ studio_id });
+    const notes = await base44.entities.StudentNote.filter({ studio_id });
+    const classes = await base44.entities.DanceClass.filter({ studio_id });
+
+    const outcomes = await base44.entities.GrowthOutcome.filter({ studio_id, agent: 'converter' });
+
+    const trialStudents = students.filter(s => s.status === 'prospect');
+    
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    const recentAttendance = attendance.filter(a => new Date(a.date) >= lastWeek);
+
+    const results = {
+      mode,
+      studio_id,
+      trials_analyzed: 0,
+      no_shows_found: 0,
+      actions_created: 0
+    };
+
+    const trialAttendees = recentAttendance
+      .filter(a => a.status === 'present')
+      .filter(a => {
+        const student = students.find(s => s.name === a.student_name);
+        return student?.status === 'prospect';
+      });
+
+    const noShows = recentAttendance.filter(a => a.status === 'absent');
+
+    results.trials_analyzed = trialAttendees.length;
+    results.no_shows_found = noShows.length;
+
+    if (mode === 'feel_special' || mode === 'full') {
+      for (const attendanceRecord of trialAttendees.slice(0, 10)) {
+        const student = students.find(s => s.name === attendanceRecord.student_name);
+        if (!student) continue;
+
+        const cls = classes.find(c => c.id === attendanceRecord.class_id);
+        const studentNotes = notes.filter(n => n.student_name === student.name);
+
+        const prompt = `You're helping a dance studio make a trial student feel special after their first class.
+
+Student: ${student.name}, age ${student.age || 'unknown'}
+Class attended: ${cls?.title || attendanceRecord.class_name}
+Teacher notes: ${studentNotes.map(n => `- ${n.content}`).join('\n') || 'No specific notes yet'}
+
+Write a follow-up message that:
+1. Mentions something SPECIFIC you noticed about their child
+2. Makes the child sound like they have potential
+3. Invites them back with enthusiasm
+
+Keep it under 80 words. Be specific, not generic.
+
+Return JSON: {
+  "subject": "email subject",
+  "message": "the message",
+  "specific_observation": "the specific thing you 'noticed'"
+}`;
+
+        const llmResponse = await base44.integrations.Core.InvokeLLM({
+          prompt,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              subject: { type: "string" },
+              message: { type: "string" },
+              specific_observation: { type: "string" }
+            }
+          }
+        });
+
+        const feelSpecialOutcome = outcomes.find(o => o.name.includes('special'));
+
+        await base44.asServiceRole.entities.GrowthAction.create({
+          studio_id,
+          outcome_id: feelSpecialOutcome?.id,
+          agent: 'converter',
+          action_type: 'email',
+          status: 'pending_review',
+          priority: 'high',
+          target_type: 'student',
+          target_id: student.id,
+          target_name: student.name,
+          target_email: student.parent_email,
+          title: `Make ${student.name} feel special`,
+          summary: llmResponse.specific_observation,
+          subject: llmResponse.subject,
+          content: llmResponse.message,
+          context: {
+            class_attended: cls?.title,
+            observation: llmResponse.specific_observation,
+            outcome_type: 'feel_special'
+          }
+        });
+
+        results.actions_created++;
+      }
+    }
+
+    if (mode === 'no_show_value' || mode === 'full') {
+      for (const noShow of noShows.slice(0, 5)) {
+        const student = students.find(s => s.name === noShow.student_name);
+        const cls = classes.find(c => c.id === noShow.class_id);
+
+        const prompt = `A family missed their scheduled dance class. Write a follow-up that shows value, not guilt.
+
+Student: ${noShow.student_name}
+Missed class: ${cls?.title || noShow.class_name}
+
+Write a message that doesn't make them feel bad, shows what they missed, and makes rescheduling easy.
+Keep it under 60 words.
+
+Return JSON: {
+  "subject": "email subject",
+  "message": "the message",
+  "what_they_missed": "fun thing that happened"
+}`;
+
+        const llmResponse = await base44.integrations.Core.InvokeLLM({
+          prompt,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              subject: { type: "string" },
+              message: { type: "string" },
+              what_they_missed: { type: "string" }
+            }
+          }
+        });
+
+        const noShowOutcome = outcomes.find(o => o.name.includes('no-show'));
+
+        await base44.asServiceRole.entities.GrowthAction.create({
+          studio_id,
+          outcome_id: noShowOutcome?.id,
+          agent: 'converter',
+          action_type: 'email',
+          status: 'pending_review',
+          priority: 'medium',
+          target_type: 'student',
+          target_id: student?.id,
+          target_name: noShow.student_name,
+          target_email: student?.parent_email,
+          title: `Re-engage ${noShow.student_name} after missed class`,
+          summary: llmResponse.what_they_missed,
+          subject: llmResponse.subject,
+          content: llmResponse.message,
+          context: {
+            missed_class: cls?.title,
+            outcome_type: 'no_show_value'
+          }
+        });
+
+        results.actions_created++;
+      }
+    }
+
+    if (mode === 'reason_to_return' || mode === 'full') {
+      const trialFamilies = students.filter(s => s.status === 'prospect');
+      
+      for (const student of trialFamilies.slice(0, 5)) {
+        const studentAttendance = attendance.filter(a => a.student_name === student.name);
+        const hasAttended = studentAttendance.some(a => a.status === 'present');
+        
+        if (!hasAttended) continue;
+
+        const studentNotes = notes.filter(n => n.student_name === student.name);
+
+        const prompt = `Create a compelling reason for a trial family to return and enroll.
+
+Student: ${student.name}, age ${student.age || 'unknown'}
+Teacher observations: ${studentNotes.map(n => n.content).join('; ') || 'Showed interest'}
+
+Create a message that references their experience, paints what's next, and creates urgency without being pushy.
+Keep it under 100 words.
+
+Return JSON: {
+  "subject": "email subject",
+  "message": "the message",
+  "hook": "the compelling reason/urgency"
+}`;
+
+        const llmResponse = await base44.integrations.Core.InvokeLLM({
+          prompt,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              subject: { type: "string" },
+              message: { type: "string" },
+              hook: { type: "string" }
+            }
+          }
+        });
+
+        const returnOutcome = outcomes.find(o => o.name.includes('return'));
+
+        await base44.asServiceRole.entities.GrowthAction.create({
+          studio_id,
+          outcome_id: returnOutcome?.id,
+          agent: 'converter',
+          action_type: 'email',
+          status: 'pending_review',
+          priority: 'high',
+          target_type: 'student',
+          target_id: student.id,
+          target_name: student.name,
+          target_email: student.parent_email,
+          title: `Give ${student.name} a reason to return`,
+          summary: llmResponse.hook,
+          subject: llmResponse.subject,
+          content: llmResponse.message,
+          context: { outcome_type: 'reason_to_return' }
+        });
+
+        results.actions_created++;
+      }
+    }
+
+    await base44.asServiceRole.entities.AgentLog.create({
+      studio_id,
       agent: 'converter',
-      event_type: 'strategy',
-      summary: `Generated ${createdActions.length} conversion actions for ${trialFamilies.length} trial families`,
-      details: {
-        attended: attended.length,
-        noShows: noShows.length,
-        actionsCreated: createdActions.length,
-        insights: agentOutput.insights,
-      },
+      event_type: 'draft',
+      summary: `Analyzed ${results.trials_analyzed} trials, ${results.no_shows_found} no-shows, created ${results.actions_created} actions`,
+      details: results
     });
 
-    return Response.json({
-      success: true,
-      agent: 'converter',
-      trialsThisWeek: trialFamilies.length,
-      attendedCount: attended.length,
-      noShowCount: noShows.length,
-      actionsCreated: createdActions.length,
-      insights: agentOutput.insights,
-    });
+    return Response.json({ success: true, ...results });
 
   } catch (error) {
     console.error('Converter agent error:', error);

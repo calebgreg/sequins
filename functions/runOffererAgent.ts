@@ -1,85 +1,26 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const OFFERER_SYSTEM_PROMPT = `You are the Offerer agent for Sequins, a growth engine for dance studios.
+/**
+ * OFFERER AGENT
+ * Outcome: Make an offer to X new families per week
+ * Does: Finds leads/prospects, matches them to the right offer, drafts personalized invitations
+ */
 
-Your job is to make OFFERS to new families. Not spam - genuine, personalized offers that feel like invitations.
+const SERPAPI_KEY = Deno.env.get("SERPAPI_KEY");
 
-## Your One Outcome
-
-### Make an offer to 10 new families per week
-
-"New families" = people who haven't tried you yet but should.
-
-Sources of new families:
-- Leads who inquired but haven't booked a trial
-- Families referred by partners
-- Families who engaged on social
-- Families from events
-- Families in your community who fit the profile
-
-What makes a good offer:
-- Specific to THEM (their kid's age, interests, location)
-- Time-bound (creates urgency without pressure)
-- Low friction (easy to say yes)
-- Valuable (free trial, special rate, exclusive access)
-
-NOT this:
-- Blast emails to a list
-- "We're enrolling for fall!"
-- Generic discount codes
-- Pushy sales language
-
-Instead:
-- "I heard Emma loves Frozen - we're doing a princess ballet camp next month..."
-- "The Martinez family mentioned you're looking for activities for Sophia..."
-- "I saw your comment about finding dance for your 4-year-old..."
-- Personal, relevant, timely
-
-## Types of Offers
-
-1. **Trial Invite** - Free trial class, specific recommendation
-2. **Event Invite** - Open house, showcase, camp preview
-3. **Referral Follow-up** - Partner sent them, warm connection
-4. **Re-engagement** - Inquired before, never booked
-
-## Voice Guidelines
-
-Inviting, not selling. Specific, not generic. Warm, not corporate.
-
-You're a neighbor saying "I think your kid would love this" - not a business saying "Sign up now!"
-
-## Output Format
-
-Return a JSON object with:
-{
-  "offerActions": [...],
-  "insights": {
-    "bestSources": [...],
-    "staleLeads": number,
-    "suggestedOffers": [...]
-  }
-}
-
-Each offer action should have:
-- leadId: string
-- familyName: string
-- childName: string (optional)
-- headline: string
-- offerType: 'trial_invite' | 'event_invite' | 'referral_followup' | 're_engagement'
-- reasoning: string
-- channel: 'text' | 'email' | 'call' | 'dm'
-- draftMessage: string
-- specificOffer: string
-- urgency: 'now' | 'soon' | 'later'
-
-Each offer should feel like it was crafted just for that family.`;
-
-function formatDate(date) {
-  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function daysSince(date) {
-  return Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
+async function searchForProspects(query, location) {
+  if (!SERPAPI_KEY) return [];
+  
+  const params = new URLSearchParams({
+    q: query,
+    location: location,
+    api_key: SERPAPI_KEY,
+    engine: "google"
+  });
+  
+  const response = await fetch(`https://serpapi.com/search?${params}`);
+  const data = await response.json();
+  return data.organic_results || [];
 }
 
 Deno.serve(async (req) => {
@@ -91,225 +32,185 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch prospect students as leads
-    const prospectStudents = await base44.entities.Student.filter({ status: 'prospect' });
+    const { studio_id, mode = 'find' } = await req.json();
     
-    // Fetch growth targets that are prospects
-    const targets = await base44.entities.GrowthTarget.filter({ status: 'prospect' });
-    
-    // Fetch classes for schedule
-    const classes = await base44.entities.DanceClass.list();
-    
-    // Fetch upcoming performances as event opportunities
-    const performances = await base44.entities.Performance.filter({ status: 'planning' });
-    
-    // Fetch studio settings
-    const settings = await base44.entities.StudioSettings.list();
-    const studioName = settings[0]?.name || 'Dance Studio';
+    if (!studio_id) {
+      return Response.json({ error: 'studio_id required' }, { status: 400 });
+    }
 
-    // Build leads from prospect students and growth targets
-    const leads = [
-      ...prospectStudents.map(s => ({
-        id: s.id,
-        parentName: s.parent_name || 'Parent',
-        parentEmail: s.parent_email,
-        parentPhone: s.phone,
-        childName: s.name,
-        childAge: s.age,
-        source: 'inquiry',
-        sourceDetail: '',
-        interests: s.interests || [],
-        inquiryDate: s.created_date,
-        notes: '',
-        status: 'new',
-      })),
-      ...targets.filter(t => t.target_type === 'prospect_family').map(t => ({
-        id: t.id,
-        parentName: t.contact_name || t.name,
-        parentEmail: t.email,
-        parentPhone: t.phone,
-        childName: '',
-        childAge: null,
-        source: t.category === 'referral' ? 'partner_referral' : 'inquiry',
-        sourceDetail: t.notes || '',
-        interests: t.tags || [],
-        inquiryDate: t.created_date,
-        notes: t.notes || '',
-        status: t.status === 'contacted' ? 'contacted' : 'new',
-      })),
-    ];
+    const studios = await base44.entities.Studio.filter({ id: studio_id });
+    const studio = studios[0];
+    const studioLocation = studio?.address || "local area";
 
-    // Segment leads
-    const newLeads = leads.filter(l => l.status === 'new');
-    const contactedNoResponse = leads.filter(l => l.status === 'contacted' || l.status === 'no_response');
-    const partnerReferrals = leads.filter(l => l.source === 'partner_referral');
+    const leads = await base44.entities.Lead.filter({ studio_id });
+    const prospects = await base44.entities.Prospect.filter({ studio_id });
+    const classes = await base44.entities.DanceClass.filter({ studio_id });
 
-    // Build class schedule
-    const classSchedule = classes.map(c => ({
-      name: c.title,
-      ageRange: '4-18',
-      day: c.day,
-      time: `${Math.floor(c.start_time)}:${((c.start_time % 1) * 60).toString().padStart(2, '0')}`,
-      spotsOpen: 10 - (c.student_names?.length || 0),
-    }));
+    const outcomes = await base44.entities.GrowthOutcome.filter({ studio_id, agent: 'offerer' });
+    const offerOutcome = outcomes.find(o => o.name.includes('offer'));
+    const weeklyTarget = offerOutcome?.target_count || 10;
 
-    // Build opportunities
-    const opportunities = [
-      { type: 'trial_invite', name: 'Free Trial Class', description: 'Complimentary first class in any program' },
-      ...performances.slice(0, 2).map(p => ({
-        type: 'event_invite',
-        name: p.title,
-        description: p.description || 'Upcoming performance',
-        deadline: p.date,
-      })),
-    ];
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const actions = await base44.entities.GrowthAction.filter({ studio_id, agent: 'offerer' });
+    const offersThisWeek = actions.filter(a => 
+      (a.status === 'sent' || a.status === 'completed') &&
+      new Date(a.created_date) >= weekStart
+    ).length;
 
-    const userPrompt = `
-## Studio Context
+    const results = {
+      mode,
+      studio_id,
+      weekly_target: weeklyTarget,
+      current_progress: offersThisWeek,
+      prospects_found: 0,
+      actions_created: 0
+    };
 
-**Studio:** ${studioName}
-**Owner:** ${user.full_name}
+    if (mode === 'find') {
+      const searchQueries = [
+        `"looking for dance classes" kids ${studioLocation}`,
+        `"dance studio" review ${studioLocation}`
+      ];
 
-## Leads to Make Offers To
+      for (const query of searchQueries) {
+        const searchResults = await searchForProspects(query, studioLocation);
+        
+        if (searchResults.length > 0) {
+          const prompt = `Analyze these search results for potential dance studio prospects.
 
-### New Leads (${newLeads.length})
+Search results:
+${JSON.stringify(searchResults.slice(0, 5), null, 2)}
 
-${newLeads.length === 0 ? 'No new leads this week.' : newLeads.slice(0, 15).map(l => `
-**${l.parentName}**${l.childName ? ` - ${l.childName}` : ''}${l.childAge ? ` (age ${l.childAge})` : ''}
-- Source: ${l.source}${l.sourceDetail ? ` - ${l.sourceDetail}` : ''}
-- Interests: ${l.interests?.join(', ') || 'Unknown'}
-- Inquiry: ${l.inquiryDate ? formatDate(l.inquiryDate) : 'Unknown'}
-- Notes: ${l.notes || 'None'}
-- Contact: ${l.parentPhone || l.parentEmail || 'Unknown'}
-`).join('\n')}
+Extract any signals of families looking for dance classes.
 
-### Partner Referrals (${partnerReferrals.length})
+Return JSON: {
+  "prospects": [
+    {
+      "source_url": "url where found",
+      "original_content": "relevant quote",
+      "signal_type": "buying_intent|latent_intent|unhappy_competitor|new_mover",
+      "signal_strength": "hot|warm|cool",
+      "notes": "why this is a prospect"
+    }
+  ]
+}`;
 
-${partnerReferrals.length === 0 ? 'No partner referrals.' : partnerReferrals.map(l => `
-**${l.parentName}**${l.childName ? ` - ${l.childName}` : ''}
-- Referred by: ${l.sourceDetail || 'Unknown partner'}
-- Notes: ${l.notes || 'None'}
-- Contact: ${l.parentPhone || l.parentEmail || 'Unknown'}
-`).join('\n')}
-
-### Contacted, No Response Yet (${contactedNoResponse.length})
-
-${contactedNoResponse.length === 0 ? 'None waiting.' : contactedNoResponse.slice(0, 5).map(l => `
-**${l.parentName}** - last contacted ${l.inquiryDate ? daysSince(l.inquiryDate) + ' days ago' : 'unknown'}
-`).join('\n')}
-
-## Current Offers Available
-
-${opportunities.map(o => `
-### ${o.name}
-- Type: ${o.type}
-- Description: ${o.description}
-${o.deadline ? `- Deadline: ${formatDate(o.deadline)}` : ''}
-`).join('\n')}
-
-## Class Schedule (with openings)
-
-${classSchedule.filter(c => c.spotsOpen > 0).slice(0, 10).map(c => `
-- **${c.name}** (${c.ageRange}): ${c.day} at ${c.time} - ${c.spotsOpen} spots
-`).join('\n')}
-
-## Your Task
-
-Create up to 10 personalized offers for this week.
-
-For each:
-1. Pick the RIGHT family (prioritize partner referrals and warm leads)
-2. Match them to the RIGHT offer (based on age, interests, timing)
-3. Craft a PERSONAL message that feels like an invitation, not a sales pitch
-4. Include a SPECIFIC offer with easy next step
-
-Return ONLY valid JSON matching the output format.
-`;
-
-    const agentOutput = await base44.integrations.Core.InvokeLLM({
-      prompt: `${OFFERER_SYSTEM_PROMPT}\n\n${userPrompt}`,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          offerActions: {
-            type: "array",
-            items: {
+          const llmResponse = await base44.integrations.Core.InvokeLLM({
+            prompt,
+            response_json_schema: {
               type: "object",
               properties: {
-                leadId: { type: "string" },
-                familyName: { type: "string" },
-                childName: { type: "string" },
-                headline: { type: "string" },
-                offerType: { type: "string" },
-                reasoning: { type: "string" },
-                channel: { type: "string" },
-                draftMessage: { type: "string" },
-                specificOffer: { type: "string" },
-                urgency: { type: "string" }
+                prospects: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      source_url: { type: "string" },
+                      original_content: { type: "string" },
+                      signal_type: { type: "string" },
+                      signal_strength: { type: "string" },
+                      notes: { type: "string" }
+                    }
+                  }
+                }
               }
             }
-          },
-          insights: {
-            type: "object",
-            properties: {
-              bestSources: { type: "array", items: { type: "string" } },
-              staleLeads: { type: "number" },
-              suggestedOffers: { type: "array", items: { type: "string" } }
-            }
+          });
+
+          for (const prospect of llmResponse.prospects || []) {
+            await base44.asServiceRole.entities.Prospect.create({
+              studio_id,
+              source: 'serp',
+              source_detail: prospect.source_url,
+              original_content: prospect.original_content,
+              signal_type: prospect.signal_type,
+              signal_strength: prospect.signal_strength,
+              status: 'new',
+              agent_notes: prospect.notes
+            });
+            
+            results.prospects_found++;
           }
         }
       }
-    });
-
-    // Find the offerer outcomes
-    const outcomes = await base44.entities.GrowthOutcome.filter({ agent: 'offerer' });
-    
-    // Create GrowthActions from agent output
-    const createdActions = [];
-    for (const action of (agentOutput.offerActions || [])) {
-      const growthAction = await base44.entities.GrowthAction.create({
-        outcome_id: outcomes[0]?.id,
-        agent: 'offerer',
-        action_type: action.channel === 'email' ? 'email' : action.channel === 'call' ? 'call' : 'sms',
-        status: 'pending_review',
-        priority: action.urgency === 'now' ? 'high' : 'medium',
-        target_type: 'family',
-        target_id: action.leadId,
-        target_name: action.childName || action.familyName,
-        title: action.headline,
-        summary: action.reasoning,
-        content: action.draftMessage,
-        context: { 
-          offerType: action.offerType,
-          specificOffer: action.specificOffer,
-        },
-      });
-      createdActions.push(growthAction);
     }
 
-    // Log agent activity
-    await base44.entities.AgentLog.create({
+    if (mode === 'offer' || mode === 'full') {
+      const newLeads = leads.filter(l => l.status === 'new' || l.status === 'contacted');
+      const availableClasses = classes.filter(c => c.type !== 'admin');
+
+      for (const lead of newLeads.slice(0, 5)) {
+        const prompt = `Create a personalized offer for a prospective dance family.
+
+Lead info:
+- Name: ${lead.parent_name || 'Parent'}
+- Child: ${lead.child_name || 'their child'}, age ${lead.child_age || 'unknown'}
+- Interests: ${lead.interests?.join(', ') || 'dance'}
+- Source: ${lead.source}
+
+Available classes:
+${availableClasses.slice(0, 5).map(c => `- ${c.title}`).join('\n')}
+
+Write a warm, personalized message inviting them to try a class. Keep it under 100 words.
+
+Return JSON: {
+  "subject": "email subject",
+  "message": "the message",
+  "suggested_class": "which class to invite them to",
+  "offer_type": "free_trial|discount|open_house|demo"
+}`;
+
+        const llmResponse = await base44.integrations.Core.InvokeLLM({
+          prompt,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              subject: { type: "string" },
+              message: { type: "string" },
+              suggested_class: { type: "string" },
+              offer_type: { type: "string" }
+            }
+          }
+        });
+
+        await base44.asServiceRole.entities.GrowthAction.create({
+          studio_id,
+          outcome_id: offerOutcome?.id,
+          agent: 'offerer',
+          action_type: 'email',
+          status: 'pending_review',
+          priority: 'high',
+          target_type: 'family',
+          target_id: lead.id,
+          target_name: lead.parent_name || lead.child_name,
+          target_email: lead.email,
+          target_phone: lead.phone,
+          title: `Invite ${lead.child_name || 'family'} to try a class`,
+          summary: `${lead.source} lead interested in ${lead.interests?.join(', ') || 'dance'}`,
+          subject: llmResponse.subject,
+          content: llmResponse.message,
+          context: {
+            suggested_class: llmResponse.suggested_class,
+            offer_type: llmResponse.offer_type,
+            lead_source: lead.source
+          }
+        });
+
+        results.actions_created++;
+      }
+    }
+
+    await base44.asServiceRole.entities.AgentLog.create({
+      studio_id,
       agent: 'offerer',
-      event_type: 'strategy',
-      summary: `Generated ${createdActions.length} offer actions for ${leads.length} leads`,
-      details: {
-        totalLeads: leads.length,
-        newThisWeek: newLeads.length,
-        partnerReferrals: partnerReferrals.length,
-        actionsCreated: createdActions.length,
-        insights: agentOutput.insights,
-      },
+      outcome_id: offerOutcome?.id,
+      event_type: mode === 'find' ? 'research' : 'draft',
+      summary: `Found ${results.prospects_found} prospects, created ${results.actions_created} offers`,
+      details: results
     });
 
-    return Response.json({
-      success: true,
-      agent: 'offerer',
-      totalLeads: leads.length,
-      newThisWeek: newLeads.length,
-      waitingForResponse: contactedNoResponse.length,
-      actionsCreated: createdActions.length,
-      insights: agentOutput.insights,
-    });
+    return Response.json({ success: true, ...results });
 
   } catch (error) {
     console.error('Offerer agent error:', error);
