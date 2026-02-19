@@ -86,12 +86,22 @@ function GrowthContent() {
     <div 
       className="min-h-screen"
       style={{
-        background: 'linear-gradient(165deg, #FFF9F8 0%, #FDF5F4 40%, #FAF0EF 100%)',
+        background: '#ffffff',
         fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
+      {/* Ambient background shapes */}
+      <div 
+        className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+      />
+      <div 
+        className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
+      />
+
       {/* Header */}
-      <div className="px-6 md:px-10 pt-10 mb-2">
+      <div className="relative px-6 md:px-10 pt-10 mb-2">
         <div 
           className="text-[13px] font-medium mb-2"
           style={{ color: '#C8B8B4', letterSpacing: '0.3px' }}
@@ -101,12 +111,13 @@ function GrowthContent() {
         <h1 
           className="text-4xl md:text-[42px] font-semibold italic m-0"
           style={{
-            color: '#E0D0CC',
+            color: 'transparent',
+            backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+            filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
             letterSpacing: '-1px',
-            textShadow: `
-              1px 1px 0 rgba(255,255,255,0.9),
-              2px 2px 4px rgba(180,150,145,0.15)
-            `,
           }}
         >
           Growth Engine
@@ -114,7 +125,7 @@ function GrowthContent() {
       </div>
 
       {/* Main content */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:gap-10 px-6 md:px-10 py-8 pb-16">
+      <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:gap-10 px-6 md:px-10 py-8 pb-16">
         {/* Main column - Current actions */}
         <div>
           <div 
@@ -150,7 +161,8 @@ function GrowthContent() {
             <div 
               className="rounded-2xl py-5 px-6 text-sm"
               style={{
-                background: 'rgba(255, 252, 251, 0.7)',
+                background: 'linear-gradient(145deg, rgba(254,240,240,0.9) 0%, rgba(252,235,235,0.85) 100%)',
+                boxShadow: 'inset 0 2px 8px rgba(180, 120, 120, 0.06)',
                 color: '#A89894',
               }}
             >
