@@ -217,15 +217,14 @@ export default function AgentDetailView({ agentKey, studioId, actions = [] }) {
                 boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 16px -8px rgba(180,150,140,0.1)',
               }}
             >
-              <span className="text-lg">{action.icon}</span>
               <span className="flex-1 text-sm font-medium" style={{ color: '#6A5A56' }}>
                 {action.label}
               </span>
               {isRunning ? (
                 <Loader2 className="w-4 h-4 animate-spin" style={{ color: '#c4b5ab' }} />
               ) : (
-                <svg className="w-4 h-4" fill="none" stroke="#c4b5ab" viewBox="0 0 24 24" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+                <svg className="w-3 h-3" fill="none" stroke="#d4c4ba" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               )}
             </button>
