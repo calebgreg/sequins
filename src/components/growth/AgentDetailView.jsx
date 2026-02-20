@@ -165,7 +165,7 @@ export default function AgentDetailView({ agentKey, studioId, actions = [] }) {
 
       {/* Last run */}
       <div className="flex items-center gap-2 mt-4 mb-8">
-        <Clock className="w-3.5 h-3.5" style={{ color: '#c4b5ab' }} />
+        <span className="text-xs" style={{ color: '#c4b5ab' }}>⏱</span>
         <span className="text-xs" style={{ color: '#b5a599' }}>
           Last ran: {formatTimeAgo(lastRun)}
         </span>
