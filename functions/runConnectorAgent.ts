@@ -24,24 +24,10 @@ async function searchNearbyPlaces(query, location, radius = 10000) {
     return [];
   }
 
-  console.log(`[Places] Geocoding: "${location}"`);
+  // Use Places API (New) - Text Search with location string directly (no geocoding needed)
+  const textQuery = `${query} near ${location}`;
+  console.log(`[Places] Searching: "${textQuery}"`);
 
-  // First, geocode the location to get lat/lng
-  const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_MAPS_API_KEY}`;
-  const geocodeRes = await fetch(geocodeUrl);
-  const geocodeData = await geocodeRes.json();
-  
-  console.log(`[Places] Geocode status: ${geocodeData.status}, results: ${geocodeData.results?.length || 0}`);
-  
-  if (!geocodeData.results?.[0]?.geometry?.location) {
-    console.log("[Places] Could not geocode location:", location, "Response:", JSON.stringify(geocodeData.status));
-    return [];
-  }
-  
-  const { lat, lng } = geocodeData.results[0].geometry.location;
-  console.log(`[Places] Geocoded to: ${lat}, ${lng}`);
-
-  // Use Places API (New) - Text Search endpoint
   const placesRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
     method: 'POST',
     headers: {
@@ -50,19 +36,13 @@ async function searchNearbyPlaces(query, location, radius = 10000) {
       'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.types,places.businessStatus'
     },
     body: JSON.stringify({
-      textQuery: query,
-      locationBias: {
-        circle: {
-          center: { latitude: lat, longitude: lng },
-          radius: radius
-        }
-      },
+      textQuery: textQuery,
       maxResultCount: 10
     })
   });
   const placesData = await placesRes.json();
 
-  console.log(`[Places] Search results: ${placesData.places?.length || 0}`);
+  console.log(`[Places] Results: ${placesData.places?.length || 0}`);
   if (placesData.error) {
     console.log(`[Places] API Error: ${JSON.stringify(placesData.error)}`);
   }
