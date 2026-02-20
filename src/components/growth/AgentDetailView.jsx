@@ -149,7 +149,15 @@ export default function AgentDetailView({ agentKey, studioId, actions = [] }) {
     <div className="p-6 md:p-10 max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-2">
-        <span className="text-3xl">{config.emoji}</span>
+        <div
+          className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+          style={{
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
+            boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+          }}
+        >
+          <span className="text-base font-semibold" style={{ color: '#c9a99c' }}>{config.letter}</span>
+        </div>
         <div>
           <h2 className="text-2xl font-bold" style={etchedText}>{config.label}</h2>
           <p className="text-sm mt-0.5" style={{ color: '#b5a599' }}>{config.description}</p>
