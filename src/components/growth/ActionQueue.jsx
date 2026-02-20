@@ -82,7 +82,6 @@ export default function ActionQueue({ actions, studioId }) {
               onApprove={() => handleApprove(action)}
               onDismiss={() => handleDismiss(action)}
               onContentChange={(val) => { editedContentRef.current[action.id] = val; }}
-              studioInfo={studioInfo}
             />
           ))}
         </AnimatePresence>
