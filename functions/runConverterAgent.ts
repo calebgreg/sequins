@@ -303,25 +303,33 @@ Return JSON: {
         if (existingActions.length > 0) continue;
 
         try {
-          const prepPrompt = `Create a trial prep message to reduce no-shows:
+          const prepSender = (() => {
+            const name = user.full_name || '';
+            if (name.includes('@') || name.includes('.')) return null;
+            return name.split(' ')[0];
+          })() || studioName.split(' ')[0];
 
-FAMILY:
-- Parent: ${lead.parent_name}
-- Child: ${lead.child_name}, age ${lead.child_age || 'unknown'}
-- Trial Date: ${lead.trial_date} (${daysUntil} days away)
-- Interest: ${lead.child_interests?.join(', ') || 'Dance'}
+          const prepPrompt = `Write a quick trial-prep reminder text from a dance studio.
 
-Write a friendly reminder that:
-1. Builds excitement for the child
-2. Gives practical info (what to wear, where to park)
-3. Reduces anxiety for first-timers
-4. Confirms they're coming
+SENDER: ${prepSender} from ${studioName}
+PARENT: ${lead.parent_name}
+CHILD: ${lead.child_name}, age ${lead.child_age || 'unknown'}
+TRIAL: ${lead.trial_date} (${daysUntil} day${daysUntil !== 1 ? 's' : ''} away)
+INTEREST: ${lead.child_interests?.join(', ') || 'Dance'}
+
+CRITICAL RULES:
+- MAX 3 sentences.
+- Be practical: what to wear, what to expect. Parents need this info.
+- Build a tiny bit of excitement for the kid without being cheesy
+- Confirm casually: "Still good for [day]?" not "Please confirm your attendance"
+- NO URLs, NO links
+- NO formal sign-off
 
 Return JSON: {
-  "excitement_builder": "something to get the child excited",
-  "practical_tip": "what to bring/wear",
+  "excitement_builder": "what to tell the kid",
+  "practical_tip": "what to wear/bring",
   "anxiety_reducer": "something reassuring",
-  "message": "the full message (under 100 words)"
+  "message": "the complete text"
 }`;
 
           const prep = await base44.integrations.Core.InvokeLLM({
