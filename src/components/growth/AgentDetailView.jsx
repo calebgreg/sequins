@@ -223,7 +223,9 @@ export default function AgentDetailView({ agentKey, studioId, actions = [] }) {
               {isRunning ? (
                 <Loader2 className="w-4 h-4 animate-spin" style={{ color: '#c4b5ab' }} />
               ) : (
-                <Play className="w-4 h-4" style={{ color: '#c4b5ab' }} />
+                <svg className="w-4 h-4" fill="none" stroke="#c4b5ab" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+                </svg>
               )}
             </button>
           );
