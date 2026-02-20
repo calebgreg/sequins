@@ -186,11 +186,11 @@ Deno.serve(async (req) => {
             await base44.asServiceRole.entities.Partner.create({
               studio_id,
               name: place.name,
-              type: category.type,
+              category: category.type,
               address: details?.address || place.address,
               phone: details?.phone,
               website: details?.website,
-              status: 'identified',
+              relationship_status: 'identified',
               ai_research: {
                 source: 'google_places',
                 place_id: place.place_id,
