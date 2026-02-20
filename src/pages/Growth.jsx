@@ -104,24 +104,14 @@ Return JSON: { "subject": "new subject", "body": "new body" }`,
     id: action.id,
     category: `${action.agent?.charAt(0).toUpperCase()}${action.agent?.slice(1) || 'Growth'} · ${action.action_type || 'Action'}`,
     headline: action.title || 'Pending action',
-    subtext: action.target_name || action.summary || '',
+    subtext: action.summary || action.target_name || '',
     draft: action.content,
-    draftLabel: action.action_type === 'email' ? 'Draft email' : 'Draft message',
-    channel: action.action_type === 'email' ? 'Email' : action.action_type === 'sms' ? 'Text message' : action.action_type,
-    placeholder: "Looks good / Make it shorter / Skip this one...",
+    subject: action.subject,
+    channel: action.action_type === 'email' ? 'Email' : action.action_type === 'sms' ? 'Text' : action.action_type,
+    placeholder: "send it / tweak the tone / skip / rewrite for a gym owner...",
   }));
 
-  // If no pending actions, show sample actions for demo
-  const displayActions = currentActions.length > 0 ? currentActions : [
-    {
-      id: 'sample-1',
-      category: 'Acquisition · Connect',
-      headline: 'No actions ready yet',
-      subtext: 'Your growth agents are working on it',
-      draft: null,
-      placeholder: "Run agents / Check status...",
-    },
-  ];
+  const displayActions = currentActions;
 
   // Group outcomes by category
   const outcomesByCategory = outcomes.filter(o => o.is_active).reduce((acc, o) => {
