@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, ChevronDown, ChevronUp, ExternalLink, Mail, MessageSquare, Phone, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 const AGENT_COLORS = {
@@ -13,6 +12,15 @@ const AGENT_COLORS = {
 const AGENT_EMOJI = {
   connector: '🤝', attender: '🎪', accessor: '🚪', offerer: '🎁',
   converter: '✨', retainer: '💜', referrer: '📣',
+};
+
+const etchedText = {
+  color: 'transparent',
+  backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+  filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
 };
 
 export default function ActionQueue({ actions, studioId }) {
@@ -52,11 +60,9 @@ export default function ActionQueue({ actions, studioId }) {
 
   return (
     <div>
-      <div className="flex items-baseline justify-between mb-5">
-        <h2 className="text-lg font-bold" style={{ color: '#5A4A46' }}>
-          {pending.length} thing{pending.length !== 1 ? 's' : ''} waiting on you
-        </h2>
-      </div>
+      <h2 className="text-lg font-bold mb-5" style={etchedText}>
+        {pending.length} thing{pending.length !== 1 ? 's' : ''} waiting on you
+      </h2>
 
       <div className="space-y-3">
         <AnimatePresence>
@@ -91,28 +97,37 @@ function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onAppro
       transition={{ delay: index * 0.03 }}
       className="rounded-2xl overflow-hidden"
       style={{
-        background: 'rgba(255,255,255,0.7)',
+        background: isExpanded
+          ? 'linear-gradient(145deg, rgba(253,238,236,0.7) 0%, rgba(250,232,228,0.5) 50%, rgba(252,243,240,0.6) 100%)'
+          : 'rgba(255,255,255,0.5)',
         boxShadow: isExpanded
-          ? `inset 0 0 0 1.5px ${color}30, 0 8px 32px -8px rgba(180,140,135,0.12)`
-          : 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 12px rgba(180,150,140,0.06)',
+          ? 'inset 0 1px 1px rgba(255,255,255,0.7), 0 15px 50px -15px rgba(180,150,140,0.15)'
+          : 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 16px -8px rgba(180,150,140,0.1)',
       }}
     >
-      {/* Summary row — always visible */}
-      <button
+      {/* Summary row */}
+      <div
         onClick={onToggle}
-        className="w-full text-left p-4 md:p-5 flex items-start gap-4"
-        disabled={isProcessing}
+        role="button"
+        tabIndex={0}
+        className="w-full text-left p-4 md:p-5 flex items-start gap-4 cursor-pointer"
       >
-        {/* Agent indicator */}
+        {/* Agent initial */}
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: `${color}12` }}
+          style={{
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
+            boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)',
+          }}
         >
           <span className="text-base">{emoji}</span>
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold" style={{ color: '#5A4A46' }}>
+          <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color }}>
+            {action.agent}
+          </div>
+          <div className="text-sm font-semibold" style={{ color: '#8b7d72' }}>
             {action.title}
           </div>
           {action.target_name && (
@@ -127,36 +142,38 @@ function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onAppro
           )}
         </div>
 
-        {/* Quick action buttons — visible without expanding */}
-        <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
-          {!isExpanded && (
-            <>
-              <button
-                onClick={onDismiss}
-                disabled={isProcessing}
-                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-red-50 active:scale-90"
-                style={{ color: '#d4c4ba' }}
-                title="Dismiss"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <button
-                onClick={onApprove}
-                disabled={isProcessing}
-                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90"
-                style={{ background: `${color}15`, color }}
-                title="Approve"
-              >
-                <Check className="w-4 h-4" />
-              </button>
-            </>
-          )}
-          <ChevronDown
-            className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            style={{ color: '#d4c4ba' }}
-          />
+        {/* Inline approve/dismiss — no icons, just text */}
+        {!isExpanded && (
+          <div className="flex items-center gap-2 flex-shrink-0 pt-1" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={onDismiss}
+              disabled={isProcessing}
+              className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all active:scale-95"
+              style={{ color: '#c4b5ab' }}
+            >
+              skip
+            </button>
+            <button
+              onClick={onApprove}
+              disabled={isProcessing}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95"
+              style={{ background: `${color}15`, color }}
+            >
+              approve
+            </button>
+          </div>
+        )}
+
+        {/* Expand indicator — subtle, no icon */}
+        <div className="flex-shrink-0 pt-2">
+          <svg
+            className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            fill="none" stroke="#d4c4ba" viewBox="0 0 24 24" strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
-      </button>
+      </div>
 
       {/* Expanded detail */}
       <AnimatePresence>
@@ -169,34 +186,30 @@ function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onAppro
             className="overflow-hidden"
           >
             <div className="px-5 pb-5 pt-0">
-              {/* Divider */}
               <div className="h-px mb-4" style={{ background: `${color}15` }} />
 
-              {/* Why this matters */}
               {action.summary && (
                 <div className="mb-4">
                   <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color }}>
                     Why
                   </div>
-                  <p className="text-sm leading-relaxed" style={{ color: '#6A5A56' }}>
+                  <p className="text-sm leading-relaxed" style={{ color: '#8b7d72' }}>
                     {action.summary}
                   </p>
                 </div>
               )}
 
-              {/* Subject */}
               {action.subject && (
                 <div className="mb-4">
                   <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#c4b5ab' }}>
                     Subject
                   </div>
-                  <div className="text-sm font-medium" style={{ color: '#5A4A46' }}>
+                  <div className="text-sm font-medium" style={{ color: '#8b7d72' }}>
                     {action.subject}
                   </div>
                 </div>
               )}
 
-              {/* Message content */}
               {action.content && (
                 <div className="mb-4">
                   <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#c4b5ab' }}>
@@ -204,35 +217,38 @@ function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onAppro
                   </div>
                   <div
                     className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto"
-                    style={{ background: 'rgba(250,248,246,0.8)', color: '#5A4A46' }}
+                    style={{
+                      background: 'rgba(255,255,255,0.5)',
+                      boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.06)',
+                      color: '#8b7d72',
+                    }}
                   >
                     {action.content}
                   </div>
                 </div>
               )}
 
-              {/* Website link */}
               {action.context?.partner_website && (
                 <a
                   href={action.context.partner_website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-medium mb-4 hover:underline"
-                  style={{ color }}
+                  className="inline-block text-xs font-medium mb-4"
+                  style={{ color, textDecoration: 'underline', textUnderlineOffset: '3px' }}
                 >
-                  <ExternalLink className="w-3 h-3" />
-                  View website
+                  view website →
                 </a>
               )}
 
-              {/* Action buttons */}
+              {/* Action buttons — styled like the rest of the app */}
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={onDismiss}
                   disabled={isProcessing}
-                  className="flex-1 h-11 rounded-xl text-sm font-medium transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="flex-1 h-12 rounded-xl text-sm font-medium transition-all active:scale-[0.98] disabled:opacity-50"
                   style={{
-                    background: 'rgba(240,235,233,0.6)',
+                    background: 'rgba(255,255,255,0.6)',
+                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.08)',
                     color: '#a8998e',
                   }}
                 >
@@ -241,14 +257,16 @@ function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onAppro
                 <button
                   onClick={onApprove}
                   disabled={isProcessing}
-                  className="flex-1 h-11 rounded-xl text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="flex-1 h-12 rounded-xl text-sm font-bold tracking-tight transition-all active:scale-[0.98] disabled:opacity-50"
                   style={{
-                    background: `linear-gradient(145deg, ${color} 0%, ${color}dd 100%)`,
-                    color: '#fff',
-                    boxShadow: `0 4px 16px -4px ${color}60`,
+                    background: 'linear-gradient(145deg, rgba(254, 247, 247, 0.95) 0%, rgba(252, 231, 231, 0.9) 50%, rgba(248, 225, 220, 0.85) 100%)',
+                    boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), 0 4px 8px -2px rgba(180,150,140,0.2), inset 0 1px 2px rgba(255,255,255,0.8)',
+                    border: '1px solid rgba(255, 220, 210, 0.5)',
                   }}
                 >
-                  {isProcessing ? 'Processing...' : 'Approve & send'}
+                  <span style={etchedText}>
+                    {isProcessing ? 'Processing...' : 'Approve & send'}
+                  </span>
                 </button>
               </div>
             </div>
