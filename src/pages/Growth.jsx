@@ -46,9 +46,11 @@ function GrowthContent() {
 
   const pendingCount = actions.filter(a => a.status === 'pending_review').length;
 
-  // Agent conversation — full takeover
+  // Agent detail view or orchestrator chat
   if (talkingTo) {
     const meta = AGENT_META[talkingTo] || AGENT_META.growth_orchestrator;
+    const isOrchestrator = talkingTo === 'growth_orchestrator';
+
     return (
       <div 
         className="flex flex-col h-full overflow-hidden"
@@ -70,8 +72,20 @@ function GrowthContent() {
           <span className="text-lg">{meta.emoji}</span>
           <span className="text-sm font-semibold" style={{ color: '#8b7d72' }}>{meta.label}</span>
         </div>
-        <div className="flex-1 min-h-0">
-          <GrowthChat agentName={talkingTo} studioId={studioId} />
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {isOrchestrator ? (
+            <GrowthChat agentName={talkingTo} studioId={studioId} />
+          ) : (
+            <div
+              className="rounded-3xl m-4 md:m-6"
+              style={{
+                backgroundColor: '#fef7f7',
+                boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
+              }}
+            >
+              <AgentDetailView agentKey={talkingTo} studioId={studioId} actions={actions} />
+            </div>
+          )}
         </div>
       </div>
     );
