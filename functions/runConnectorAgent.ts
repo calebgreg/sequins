@@ -161,7 +161,11 @@ Deno.serve(async (req) => {
 
       for (const category of partnerCategories) {
         try {
+          console.log(`Searching ${category.type} near: "${studioLocation}"`);
           const places = await searchNearbyPlaces(category.query, studioLocation);
+          console.log(`Found ${places.length} places for ${category.type}`);
+          results.research_performed = results.research_performed || [];
+          results.research_performed.push({ type: category.type, found: places.length });
           
           for (const place of places.slice(0, 5)) { // Top 5 per category
             // Skip if already exists
