@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -28,6 +28,29 @@ export default function ActionQueue({ actions, studioId }) {
   const [processingId, setProcessingId] = useState(null);
   const queryClient = useQueryClient();
   const editedContentRef = React.useRef({});
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: studios = [] } = useQuery({
+    queryKey: ['studios'],
+    queryFn: () => base44.entities.Studio.list(),
+    enabled: !!studioId,
+  });
+
+  const studioInfo = useMemo(() => {
+    const studio = studios.find(s => s.id === studioId);
+    if (!studio) return null;
+    return {
+      studioName: studio.name,
+      senderName: currentUser?.full_name || studio.name,
+      senderTitle: 'Owner',
+      phone: studio.phone,
+      website: studio.website,
+    };
+  }, [studios, studioId, currentUser]);
 
   const pending = actions
     .filter(a => a.status === 'pending_review')
@@ -82,6 +105,7 @@ export default function ActionQueue({ actions, studioId }) {
               onApprove={() => handleApprove(action)}
               onDismiss={() => handleDismiss(action)}
               onContentChange={(val) => { editedContentRef.current[action.id] = val; }}
+              studioInfo={studioInfo}
             />
           ))}
         </AnimatePresence>
@@ -108,14 +132,14 @@ function resolveTokens(content, action, studioInfo) {
   return r;
 }
 
-function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onApprove, onDismiss, onContentChange }) {
-  const [editedContent, setEditedContent] = useState(() => resolveTokens(action.content, action));
+function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onApprove, onDismiss, onContentChange, studioInfo }) {
+  const [editedContent, setEditedContent] = useState(() => resolveTokens(action.content, action, studioInfo));
   const color = AGENT_COLORS[action.agent] || '#c9a99c';
   const emoji = AGENT_EMOJI[action.agent] || '🤝';
 
   useEffect(() => {
-    setEditedContent(resolveTokens(action.content, action));
-  }, [action.content, action.target_name]);
+    setEditedContent(resolveTokens(action.content, action, studioInfo));
+  }, [action.content, action.target_name, studioInfo]);
 
   return (
     <motion.div
