@@ -41,24 +41,40 @@ async function searchNearbyPlaces(query, location, radius = 10000) {
   const { lat, lng } = geocodeData.results[0].geometry.location;
   console.log(`[Places] Geocoded to: ${lat}, ${lng}`);
 
-  // Search for places
-  const placesUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${radius}&keyword=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}`;
-  const placesRes = await fetch(placesUrl);
+  // Use Places API (New) - searchNearby endpoint
+  const placesRes = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+      'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.types,places.businessStatus'
+    },
+    body: JSON.stringify({
+      textQuery: query,
+      locationRestriction: {
+        circle: {
+          center: { latitude: lat, longitude: lng },
+          radius: radius
+        }
+      },
+      maxResultCount: 10
+    })
+  });
   const placesData = await placesRes.json();
 
-  console.log(`[Places] Search status: ${placesData.status}, results: ${placesData.results?.length || 0}`);
-  if (placesData.error_message) {
-    console.log(`[Places] API Error: ${placesData.error_message}`);
+  console.log(`[Places] Search results: ${placesData.places?.length || 0}`);
+  if (placesData.error) {
+    console.log(`[Places] API Error: ${JSON.stringify(placesData.error)}`);
   }
 
-  return (placesData.results || []).map(place => ({
-    place_id: place.place_id,
-    name: place.name,
-    address: place.vicinity,
+  return (placesData.places || []).map(place => ({
+    place_id: place.id,
+    name: place.displayName?.text || '',
+    address: place.formattedAddress || '',
     rating: place.rating,
-    reviews_count: place.user_ratings_total,
+    reviews_count: place.userRatingCount,
     types: place.types,
-    business_status: place.business_status
+    business_status: place.businessStatus
   }));
 }
 
