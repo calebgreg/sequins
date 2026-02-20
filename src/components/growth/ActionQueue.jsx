@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,12 +37,18 @@ export default function ActionQueue({ actions }) {
 
   if (pending.length === 0) return null;
 
+  const editedContentRef = React.useRef({});
+
   const handleApprove = async (action) => {
     setProcessingId(action.id);
-    await base44.entities.GrowthAction.update(action.id, {
+    const updateData = {
       status: 'approved',
       approved_at: new Date().toISOString(),
-    });
+    };
+    if (editedContentRef.current[action.id] !== undefined) {
+      updateData.content = editedContentRef.current[action.id];
+    }
+    await base44.entities.GrowthAction.update(action.id, updateData);
     queryClient.invalidateQueries(['growthActions']);
     toast.success(`Approved: ${action.title}`);
     setProcessingId(null);
@@ -76,6 +82,7 @@ export default function ActionQueue({ actions }) {
               onToggle={() => setExpandedId(expandedId === action.id ? null : action.id)}
               onApprove={() => handleApprove(action)}
               onDismiss={() => handleDismiss(action)}
+              onContentChange={(val) => { editedContentRef.current[action.id] = val; }}
             />
           ))}
         </AnimatePresence>
@@ -84,9 +91,23 @@ export default function ActionQueue({ actions }) {
   );
 }
 
-function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onApprove, onDismiss }) {
+function resolveTokens(content, action) {
+  if (!content) return '';
+  let r = content;
+  if (action.target_name) r = r.replace(/\{\{name\}\}/g, action.target_name);
+  if (action.target_email) r = r.replace(/\{\{email\}\}/g, action.target_email);
+  if (action.target_phone) r = r.replace(/\{\{phone\}\}/g, action.target_phone);
+  return r;
+}
+
+function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onApprove, onDismiss, onContentChange }) {
+  const [editedContent, setEditedContent] = useState(() => resolveTokens(action.content, action));
   const color = AGENT_COLORS[action.agent] || '#c9a99c';
   const emoji = AGENT_EMOJI[action.agent] || '🤝';
+
+  useEffect(() => {
+    setEditedContent(resolveTokens(action.content, action));
+  }, [action.content, action.target_name]);
 
   return (
     <motion.div
@@ -205,16 +226,20 @@ function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onAppro
                   <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: '#c4b5ab' }}>
                     Draft
                   </div>
-                  <div
-                    className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto"
+                  <textarea
+                    value={editedContent}
+                    onChange={(e) => {
+                      setEditedContent(e.target.value);
+                      onContentChange?.(e.target.value);
+                    }}
+                    className="w-full rounded-xl p-4 text-sm leading-relaxed max-h-[300px] overflow-y-auto resize-none outline-none border-none"
                     style={{
                       background: 'rgba(254,250,249,0.8)',
                       boxShadow: 'inset 0 1px 3px rgba(180,150,140,0.06)',
                       color: '#8b7d72',
                     }}
-                  >
-                    {action.content}
-                  </div>
+                    rows={Math.min(12, (editedContent || '').split('\n').length + 2)}
+                  />
                 </div>
               )}
 
