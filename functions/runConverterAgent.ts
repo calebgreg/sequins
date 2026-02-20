@@ -118,31 +118,40 @@ Deno.serve(async (req) => {
             n.student_name?.toLowerCase() === lead.child_name?.toLowerCase()
           );
 
-          const analyzePrompt = `Analyze this trial family and craft a "feel special" follow-up:
+          // Get owner first name
+          const ownerFirstName = (() => {
+            const name = user.full_name || '';
+            if (name.includes('@') || name.includes('.')) return null;
+            return name.split(' ')[0];
+          })();
+          const senderFirst = ownerFirstName || studioName.split(' ')[0];
 
-FAMILY:
-- Parent: ${lead.parent_name}
-- Child: ${lead.child_name}, age ${lead.child_age || 'unknown'}
-- Trial Date: ${lead.trial_date}
-- Trial Class: ${lead.trial_class_id || 'Unknown class'}
-- Teacher Notes: ${lead.teacher_notes || 'None recorded'}
-- Interest: ${lead.child_interests?.join(', ') || 'Dance'}
+          const analyzePrompt = `Write a follow-up text from a dance studio owner to a parent after their kid's trial class.
 
-NOTES ABOUT THIS CHILD:
-${childNotes.length > 0 ? childNotes.map(n => `- ${n.content}`).join('\n') : 'No notes yet'}
+SENDER: ${senderFirst} from ${studioName}
+PARENT: ${lead.parent_name}
+CHILD: ${lead.child_name}, age ${lead.child_age || 'unknown'}
+TRIAL DATE: ${lead.trial_date}
+INTERESTS: ${lead.child_interests?.join(', ') || 'Dance'}
+TEACHER NOTES: ${lead.teacher_notes || 'None'}
+${childNotes.length > 0 ? `OBSERVATIONS:\n${childNotes.map(n => `- ${n.content}`).join('\n')}` : ''}
 
-Create a personalized follow-up that:
-1. Mentions something SPECIFIC about the child's trial experience
-2. Makes them feel like they belong here
-3. Creates gentle urgency without pressure
-4. Suggests a clear next step
+CRITICAL RULES:
+- MAX 3-4 sentences. Text message length.
+- Mention something SPECIFIC about the child — if you have teacher notes, use them. If not, be honest and brief.
+- Sound like a real person, not a marketing funnel. "Hey [parent], ${senderFirst} here from ${studioName}..."
+- ONE clear next step. Not "let's discuss options" — something concrete like "want me to save a spot in Tuesday's class?"
+- NO "I hope this finds you well". NO corporate language.
+- NO "Sincerely", no formal sign-off. It's a text.
+- NO URLs or links
+- If you don't have real observations about the child, don't make them up. Just say you'd love to see them back.
 
 Return JSON: {
-  "specific_observation": "something the child did that stood out",
-  "belonging_message": "why they fit here",
-  "next_step": "what you want them to do",
-  "urgency_reason": "why now is good",
-  "message": "the full follow-up message (under 150 words)"
+  "specific_observation": "what stood out about the child (or honest note if no data)",
+  "belonging_message": "why they fit",
+  "next_step": "concrete next action",
+  "urgency_reason": "why now",
+  "message": "the complete message ready to send"
 }`;
 
           const analysis = await base44.integrations.Core.InvokeLLM({
