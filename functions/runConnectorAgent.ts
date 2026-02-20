@@ -41,8 +41,8 @@ async function searchNearbyPlaces(query, location, radius = 10000) {
   const { lat, lng } = geocodeData.results[0].geometry.location;
   console.log(`[Places] Geocoded to: ${lat}, ${lng}`);
 
-  // Use Places API (New) - searchNearby endpoint
-  const placesRes = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+  // Use Places API (New) - Text Search endpoint
+  const placesRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ async function searchNearbyPlaces(query, location, radius = 10000) {
     },
     body: JSON.stringify({
       textQuery: query,
-      locationRestriction: {
+      locationBias: {
         circle: {
           center: { latitude: lat, longitude: lng },
           radius: radius
