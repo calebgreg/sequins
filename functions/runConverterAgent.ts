@@ -212,25 +212,33 @@ Return JSON: {
         if (existingActions.length > 0) continue;
 
         try {
-          const noShowPrompt = `Craft a no-show follow-up for a trial family:
+          const noShowSender = (() => {
+            const name = user.full_name || '';
+            if (name.includes('@') || name.includes('.')) return null;
+            return name.split(' ')[0];
+          })() || studioName.split(' ')[0];
 
-FAMILY:
-- Parent: ${lead.parent_name}
-- Child: ${lead.child_name}, age ${lead.child_age || 'unknown'}
-- Scheduled Trial: ${lead.trial_date}
-- Interest: ${lead.child_interests?.join(', ') || 'Dance'}
+          const noShowPrompt = `Write a casual follow-up text after a family no-showed their trial class.
 
-Write a message that:
-1. Assumes life got busy (no guilt)
-2. Offers easy rescheduling
-3. Shares something valuable (tip, video, article) about dance for kids
-4. Keeps the door open
+SENDER: ${noShowSender} from ${studioName}
+PARENT: ${lead.parent_name}
+CHILD: ${lead.child_name}, age ${lead.child_age || 'unknown'}
+MISSED DATE: ${lead.trial_date}
+
+CRITICAL RULES:
+- MAX 2-3 sentences. 
+- Zero guilt. Assume life happened. "Hey [parent], no worries about [day] — life gets crazy."
+- Make rescheduling dead simple. "Just text me back and I'll grab a spot for [child]."
+- NO value-add content (tips, articles, videos). That's try-hard for a no-show text.
+- NO URLs, NO links
+- NO formal sign-off
+- Sound like a human who gets it, not a business following up on a missed appointment
 
 Return JSON: {
-  "assumption": "why they might have missed",
-  "value_offer": "something helpful you're sharing",
-  "reschedule_ease": "how easy it is to reschedule",
-  "message": "the full message (under 100 words)"
+  "assumption": "implied reason they missed",
+  "value_offer": "n/a",
+  "reschedule_ease": "how easy rescheduling is",
+  "message": "the complete text message"
 }`;
 
           const noShowAnalysis = await base44.integrations.Core.InvokeLLM({
