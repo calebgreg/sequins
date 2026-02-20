@@ -43,12 +43,15 @@ export default function ActionQueue({ actions, studioId }) {
   const studioInfo = useMemo(() => {
     const studio = studios.find(s => s.id === studioId);
     if (!studio) return null;
+    // Use full_name only if it's a real name (not an email prefix)
+    const userName = currentUser?.full_name;
+    const isRealName = userName && !userName.includes('@') && !userName.includes('.');
     return {
       studioName: studio.name,
-      senderName: currentUser?.full_name || studio.name,
+      senderName: isRealName ? userName : studio.name,
       senderTitle: 'Owner',
-      phone: studio.phone,
-      website: studio.website,
+      phone: studio.phone || '',
+      website: studio.website || '',
     };
   }, [studios, studioId, currentUser]);
 
@@ -121,13 +124,23 @@ function resolveTokens(content, action, studioInfo) {
   if (action.target_name) r = r.replace(/\{\{name\}\}/g, action.target_name);
   if (action.target_email) r = r.replace(/\{\{email\}\}/g, action.target_email);
   if (action.target_phone) r = r.replace(/\{\{phone\}\}/g, action.target_phone);
-  // Resolve [bracket] style placeholders from AI drafts using studio info
+  
   if (studioInfo) {
-    if (studioInfo.senderName) r = r.replace(/\[Your Name\]/gi, studioInfo.senderName);
-    if (studioInfo.senderTitle) r = r.replace(/\[Your Title\]/gi, studioInfo.senderTitle);
-    if (studioInfo.phone) r = r.replace(/\[Your Phone Number(?:\/Website)?\]/gi, studioInfo.phone + (studioInfo.website ? ' | ' + studioInfo.website : ''));
-    if (studioInfo.website) r = r.replace(/\[Your Website\]/gi, studioInfo.website);
-    if (studioInfo.studioName) r = r.replace(/\[Studio Name\]/gi, studioInfo.studioName);
+    // Replace name placeholders with studio owner name (not email)
+    r = r.replace(/\[Your Name\]/gi, studioInfo.senderName);
+    r = r.replace(/\[Your Title\]/gi, studioInfo.senderTitle || 'Owner');
+    r = r.replace(/\[Studio Name\]/gi, studioInfo.studioName || '');
+    
+    // Build contact line from whatever we have
+    const contactParts = [studioInfo.phone, studioInfo.website].filter(Boolean);
+    const contactLine = contactParts.length > 0 ? contactParts.join(' | ') : studioInfo.studioName || '';
+    
+    // Catch ALL bracket-style phone/website/contact placeholders (aggressive regex)
+    r = r.replace(/\[Your (?:Phone ?Number|Website|Contact Info|Phone\/?Website|Phone Number\/?Website)[^\]]*\]/gi, contactLine);
+    r = r.replace(/\[(?:Phone|Website|Contact)[^\]]*\]/gi, contactLine);
+    
+    // Catch any remaining [Your ...] placeholders as a final sweep
+    r = r.replace(/\[Your [^\]]+\]/gi, studioInfo.senderName);
   }
   return r;
 }
