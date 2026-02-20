@@ -127,34 +127,40 @@ Deno.serve(async (req) => {
           // Get recent notes about this student
           const notes = recentNotes.filter(n => n.student_name === student.name);
 
-          const atRiskPrompt = `Craft a caring outreach for an at-risk dance family:
+          // Get owner first name
+          const ownerFirstName = (() => {
+            const name = user.full_name || '';
+            if (name.includes('@') || name.includes('.')) return null;
+            return name.split(' ')[0];
+          })();
+          const senderFirst = ownerFirstName || 'We';
 
-STUDENT:
-- Name: ${student.name}, age ${student.age || 'unknown'}
-- Level: ${student.level || 'unknown'}
-- Classes: ${student.interests?.join(', ') || 'Dance'}
+          const atRiskPrompt = `Write a short check-in text from a dance studio owner to a parent whose kid has been missing class.
 
-ATTENDANCE PATTERN:
-- Recent 30 days: ${Math.round(recentRate * 100)}% attendance
-- Previous 30 days: ${Math.round(olderRate * 100)}% attendance
-- Pattern: ${recentRate < olderRate ? 'Declining' : 'Consistently low'}
+SENDER: ${senderFirst} (studio owner, knows this family)
+PARENT: ${student.parent_name || family?.parent_name || 'there'}
+CHILD: ${student.name}, age ${student.age || 'unknown'}
+CLASSES: ${student.interests?.join(', ') || 'Dance'}
 
-RECENT NOTES:
-${notes.length > 0 ? notes.slice(0, 3).map(n => `- ${n.content}`).join('\n') : 'No recent notes'}
+WHAT'S HAPPENING:
+- They used to come ${Math.round(olderRate * 100)}% of the time, now it's ${Math.round(recentRate * 100)}%
+${notes.length > 0 ? `RECENT TEACHER NOTES:\n${notes.slice(0, 2).map(n => `- ${n.content}`).join('\n')}` : ''}
 
-PARENT: ${student.parent_name || family?.parent_name || 'Parent'}
-
-Write a message that:
-1. Shows we noticed and care (not accusatory)
-2. Asks if everything is okay / if we can help
-3. Reminds them of something positive about their child
-4. Offers flexibility (makeup classes, different time, etc.)
+CRITICAL RULES:
+- MAX 3 sentences. This is a text message, not a letter.
+- Write as ${senderFirst}, first person. "Hey [parent name], just checking in..."
+- NO "I hope this message finds you well". NO "I wanted to reach out".
+- Sound like a real person who genuinely misses seeing the kid
+- If there's a positive note about the child, mention it naturally
+- Offer to help (different time, makeup class) but keep it casual
+- NO sign-off. No "Best," no "Sincerely," no name at the end. It's a text.
+- NO URLs or links
 
 Return JSON: {
   "concern_framing": "how you're framing the concern",
   "positive_reminder": "something good about the child",
   "flexibility_offer": "what flexibility you can offer",
-  "message": "the full message (under 120 words)"
+  "message": "the full text message"
 }`;
 
           const outreach = await base44.integrations.Core.InvokeLLM({
