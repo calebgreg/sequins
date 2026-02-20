@@ -46,9 +46,57 @@ function GrowthContent() {
     enabled: !!studioId,
   });
 
+  const queryClient = useQueryClient();
+
   const handleActionSubmit = async (actionId, input) => {
-    console.log('Action:', actionId, 'Input:', input);
-    // TODO: Wire up to agent processing
+    const action = pendingActions.find(a => a.id === actionId);
+    if (!action) return null;
+
+    const lowerInput = input.toLowerCase().trim();
+
+    // Skip / dismiss
+    if (['skip', 'dismiss', 'no', 'pass', 'next', 'nah', 'remove'].some(w => lowerInput === w || lowerInput.startsWith(w + ' '))) {
+      await base44.entities.GrowthAction.update(actionId, { status: 'dismissed' });
+      queryClient.invalidateQueries({ queryKey: ['pendingActions'] });
+      return null;
+    }
+
+    // Send as-is
+    if (['send it', 'send', 'approve', 'looks good', 'good', 'yes', 'go', 'do it', 'lgtm', 'perfect', 'ship it', 'fire', 'send it!'].some(w => lowerInput === w || lowerInput.startsWith(w))) {
+      await base44.entities.GrowthAction.update(actionId, { status: 'approved', approved_at: new Date().toISOString() });
+      queryClient.invalidateQueries({ queryKey: ['pendingActions'] });
+      return "Approved — it'll go out.";
+    }
+
+    // Anything else = LLM rewrite the draft based on the instruction
+    const rewriteResult = await base44.integrations.Core.InvokeLLM({
+      prompt: `You are rewriting a draft outreach message based on feedback.
+
+ORIGINAL DRAFT:
+Subject: ${action.subject || '(none)'}
+Body: ${action.content || '(none)'}
+Target: ${action.target_name} (${action.context?.partner_type || 'business'})
+
+USER FEEDBACK: "${input}"
+
+Rewrite the message incorporating the feedback. Keep it under 100 words. Be warm and neighborly.
+
+Return JSON: { "subject": "new subject", "body": "new body" }`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          subject: { type: "string" },
+          body: { type: "string" }
+        }
+      }
+    });
+
+    await base44.entities.GrowthAction.update(actionId, {
+      subject: rewriteResult.subject,
+      content: rewriteResult.body,
+    });
+    queryClient.invalidateQueries({ queryKey: ['pendingActions'] });
+    return null;
   };
 
   // Transform pending actions into display format
