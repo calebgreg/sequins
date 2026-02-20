@@ -1,27 +1,26 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import GrowthDashboard from '@/components/growth/GrowthDashboard';
+import ActionQueue from '@/components/growth/ActionQueue';
+import AgentStatus from '@/components/growth/AgentStatus';
 import GrowthChat from '@/components/growth/GrowthChat';
-import ActionDetailSheet from '@/components/growth/ActionDetailSheet';
 import AdminOnly from '@/components/layout/AdminOnly';
-import { X, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 
-const AGENTS = [
-  { name: 'growth_orchestrator', label: 'Growth Engine', emoji: '🧠' },
-  { name: 'connector', label: 'Connector', emoji: '🤝' },
-  { name: 'attender', label: 'Attender', emoji: '🎪' },
-  { name: 'accessor', label: 'Accessor', emoji: '🚪' },
-  { name: 'offerer', label: 'Offerer', emoji: '🎁' },
-  { name: 'converter', label: 'Converter', emoji: '✨' },
-  { name: 'retainer', label: 'Retainer', emoji: '💜' },
-  { name: 'referrer', label: 'Referrer', emoji: '📣' },
-];
+const AGENT_META = {
+  growth_orchestrator: { label: 'Growth Engine', emoji: '🧠' },
+  connector: { label: 'Connector', emoji: '🤝' },
+  attender: { label: 'Attender', emoji: '🎪' },
+  accessor: { label: 'Accessor', emoji: '🚪' },
+  offerer: { label: 'Offerer', emoji: '🎁' },
+  converter: { label: 'Converter', emoji: '✨' },
+  retainer: { label: 'Retainer', emoji: '💜' },
+  referrer: { label: 'Referrer', emoji: '📣' },
+};
 
 function GrowthContent() {
-  const [activeAgent, setActiveAgent] = useState(null); // null = dashboard view
-  const [selectedAction, setSelectedAction] = useState(null);
+  const [talkingTo, setTalkingTo] = useState(null); // agent name or null
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -29,6 +28,12 @@ function GrowthContent() {
   });
 
   const studioId = currentUser?.studio_id || currentUser?.data?.studio_id;
+
+  const { data: actions = [] } = useQuery({
+    queryKey: ['growthActions', studioId],
+    queryFn: () => base44.entities.GrowthAction.filter({ studio_id: studioId }),
+    enabled: !!studioId,
+  });
 
   const etchedText = {
     color: 'transparent',
@@ -39,124 +44,98 @@ function GrowthContent() {
     filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
   };
 
-  return (
-    <div 
-      className="min-h-screen flex flex-col relative"
-      style={{
-        background: '#ffffff',
-        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
-      }}
-    >
-      {/* Ambient shapes */}
-      <div 
-        className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
-      />
-      <div 
-        className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
-      />
+  const pendingCount = actions.filter(a => a.status === 'pending_review').length;
 
-      {/* Header */}
-      <div className="relative px-6 md:px-10 pt-10 pb-2">
-        <div className="text-sm font-medium mb-1" style={{ color: '#b5a599' }}>
-          {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-        </div>
-        <h1 className="text-3xl md:text-5xl font-bold tracking-tight" style={etchedText}>
-          Growth Engine
-        </h1>
-      </div>
-
-      {/* View switcher — Dashboard vs Agent chat */}
-      <div className="relative px-6 md:px-10 py-3 overflow-x-auto">
-        <div className="flex gap-2 min-w-max">
+  // If talking to an agent, show full-screen conversation
+  if (talkingTo) {
+    const meta = AGENT_META[talkingTo] || AGENT_META.growth_orchestrator;
+    return (
+      <div 
+        className="h-screen flex flex-col relative"
+        style={{ background: '#ffffff', fontFamily: "'DM Sans', -apple-system, sans-serif" }}
+      >
+        {/* Thin header */}
+        <div className="flex items-center gap-3 px-5 py-4 flex-shrink-0">
           <button
-            onClick={() => setActiveAgent(null)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-[0.97]"
+            onClick={() => setTalkingTo(null)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95"
             style={{
-              background: activeAgent === null 
-                ? 'linear-gradient(145deg, rgba(254,240,240,0.95) 0%, rgba(252,235,235,0.9) 100%)'
-                : 'transparent',
-              boxShadow: activeAgent === null 
-                ? 'inset 0 2px 12px rgba(180, 120, 120, 0.08), 0 2px 8px rgba(180,140,135,0.08)'
-                : 'none',
-              color: activeAgent === null ? '#6A5A56' : '#b5a599',
+              background: 'rgba(255,255,255,0.6)',
+              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
+              color: '#b5a599',
             }}
           >
-            <span>📊</span>
-            <span className="hidden md:inline">Dashboard</span>
+            <ArrowLeft className="w-4 h-4" />
           </button>
-
-          <div className="w-px mx-1" style={{ background: 'rgba(220,200,196,0.3)' }} />
-
-          {AGENTS.map(agent => (
-            <button
-              key={agent.name}
-              onClick={() => setActiveAgent(agent.name)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-[0.97]"
-              style={{
-                background: activeAgent === agent.name 
-                  ? 'linear-gradient(145deg, rgba(254,240,240,0.95) 0%, rgba(252,235,235,0.9) 100%)'
-                  : 'transparent',
-                boxShadow: activeAgent === agent.name 
-                  ? 'inset 0 2px 12px rgba(180, 120, 120, 0.08), 0 2px 8px rgba(180,140,135,0.08)'
-                  : 'none',
-                color: activeAgent === agent.name ? '#6A5A56' : '#b5a599',
-              }}
-            >
-              <span>{agent.emoji}</span>
-              <span className="hidden md:inline">{agent.label}</span>
-            </button>
-          ))}
+          <span className="text-lg">{meta.emoji}</span>
+          <span className="text-sm font-semibold" style={{ color: '#6A5A56' }}>{meta.label}</span>
+        </div>
+        {/* Chat fills the rest */}
+        <div className="flex-1 min-h-0">
+          <GrowthChat agentName={talkingTo} studioId={studioId} />
         </div>
       </div>
+    );
+  }
 
-      {/* Main content area */}
-      <div className="relative flex-1 px-6 md:px-10 pb-8">
-        <AnimatePresence mode="wait">
-          {activeAgent === null ? (
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <GrowthDashboard 
-                studioId={studioId} 
-                onOpenAgent={(agent) => setActiveAgent(agent)}
-                onOpenAction={(action) => setSelectedAction(action)}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key={activeAgent}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="rounded-3xl overflow-hidden"
-              style={{
-                background: 'linear-gradient(145deg, rgba(254,248,248,0.6) 0%, rgba(252,246,244,0.4) 100%)',
-                height: 'calc(100vh - 240px)',
-              }}
-            >
-              <GrowthChat 
-                key={activeAgent}
-                agentName={activeAgent} 
-                studioId={studioId}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+  // Main view — the Growth Engine
+  return (
+    <div
+      className="min-h-screen relative pb-32"
+      style={{ background: '#ffffff', fontFamily: "'DM Sans', -apple-system, sans-serif" }}
+    >
+      {/* Ambient */}
+      <div
+        className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
+      />
+
+      {/* Header — just the name, nothing else */}
+      <div className="px-6 md:px-10 pt-10 pb-8">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight" style={etchedText}>
+          Growth Engine
+        </h1>
+        {pendingCount > 0 && (
+          <p className="text-sm mt-2" style={{ color: '#b5a599' }}>
+            {pendingCount} action{pendingCount !== 1 ? 's' : ''} ready for you to review
+          </p>
+        )}
       </div>
 
-      {/* Action detail sheet */}
-      <ActionDetailSheet 
-        action={selectedAction} 
-        open={!!selectedAction} 
-        onClose={() => setSelectedAction(null)} 
-      />
+      {/* Content */}
+      <div className="px-6 md:px-10 space-y-10 max-w-4xl">
+        {/* The queue — the thing that actually matters */}
+        <ActionQueue actions={actions} studioId={studioId} />
+
+        {/* Agents — compact grid to go deeper */}
+        <AgentStatus
+          actions={actions}
+          onTalkTo={(agent) => setTalkingTo(agent)}
+        />
+      </div>
+
+      {/* Floating command bar — talk to Growth Engine */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-2xl z-30">
+        <button
+          onClick={() => setTalkingTo('growth_orchestrator')}
+          className="w-full rounded-2xl px-5 py-4 flex items-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.99]"
+          style={{
+            background: 'linear-gradient(145deg, rgba(255,253,252,0.97) 0%, rgba(254,248,246,0.95) 100%)',
+            boxShadow: '0 12px 48px -12px rgba(140,110,100,0.25), 0 4px 12px -4px rgba(140,110,100,0.1), inset 0 1px 1px rgba(255,255,255,0.9)',
+            border: '1px solid rgba(220,200,196,0.3)',
+          }}
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'linear-gradient(145deg, rgba(180,160,190,0.2) 0%, rgba(160,140,170,0.15) 100%)' }}
+          >
+            <Sparkles className="w-4 h-4" style={{ color: '#9a8aad' }} />
+          </div>
+          <span className="text-sm" style={{ color: '#b5a599' }}>
+            Ask the Growth Engine anything...
+          </span>
+        </button>
+      </div>
     </div>
   );
 }
