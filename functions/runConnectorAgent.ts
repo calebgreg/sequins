@@ -24,22 +24,32 @@ async function searchNearbyPlaces(query, location, radius = 10000) {
     return [];
   }
 
+  console.log(`[Places] Geocoding: "${location}"`);
+
   // First, geocode the location to get lat/lng
   const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_MAPS_API_KEY}`;
   const geocodeRes = await fetch(geocodeUrl);
   const geocodeData = await geocodeRes.json();
   
+  console.log(`[Places] Geocode status: ${geocodeData.status}, results: ${geocodeData.results?.length || 0}`);
+  
   if (!geocodeData.results?.[0]?.geometry?.location) {
-    console.log("Could not geocode location:", location);
+    console.log("[Places] Could not geocode location:", location, "Response:", JSON.stringify(geocodeData.status));
     return [];
   }
   
   const { lat, lng } = geocodeData.results[0].geometry.location;
+  console.log(`[Places] Geocoded to: ${lat}, ${lng}`);
 
   // Search for places
   const placesUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${radius}&keyword=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}`;
   const placesRes = await fetch(placesUrl);
   const placesData = await placesRes.json();
+
+  console.log(`[Places] Search status: ${placesData.status}, results: ${placesData.results?.length || 0}`);
+  if (placesData.error_message) {
+    console.log(`[Places] API Error: ${placesData.error_message}`);
+  }
 
   return (placesData.results || []).map(place => ({
     place_id: place.place_id,
