@@ -64,23 +64,32 @@ async function searchNearbyPlaces(query, location, radius = 10000) {
 async function getPlaceDetails(placeId) {
   if (!GOOGLE_MAPS_API_KEY || !placeId) return null;
 
-  const res = await fetch(`https://places.googleapis.com/v1/${placeId}`, {
-    headers: {
-      'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
-      'X-Goog-FieldMask': 'displayName,formattedAddress,nationalPhoneNumber,websiteUri,regularOpeningHours,reviews'
-    }
-  });
-  const data = await res.json();
+  // Places API (New) IDs are like "places/ChIJ..." - ensure correct format
+  const resourceName = placeId.startsWith('places/') ? placeId : `places/${placeId}`;
 
-  if (data.displayName) {
-    return {
-      name: data.displayName?.text,
-      address: data.formattedAddress,
-      phone: data.nationalPhoneNumber,
-      website: data.websiteUri,
-      hours: data.regularOpeningHours?.weekdayDescriptions,
-      reviews: data.reviews?.slice(0, 3).map(r => ({ text: r.text?.text }))
-    };
+  try {
+    const res = await fetch(`https://places.googleapis.com/v1/${resourceName}`, {
+      headers: {
+        'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+        'X-Goog-FieldMask': 'displayName,formattedAddress,nationalPhoneNumber,websiteUri,regularOpeningHours,reviews'
+      }
+    });
+    const text = await res.text();
+    if (!text) return null;
+    const data = JSON.parse(text);
+
+    if (data.displayName) {
+      return {
+        name: data.displayName?.text,
+        address: data.formattedAddress,
+        phone: data.nationalPhoneNumber,
+        website: data.websiteUri,
+        hours: data.regularOpeningHours?.weekdayDescriptions,
+        reviews: data.reviews?.slice(0, 3).map(r => ({ text: r.text?.text }))
+      };
+    }
+  } catch (err) {
+    console.log(`[PlaceDetails] Error for ${placeId}: ${err.message}`);
   }
   return null;
 }
