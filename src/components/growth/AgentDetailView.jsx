@@ -248,11 +248,11 @@ export default function AgentDetailView({ agentKey, studioId, actions = [] }) {
               >
                 <div className="mt-0.5">
                   {log.event_type === 'error' ? (
-                    <XCircle className="w-4 h-4 text-red-300" />
+                    <span className="text-xs">❌</span>
                   ) : log.event_type === 'success' ? (
-                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    <span className="text-xs">✅</span>
                   ) : (
-                    <ArrowRight className="w-4 h-4" style={{ color: '#c4b5ab' }} />
+                    <span className="text-xs" style={{ color: '#c4b5ab' }}>→</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
