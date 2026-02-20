@@ -124,9 +124,25 @@ Deno.serve(async (req) => {
     const studioName = studio.name;
     const studioLocation = studio.address || "local area";
 
+    // Normalize a name for comparison (lowercase, strip punctuation, collapse whitespace)
+    const normalizeName = (n) => (n || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+    
+    // Check if a discovered place is actually the studio itself
+    const studioNameNorm = normalizeName(studioName);
+    const studioAddressNorm = normalizeName(studioLocation);
+    
+    const isOwnStudio = (placeName, placeAddress) => {
+      const nameNorm = normalizeName(placeName);
+      const addrNorm = normalizeName(placeAddress);
+      // Match if names are very similar (one contains the other) or same address
+      if (studioNameNorm && nameNorm && (nameNorm.includes(studioNameNorm) || studioNameNorm.includes(nameNorm))) return true;
+      if (studioAddressNorm && addrNorm && addrNorm.includes(studioAddressNorm)) return true;
+      return false;
+    };
+
     // Get existing partners to avoid duplicates
     const existingPartners = await base44.entities.Partner.filter({ studio_id });
-    const existingNames = new Set(existingPartners.map(p => p.name?.toLowerCase()));
+    const existingNames = new Set(existingPartners.map(p => normalizeName(p.name)));
 
     // Get current week's outcome for tracking
     const outcomes = await base44.entities.GrowthOutcome.filter({ 
