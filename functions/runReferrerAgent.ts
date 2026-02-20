@@ -236,23 +236,34 @@ Return JSON: {
         if (existingActions.length > 0) continue;
 
         try {
-          const momentPrompt = `Create a shareable moment from this dance achievement:
+          const momentSender = (() => {
+            const name = user.full_name || '';
+            if (name.includes('@') || name.includes('.')) return null;
+            return name.split(' ')[0];
+          })() || note.teacher_name || studioName.split(' ')[0];
 
-STUDENT: ${student.name} (first name only for privacy)
-ACHIEVEMENT: "${note.content}"
-CLASS: ${note.class_name || 'dance class'}
-TEACHER: ${note.teacher_name || 'their teacher'}
+          const momentPrompt = `Write a quick text to a dance parent celebrating their kid + nudging a share.
 
-Create:
-1. A parent-friendly message celebrating this moment
-2. Suggest how they can share (social media, tell friends)
-3. A subtle ask for referrals
+SENDER: ${momentSender}
+PARENT: ${student.parent_name || 'there'}
+CHILD: ${student.name}
+WHAT HAPPENED: "${note.content}"
+CLASS: ${note.class_name || 'class'}
+
+CRITICAL RULES:
+- MAX 3 sentences total.
+- First: celebrate the specific thing (not generic "doing great!")
+- Then: one natural nudge. NOT "please refer your friends." More like "if you know any families looking for [activity], send them our way — we'd take great care of them"
+- NO "I wanted to share". NO corporate tone.
+- NO URLs, NO links
+- NO sign-off
+- Sound like a proud teacher/owner texting a parent they know
 
 Return JSON: {
-  "celebration_message": "message to the parent (under 80 words)",
-  "share_suggestion": "how they might share this",
-  "referral_nudge": "gentle referral ask",
-  "social_caption": "optional caption if they want to post"
+  "celebration_message": "the full text message",
+  "share_suggestion": "the organic share angle",
+  "referral_nudge": "the nudge used",
+  "social_caption": "optional social caption if they want to post about it"
 }`;
 
           const moment = await base44.integrations.Core.InvokeLLM({
