@@ -27,6 +27,7 @@ export default function ActionQueue({ actions }) {
   const [expandedId, setExpandedId] = useState(null);
   const [processingId, setProcessingId] = useState(null);
   const queryClient = useQueryClient();
+  const editedContentRef = React.useRef({});
 
   const pending = actions
     .filter(a => a.status === 'pending_review')
@@ -36,8 +37,6 @@ export default function ActionQueue({ actions }) {
     });
 
   if (pending.length === 0) return null;
-
-  const editedContentRef = React.useRef({});
 
   const handleApprove = async (action) => {
     setProcessingId(action.id);
