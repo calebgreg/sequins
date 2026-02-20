@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Send, Loader2, Sparkles } from 'lucide-react';
+import { Send, Loader2, Sparkles, ChevronRight, RotateCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,7 +22,7 @@ export default function GrowthChat({ agentName = 'growth_orchestrator', studioId
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const messagesEndRef = useRef(null);
+  const contentEndRef = useRef(null);
   const inputRef = useRef(null);
 
   const meta = AGENT_META[agentName] || AGENT_META.growth_orchestrator;
@@ -35,18 +35,15 @@ export default function GrowthChat({ agentName = 'growth_orchestrator', studioId
       setConversationId(null);
       setConversation(null);
       
-      // Check for existing conversations with this agent
       const existing = await base44.agents.listConversations({ agent_name: agentName });
       
       if (existing && existing.length > 0) {
-        // Use most recent
         const latest = existing[0];
         setConversationId(latest.id);
         setConversation(latest);
         setMessages(latest.messages || []);
         onConversationChange?.(latest.id);
       }
-      // Don't auto-create — let user send first message to create
       setIsLoading(false);
     };
     init();
@@ -63,18 +60,17 @@ export default function GrowthChat({ agentName = 'growth_orchestrator', studioId
 
   // Auto-scroll
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    contentEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isSending) return;
-    const text = input.trim();
+  const handleSend = async (text) => {
+    const msgText = text || input.trim();
+    if (!msgText || isSending) return;
     setInput('');
     setIsSending(true);
 
     let conv = conversation;
 
-    // Create conversation if none exists
     if (!conv) {
       conv = await base44.agents.createConversation({
         agent_name: agentName,
@@ -87,16 +83,13 @@ export default function GrowthChat({ agentName = 'growth_orchestrator', studioId
       setConversation(conv);
       onConversationChange?.(conv.id);
       
-      // Subscribe
       base44.agents.subscribeToConversation(conv.id, (data) => {
         setMessages(data.messages || []);
       });
     }
 
-    // Optimistic UI
-    setMessages(prev => [...prev, { role: 'user', content: text }]);
-
-    await base44.agents.addMessage(conv, { role: 'user', content: text });
+    // Don't add optimistic user message — we don't show them
+    await base44.agents.addMessage(conv, { role: 'user', content: msgText });
     setIsSending(false);
   };
 
@@ -114,101 +107,55 @@ export default function GrowthChat({ agentName = 'growth_orchestrator', studioId
     WebkitBackgroundClip: 'text',
   };
 
-  const isStreaming = messages.length > 0 && messages[messages.length - 1]?.role === 'user';
+  // Extract only assistant messages and their tool calls for display
+  const briefings = messages.filter(m => m.role === 'assistant');
+  const isWaitingForResponse = isSending || (messages.length > 0 && messages[messages.length - 1]?.role === 'user');
 
   return (
     <div className="flex flex-col h-full">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-5">
+      {/* Content area */}
+      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#c4b5ab' }} />
           </div>
-        ) : messages.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-4xl mb-4">{meta.emoji}</div>
-            <h3 className="text-lg font-semibold mb-2" style={etchedText}>{meta.label}</h3>
-            <p className="text-sm max-w-md mx-auto" style={{ color: '#b5a599' }}>
-              {agentName === 'growth_orchestrator' 
-                ? "Ask me to assess your growth situation, identify priorities, or surface what needs attention right now."
-                : `Ask me about ${meta.label.toLowerCase()} strategy — I'll look at your data and reason about what to do next.`}
-            </p>
-            {/* Quick prompts */}
-            <div className="flex flex-wrap justify-center gap-2 mt-6">
-              {agentName === 'growth_orchestrator' ? (
-                <>
-                  <QuickPrompt text="What should I focus on today?" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                  <QuickPrompt text="How are we doing this week?" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                  <QuickPrompt text="What's falling behind?" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                </>
-              ) : agentName === 'connector' ? (
-                <>
-                  <QuickPrompt text="Find new businesses to connect with" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                  <QuickPrompt text="Who should I reach out to this week?" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                  <QuickPrompt text="Draft outreach for my top prospects" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                </>
-              ) : agentName === 'retainer' ? (
-                <>
-                  <QuickPrompt text="Any families at risk of leaving?" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                  <QuickPrompt text="Who should I celebrate this week?" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                </>
-              ) : agentName === 'converter' ? (
-                <>
-                  <QuickPrompt text="Who needs a follow-up?" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                  <QuickPrompt text="Where are families dropping off?" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                </>
-              ) : (
-                <>
-                  <QuickPrompt text="What should I do next?" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                  <QuickPrompt text="Give me a strategy update" onSelect={text => { setInput(text); inputRef.current?.focus(); }} />
-                </>
-              )}
-            </div>
-          </div>
+        ) : briefings.length === 0 && !isWaitingForResponse ? (
+          /* Empty state — prompt cards */
+          <EmptyState meta={meta} agentName={agentName} onPrompt={handleSend} />
         ) : (
-          messages.filter(m => m.role !== 'system').map((msg, i) => (
-            <MessageBubble key={i} message={msg} meta={meta} />
-          ))
-        )}
-        
-        {(isSending || isStreaming) && messages[messages.length - 1]?.role !== 'assistant' && (
-          <div className="flex items-start gap-3">
-            <div 
-              className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: `${meta.color}15` }}
-            >
-              <span className="text-sm">{meta.emoji}</span>
-            </div>
-            <div 
-              className="rounded-2xl rounded-bl-lg px-5 py-3"
-              style={{ background: 'rgba(255,255,255,0.6)' }}
-            >
-              <div className="flex gap-1.5">
-                {[0,1,2].map(i => (
-                  <motion.div 
-                    key={i}
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: meta.color }}
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="space-y-6 max-w-3xl">
+            {briefings.map((msg, i) => (
+              <BriefingCard key={i} message={msg} meta={meta} isLatest={i === briefings.length - 1} />
+            ))}
           </div>
         )}
-        <div ref={messagesEndRef} />
+
+        {/* Thinking indicator */}
+        <AnimatePresence>
+          {isWaitingForResponse && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="mt-6 max-w-3xl"
+            >
+              <ThinkingIndicator meta={meta} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div ref={contentEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input — feels like a command bar, not a chat */}
       <div 
-        className="px-4 md:px-6 py-4"
+        className="px-4 md:px-8 py-4"
         style={{ 
           background: 'linear-gradient(to top, rgba(255,255,255,1) 70%, rgba(255,255,255,0))',
         }}
       >
         <div 
-          className="rounded-2xl flex items-center gap-2"
+          className="rounded-2xl flex items-center gap-2 max-w-3xl"
           style={{
             background: 'rgba(255, 255, 255, 0.7)',
             border: '1px solid rgba(220, 200, 196, 0.3)',
@@ -221,14 +168,14 @@ export default function GrowthChat({ agentName = 'growth_orchestrator', studioId
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={`Talk to ${meta.label}...`}
+            placeholder={`Ask ${meta.label} anything...`}
             disabled={isSending}
             className="flex-1 py-4 pl-5 pr-2 text-[15px] bg-transparent border-none outline-none placeholder:text-[#c4b5ab]"
             style={{ color: '#5A4A46' }}
           />
           {(input.trim() || isSending) && (
             <button
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={isSending || !input.trim()}
               className="mr-3 p-2.5 rounded-xl transition-all active:scale-95"
               style={{ 
@@ -245,107 +192,193 @@ export default function GrowthChat({ agentName = 'growth_orchestrator', studioId
   );
 }
 
-function QuickPrompt({ text, onSelect }) {
-  return (
-    <button
-      onClick={() => onSelect(text)}
-      className="px-4 py-2 rounded-xl text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
-      style={{
-        background: 'rgba(255,255,255,0.6)',
-        color: '#8b7d72',
-        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.08)',
-        border: '1px solid rgba(220, 200, 196, 0.2)',
-      }}
-    >
-      {text}
-    </button>
-  );
-}
+function EmptyState({ meta, agentName, onPrompt }) {
+  const prompts = agentName === 'growth_orchestrator' ? [
+    { text: "What should I focus on today?", icon: '🎯' },
+    { text: "How are we doing this week?", icon: '📊' },
+    { text: "What's falling behind?", icon: '⚠️' },
+  ] : agentName === 'connector' ? [
+    { text: "Find new businesses to connect with", icon: '🔍' },
+    { text: "Who should I reach out to this week?", icon: '📬' },
+    { text: "Draft outreach for my top prospects", icon: '✍️' },
+  ] : agentName === 'retainer' ? [
+    { text: "Any families at risk of leaving?", icon: '⚠️' },
+    { text: "Who should I celebrate this week?", icon: '🎉' },
+    { text: "Check attendance health", icon: '📋' },
+  ] : agentName === 'converter' ? [
+    { text: "Who needs a follow-up?", icon: '📞' },
+    { text: "Where are families dropping off?", icon: '📉' },
+    { text: "Help me close this month's trials", icon: '🎯' },
+  ] : [
+    { text: "What should I do next?", icon: '🎯' },
+    { text: "Give me a strategy update", icon: '📊' },
+    { text: "What opportunities am I missing?", icon: '💡' },
+  ];
 
-function MessageBubble({ message, meta }) {
-  const isUser = message.role === 'user';
-
   return (
-    <div className={`flex items-start gap-3 ${isUser ? 'justify-end' : ''}`}>
-      {!isUser && (
-        <div 
-          className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-          style={{ background: `${meta.color}15` }}
-        >
-          <span className="text-sm">{meta.emoji}</span>
-        </div>
-      )}
-      <div className={`max-w-[85%] ${isUser ? 'flex flex-col items-end' : ''}`}>
-        {message.content && (
-          <div 
-            className={`rounded-2xl px-5 py-3 ${isUser ? 'rounded-br-lg' : 'rounded-bl-lg'}`}
+    <div className="max-w-3xl py-8">
+      <div className="flex items-center gap-3 mb-6">
+        <span className="text-3xl">{meta.emoji}</span>
+        <div>
+          <h3 
+            className="text-xl font-bold"
             style={{
-              background: isUser 
-                ? 'linear-gradient(145deg, rgba(200,170,156,0.25) 0%, rgba(185,155,140,0.2) 100%)'
-                : 'rgba(255,255,255,0.6)',
-              boxShadow: isUser ? 'none' : 'inset 0 1px 1px rgba(255,255,255,0.7)',
+              color: 'transparent',
+              backgroundImage: 'linear-gradient(180deg, #8a7070 0%, #6A5A56 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+            }}
+          >{meta.label}</h3>
+          <p className="text-sm" style={{ color: '#b5a599' }}>Ready to think with you</p>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {prompts.map((p) => (
+          <button
+            key={p.text}
+            onClick={() => onPrompt(p.text)}
+            className="text-left rounded-2xl p-5 transition-all hover:scale-[1.02] active:scale-[0.98] group"
+            style={{
+              background: 'rgba(255,255,255,0.6)',
+              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 12px rgba(180,150,140,0.08)',
+              border: '1px solid rgba(220, 200, 196, 0.15)',
             }}
           >
-            {isUser ? (
-              <p className="text-[15px] leading-relaxed" style={{ color: '#5A4A46' }}>{message.content}</p>
-            ) : (
-              <ReactMarkdown 
-                className="text-[15px] prose prose-sm prose-slate max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
-                components={{
-                  p: ({ children }) => <p className="my-1.5 leading-relaxed" style={{ color: '#5A4A46' }}>{children}</p>,
-                  strong: ({ children }) => <strong style={{ color: '#6A5A56' }}>{children}</strong>,
-                  ul: ({ children }) => <ul className="my-1.5 ml-4 list-disc" style={{ color: '#5A4A46' }}>{children}</ul>,
-                  ol: ({ children }) => <ol className="my-1.5 ml-4 list-decimal" style={{ color: '#5A4A46' }}>{children}</ol>,
-                  li: ({ children }) => <li className="my-0.5">{children}</li>,
-                  h1: ({ children }) => <h1 className="text-lg font-semibold my-2" style={{ color: '#6A5A56' }}>{children}</h1>,
-                  h2: ({ children }) => <h2 className="text-base font-semibold my-2" style={{ color: '#6A5A56' }}>{children}</h2>,
-                  h3: ({ children }) => <h3 className="text-sm font-semibold my-2" style={{ color: '#6A5A56' }}>{children}</h3>,
-                  a: ({ children, ...props }) => (
-                    <a {...props} target="_blank" rel="noopener noreferrer" style={{ color: '#7eb89a' }}>{children}</a>
-                  ),
-                }}
-              >
-                {message.content}
-              </ReactMarkdown>
-            )}
-          </div>
-        )}
-
-        {/* Tool calls */}
-        {message.tool_calls?.length > 0 && (
-          <div className="mt-2 space-y-1">
-            {message.tool_calls.map((tc, idx) => (
-              <ToolCallBubble key={idx} toolCall={tc} />
-            ))}
-          </div>
-        )}
+            <span className="text-xl mb-3 block">{p.icon}</span>
+            <span className="text-sm font-medium" style={{ color: '#6A5A56' }}>{p.text}</span>
+            <ChevronRight 
+              className="w-4 h-4 mt-2 opacity-0 group-hover:opacity-100 transition-opacity" 
+              style={{ color: '#b5a599' }} 
+            />
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-function ToolCallBubble({ toolCall }) {
-  const [expanded, setExpanded] = useState(false);
+function ThinkingIndicator({ meta }) {
+  return (
+    <div 
+      className="rounded-2xl p-5"
+      style={{
+        background: 'rgba(255,255,255,0.5)',
+        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <div 
+          className="w-8 h-8 rounded-xl flex items-center justify-center"
+          style={{ background: `${meta.color}15` }}
+        >
+          <span className="text-sm">{meta.emoji}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium" style={{ color: '#8b7d72' }}>Thinking</span>
+          <div className="flex gap-1">
+            {[0,1,2].map(i => (
+              <motion.div 
+                key={i}
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ background: meta.color }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BriefingCard({ message, meta, isLatest }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Thinking steps — collapsed, subtle */}
+      {message.tool_calls?.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {message.tool_calls.map((tc, idx) => (
+            <ToolCallPill key={idx} toolCall={tc} meta={meta} />
+          ))}
+        </div>
+      )}
+
+      {/* Main content — rendered as a briefing, not a bubble */}
+      {message.content && (
+        <div 
+          className="rounded-2xl p-6"
+          style={{
+            background: isLatest 
+              ? 'rgba(255,255,255,0.7)'
+              : 'rgba(255,255,255,0.4)',
+            boxShadow: isLatest 
+              ? 'inset 0 1px 1px rgba(255,255,255,0.8), 0 4px 20px -8px rgba(180,140,135,0.1)'
+              : 'inset 0 1px 1px rgba(255,255,255,0.5)',
+          }}
+        >
+          <ReactMarkdown 
+            className="text-[15px] prose prose-sm prose-slate max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+            components={{
+              p: ({ children }) => <p className="my-2 leading-relaxed" style={{ color: '#5A4A46' }}>{children}</p>,
+              strong: ({ children }) => <strong style={{ color: '#6A5A56' }}>{children}</strong>,
+              ul: ({ children }) => <ul className="my-2 ml-4 list-disc" style={{ color: '#5A4A46' }}>{children}</ul>,
+              ol: ({ children }) => <ol className="my-2 ml-4 list-decimal" style={{ color: '#5A4A46' }}>{children}</ol>,
+              li: ({ children }) => <li className="my-0.5">{children}</li>,
+              h1: ({ children }) => <h1 className="text-lg font-semibold mt-4 mb-2" style={{ color: '#6A5A56' }}>{children}</h1>,
+              h2: ({ children }) => <h2 className="text-base font-semibold mt-4 mb-2" style={{ color: '#6A5A56' }}>{children}</h2>,
+              h3: ({ children }) => <h3 className="text-sm font-semibold mt-3 mb-1.5" style={{ color: '#6A5A56' }}>{children}</h3>,
+              a: ({ children, ...props }) => (
+                <a {...props} target="_blank" rel="noopener noreferrer" style={{ color: '#7eb89a' }}>{children}</a>
+              ),
+              blockquote: ({ children }) => (
+                <blockquote 
+                  className="border-l-2 pl-4 my-3 text-sm italic"
+                  style={{ borderColor: `${meta.color}40`, color: '#8b7d72' }}
+                >
+                  {children}
+                </blockquote>
+              ),
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function ToolCallPill({ toolCall, meta }) {
   const name = toolCall?.name || 'action';
   const status = toolCall?.status || 'pending';
-  
   const isRunning = status === 'running' || status === 'in_progress' || status === 'pending';
   const isDone = status === 'completed' || status === 'success';
 
+  // Clean up the name for display
+  const displayName = name.split('.').pop()?.replace(/_/g, ' ') || name;
+
   return (
-    <button
-      onClick={() => setExpanded(!expanded)}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all hover:bg-white/50"
-      style={{ color: '#a8998e' }}
+    <span
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium"
+      style={{ 
+        background: isDone ? `${meta.color}08` : 'rgba(200,190,180,0.1)',
+        color: isDone ? meta.color : '#b5a599',
+      }}
     >
       {isRunning ? (
-        <Loader2 className="w-3 h-3 animate-spin" />
+        <Loader2 className="w-2.5 h-2.5 animate-spin" />
       ) : isDone ? (
-        <Sparkles className="w-3 h-3" style={{ color: '#7eb89a' }} />
+        <Sparkles className="w-2.5 h-2.5" />
       ) : (
-        <span className="w-3 h-3 rounded-full bg-red-200" />
+        <span className="w-2 h-2 rounded-full bg-red-200" />
       )}
-      <span>{name.split('.').pop()?.replace(/_/g, ' ')}</span>
-    </button>
+      {displayName}
+    </span>
   );
 }
