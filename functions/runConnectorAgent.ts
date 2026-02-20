@@ -64,18 +64,22 @@ async function searchNearbyPlaces(query, location, radius = 10000) {
 async function getPlaceDetails(placeId) {
   if (!GOOGLE_MAPS_API_KEY || !placeId) return null;
 
-  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,formatted_address,formatted_phone_number,website,opening_hours,reviews&key=${GOOGLE_MAPS_API_KEY}`;
-  const res = await fetch(url);
+  const res = await fetch(`https://places.googleapis.com/v1/${placeId}`, {
+    headers: {
+      'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+      'X-Goog-FieldMask': 'displayName,formattedAddress,nationalPhoneNumber,websiteUri,regularOpeningHours,reviews'
+    }
+  });
   const data = await res.json();
 
-  if (data.result) {
+  if (data.displayName) {
     return {
-      name: data.result.name,
-      address: data.result.formatted_address,
-      phone: data.result.formatted_phone_number,
-      website: data.result.website,
-      hours: data.result.opening_hours?.weekday_text,
-      reviews: data.result.reviews?.slice(0, 3) // Top 3 reviews for context
+      name: data.displayName?.text,
+      address: data.formattedAddress,
+      phone: data.nationalPhoneNumber,
+      website: data.websiteUri,
+      hours: data.regularOpeningHours?.weekdayDescriptions,
+      reviews: data.reviews?.slice(0, 3).map(r => ({ text: r.text?.text }))
     };
   }
   return null;
