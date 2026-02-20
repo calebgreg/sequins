@@ -1,11 +1,24 @@
 import React, { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import ActionCard from '@/components/growth/ActionCard';
+import GrowthChat from '@/components/growth/GrowthChat';
 import MissionProgress from '@/components/growth/MissionProgress';
 import AdminOnly from '@/components/layout/AdminOnly';
 
+const AGENTS = [
+  { name: 'growth_orchestrator', label: 'Growth Engine', emoji: '🧠', description: 'The brain — assesses everything, sets priorities' },
+  { name: 'connector', label: 'Connector', emoji: '🤝', description: 'Build relationships with local businesses' },
+  { name: 'attender', label: 'Attender', emoji: '🎪', description: 'Find & attend community events' },
+  { name: 'accessor', label: 'Accessor', emoji: '🚪', description: 'Gain access to groups of families' },
+  { name: 'offerer', label: 'Offerer', emoji: '🎁', description: 'Create compelling offers for prospects' },
+  { name: 'converter', label: 'Converter', emoji: '✨', description: 'Turn trials into enrollments' },
+  { name: 'retainer', label: 'Retainer', emoji: '💜', description: 'Keep current families engaged' },
+  { name: 'referrer', label: 'Referrer', emoji: '📣', description: 'Generate word-of-mouth referrals' },
+];
+
 function GrowthContent() {
+  const [activeAgent, setActiveAgent] = useState('growth_orchestrator');
+
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -13,144 +26,33 @@ function GrowthContent() {
 
   const studioId = currentUser?.studio_id || currentUser?.data?.studio_id;
 
-  // Fetch pending actions
-  const { data: pendingActions = [] } = useQuery({
-    queryKey: ['pendingActions', studioId],
-    queryFn: () => base44.entities.GrowthAction.filter({ studio_id: studioId, status: 'pending_review' }),
-    enabled: !!studioId,
-  });
-
-  // Fetch outcomes for mission progress - filter by studio
+  // Fetch outcomes for sidebar progress
   const { data: outcomes = [] } = useQuery({
     queryKey: ['growthOutcomes', studioId],
     queryFn: () => base44.entities.GrowthOutcome.filter({ studio_id: studioId }),
     enabled: !!studioId,
   });
 
-  // Fetch partners, leads, events for context
-  const { data: partners = [] } = useQuery({
-    queryKey: ['partners', studioId],
-    queryFn: () => base44.entities.Partner.filter({ studio_id: studioId }),
-    enabled: !!studioId,
-  });
-
-  const { data: leads = [] } = useQuery({
-    queryKey: ['leads', studioId],
-    queryFn: () => base44.entities.Lead.filter({ studio_id: studioId }),
-    enabled: !!studioId,
-  });
-
-  const { data: events = [] } = useQuery({
-    queryKey: ['communityEvents', studioId],
-    queryFn: () => base44.entities.CommunityEvent.filter({ studio_id: studioId }),
-    enabled: !!studioId,
-  });
-
-  const queryClient = useQueryClient();
-
-  const handleActionSubmit = async (actionId, input) => {
-    const action = pendingActions.find(a => a.id === actionId);
-    if (!action) return null;
-
-    const lowerInput = input.toLowerCase().trim();
-
-    // Skip / dismiss
-    if (['skip', 'dismiss', 'no', 'pass', 'next', 'nah', 'remove'].some(w => lowerInput === w || lowerInput.startsWith(w + ' '))) {
-      await base44.entities.GrowthAction.update(actionId, { status: 'dismissed' });
-      queryClient.invalidateQueries({ queryKey: ['pendingActions'] });
-      return null;
-    }
-
-    // Send as-is
-    if (['send it', 'send', 'approve', 'looks good', 'good', 'yes', 'go', 'do it', 'lgtm', 'perfect', 'ship it', 'fire', 'send it!'].some(w => lowerInput === w || lowerInput.startsWith(w))) {
-      await base44.entities.GrowthAction.update(actionId, { status: 'approved', approved_at: new Date().toISOString() });
-      queryClient.invalidateQueries({ queryKey: ['pendingActions'] });
-      return "Approved — it'll go out.";
-    }
-
-    // Anything else = LLM rewrite the draft based on the instruction
-    const rewriteResult = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are rewriting a draft outreach message based on feedback.
-
-ORIGINAL DRAFT:
-Subject: ${action.subject || '(none)'}
-Body: ${action.content || '(none)'}
-Target: ${action.target_name} (${action.context?.partner_type || 'business'})
-
-USER FEEDBACK: "${input}"
-
-Rewrite the message incorporating the feedback. Keep it under 100 words. Be warm and neighborly.
-
-Return JSON: { "subject": "new subject", "body": "new body" }`,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          subject: { type: "string" },
-          body: { type: "string" }
-        }
-      }
-    });
-
-    await base44.entities.GrowthAction.update(actionId, {
-      subject: rewriteResult.subject,
-      content: rewriteResult.body,
-    });
-    queryClient.invalidateQueries({ queryKey: ['pendingActions'] });
-    return null;
+  const etchedText = {
+    color: 'transparent',
+    backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+    backgroundClip: 'text',
+    WebkitBackgroundClip: 'text',
+    textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+    filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
   };
 
-  // Transform pending actions into display format
-  const currentActions = pendingActions.slice(0, 5).map(action => ({
-    id: action.id,
-    category: `${action.agent?.charAt(0).toUpperCase()}${action.agent?.slice(1) || 'Growth'} · ${action.action_type || 'Action'}`,
-    headline: action.title || 'Pending action',
-    subtext: action.summary || action.target_name || '',
-    draft: action.content,
-    subject: action.subject,
-    channel: action.action_type === 'email' ? 'Email' : action.action_type === 'sms' ? 'Text' : action.action_type,
-    placeholder: "send it / tweak the tone / skip / rewrite for a gym owner...",
-  }));
-
-  const displayActions = currentActions;
-
-  // Group outcomes by category
-  const outcomesByCategory = outcomes.filter(o => o.is_active).reduce((acc, o) => {
-    const cat = o.category || 'other';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push({
-      id: o.id,
-      title: o.name,
-      actual: 0, // TODO: Calculate from actual data
-      target: o.target_count,
-      period: o.target_period,
-      agent: o.agent,
-    });
-    return acc;
-  }, {});
-
-  const categoryOrder = ['acquisition', 'conversion', 'retention', 'referral'];
-  const categoryLabels = {
-    acquisition: 'Acquisition',
-    conversion: 'Conversion', 
-    retention: 'Retention',
-    referral: 'Referral',
-  };
-  const categoryIcons = {
-    acquisition: '🎯',
-    conversion: '✨',
-    retention: '💜',
-    referral: '🤝',
-  };
+  const activeAgentMeta = AGENTS.find(a => a.name === activeAgent);
 
   return (
     <div 
-      className="min-h-screen"
+      className="min-h-screen flex flex-col"
       style={{
         background: '#ffffff',
         fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
-      {/* Ambient background shapes */}
+      {/* Ambient shapes */}
       <div 
         className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-40 blur-3xl pointer-events-none"
         style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
@@ -161,97 +63,110 @@ Return JSON: { "subject": "new subject", "body": "new body" }`,
       />
 
       {/* Header */}
-      <div className="relative px-6 md:px-10 pt-10 mb-2">
-        <div 
-          className="text-sm font-medium mb-1"
-          style={{ color: '#b5a599' }}
-        >
-          February 2026
+      <div className="relative px-6 md:px-10 pt-10 pb-4">
+        <div className="text-sm font-medium mb-1" style={{ color: '#b5a599' }}>
+          {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
         </div>
-        <h1 
-          className="text-3xl md:text-5xl font-bold tracking-tight"
-          style={{ 
-            color: 'transparent',
-            backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
-            filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
-          }}
-        >
+        <h1 className="text-3xl md:text-5xl font-bold tracking-tight" style={etchedText}>
           Growth Engine
         </h1>
       </div>
 
-      {/* Main content */}
-      <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:gap-10 px-6 md:px-10 py-8 pb-16">
-        {/* Main column - Current actions */}
-        <div>
-          <div 
-            className="text-[11px] font-bold uppercase tracking-wider mb-5"
-            style={{ color: '#C4A8A4', letterSpacing: '1.5px' }}
-          >
-            Right now
-          </div>
-
-          {displayActions.length > 0 ? displayActions.map(action => (
-            <ActionCard
-              key={action.id}
-              action={action}
-              onSubmit={handleActionSubmit}
-            />
-          )) : (
-            <div 
-              className="rounded-3xl p-8 text-center"
+      {/* Agent switcher row */}
+      <div className="relative px-6 md:px-10 py-3 overflow-x-auto">
+        <div className="flex gap-2 min-w-max">
+          {AGENTS.map(agent => (
+            <button
+              key={agent.name}
+              onClick={() => setActiveAgent(agent.name)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-[0.97]"
               style={{
-                background: 'linear-gradient(145deg, rgba(254,240,240,0.95) 0%, rgba(252,235,235,0.9) 50%, rgba(250,242,240,0.85) 100%)',
-                boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08)',
+                background: activeAgent === agent.name 
+                  ? 'linear-gradient(145deg, rgba(254,240,240,0.95) 0%, rgba(252,235,235,0.9) 100%)'
+                  : 'transparent',
+                boxShadow: activeAgent === agent.name 
+                  ? 'inset 0 2px 12px rgba(180, 120, 120, 0.08), 0 2px 8px rgba(180,140,135,0.08)'
+                  : 'none',
+                color: activeAgent === agent.name ? '#6A5A56' : '#b5a599',
               }}
             >
-              <div className="text-lg font-medium mb-1" style={{ color: '#8b7d72' }}>All clear</div>
-              <div className="text-sm" style={{ color: '#b5a599' }}>Your agents are working — new actions will appear here when ready</div>
-            </div>
-          )}
+              <span>{agent.emoji}</span>
+              <span className="hidden md:inline">{agent.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main area */}
+      <div className="relative flex-1 flex flex-col lg:flex-row gap-0 lg:gap-6 px-0 lg:px-10 pb-0">
+        {/* Chat area — this IS the agent interface */}
+        <div 
+          className="flex-1 flex flex-col rounded-none lg:rounded-3xl overflow-hidden"
+          style={{
+            background: 'linear-gradient(145deg, rgba(254,248,248,0.6) 0%, rgba(252,246,244,0.4) 100%)',
+            minHeight: 'calc(100vh - 240px)',
+            maxHeight: 'calc(100vh - 180px)',
+          }}
+        >
+          <GrowthChat 
+            key={activeAgent}
+            agentName={activeAgent} 
+            studioId={studioId}
+          />
         </div>
 
-        {/* Sidebar - Progress grouped by category */}
-        <div className="space-y-6">
-          {categoryOrder.map(cat => {
-            const items = outcomesByCategory[cat];
-            if (!items || items.length === 0) return null;
-            
-            return (
-              <div key={cat}>
-                <div 
-                  className="text-[11px] font-bold uppercase tracking-wider mb-3 flex items-center gap-2"
-                  style={{ color: '#C4A8A4', letterSpacing: '1.5px' }}
-                >
-                  <span>{categoryIcons[cat]}</span>
-                  {categoryLabels[cat]}
-                </div>
-                
-                {items.map((mission) => (
-                  <MissionProgress key={mission.id} mission={mission} />
-                ))}
-              </div>
-            );
-          })}
-          
-          {Object.keys(outcomesByCategory).length === 0 && (
-            <div 
-              className="rounded-2xl py-5 px-6 text-sm"
-              style={{
-                background: 'linear-gradient(145deg, rgba(254,240,240,0.9) 0%, rgba(252,235,235,0.85) 100%)',
-                boxShadow: 'inset 0 2px 8px rgba(180, 120, 120, 0.06)',
-                color: '#A89894',
-              }}
-            >
-              No missions configured yet
+        {/* Sidebar — condensed progress */}
+        <div className="hidden lg:block w-[320px] flex-shrink-0 py-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 180px)' }}>
+          <div 
+            className="text-[11px] font-bold uppercase tracking-wider mb-3"
+            style={{ color: '#C4A8A4', letterSpacing: '1.5px' }}
+          >
+            Outcomes
+          </div>
+
+          {outcomes.filter(o => o.is_active).map(o => (
+            <OutcomeCard key={o.id} outcome={o} activeAgent={activeAgent} onAgentClick={setActiveAgent} />
+          ))}
+
+          {outcomes.length === 0 && (
+            <div className="text-sm p-4 rounded-xl" style={{ color: '#b5a599', background: 'rgba(255,255,255,0.5)' }}>
+              No outcomes configured yet. Ask the Growth Engine to help you set them up.
             </div>
           )}
         </div>
       </div>
     </div>
+  );
+}
+
+function OutcomeCard({ outcome, activeAgent, onAgentClick }) {
+  const isActive = activeAgent === outcome.agent;
+  
+  return (
+    <button
+      onClick={() => onAgentClick(outcome.agent)}
+      className="w-full text-left rounded-2xl p-4 transition-all hover:scale-[1.01] active:scale-[0.99]"
+      style={{
+        background: isActive 
+          ? 'linear-gradient(145deg, rgba(254,240,240,0.95) 0%, rgba(252,235,235,0.9) 100%)'
+          : 'rgba(255,255,255,0.5)',
+        boxShadow: isActive 
+          ? 'inset 0 2px 12px rgba(180, 120, 120, 0.08)'
+          : 'inset 0 1px 1px rgba(255,255,255,0.7)',
+      }}
+    >
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#C4A8A4' }}>
+          {outcome.agent}
+        </span>
+        <span className="text-xs" style={{ color: '#b5a599' }}>
+          {outcome.target_count}/{outcome.target_period}
+        </span>
+      </div>
+      <div className="text-sm font-medium" style={{ color: '#6A5A56' }}>
+        {outcome.name}
+      </div>
+    </button>
   );
 }
 
