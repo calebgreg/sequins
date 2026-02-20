@@ -95,8 +95,8 @@ Deno.serve(async (req) => {
     // =========================================
     
     // Get studio info for location context
-    const studios = await base44.entities.Studio.filter({ id: studio_id });
-    const studio = studios[0];
+    const allStudios = await base44.entities.Studio.list();
+    const studio = allStudios.find(s => s.id === studio_id);
     
     if (!studio) {
       return Response.json({ error: 'Studio not found' }, { status: 404 });
