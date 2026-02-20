@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
     weekStart.setHours(0, 0, 0, 0);
     
     const connectionsThisWeek = existingPartners.filter(p => 
-      p.status === 'connected' && 
+      p.relationship_status === 'connected' && 
       new Date(p.updated_date) >= weekStart
     ).length;
 
@@ -227,7 +227,7 @@ Deno.serve(async (req) => {
       // Get partners that need enrichment (identified but no contact strategy yet)
       const partnersToEnrich = await base44.entities.Partner.filter({ 
         studio_id, 
-        status: 'identified' 
+        relationship_status: 'identified' 
       });
 
       for (const partner of partnersToEnrich.slice(0, 5)) {
