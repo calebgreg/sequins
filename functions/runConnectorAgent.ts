@@ -372,36 +372,49 @@ Return JSON: {
           const hook = research.outreach_hook;
           const angle = research.partnership_angle;
 
-          const outreachPrompt = `You are ${studioName}, a local dance studio, writing a partnership outreach email.
+          // Get the owner's real first name
+          const ownerFirstName = (() => {
+            const name = user.full_name || '';
+            // If it looks like an email, use studio name instead
+            if (name.includes('@') || name.includes('.')) return null;
+            return name.split(' ')[0];
+          })();
+          const senderFirstName = ownerFirstName || studioName.split(' ')[0];
 
-RECIPIENT:
-- Business: ${partner.name}
-- Type: ${partner.category}
-- Contact: ${contactName || 'Owner/Manager'}
-- Location: ${partner.address || 'nearby'}
-${research.values ? `- Their values: ${research.values}` : ''}
-${hook ? `- Outreach hook: ${hook}` : ''}
-${angle ? `- Why they'd care: ${angle}` : ''}
+          const outreachPrompt = `Write a cold outreach email from a dance studio owner to a local business.
 
-PARTNERSHIP OFFER BY TYPE:
-- Daycare/School: Free demo class for their kids, movement benefits handout
-- Pediatrician: Leave flyers about physical development through dance
-- Gym/Sports: Cross-promotion, shared family audience
-- Salon: Recital hair styling partnership, cross-referrals
-- Church: Free community workshop, family event collaboration
+SENDER: ${senderFirstName}, who owns ${studioName} (a dance studio nearby)
 
-WRITE:
-A short, warm email that:
-1. Opens with something specific about THEM (not about you)
-2. Suggests ONE simple next step
-3. Feels like a neighbor reaching out, not a sales pitch
-4. Is under 100 words
+RECIPIENT: ${contactName || 'the owner'} at ${partner.name} (a ${partner.category} in the area)
+${research.values ? `What they care about: ${research.values}` : ''}
+${hook ? `Interesting detail: ${hook}` : ''}
+${angle ? `Why they'd be a fit: ${angle}` : ''}
+
+CRITICAL RULES — violating any of these means the email is rejected:
+- Write AS ${senderFirstName}, a real person. NEVER say "My name is ${studioName}" or "I am ${studioName}". 
+- First person singular only. "I run ${studioName}" or "I own a dance studio nearby" — not "we at ${studioName} believe..."
+- MAX 4-5 sentences total. Seriously. Count them.
+- NO bullet points, NO numbered lists, NO asterisks
+- NO URLs, NO links, NO website mentions (kills email deliverability)
+- NO "Sincerely", NO "Best regards", NO "Thank you for your time and consideration"
+- NO corporate buzzwords: "synergy", "partnership opportunity", "win-win", "enriching", "collaborate"
+- NO describing what your studio does or believes. They don't care yet.
+- Sign off with just the first name: "${senderFirstName}"
+- The email should feel like something you'd actually send from your phone
+
+TONE: You're a neighbor who noticed their business and had a genuine idea. That's it. Casual, warm, human. Think "hey I had an idea" not "I'd like to propose a strategic partnership."
+
+STRUCTURE:
+1. One sentence that shows you actually know something about THEIR business (not generic flattery)
+2. One sentence with a specific, low-commitment idea (not "let's explore a partnership")  
+3. One sentence asking if they'd be up for a quick chat or coffee
+4. Sign off with just "${senderFirstName}"
 
 Return JSON: {
-  "subject": "email subject line - personal, not corporate",
-  "body": "the email body",
-  "suggested_offer": "what you're offering them",
-  "why_them": "one sentence on why this partner specifically"
+  "subject": "short, casual subject line — like a text message preview, lowercase ok",
+  "body": "the complete email ready to send, no placeholders, no brackets",
+  "suggested_offer": "the specific thing you're offering",
+  "why_them": "one sentence on why this partner"
 }`;
 
           const draft = await base44.integrations.Core.InvokeLLM({
