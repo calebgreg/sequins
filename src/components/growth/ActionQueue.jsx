@@ -92,7 +92,7 @@ export default function ActionQueue({ actions, studioId }) {
 
 // No token resolution needed — agent drafts arrive complete and ready to send
 
-function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onApprove, onDismiss, onContentChange, studioInfo }) {
+function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onApprove, onDismiss, onContentChange }) {
   const [editedContent, setEditedContent] = useState(action.content || '');
   const color = AGENT_COLORS[action.agent] || '#c9a99c';
   const emoji = AGENT_EMOJI[action.agent] || '🤝';
