@@ -239,7 +239,7 @@ Deno.serve(async (req) => {
           const enrichPrompt = `Research this business for a dance studio partnership opportunity:
 
 Business: ${partner.name}
-Type: ${partner.type}
+Type: ${partner.category}
 Location: ${partner.address}
 Website: ${partner.website || 'unknown'}
 
