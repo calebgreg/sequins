@@ -260,28 +260,38 @@ Return JSON: {
         if (recentCelebrations.length > 0) continue;
 
         try {
-          const celebratePrompt = `Create a celebration message for a dance family:
+          // Get owner first name for celebrations
+          const celebOwnerName = (() => {
+            const name = user.full_name || '';
+            if (name.includes('@') || name.includes('.')) return null;
+            return name.split(' ')[0];
+          })();
+          const celebSender = celebOwnerName || note.teacher_name || 'We';
 
-STUDENT: ${student.name}, age ${student.age || 'unknown'}
-PARENT: ${student.parent_name || 'Parent'}
+          const celebratePrompt = `Write a quick, excited text from a dance studio to a parent celebrating their kid's win.
 
-WIN TO CELEBRATE:
-"${note.content}"
-- Category: ${note.category || 'general'}
-- Class: ${note.class_name || 'class'}
-- Teacher: ${note.teacher_name || 'Teacher'}
+SENDER: ${celebSender}
+PARENT: ${student.parent_name || 'there'}
+CHILD: ${student.name}
 
-Write a short, genuine celebration message that:
-1. Specifically mentions what the child did
-2. Shows we're paying attention and care
-3. Encourages them to keep going
-4. Makes the parent proud
+WHAT HAPPENED: "${note.content}"
+CLASS: ${note.class_name || 'class'}
+TEACHER: ${note.teacher_name || 'their teacher'}
+
+CRITICAL RULES:
+- MAX 2-3 sentences. This is a text, not a card.
+- Sound genuinely excited, like you're texting a friend about their kid
+- Mention the SPECIFIC thing the child did — don't be vague
+- NO "I wanted to share" or "I just wanted to let you know"
+- NO sign-off, no name at the end
+- NO URLs or links
+- Make the parent feel like their kid is seen and valued
 
 Return JSON: {
-  "celebration_hook": "the specific win being celebrated",
+  "celebration_hook": "the specific win",
   "parent_pride_angle": "what will make the parent proud",
-  "encouragement": "how to keep the momentum",
-  "message": "the full message (under 80 words)"
+  "encouragement": "momentum note",
+  "message": "the full text message"
 }`;
 
           const celebration = await base44.integrations.Core.InvokeLLM({
