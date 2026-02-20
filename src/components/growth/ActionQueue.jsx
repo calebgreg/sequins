@@ -29,32 +29,6 @@ export default function ActionQueue({ actions, studioId }) {
   const queryClient = useQueryClient();
   const editedContentRef = React.useRef({});
 
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  const { data: studios = [] } = useQuery({
-    queryKey: ['studios'],
-    queryFn: () => base44.entities.Studio.list(),
-    enabled: !!studioId,
-  });
-
-  const studioInfo = useMemo(() => {
-    const studio = studios.find(s => s.id === studioId);
-    if (!studio) return null;
-    // Use full_name only if it's a real name (not an email prefix)
-    const userName = currentUser?.full_name;
-    const isRealName = userName && !userName.includes('@') && !userName.includes('.');
-    return {
-      studioName: studio.name,
-      senderName: isRealName ? userName : studio.name,
-      senderTitle: 'Owner',
-      phone: studio.phone || '',
-      website: studio.website || '',
-    };
-  }, [studios, studioId, currentUser]);
-
   const pending = actions
     .filter(a => a.status === 'pending_review')
     .sort((a, b) => {
