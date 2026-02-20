@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import ActionQueue from '@/components/growth/ActionQueue';
 import AgentStatus from '@/components/growth/AgentStatus';
+import AgentDetailView from '@/components/growth/AgentDetailView';
 import GrowthChat from '@/components/growth/GrowthChat';
 import AdminOnly from '@/components/layout/AdminOnly';
 import { AnimatePresence, motion } from 'framer-motion';
