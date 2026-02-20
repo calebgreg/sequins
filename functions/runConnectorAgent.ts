@@ -318,7 +318,7 @@ Return JSON: {
       // Get enriched partners ready for outreach
       const partnersForOutreach = await base44.entities.Partner.filter({ 
         studio_id, 
-        status: 'identified' 
+        relationship_status: 'identified' 
       });
 
       // Prioritize enriched partners, then by rating
@@ -351,7 +351,7 @@ Return JSON: {
 
 RECIPIENT:
 - Business: ${partner.name}
-- Type: ${partner.type}
+- Type: ${partner.category}
 - Contact: ${contactName || 'Owner/Manager'}
 - Location: ${partner.address || 'nearby'}
 ${research.values ? `- Their values: ${research.values}` : ''}
@@ -409,7 +409,7 @@ Return JSON: {
             subject: draft.subject,
             content: draft.body,
             context: {
-              partner_type: partner.type,
+              partner_type: partner.category,
               contact_name: contactName,
               suggested_offer: draft.suggested_offer,
               partner_rating: research.rating,
@@ -420,7 +420,7 @@ Return JSON: {
 
           // Update partner status
           await base44.asServiceRole.entities.Partner.update(partner.id, {
-            status: 'contacted'
+            relationship_status: 'contacted'
           });
 
           results.actions_created++;
