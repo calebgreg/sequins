@@ -23,7 +23,7 @@ const etchedText = {
   filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
 };
 
-export default function ActionQueue({ actions }) {
+export default function ActionQueue({ actions, studioId }) {
   const [expandedId, setExpandedId] = useState(null);
   const [processingId, setProcessingId] = useState(null);
   const queryClient = useQueryClient();
@@ -90,12 +90,21 @@ export default function ActionQueue({ actions }) {
   );
 }
 
-function resolveTokens(content, action) {
+function resolveTokens(content, action, studioInfo) {
   if (!content) return '';
   let r = content;
+  // Resolve {{token}} style
   if (action.target_name) r = r.replace(/\{\{name\}\}/g, action.target_name);
   if (action.target_email) r = r.replace(/\{\{email\}\}/g, action.target_email);
   if (action.target_phone) r = r.replace(/\{\{phone\}\}/g, action.target_phone);
+  // Resolve [bracket] style placeholders from AI drafts using studio info
+  if (studioInfo) {
+    if (studioInfo.senderName) r = r.replace(/\[Your Name\]/gi, studioInfo.senderName);
+    if (studioInfo.senderTitle) r = r.replace(/\[Your Title\]/gi, studioInfo.senderTitle);
+    if (studioInfo.phone) r = r.replace(/\[Your Phone Number(?:\/Website)?\]/gi, studioInfo.phone + (studioInfo.website ? ' | ' + studioInfo.website : ''));
+    if (studioInfo.website) r = r.replace(/\[Your Website\]/gi, studioInfo.website);
+    if (studioInfo.studioName) r = r.replace(/\[Studio Name\]/gi, studioInfo.studioName);
+  }
   return r;
 }
 
