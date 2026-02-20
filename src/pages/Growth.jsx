@@ -5,7 +5,7 @@ import ActionQueue from '@/components/growth/ActionQueue';
 import AgentStatus from '@/components/growth/AgentStatus';
 import GrowthChat from '@/components/growth/GrowthChat';
 import AdminOnly from '@/components/layout/AdminOnly';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const AGENT_META = {
   growth_orchestrator: { label: 'Growth Engine', emoji: '🧠' },
@@ -45,21 +45,20 @@ function GrowthContent() {
 
   const pendingCount = actions.filter(a => a.status === 'pending_review').length;
 
-  // Agent conversation view
+  // Agent conversation — full takeover
   if (talkingTo) {
     const meta = AGENT_META[talkingTo] || AGENT_META.growth_orchestrator;
     return (
       <div 
-        className="h-[calc(100dvh-3rem)] flex flex-col relative overflow-hidden"
+        className="flex flex-col h-full overflow-hidden"
         style={{ fontFamily: "'DM Sans', -apple-system, sans-serif" }}
       >
-        {/* Back bar */}
         <div className="flex items-center gap-3 px-6 py-4 flex-shrink-0">
           <button
             onClick={() => setTalkingTo(null)}
             className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
             style={{
-              background: 'rgba(255,255,255,0.6)',
+              background: 'rgba(244,240,238,0.6)',
               boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.1)',
             }}
           >
@@ -80,39 +79,40 @@ function GrowthContent() {
   // Main view
   return (
     <div
-      className="min-h-[calc(100dvh-3rem)] relative overflow-y-auto"
+      className="h-full overflow-y-auto relative"
       style={{ fontFamily: "'DM Sans', -apple-system, sans-serif" }}
     >
-      {/* Ambient */}
-      <div
-        className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-30 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(244,206,206,0.5) 0%, transparent 70%)' }}
-      />
-      <div
-        className="fixed bottom-[-30%] left-[-15%] w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(232,218,210,0.6) 0%, transparent 70%)' }}
-      />
+      {/* Inner inset card — like TeacherStudio */}
+      <div className="p-4 md:p-8">
+        <div
+          className="rounded-3xl p-6 md:p-10 max-w-4xl mx-auto"
+          style={{
+            backgroundColor: '#fef7f7',
+            boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08), inset 0 1px 3px rgba(180, 120, 120, 0.05)',
+          }}
+        >
+          {/* Header */}
+          <div className="mb-8 md:mb-10">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight" style={etchedText}>
+              Growth Engine
+            </h1>
+            {pendingCount > 0 && (
+              <p className="text-sm mt-2" style={{ color: '#b5a599' }}>
+                {pendingCount} action{pendingCount !== 1 ? 's' : ''} ready for you to review
+              </p>
+            )}
+          </div>
 
-      {/* Header */}
-      <div className="relative px-6 md:px-10 pt-10 pb-8">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight" style={etchedText}>
-          Growth Engine
-        </h1>
-        {pendingCount > 0 && (
-          <p className="text-sm mt-2" style={{ color: '#b5a599' }}>
-            {pendingCount} action{pendingCount !== 1 ? 's' : ''} ready for you to review
-          </p>
-        )}
+          {/* Action queue */}
+          <div className="space-y-10">
+            <ActionQueue actions={actions} studioId={studioId} />
+            <AgentStatus actions={actions} onTalkTo={(agent) => setTalkingTo(agent)} />
+          </div>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="relative px-6 md:px-10 space-y-10 max-w-4xl pb-32">
-        <ActionQueue actions={actions} studioId={studioId} />
-        <AgentStatus actions={actions} onTalkTo={(agent) => setTalkingTo(agent)} />
-      </div>
-
-      {/* Floating command bar */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-2xl z-30">
+      {/* Floating command bar — positioned within the page flow, not fixed */}
+      <div className="sticky bottom-4 mx-auto w-[calc(100%-2rem)] max-w-2xl z-30 px-4 pb-4">
         <button
           onClick={() => setTalkingTo('growth_orchestrator')}
           className="w-full rounded-2xl px-5 py-4 flex items-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.99]"
