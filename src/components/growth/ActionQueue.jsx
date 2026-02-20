@@ -117,33 +117,7 @@ export default function ActionQueue({ actions, studioId }) {
   );
 }
 
-function resolveTokens(content, action, studioInfo) {
-  if (!content) return '';
-  let r = content;
-  // Resolve {{token}} style
-  if (action.target_name) r = r.replace(/\{\{name\}\}/g, action.target_name);
-  if (action.target_email) r = r.replace(/\{\{email\}\}/g, action.target_email);
-  if (action.target_phone) r = r.replace(/\{\{phone\}\}/g, action.target_phone);
-  
-  if (studioInfo) {
-    // Replace name placeholders with studio owner name (not email)
-    r = r.replace(/\[Your Name\]/gi, studioInfo.senderName);
-    r = r.replace(/\[Your Title\]/gi, studioInfo.senderTitle || 'Owner');
-    r = r.replace(/\[Studio Name\]/gi, studioInfo.studioName || '');
-    
-    // Build contact line from whatever we have
-    const contactParts = [studioInfo.phone, studioInfo.website].filter(Boolean);
-    const contactLine = contactParts.length > 0 ? contactParts.join(' | ') : studioInfo.studioName || '';
-    
-    // Catch ALL bracket-style phone/website/contact placeholders (aggressive regex)
-    r = r.replace(/\[Your (?:Phone ?Number|Website|Contact Info|Phone\/?Website|Phone Number\/?Website)[^\]]*\]/gi, contactLine);
-    r = r.replace(/\[(?:Phone|Website|Contact)[^\]]*\]/gi, contactLine);
-    
-    // Catch any remaining [Your ...] placeholders as a final sweep
-    r = r.replace(/\[Your [^\]]+\]/gi, studioInfo.senderName);
-  }
-  return r;
-}
+// No token resolution needed — agent drafts arrive complete and ready to send
 
 function ActionCard({ action, index, isExpanded, isProcessing, onToggle, onApprove, onDismiss, onContentChange, studioInfo }) {
   const [editedContent, setEditedContent] = useState(() => resolveTokens(action.content, action, studioInfo));
