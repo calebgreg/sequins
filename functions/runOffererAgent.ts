@@ -191,25 +191,40 @@ Return JSON: {
           // STEP 4: DRAFT INVITATION
           // =========================================
           
-          const invitePrompt = `Write a warm, personal invitation for a dance studio lead:
+          const inviteSender = (() => {
+            const name = user.full_name || '';
+            if (name.includes('@') || name.includes('.')) return null;
+            return name.split(' ')[0];
+          })() || studioName.split(' ')[0];
 
-TO: ${lead.parent_name}
-CHILD: ${lead.child_name || 'their child'}
+          const invitePrompt = `Write an invitation from a dance studio owner to a prospective family.
+
+SENDER: ${inviteSender} from ${studioName}
+PARENT: ${lead.parent_name}
+CHILD: ${lead.child_name || 'their child'}, age ${lead.child_age || 'unknown'}
 OFFER: ${match.recommended_offer === 'trial_class' ? 'Free Trial Class' : 'Open House Visit'}
 ${match.recommended_style ? `STYLE: ${match.recommended_style}` : ''}
 ${match.recommended_class ? `CLASS: ${match.recommended_class}` : ''}
+HOW THEY FOUND US: ${lead.source}
+${match.personal_hook ? `PERSONAL HOOK: ${match.personal_hook}` : ''}
 
-PERSONAL HOOK: ${match.personal_hook}
-URGENCY: ${match.urgency_angle}
-SOURCE: They found us via ${lead.source}
+Write TWO versions:
 
-Write a short SMS-friendly message (under 160 chars) AND an email version (under 100 words).
-Be warm and personal, not salesy. Focus on the child's experience.
+SMS VERSION (under 160 chars):
+- Casual, like texting a friend-of-a-friend
+- One clear action: "want me to save a spot?"
+
+EMAIL VERSION (under 4 sentences):
+- First person as ${inviteSender}
+- Reference how they found you if relevant
+- NO "I hope this email finds you well", NO corporate language
+- NO URLs, NO links (kills deliverability on cold emails)
+- NO formal sign-off. Just sign with "${inviteSender}"
 
 Return JSON: {
-  "sms": "short text message",
-  "email_subject": "email subject line",
-  "email_body": "email body text"
+  "sms": "the text message",
+  "email_subject": "casual subject line, lowercase ok",
+  "email_body": "the email"
 }`;
 
           const invitation = await base44.integrations.Core.InvokeLLM({
