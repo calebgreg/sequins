@@ -194,13 +194,24 @@ Return JSON: { "subject": "new subject", "body": "new body" }`,
             Right now
           </div>
 
-          {displayActions.map(action => (
+          {displayActions.length > 0 ? displayActions.map(action => (
             <ActionCard
               key={action.id}
               action={action}
               onSubmit={handleActionSubmit}
             />
-          ))}
+          )) : (
+            <div 
+              className="rounded-3xl p-8 text-center"
+              style={{
+                background: 'linear-gradient(145deg, rgba(254,240,240,0.95) 0%, rgba(252,235,235,0.9) 50%, rgba(250,242,240,0.85) 100%)',
+                boxShadow: 'inset 0 2px 12px rgba(180, 120, 120, 0.08)',
+              }}
+            >
+              <div className="text-lg font-medium mb-1" style={{ color: '#8b7d72' }}>All clear</div>
+              <div className="text-sm" style={{ color: '#b5a599' }}>Your agents are working — new actions will appear here when ready</div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar - Progress grouped by category */}
