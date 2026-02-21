@@ -15,6 +15,7 @@ import { CommandMenuProvider, useCommandMenu } from './components/layout/Command
 import { Toaster } from 'sonner';
 import GlobalAiChat, { GlobalAiChatProvider } from './components/ai/GlobalAiChat';
 import UserMenu from './components/layout/UserMenu';
+import RequireAuth from './components/layout/RequireAuth';
 
 function LayoutContent({ children }) {
   const location = useLocation();
