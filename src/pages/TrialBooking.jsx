@@ -220,28 +220,38 @@ export default function TrialBooking() {
 
         {/* Step 1: About Your Child */}
         {step === 1 && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-            <h2 className="text-lg font-semibold text-gray-700 mb-4">About Your Child</h2>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-5 p-6 rounded-3xl" style={glassCard}>
+            <h2 className="text-lg font-bold" style={etchedTextStyle}>About Your Child</h2>
 
             <div>
-              <label className={labelStyle}>Child's First Name *</label>
-              <input className={inputStyle} value={form.child_name} onChange={e => handleFieldChange('child_name', e.target.value)} placeholder="Emma" />
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={mutedTextStyle}>Child's First Name *</label>
+              <input className="w-full px-4 py-3 rounded-xl text-sm font-medium transition-all focus:outline-none" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,180,170,0.2)', color: '#8a7070', boxShadow: 'inset 0 2px 4px rgba(200,180,170,0.08)' }} value={form.child_name} onChange={e => handleFieldChange('child_name', e.target.value)} placeholder="Emma" />
             </div>
 
             <div>
-              <label className={labelStyle}>Child's Age</label>
-              <input className={inputStyle} type="number" value={form.child_age} onChange={e => handleFieldChange('child_age', e.target.value)} placeholder="6" />
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={mutedTextStyle}>Child's Age</label>
+              <input className="w-full px-4 py-3 rounded-xl text-sm font-medium transition-all focus:outline-none" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,180,170,0.2)', color: '#8a7070', boxShadow: 'inset 0 2px 4px rgba(200,180,170,0.08)' }} type="number" value={form.child_age} onChange={e => handleFieldChange('child_age', e.target.value)} placeholder="6" />
             </div>
 
             <div>
-              <label className={labelStyle}>Any dance experience?</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={mutedTextStyle}>Any dance experience?</label>
               <div className="grid grid-cols-3 gap-2">
                 {[{ v: 'none', l: 'None' }, { v: 'a_little', l: 'A Little' }, { v: 'some', l: 'Some' }].map(opt => (
                   <button
                     key={opt.v}
                     type="button"
                     onClick={() => handleFieldChange('dance_experience', opt.v)}
-                    className={`py-3 rounded-xl text-sm font-medium transition-all ${form.dance_experience === opt.v ? 'bg-rose-50 text-rose-600 ring-2 ring-rose-200' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                    className="py-3 rounded-xl text-sm font-semibold transition-all"
+                    style={{
+                      background: form.dance_experience === opt.v 
+                        ? 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)' 
+                        : 'rgba(255,255,255,0.4)',
+                      boxShadow: form.dance_experience === opt.v 
+                        ? '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)' 
+                        : 'none',
+                      border: form.dance_experience === opt.v ? '1px solid rgba(200,180,170,0.3)' : '1px solid transparent',
+                      color: form.dance_experience === opt.v ? '#8a7070' : '#b5a599',
+                    }}
                   >
                     {opt.l}
                   </button>
@@ -250,14 +260,24 @@ export default function TrialBooking() {
             </div>
 
             <div>
-              <label className={labelStyle}>What sounds fun?</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={mutedTextStyle}>What sounds fun?</label>
               <div className="flex flex-wrap gap-2">
                 {['Ballet', 'Tap', 'Hip Hop', 'Jazz', 'Not Sure'].map(style => (
                   <button
                     key={style}
                     type="button"
                     onClick={() => toggleInterest(style.toLowerCase())}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${form.interests.includes(style.toLowerCase()) ? 'bg-rose-50 text-rose-600 ring-2 ring-rose-200' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                    className="px-4 py-2 rounded-full text-sm font-semibold transition-all"
+                    style={{
+                      background: form.interests.includes(style.toLowerCase())
+                        ? 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)'
+                        : 'rgba(255,255,255,0.4)',
+                      boxShadow: form.interests.includes(style.toLowerCase())
+                        ? '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)'
+                        : 'none',
+                      border: form.interests.includes(style.toLowerCase()) ? '1px solid rgba(200,180,170,0.3)' : '1px solid transparent',
+                      color: form.interests.includes(style.toLowerCase()) ? '#8a7070' : '#b5a599',
+                    }}
                   >
                     {style}
                   </button>
@@ -268,7 +288,13 @@ export default function TrialBooking() {
             <button
               onClick={() => setStep(2)}
               disabled={!form.child_name.trim()}
-              className="w-full py-3.5 rounded-xl bg-rose-400 text-white font-semibold text-base hover:bg-rose-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                background: 'linear-gradient(145deg, #c4a0a0 0%, #8a7070 100%)',
+                color: 'white',
+                boxShadow: '0 8px 24px -8px rgba(138,112,112,0.4)',
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+              }}
             >
               Next <ChevronRight className="w-4 h-4" />
             </button>
