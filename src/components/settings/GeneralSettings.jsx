@@ -9,6 +9,48 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Loader2, Save, Plus, X, Globe, Music, ShoppingBag, Link2, Copy, Check } from 'lucide-react';
 import { toast } from "sonner";
 import LevelManager from './LevelManager';
+import { createPageUrl } from '../../utils';
+
+function TrialBookingLink({ studioId, linkCopied, setLinkCopied }) {
+  if (!studioId) return null;
+
+  const bookingUrl = `${window.location.origin}${createPageUrl('TrialBooking')}?studio_id=${studioId}`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(bookingUrl);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  return (
+    <Card className="border-none shadow-sm rounded-[32px] bg-white">
+      <CardHeader>
+        <CardTitle className="font-serif text-2xl flex items-center gap-2">
+          <Link2 className="w-5 h-5" /> Trial Booking Link
+        </CardTitle>
+        <CardDescription>Share this link with families so they can book a free trial class</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-3">
+          <Input
+            value={bookingUrl}
+            readOnly
+            className="h-11 rounded-xl bg-gray-50 text-sm font-mono"
+            onClick={(e) => e.target.select()}
+          />
+          <Button
+            onClick={handleCopy}
+            className="h-11 px-5 rounded-xl bg-[#333333] text-white hover:bg-black flex-shrink-0"
+          >
+            {linkCopied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+            {linkCopied ? 'Copied!' : 'Copy'}
+          </Button>
+        </div>
+        <p className="text-xs text-gray-400 mt-2">Embed this on your website or share via text/social media.</p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function GeneralSettings() {
   const queryClient = useQueryClient();
@@ -28,6 +70,13 @@ export default function GeneralSettings() {
       return res[0] || null;
     }
   });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const studioId = currentUser?.studio_id || currentUser?.data?.studio_id;
 
   useEffect(() => {
     if (settings) {
@@ -204,7 +253,7 @@ export default function GeneralSettings() {
       </Card>
 
       {/* Trial Booking Link */}
-      <TrialBookingLink settings={settings} linkCopied={linkCopied} setLinkCopied={setLinkCopied} />
+      <TrialBookingLink studioId={studioId} linkCopied={linkCopied} setLinkCopied={setLinkCopied} />
 
       {/* Level Manager Integrated Here */}
       <LevelManager />
