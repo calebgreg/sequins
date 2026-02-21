@@ -20,7 +20,7 @@ function LayoutContent({ children }) {
   const location = useLocation();
   const path = location.pathname.toLowerCase();
   const isTeacherStudio = path.includes('teacherstudio') || path.includes('teacher-studio');
-  const isPublicPage = path.includes('familyroom') || path.includes('familyportal');
+  const isPublicPage = path.includes('familyroom') || path.includes('familyportal') || path.includes('trialbooking');
   const { isOpen, setIsOpen } = useCommandMenu();
 
   // Public pages (Client Facing) - No Sidebar, No Admin Tools
