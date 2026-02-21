@@ -832,6 +832,29 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Trial Dossier Popup */}
+      <AnimatePresence>
+        {selectedTrialLead && (
+          <TrialDossier lead={selectedTrialLead} onClose={() => setSelectedTrialLead(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* Trial Note Gate */}
+      <AnimatePresence>
+        {trialNoteGate && (
+          <TrialNoteGate
+            childName={trialNoteGate.childName}
+            onSubmit={(noteText) => {
+              setTrialNotes(prev => ({ ...prev, [trialNoteGate.childName]: noteText }));
+              setTrialNoteGate(null);
+              // Re-trigger submit after saving the note (will check for more trial students)
+              setTimeout(() => handleSubmitAttendance(), 100);
+            }}
+            onCancel={() => setTrialNoteGate(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
       };
@@ -885,6 +908,16 @@ export default function TeacherStudio() {
   const { data: subAssignments = [] } = useQuery({
     queryKey: ['subAssignments', studioId],
     queryFn: () => base44.entities.SubAssignment.filter({ studio_id: studioId }),
+    enabled: !!studioId,
+  });
+
+  // Fetch trial leads for today
+  const { data: trialLeads = [] } = useQuery({
+    queryKey: ['trialLeads', studioId],
+    queryFn: async () => {
+      const leads = await base44.entities.Lead.filter({ studio_id: studioId, funnel_status: 'trial_scheduled' });
+      return leads;
+    },
     enabled: !!studioId,
   });
 
@@ -1095,6 +1128,7 @@ export default function TeacherStudio() {
               <ClassDetailView 
                 classData={selectedClass} 
                 students={students}
+                trialLeads={trialLeads}
                 onBack={() => setSelectedClass(null)}
                 currentTeacherName={teacherName}
                 studioId={studioId}
