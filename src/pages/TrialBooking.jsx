@@ -39,22 +39,17 @@ export default function TrialBooking() {
     trial_date: '',
   });
 
-  const { data: studio } = useQuery({
-    queryKey: ['studio', studioId],
+  const { data: bookingData, isLoading: isLoadingData } = useQuery({
+    queryKey: ['trialBookingData', studioId],
     queryFn: async () => {
-      const studios = await base44.entities.Studio.list();
-      return studios.find(s => s.id === studioId);
+      const res = await base44.functions.invoke('getTrialBookingData', { studio_id: studioId });
+      return res.data;
     },
     enabled: !!studioId,
   });
 
-  const { data: classes = [] } = useQuery({
-    queryKey: ['trialClasses', studioId],
-    queryFn: () => base44.entities.DanceClass.filter({ studio_id: studioId }),
-    enabled: !!studioId,
-  });
-
-  const availableClasses = classes.filter(c => c.type !== 'admin');
+  const studio = bookingData?.studio;
+  const availableClasses = bookingData?.classes || [];
 
   // Compute next date for a given day code
   const getNextDateForDay = (dayCode) => {
