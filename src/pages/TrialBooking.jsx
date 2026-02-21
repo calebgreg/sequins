@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { Check, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
+import { format } from 'date-fns';
 
 const PUBLIC_FUNCTIONS_BASE = window.location.origin.replace('preview-sandbox--', 'api--') + '/api';
 
@@ -16,11 +18,28 @@ async function callPublicFunction(name, payload) {
   }
   return res.json();
 }
-import { Check, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
 
 const dayNames = { M: 'Monday', T: 'Tuesday', W: 'Wednesday', R: 'Thursday', F: 'Friday', S: 'Saturday', U: 'Sunday' };
 const dayOrder = ['M', 'T', 'W', 'R', 'F', 'S', 'U'];
+
+// Etched text styles matching the app's design language
+const etchedTextStyle = {
+  color: 'transparent',
+  backgroundImage: 'linear-gradient(180deg, #c4a0a0 0%, #8a7070 100%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  textShadow: '0 2px 3px rgba(255,255,255,0.7)',
+  filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+};
+
+const mutedTextStyle = {
+  color: 'transparent',
+  backgroundImage: 'linear-gradient(180deg, #c4b5ab 0%, #a89585 100%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  textShadow: '0 2px 3px rgba(255,255,255,0.7)',
+  filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+};
 
 function formatTime(startTime) {
   const h = Math.floor(startTime);
