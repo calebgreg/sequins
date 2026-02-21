@@ -47,29 +47,11 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     // Try to get authenticated user; for scheduled automations there may be none
-    let user = null;
-    try { user = await base44.auth.me(); } catch (_) {}
-
-    // Parse body — handle empty body from automations
     let body = {};
     try { body = await req.json(); } catch (_) {}
 
-    let studio_id = body.studio_id;
-
-    // If no studio_id passed, look it up from user or just grab the first studio
-    if (!studio_id) {
-      if (user?.studio_id) {
-        studio_id = user.studio_id;
-      } else if (user?.data?.studio_id) {
-        studio_id = user.data.studio_id;
-      } else {
-        // Automation context — no user session. Grab the first active studio.
-        const allStudios = await base44.asServiceRole.entities.Studio.filter({ status: 'active' });
-        if (allStudios.length > 0) studio_id = allStudios[0].id;
-      }
-    }
-
-    if (!studio_id) return Response.json({ error: 'studio_id could not be determined' }, { status: 400 });
+    const studio_id = body.studio_id;
+    if (!studio_id) return Response.json({ error: 'studio_id is required' }, { status: 400 });
 
     // === GATHER CONTEXT ===
     const allStudios = await base44.asServiceRole.entities.Studio.list();

@@ -9,24 +9,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    let user = null;
-    try { user = await base44.auth.me(); } catch (_) {}
-
     let body = {};
     try { body = await req.json(); } catch (_) {}
 
-    let studio_id = body.studio_id;
+    const studio_id = body.studio_id;
     const mode = body.mode || 'match';
-
-    if (!studio_id) {
-      if (user?.studio_id) studio_id = user.studio_id;
-      else if (user?.data?.studio_id) studio_id = user.data.studio_id;
-      else {
-        const allStudios = await base44.asServiceRole.entities.Studio.filter({ status: 'active' });
-        if (allStudios.length > 0) studio_id = allStudios[0].id;
-      }
-    }
-    if (!studio_id) return Response.json({ error: 'studio_id could not be determined' }, { status: 400 });
+    if (!studio_id) return Response.json({ error: 'studio_id is required' }, { status: 400 });
 
     const allStudios = await base44.asServiceRole.entities.Studio.list();
     const studio = allStudios.find(s => s.id === studio_id);
