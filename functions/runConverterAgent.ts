@@ -152,20 +152,31 @@ Deno.serve(async (req) => {
           hasLeadNotes ? `Lead notes: "${lead.teacher_notes}"` : null,
         ].filter(Boolean).join('\n');
 
+        const channel = lead.parent_phone ? 'text' : 'email';
         const { data: draft } = await base44.asServiceRole.functions.invoke('callClaudeService', {
-          prompt: `Write a follow-up text from ${senderFirst} at ${studioName} to ${lead.parent_name} after their kid ${lead.child_name}'s trial class.
+          prompt: `You are writing a message from a dance teacher to a parent after their child's trial class.
 
-TRIAL INFO:
-${trialContext || 'Recent trial class'}
+CONTEXT:
+Child: ${lead.child_name}
+Parent: ${lead.parent_name}
+Class: ${trial.className || 'trial class'}
+Teacher notes: ${allObservations}
+Channel: ${channel}
 
-TEACHER OBSERVATIONS (use these — they're the whole point):
-${allObservations}
+YOUR JOB:
+Turn the teacher's observation into a short, warm message that makes the parent feel like their child was truly seen.
 
 RULES:
-- Reference something SPECIFIC the teacher noticed about ${lead.child_name}. This is what makes it personal.
-- MAX 3-4 sentences. One clear next step (suggest enrolling or coming back).
-- Sound like ${senderFirst} texting a parent, not a business.
-- No formal sign-off. No URLs. No buzzwords.
+- 2-3 sentences max
+- Use the teacher's observation but make it conversational, not a report
+- Sound like a teacher who was genuinely delighted
+- This is NOT a sales follow-up - don't ask them to enroll, don't mention pricing
+- Just share what you noticed. That's it.
+- Match the channel (text = casual, email = slightly more polished)
+- Emojis OK but max 1
+
+OUTPUT:
+Just the message. No explanation.
 Return JSON: { "message": "the complete message" }`,
           response_json_schema: { type: "object", properties: { message: { type: "string" } } }
         });
@@ -228,17 +239,26 @@ Return JSON: { "message": "the complete message" }`,
           ? `WHAT THE CLASS WORKED ON:\n${classNotes.slice(0, 3).map(n => `- ${n.content}`).join('\n')}`
           : trial.className ? `CLASS: ${trial.className} (${trial.style || 'dance'})` : '';
 
+        const channel = lead.parent_phone ? 'text' : 'email';
         const { data: draft } = await base44.asServiceRole.functions.invoke('callClaudeService', {
-          prompt: `Write a follow-up text from ${senderFirst} at ${studioName} to ${lead.parent_name} after their family missed the trial on ${trial.date}.
-Child: ${lead.child_name || 'their child'}, age ${lead.child_age || 'unknown'}
-${classContext}
+          prompt: `You are writing a message to a family who signed up for a trial class but didn't show up. No guilt. No pressure. Just show them what they missed and make it easy to reschedule.
+
+CONTEXT:
+Child: ${lead.child_name || 'their child'}
+Parent: ${lead.parent_name}
+Class they missed: ${trial.className || 'trial class'}
+What the class worked on: ${classContext || 'a fun dance session'}
+Channel: ${channel}
 
 RULES:
-- Zero guilt. Life happens.
-- If you know what the class worked on, mention one cool thing they missed
-- Make rescheduling feel effortless — just reply to this text
-- MAX 2-3 sentences. Sound like a real person.
-- No formal sign-off. No URLs.
+- 2-3 sentences max
+- NO guilt: never "we missed you" or "sorry you couldn't make it"
+- Show them something fun that happened so they feel FOMO, not shame
+- Make rescheduling dead simple - "want me to save a spot for next Saturday?"
+- Warm and light, zero pressure
+
+OUTPUT:
+Just the message. No explanation.
 Return JSON: { "message": "the complete text message" }`,
           response_json_schema: { type: "object", properties: { message: { type: "string" } } }
         });
@@ -307,26 +327,38 @@ Return JSON: { "message": "the complete text message" }`,
           return `${teacher}: "${n.content}"`;
         }).join('\n');
 
+        // Build specific reason from available hooks
+        const hooks = [];
+        if (trialClassStudents.length > 0) hooks.push(`A connection with other students in class: ${trialClassStudents.slice(0, 3).join(', ')}`);
+        if (childNotes.some(n => n.category === 'progress' || n.category === 'technique')) hooks.push(`A skill they're ready to develop: ${childNotes.find(n => n.category === 'progress' || n.category === 'technique')?.content}`);
+        if (availableClasses.length > 0) hooks.push(`A class that fits: ${availableClasses.slice(0, 2).map(c => `${c.title} on ${c.day}`).join(', ')}`);
+        if (lead.child_interests?.length > 0) hooks.push(`Their interests: ${lead.child_interests.join(', ')}`);
+        const specificReason = hooks.join('\n') || 'Based on teacher observations from the trial';
+
+        const channel = lead.parent_phone ? 'text' : 'email';
         const { data: draft } = await base44.asServiceRole.functions.invoke('callClaudeService', {
-          prompt: `Write a "reason to come back" text from ${senderFirst} at ${studioName} to ${lead.parent_name}. Their child ${lead.child_name} did a trial ${trial.date ? `on ${trial.date}` : 'recently'}.
+          prompt: `You are writing a message to a trial family giving them a specific reason their child should continue. Not a generic "we'd love to have you back" - a REAL reason tied to THIS child.
 
-This is a SECOND touch — they may have already gotten a "feel special" message. Now give them a SPECIFIC reason to come back.
-
-TEACHER NOTES:
-${notesSummary || 'No specific notes available'}
-
-HOOKS TO USE (pick the best one):
-${trialClassStudents.length > 0 ? `- Other kids in that class: ${trialClassStudents.slice(0, 3).join(', ')}` : ''}
-${childNotes.some(n => n.category === 'progress' || n.category === 'technique') ? `- Skill to develop: ${childNotes.find(n => n.category === 'progress' || n.category === 'technique')?.content}` : ''}
-${availableClasses.length > 0 ? `- Available ${trial.style || 'dance'} classes: ${availableClasses.slice(0, 2).map(c => `${c.title} on ${c.day}`).join(', ')}` : ''}
-${lead.child_interests?.length > 0 ? `- Child's interests: ${lead.child_interests.join(', ')}` : ''}
+CONTEXT:
+Child: ${lead.child_name}
+Parent: ${lead.parent_name}
+Teacher notes: ${notesSummary || 'No specific notes available'}
+Specific reason: ${specificReason}
+Channel: ${channel}
 
 RULES:
-- Give ONE specific, compelling reason — not a generic "we'd love to have you back"
-- Make it about the CHILD, not the studio
-- MAX 3 sentences. Sound like a real person.
-- Include a concrete next step (specific class to try, day to come in)
-- No formal sign-off. No URLs.
+- 2-4 sentences max
+- The reason must be SPECIFIC to this child:
+  - A skill they're ready to develop
+  - A connection they made with another student
+  - A class that fits their personality
+  - Timing (recital coming up, session starting)
+- Sound like a teacher who sees potential, not a salesperson closing a deal
+- Warm and encouraging, not pressuring
+- End with easy next step, not hard sell
+
+OUTPUT:
+Just the message. No explanation.
 Return JSON: { "message": "the complete message", "hook_used": "brief description of the hook" }`,
           response_json_schema: { type: "object", properties: { message: { type: "string" }, hook_used: { type: "string" } } }
         });
