@@ -24,7 +24,7 @@ function LayoutContent({ children }) {
   const isPublicPage = path.includes('familyroom') || path.includes('familyportal') || path.includes('trialbooking');
   const { isOpen, setIsOpen } = useCommandMenu();
 
-  // Public pages (Client Facing) - No Sidebar, No Admin Tools
+  // Public pages (Client Facing) - No Sidebar, No Admin Tools, No Auth Required
   if (isPublicPage) {
     return <>{children}</>;
   }
