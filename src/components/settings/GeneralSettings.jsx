@@ -63,20 +63,21 @@ export default function GeneralSettings() {
   const [isDirty, setIsDirty] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
-  const { data: settings, isLoading } = useQuery({
-    queryKey: ['studioSettings'],
-    queryFn: async () => {
-      const res = await base44.entities.StudioSettings.list();
-      return res[0] || null;
-    }
-  });
-
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
   const studioId = currentUser?.studio_id || currentUser?.data?.studio_id;
+
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ['studioSettings', studioId],
+    queryFn: async () => {
+      const res = await base44.entities.StudioSettings.filter({ studio_id: studioId });
+      return res[0] || null;
+    },
+    enabled: !!studioId,
+  });
 
   useEffect(() => {
     if (settings) {
