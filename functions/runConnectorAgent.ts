@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
 
     for (const prospect of toProcess) {
       try {
-        const fullAnalysis = await base44.integrations.Core.InvokeLLM({
+        const fullAnalysis = await base44.asServiceRole.functions.invoke('callClaudeService', {
           prompt: `You are helping a dance studio owner find circles of influence — people who already have trusted relationships with families the studio wants to reach.
 
 ABOUT THE STUDIO:
@@ -170,7 +170,6 @@ YOUR JOB — answer ALL of these:
    - Sign off with just "${ownerName}"
 
 Return JSON with these exact fields.`,
-          add_context_from_internet: !!prospect.website,
           response_json_schema: {
             type: "object",
             properties: {

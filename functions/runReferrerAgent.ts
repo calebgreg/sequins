@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 
       for (const partner of partnersOwed.slice(0, 3)) {
         try {
-          const matches = await base44.integrations.Core.InvokeLLM({
+          const matches = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Match families to this partner's services:
 PARTNER: ${partner.name} (${partner.category})
 FAMILIES: ${families.slice(0, 10).map(f => { const fs = students.filter(s => s.parent_email === f.parent_email); return `- ${f.parent_name}: ${fs.map(s => `${s.name} (${s.age || '?'})`).join(', ')}`; }).join('\n')}
@@ -91,7 +91,7 @@ Return JSON: { "recommended_families": [{ "parent_name": "name", "reason": "why"
         if (existingActions.length > 0) continue;
 
         try {
-          const moment = await base44.integrations.Core.InvokeLLM({
+          const moment = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Write a quick text to ${student.parent_name || 'a parent'} celebrating their kid ${student.name}'s win: "${note.content}". Then add a natural referral nudge. MAX 3 sentences. No URLs. No sign-off.
 Return JSON: { "message": "the text" }`,
             response_json_schema: { type: "object", properties: { message: { type: "string" } } }

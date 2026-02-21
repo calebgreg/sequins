@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
         if (existingActions.length > 0) continue;
 
         try {
-          const match = await base44.integrations.Core.InvokeLLM({
+          const match = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Match this lead to the best offer from a dance studio:
 LEAD: Parent: ${lead.parent_name}, Child: ${lead.child_name || 'Unknown'}, Age: ${lead.child_age || 'Unknown'}, Interests: ${lead.child_interests?.join(', ') || 'Not specified'}, Source: ${lead.source}, Status: ${lead.funnel_status}
 AVAILABLE: Free Trial Class (styles: ${Object.keys(styleMap).join(', ')}), Open House Visit
@@ -71,7 +71,7 @@ Return JSON: { "recommended_offer": "trial_class or open_house", "recommended_st
           results.leads_processed++;
           if (match.confidence === 'low') continue;
 
-          const invitation = await base44.integrations.Core.InvokeLLM({
+          const invitation = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Write an invitation from ${inviteSender} at ${studioName} to ${lead.parent_name} for their child ${lead.child_name || 'their child'} (age ${lead.child_age || 'unknown'}).
 Offer: ${match.recommended_offer === 'trial_class' ? 'Free Trial Class' : 'Open House Visit'}${match.recommended_style ? ` in ${match.recommended_style}` : ''}
 SMS VERSION (under 160 chars, casual). EMAIL VERSION (under 4 sentences, sign with "${inviteSender}"). No URLs. No formal sign-off.

@@ -44,10 +44,9 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const research = await base44.integrations.Core.InvokeLLM({
+        const research = await base44.asServiceRole.functions.invoke('callClaudeService', {
           prompt: `Find family-friendly community events near ${studioLocation} happening in ${months.join(', ')}. Look for school carnivals, city festivals, library events, church events, sports sign-up days, farmer's markets with kid activities. Find at least 5-10 real events.
 Return JSON: { "events": [{ "name": "event name", "type": "carnival|festival|fair|library|school|community|sports|other", "date": "YYYY-MM-DD or TBD", "time": "time", "location": "venue", "expected_attendance": 100, "booth_cost": null, "registration_deadline": null, "source": "where found", "fit_reasoning": "why good for dance studio" }] }`,
-          add_context_from_internet: true,
           response_json_schema: { type: "object", properties: { events: { type: "array", items: { type: "object", properties: { name: { type: "string" }, type: { type: "string" }, date: { type: "string" }, time: { type: "string" }, location: { type: "string" }, expected_attendance: { type: "number" }, booth_cost: { type: "number" }, registration_deadline: { type: "string" }, source: { type: "string" }, fit_reasoning: { type: "string" } } } } } }
         });
 
@@ -72,7 +71,7 @@ Return JSON: { "events": [{ "name": "event name", "type": "carnival|festival|fai
       for (const event of identifiedEvents) {
         if (event.fit_score) continue;
         try {
-          const evaluation = await base44.integrations.Core.InvokeLLM({
+          const evaluation = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Evaluate this event for a dance studio: ${event.name}, ${event.type}, date: ${event.date || 'TBD'}, attendance: ${event.expected_attendance || 'unknown'}, cost: ${event.booth_cost ? '$' + event.booth_cost : 'unknown'}. Score 0-100.
 Return JSON: { "fit_score": 75, "recommendation": "register|maybe|skip", "reasoning": "one sentence" }`,
             response_json_schema: { type: "object", properties: { fit_score: { type: "number" }, recommendation: { type: "string" }, reasoning: { type: "string" } } }
