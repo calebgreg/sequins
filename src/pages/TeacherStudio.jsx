@@ -18,6 +18,8 @@ import SubRequestFlow from '../components/teachers/SubRequestFlow';
 import AdminSubAssignment from '../components/teachers/AdminSubAssignment';
 import { analyzeAttendance } from '../components/teacher/useNoteAI';
 import { WeekView, MonthView } from '../components/teacher/ScheduleViews';
+import TrialDossier from '../components/teacher/TrialDossier';
+import TrialNoteGate from '../components/teacher/TrialNoteGate';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -215,7 +217,7 @@ import MusicManager from '../components/teacher/MusicManager';
 import StudentNotePrompt from '../components/teacher/StudentNotePrompt';
 
 // --- SUB-COMPONENT: Class Detail View ---
-const ClassDetailView = ({ classData, students, onBack, currentTeacherName, studioId, selectedDate }) => {
+const ClassDetailView = ({ classData, students, onBack, currentTeacherName, studioId, selectedDate, trialLeads = [] }) => {
   const [mode, setMode] = useState('dashboard'); // Start at dashboard with action cards
   const [showPostClassNotes, setShowPostClassNotes] = useState(false);
   const [notePromptDismissed, setNotePromptDismissed] = useState(false);
@@ -226,6 +228,17 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
   const [isSubRequestOpen, setIsSubRequestOpen] = useState(false);
   const [studentsToPrompt, setStudentsToPrompt] = useState([]);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+  const [selectedTrialLead, setSelectedTrialLead] = useState(null);
+  const [trialNoteGate, setTrialNoteGate] = useState(null); // { childName, leadId }
+  const [trialNotes, setTrialNotes] = useState({}); // { childName: noteText }
+
+  // Get trial student names for this class
+  const trialStudentNames = classData.trial_student_names || [];
+  const classTrialLeads = trialLeads.filter(l =>
+    l.trial_class_id === classData.id &&
+    (l.funnel_status === 'trial_scheduled' || l.funnel_status === 'trial_completed')
+  );
+  const isTrialStudent = (name) => trialStudentNames.includes(name) || classTrialLeads.some(l => l.child_name === name);
 
   // Frosted glass style for cards
   const cardStyle = {
