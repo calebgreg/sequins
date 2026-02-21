@@ -303,33 +303,43 @@ export default function TrialBooking() {
 
         {/* Step 2: Parent Info */}
         {step === 2 && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-            <h2 className="text-lg font-semibold text-gray-700 mb-4">Your Info</h2>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-5 p-6 rounded-3xl" style={glassCard}>
+            <h2 className="text-lg font-bold" style={etchedTextStyle}>Your Info</h2>
 
             <div>
-              <label className={labelStyle}>Your First Name *</label>
-              <input className={inputStyle} value={form.parent_name} onChange={e => handleFieldChange('parent_name', e.target.value)} placeholder="Sarah" />
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={mutedTextStyle}>Your First Name *</label>
+              <input className="w-full px-4 py-3 rounded-xl text-sm font-medium transition-all focus:outline-none" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,180,170,0.2)', color: '#8a7070', boxShadow: 'inset 0 2px 4px rgba(200,180,170,0.08)' }} value={form.parent_name} onChange={e => handleFieldChange('parent_name', e.target.value)} placeholder="Sarah" />
             </div>
 
             <div>
-              <label className={labelStyle}>Phone Number *</label>
-              <input className={inputStyle} type="tel" value={form.parent_phone} onChange={e => handleFieldChange('parent_phone', e.target.value)} placeholder="(555) 123-4567" />
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={mutedTextStyle}>Phone Number *</label>
+              <input className="w-full px-4 py-3 rounded-xl text-sm font-medium transition-all focus:outline-none" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,180,170,0.2)', color: '#8a7070', boxShadow: 'inset 0 2px 4px rgba(200,180,170,0.08)' }} type="tel" value={form.parent_phone} onChange={e => handleFieldChange('parent_phone', e.target.value)} placeholder="(555) 123-4567" />
             </div>
 
             <div>
-              <label className={labelStyle}>Email</label>
-              <input className={inputStyle} type="email" value={form.parent_email} onChange={e => handleFieldChange('parent_email', e.target.value)} placeholder="sarah@email.com" />
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={mutedTextStyle}>Email</label>
+              <input className="w-full px-4 py-3 rounded-xl text-sm font-medium transition-all focus:outline-none" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,180,170,0.2)', color: '#8a7070', boxShadow: 'inset 0 2px 4px rgba(200,180,170,0.08)' }} type="email" value={form.parent_email} onChange={e => handleFieldChange('parent_email', e.target.value)} placeholder="sarah@email.com" />
             </div>
 
             <div>
-              <label className={labelStyle}>How did you hear about us?</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={mutedTextStyle}>How did you hear about us?</label>
               <div className="grid grid-cols-2 gap-2">
                 {[{ v: 'friend', l: '👫 A Friend' }, { v: 'social_media', l: '📱 Social Media' }, { v: 'google', l: '🔍 Google' }, { v: 'event', l: '🎉 Event' }, { v: 'other', l: '💬 Other' }].map(opt => (
                   <button
                     key={opt.v}
                     type="button"
                     onClick={() => handleFieldChange('how_heard', opt.v)}
-                    className={`py-3 rounded-xl text-sm font-medium transition-all ${form.how_heard === opt.v ? 'bg-rose-50 text-rose-600 ring-2 ring-rose-200' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                    className="py-3 rounded-xl text-sm font-semibold transition-all"
+                    style={{
+                      background: form.how_heard === opt.v
+                        ? 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)'
+                        : 'rgba(255,255,255,0.4)',
+                      boxShadow: form.how_heard === opt.v
+                        ? '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)'
+                        : 'none',
+                      border: form.how_heard === opt.v ? '1px solid rgba(200,180,170,0.3)' : '1px solid transparent',
+                      color: form.how_heard === opt.v ? '#8a7070' : '#b5a599',
+                    }}
                   >
                     {opt.l}
                   </button>
@@ -339,19 +349,29 @@ export default function TrialBooking() {
 
             {form.how_heard === 'friend' && (
               <div>
-                <label className={labelStyle}>Who referred you? (optional)</label>
-                <input className={inputStyle} value={form.referral_name} onChange={e => handleFieldChange('referral_name', e.target.value)} placeholder="Their name" />
+                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={mutedTextStyle}>Who referred you? (optional)</label>
+                <input className="w-full px-4 py-3 rounded-xl text-sm font-medium transition-all focus:outline-none" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(200,180,170,0.2)', color: '#8a7070', boxShadow: 'inset 0 2px 4px rgba(200,180,170,0.08)' }} value={form.referral_name} onChange={e => handleFieldChange('referral_name', e.target.value)} placeholder="Their name" />
               </div>
             )}
 
             <div className="flex gap-3">
-              <button onClick={() => setStep(1)} className="flex-1 py-3.5 rounded-xl bg-gray-100 text-gray-600 font-medium flex items-center justify-center gap-2">
+              <button 
+                onClick={() => setStep(1)} 
+                className="flex-1 py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+                style={{ background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(200,180,170,0.2)', color: '#b5a599' }}
+              >
                 <ChevronLeft className="w-4 h-4" /> Back
               </button>
               <button
                 onClick={() => setStep(3)}
                 disabled={!form.parent_name.trim() || !form.parent_phone.trim()}
-                className="flex-1 py-3.5 rounded-xl bg-rose-400 text-white font-semibold flex items-center justify-center gap-2 hover:bg-rose-500 transition-all disabled:opacity-40"
+                className="flex-1 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40"
+                style={{
+                  background: 'linear-gradient(145deg, #c4a0a0 0%, #8a7070 100%)',
+                  color: 'white',
+                  boxShadow: '0 8px 24px -8px rgba(138,112,112,0.4)',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                }}
               >
                 Next <ChevronRight className="w-4 h-4" />
               </button>
