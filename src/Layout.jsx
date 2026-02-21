@@ -74,6 +74,20 @@ function LayoutContent({ children }) {
 }
 
 export default function Layout({ children, currentPageName }) {
+  const location = useLocation();
+  const path = location.pathname.toLowerCase();
+  const isPublicPage = path.includes('familyroom') || path.includes('familyportal') || path.includes('trialbooking');
+
+  // Public pages get NO providers that trigger SDK auth calls
+  if (isPublicPage) {
+    return (
+      <>
+        {children}
+        <Toaster />
+      </>
+    );
+  }
+
   return (
     <CommandMenuProvider>
       <GlobalAiChatProvider>
