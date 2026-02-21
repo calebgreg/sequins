@@ -96,7 +96,7 @@ export default function TrialBooking() {
     const selectedClass = availableClasses.find(c => c.id === form.class_id);
     const trialDate = form.trial_date || (selectedClass ? getNextDateForDay(selectedClass.day) : '');
 
-    const response = await base44.functions.invoke('bookTrial', {
+    const response = await callPublicFunction('bookTrial', {
       studio_id: studioId,
       child_name: form.child_name.trim(),
       child_age: form.child_age,
