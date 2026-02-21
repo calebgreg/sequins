@@ -73,7 +73,7 @@ function LayoutContent({ children }) {
   );
 }
 
-export default function Layout({ children }) {
+export default function Layout({ children, currentPageName }) {
   return (
     <CommandMenuProvider>
       <GlobalAiChatProvider>
