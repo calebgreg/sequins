@@ -134,24 +134,34 @@ export default function TrialBooking() {
     setIsSubmitting(false);
   };
 
+  const pageBg = {
+    minHeight: '100vh',
+    background: 'linear-gradient(180deg, #FEF7F7 0%, #FDF4F4 50%, #FEF8F8 100%)',
+  };
+
+  const glassCard = {
+    background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.85) 100%)',
+    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), inset 0 -1px 2px rgba(200,180,170,0.1), 0 20px 60px -20px rgba(180,150,140,0.25)',
+    backdropFilter: 'blur(20px)',
+    borderRadius: '24px',
+    border: '1px solid rgba(255,230,230,0.3)',
+  };
+
   if (!studioId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white p-6">
-        <p className="text-gray-500">Missing studio_id parameter.</p>
+      <div style={pageBg} className="flex items-center justify-center p-6">
+        <p style={mutedTextStyle} className="text-sm font-medium">Missing studio_id parameter.</p>
       </div>
     );
   }
 
   if (isLoadingData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white p-6">
-        <Loader2 className="w-6 h-6 animate-spin text-rose-300" />
+      <div style={pageBg} className="flex items-center justify-center p-6">
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#c4a0a0' }} />
       </div>
     );
   }
-
-  const inputStyle = "w-full px-4 py-3 rounded-xl border border-gray-200 text-base focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all bg-white";
-  const labelStyle = "block text-sm font-medium text-gray-600 mb-1.5";
 
   // Success screen
   if (submitted) {
