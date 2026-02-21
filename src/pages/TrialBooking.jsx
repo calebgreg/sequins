@@ -166,21 +166,25 @@ export default function TrialBooking() {
   // Success screen
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white p-6">
+      <div style={pageBg} className="flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-md"
+          className="text-center max-w-md p-10 rounded-3xl"
+          style={glassCard}
         >
-          <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-6">
-            <Check className="w-10 h-10 text-green-500" />
+          <div 
+            className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+            style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)', boxShadow: '0 8px 24px -8px rgba(180,150,140,0.25), inset 0 1px 1px rgba(255,255,255,1)' }}
+          >
+            <Check className="w-10 h-10" style={{ color: '#8a7070' }} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">You're All Set!</h1>
-          <p className="text-gray-500 mb-6">
-            {form.child_name} is booked for <strong>{submittedData?.class?.title}</strong>.
+          <h1 className="text-2xl font-bold mb-2" style={etchedTextStyle}>You're All Set!</h1>
+          <p className="mb-6 text-sm" style={{ color: '#a89585' }}>
+            {form.child_name} is booked for <strong style={{ color: '#8a7070' }}>{submittedData?.class?.title}</strong>.
             {form.parent_phone && " We sent you a confirmation text."}
           </p>
-          <p className="text-sm text-gray-400">See you at {studio?.name}! 💃</p>
+          <p className="text-sm" style={mutedTextStyle}>See you at {studio?.name}! 💃</p>
         </motion.div>
       </div>
     );
