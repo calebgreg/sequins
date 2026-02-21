@@ -69,6 +69,7 @@ function LayoutContent({ children }) {
 
       <GlobalAiChat />
     </div>
+    </RequireAuth>
   );
 }
 
