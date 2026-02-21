@@ -148,17 +148,16 @@ export default function OpportunityPartnerDetail({ partner, relatedActions, onAc
         </div>
       )}
 
-      {/* If nothing has been done yet and no action exists */}
+      {/* No draft yet — draft one NOW, don't just show info */}
       {!pendingAction && !sentAction && data.relationship_status === 'identified' && (
-        <div 
-          className="rounded-xl p-3 flex items-center gap-3"
-          style={{ background: 'rgba(200,180,170,0.06)' }}
-        >
-          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#d4c4ba' }} />
-          <span className="text-sm" style={{ color: '#a8998e' }}>
-            Identified — outreach coming soon
-          </span>
-        </div>
+        <DraftNowBlock 
+          partner={partner}
+          data={data}
+          research={research}
+          isDrafting={isDrafting}
+          setIsDrafting={setIsDrafting}
+          queryClient={queryClient}
+        />
       )}
     </motion.div>
   );
