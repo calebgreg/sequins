@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from "@/api/base44Client";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText, Menu, LayoutGrid, List, Calendar as CalendarIcon, Music, Disc, UserCheck, User } from 'lucide-react';
+import { ArrowLeft, Mic, Clock, Users, CheckCircle2, XCircle, AlertCircle, ChevronLeft, MoreVertical, Sparkles, Play, Square, CalendarX, CalendarCheck, FileText, Menu, LayoutGrid, List, Calendar as CalendarIcon, Music, Disc, UserCheck, User, Star } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -765,6 +765,50 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
               {classData.student_names?.length || 0} students enrolled
             </p>
           </div>
+
+          {/* Trial Student Alert Banner */}
+          {classTrialLeads.length > 0 && (
+            <div 
+              className="rounded-2xl p-4 mb-6 space-y-3"
+              style={{
+                background: 'linear-gradient(145deg, rgba(251,191,36,0.1) 0%, rgba(245,158,11,0.06) 100%)',
+                border: '1px solid rgba(251,191,36,0.2)',
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4" style={{ color: '#d97706' }} />
+                <span className="text-sm font-semibold" style={{ color: '#92400e' }}>
+                  {classTrialLeads.length} Trial Student{classTrialLeads.length > 1 ? 's' : ''} Today
+                </span>
+              </div>
+              <div className="space-y-2">
+                {classTrialLeads.map(lead => (
+                  <button
+                    key={lead.id}
+                    onClick={() => setSelectedTrialLead(lead)}
+                    className="w-full text-left rounded-xl p-3 flex items-center justify-between transition-all active:scale-[0.98]"
+                    style={{ background: 'rgba(255,255,255,0.7)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm"
+                        style={{ background: 'rgba(251,191,36,0.15)', color: '#d97706' }}
+                      >
+                        {lead.child_name?.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium" style={{ color: '#5a4a42' }}>{lead.child_name}</div>
+                        <div className="text-xs" style={{ color: '#9a8b80' }}>
+                          {lead.child_age ? `Age ${lead.child_age}` : ''}{lead.dance_experience === 'none' ? ' · First time' : ''}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-xs font-medium" style={{ color: '#d97706' }}>View Dossier →</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* 6 Card Grid - 2 cols on mobile, 3 on desktop */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
