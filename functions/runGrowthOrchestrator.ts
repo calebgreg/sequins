@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       else { await base44.asServiceRole.entities.GrowthPeriodProgress.create(progressData); }
     }
 
-    const summaryResponse = await base44.asServiceRole.functions.invoke('callClaudeService', {
+    const { data: summaryResponse } = await base44.asServiceRole.functions.invoke('callClaudeService', {
       prompt: `Summarize today's growth status for a dance studio.\nOutcomes:\n${outcomeAnalysis.map(a => `- ${a.outcome.name}: ${a.completed}/${a.target} (${a.status})`).join('\n')}\nAgents Run:\n${Object.entries(agentResults).map(([agent, r]) => `- ${agent}: ${r.success ? 'Success' : 'Failed'}`).join('\n') || 'None needed'}\nReturn JSON: { "summary": "2-3 sentences", "top_priority": "most important thing" }`,
       response_json_schema: { type: "object", properties: { summary: { type: "string" }, top_priority: { type: "string" } } }
     });

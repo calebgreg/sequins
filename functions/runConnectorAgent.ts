@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
 
     for (const prospect of toProcess) {
       try {
-        const fullAnalysis = await base44.asServiceRole.functions.invoke('callClaudeService', {
+        const { data: fullAnalysis } = await base44.asServiceRole.functions.invoke('callClaudeService', {
           prompt: `You are helping a dance studio owner find circles of influence — people who already have trusted relationships with families the studio wants to reach.
 
 ABOUT THE STUDIO:

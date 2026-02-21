@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       const groupsToEnrich = await base44.asServiceRole.entities.AccessGroup.filter({ studio_id, access_status: 'identified' });
       for (const group of groupsToEnrich.slice(0, 5)) {
         try {
-          const enrichment = await base44.asServiceRole.functions.invoke('callClaudeService', {
+          const { data: enrichment } = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Research ${group.name} (${group.type}) near ${studioLocation} to find the gatekeeper for partnership. Return JSON: { "gatekeeper": { "name": "name or role", "title": "title", "email": "or null", "phone": "or null" }, "approach_strategy": "how to reach them", "motivation": "what would make them say yes", "access_type_suggested": "flyers|newsletter|demo|presentation|event|partnership" }`,
             response_json_schema: { type: "object", properties: { gatekeeper: { type: "object", properties: { name: { type: "string" }, title: { type: "string" }, email: { type: "string" }, phone: { type: "string" } } }, approach_strategy: { type: "string" }, motivation: { type: "string" }, access_type_suggested: { type: "string" } } }
           });
@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
         if (existingActions.length > 0) continue;
 
         try {
-          const draft = await base44.asServiceRole.functions.invoke('callClaudeService', {
+          const { data: draft } = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Write a brief outreach message from ${studioName} to the gatekeeper at ${group.name} (${group.type}). Offer value to their families. Under 100 words. Return JSON: { "subject": "email subject", "body": "the message" }`,
             response_json_schema: { type: "object", properties: { subject: { type: "string" }, body: { type: "string" } } }
           });

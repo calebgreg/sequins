@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
 
         try {
           const childNotes = studentNotes.filter(n => n.student_name?.toLowerCase() === lead.child_name?.toLowerCase());
-          const analysis = await base44.asServiceRole.functions.invoke('callClaudeService', {
+          const { data: analysis } = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Write a follow-up text from ${senderFirst} at ${studioName} to ${lead.parent_name} after their kid ${lead.child_name}'s trial class (${lead.trial_date}).
 ${childNotes.length > 0 ? `Teacher observations: ${childNotes.map(n => n.content).join('; ')}` : ''}
 MAX 3-4 sentences. One clear next step. No formal sign-off. No URLs.
@@ -80,7 +80,7 @@ Return JSON: { "message": "the complete message" }`,
         if (existingActions.length > 0) continue;
 
         try {
-          const noShowAnalysis = await base44.asServiceRole.functions.invoke('callClaudeService', {
+          const { data: noShowAnalysis } = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Write a casual follow-up text from ${senderFirst} at ${studioName} after ${lead.parent_name}'s family no-showed their trial on ${lead.trial_date}. Child: ${lead.child_name}. Zero guilt. Make rescheduling easy. MAX 2-3 sentences. No URLs. No sign-off.
 Return JSON: { "message": "the complete text message" }`,
             response_json_schema: { type: "object", properties: { message: { type: "string" } } }
@@ -108,7 +108,7 @@ Return JSON: { "message": "the complete text message" }`,
         if (existingActions.length > 0) continue;
 
         try {
-          const prep = await base44.asServiceRole.functions.invoke('callClaudeService', {
+          const { data: prep } = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Write a trial-prep reminder text from ${senderFirst} at ${studioName} to ${lead.parent_name}. Child: ${lead.child_name}, trial in ${daysUntil} days. Be practical (what to wear), build excitement, confirm casually. MAX 3 sentences. No URLs. No sign-off.
 Return JSON: { "message": "the complete text" }`,
             response_json_schema: { type: "object", properties: { message: { type: "string" } } }

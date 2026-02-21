@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
           const family = families.find(f => f.parent_email === student.parent_email);
           const notes = recentNotes.filter(n => n.student_name === student.name);
 
-          const outreach = await base44.asServiceRole.functions.invoke('callClaudeService', {
+          const { data: outreach } = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Write a short check-in text from a dance studio owner to a parent whose kid has been missing class.
 SENDER: ${senderFirst} (studio owner)
 PARENT: ${student.parent_name || family?.parent_name || 'there'}
@@ -128,7 +128,7 @@ Return JSON: { "message": "the full text message" }`,
         if (existingActions.filter(a => new Date(a.created_date) >= weekAgo).length > 0) continue;
 
         try {
-          const celebration = await base44.asServiceRole.functions.invoke('callClaudeService', {
+          const { data: celebration } = await base44.asServiceRole.functions.invoke('callClaudeService', {
             prompt: `Write a quick, excited text from a dance studio to a parent celebrating their kid's win.
 SENDER: ${senderFirst}
 PARENT: ${student.parent_name || 'there'}
