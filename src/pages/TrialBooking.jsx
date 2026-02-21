@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from "@/api/base44Client";
 import { motion } from 'framer-motion';
 
 const PUBLIC_FUNCTIONS_BASE = window.location.origin.replace('preview-sandbox--', 'api--') + '/api';
