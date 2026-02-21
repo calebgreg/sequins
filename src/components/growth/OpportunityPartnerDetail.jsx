@@ -153,7 +153,7 @@ export default function OpportunityPartnerDetail({ partner, relatedActions, onAc
         >
           <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#d4c4ba' }} />
           <span className="text-sm" style={{ color: '#a8998e' }}>
-            No outreach drafted yet — run the Connector agent to create one
+            Identified — outreach coming soon
           </span>
         </div>
       )}
