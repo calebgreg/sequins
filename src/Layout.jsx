@@ -11,7 +11,7 @@ document.head.appendChild(manropeLink);
 
 // Lazy-load all authenticated components so their modules (which import base44 SDK)
 // are NEVER loaded on public pages like TrialBooking
-const AuthenticatedLayout = lazy(() => import('./components/layout/AuthenticatedLayout'));
+const AuthenticatedLayout = lazy(() => import('@/components/layout/AuthenticatedLayout'));
 
 function isPublicPath(path) {
   const p = path.toLowerCase();
