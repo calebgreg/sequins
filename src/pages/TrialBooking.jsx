@@ -110,6 +110,14 @@ export default function TrialBooking() {
     );
   }
 
+  if (isLoadingData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white p-6">
+        <Loader2 className="w-6 h-6 animate-spin text-rose-300" />
+      </div>
+    );
+  }
+
   const inputStyle = "w-full px-4 py-3 rounded-xl border border-gray-200 text-base focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all bg-white";
   const labelStyle = "block text-sm font-medium text-gray-600 mb-1.5";
 
