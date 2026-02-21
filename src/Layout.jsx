@@ -30,6 +30,7 @@ function LayoutContent({ children }) {
   }
 
   return (
+    <RequireAuth>
     <div className="min-h-screen bg-[#F4F4F6] flex font-sans text-[#333333]">
       <CommandMenu open={isOpen} onOpenChange={setIsOpen} />
 
