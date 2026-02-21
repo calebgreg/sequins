@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 export default function OpportunityPartnerDetail({ partner, relatedActions, onActionApprove, onActionDismiss }) {
   const data = partner.data || partner;
@@ -10,6 +11,8 @@ export default function OpportunityPartnerDetail({ partner, relatedActions, onAc
   const pendingAction = relatedActions.find(a => a.status === 'pending_review');
   const sentAction = relatedActions.find(a => a.status === 'approved' || a.status === 'sent');
   const [editingContent, setEditingContent] = useState(pendingAction?.content || '');
+  const [isDrafting, setIsDrafting] = useState(false);
+  const queryClient = useQueryClient();
 
   const statusStory = {
     identified: 'Your Connector found this business nearby. No one has reached out yet.',
