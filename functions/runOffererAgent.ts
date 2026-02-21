@@ -2,272 +2,100 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
  * OFFERER AGENT
- * Outcome: Get X prospects to take an offer (trial, camp, open house) per week
- * Does: Matches leads/prospects to best current offer, crafts personalized invitations
- * "Offer taken" means they signed up for or attended a trial/event
+ * Matches leads/prospects to best current offer, crafts personalized invitations
  */
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
-    const { studio_id, mode = 'match' } = await req.json();
-    
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+
+    let body = {};
+    try { body = await req.json(); } catch (_) {}
+
+    let studio_id = body.studio_id;
+    const mode = body.mode || 'match';
+
     if (!studio_id) {
-      return Response.json({ error: 'studio_id required' }, { status: 400 });
+      if (user?.studio_id) studio_id = user.studio_id;
+      else if (user?.data?.studio_id) studio_id = user.data.studio_id;
+      else {
+        const allStudios = await base44.asServiceRole.entities.Studio.filter({ status: 'active' });
+        if (allStudios.length > 0) studio_id = allStudios[0].id;
+      }
     }
+    if (!studio_id) return Response.json({ error: 'studio_id could not be determined' }, { status: 400 });
 
-    // =========================================
-    // STEP 1: Gather context
-    // =========================================
-    
-    const allStudios = await base44.entities.Studio.list();
+    const allStudios = await base44.asServiceRole.entities.Studio.list();
     const studio = allStudios.find(s => s.id === studio_id);
-    
-    if (!studio) {
-      return Response.json({ error: 'Studio not found' }, { status: 404 });
-    }
-    
+    if (!studio) return Response.json({ error: 'Studio not found' }, { status: 404 });
+
     const studioName = studio.name;
+    const leads = await base44.asServiceRole.entities.Lead.filter({ studio_id });
+    let prospects = [];
+    try { prospects = await base44.asServiceRole.entities.Prospect.filter({ studio_id }); } catch (_) {}
+    const classes = await base44.asServiceRole.entities.DanceClass.filter({ studio_id });
 
-    // Get all leads and prospects
-    const leads = await base44.entities.Lead.filter({ studio_id });
-    const prospects = await base44.entities.Prospect?.filter({ studio_id }) || [];
-
-    // Get current classes for trial matching
-    const classes = await base44.entities.DanceClass.filter({ studio_id });
-
-    // Get outcome tracking
-    const outcomes = await base44.entities.GrowthOutcome.filter({ 
-      studio_id, 
-      agent: 'offerer' 
-    });
+    const outcomes = await base44.asServiceRole.entities.GrowthOutcome.filter({ studio_id, agent: 'offerer' });
     const offerOutcome = outcomes.find(o => o.name?.toLowerCase().includes('offer'));
     const weeklyTarget = offerOutcome?.target_count || 5;
 
-    // Count this week's offers taken
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-    
-    const offersThisWeek = leads.filter(l => 
-      (l.funnel_status === 'trial_scheduled' || l.funnel_status === 'trial_completed') &&
-      new Date(l.updated_date) >= weekStart
-    ).length;
+    const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const offersThisWeek = leads.filter(l => (l.funnel_status === 'trial_scheduled' || l.funnel_status === 'trial_completed') && new Date(l.updated_date) >= weekStart).length;
 
-    const results = {
-      mode,
-      studio_id,
-      weekly_target: weeklyTarget,
-      current_progress: offersThisWeek,
-      leads_processed: 0,
-      actions_created: 0,
-      errors: []
-    };
+    const results = { mode, studio_id, weekly_target: weeklyTarget, current_progress: offersThisWeek, leads_processed: 0, actions_created: 0, errors: [] };
 
-    // =========================================
-    // STEP 2: BUILD CURRENT OFFERS
-    // What can we offer right now?
-    // =========================================
-    
-    // Group classes by style and find trial-friendly ones
     const styleMap = {};
     for (const cls of classes) {
       if (cls.type === 'admin') continue;
       const style = cls.style || cls.title?.split(' ')[0] || 'Dance';
       if (!styleMap[style]) styleMap[style] = [];
-      styleMap[style].push({
-        id: cls.id,
-        title: cls.title,
-        day: cls.day,
-        time: cls.start_time,
-        spots: (cls.student_names?.length || 0) < 12 // Has room
-      });
+      styleMap[style].push({ id: cls.id, title: cls.title, day: cls.day, time: cls.start_time, spots: (cls.student_names?.length || 0) < 12 });
     }
 
-    const currentOffers = [
-      {
-        type: 'trial_class',
-        name: 'Free Trial Class',
-        description: 'One free class in any style',
-        urgency: 'anytime',
-        available_styles: Object.keys(styleMap)
-      },
-      {
-        type: 'open_house',
-        name: 'Open House Visit',
-        description: 'Tour the studio, meet teachers, see a mini demo',
-        urgency: 'schedule'
-      }
-    ];
-
-    // =========================================
-    // STEP 3: MATCH MODE
-    // Match each lead to best offer
-    // =========================================
-    
     if (mode === 'match' || mode === 'full') {
-      console.log("Starting lead-offer matching...");
-
-      // Filter to leads that need an offer
-      const leadsNeedingOffer = leads.filter(l => 
-        l.funnel_status === 'new' || l.funnel_status === 'contacted'
-      );
-
-      // Also include prospects if entity exists
+      const leadsNeedingOffer = leads.filter(l => l.funnel_status === 'new' || l.funnel_status === 'contacted');
       const allProspects = [...leadsNeedingOffer, ...prospects.filter(p => !p.converted_to_lead)];
 
+      const inviteSender = (user?.full_name && !user.full_name.includes('@') ? user.full_name.split(' ')[0] : null) || studioName.split(' ')[0];
+
       for (const lead of allProspects.slice(0, 10)) {
-        // Check for existing pending action
-        const existingActions = await base44.entities.GrowthAction.filter({
-          studio_id,
-          target_id: lead.id,
-          agent: 'offerer',
-          status: 'pending_review'
-        });
-        
+        const existingActions = await base44.asServiceRole.entities.GrowthAction.filter({ studio_id, target_id: lead.id, agent: 'offerer', status: 'pending_review' });
         if (existingActions.length > 0) continue;
 
         try {
-          const matchPrompt = `Match this lead to the best offer from a dance studio:
-
-LEAD:
-- Parent: ${lead.parent_name}
-- Child: ${lead.child_name || 'Unknown'}
-- Age: ${lead.child_age || 'Unknown'}
-- Interests: ${lead.child_interests?.join(', ') || 'Not specified'}
-- Source: ${lead.source} ${lead.source_detail ? `(${lead.source_detail})` : ''}
-- Status: ${lead.funnel_status}
-- Last Contact: ${lead.last_contact_date || 'Never'}
-
-AVAILABLE OFFERS:
-1. Free Trial Class - Available styles: ${currentOffers[0].available_styles.join(', ')}
-2. Open House Visit - Tour, meet teachers, see demo
-
-STUDIO CLASSES BY STYLE:
-${Object.entries(styleMap).map(([style, classes]) => 
-  `- ${style}: ${classes.filter(c => c.spots).length} classes with openings`
-).join('\n')}
-
-Decide:
-1. Which offer is best for this lead?
-2. Which specific class/time would be ideal (if trial)?
-3. What personal hook should we use in the invitation?
-
-Return JSON: {
-  "recommended_offer": "trial_class|open_house",
-  "recommended_style": "style name or null",
-  "recommended_class": "class title or null",
-  "personal_hook": "something specific about them to mention",
-  "urgency_angle": "why they should act now",
-  "confidence": "high|medium|low"
-}`;
-
           const match = await base44.integrations.Core.InvokeLLM({
-            prompt: matchPrompt,
-            response_json_schema: {
-              type: "object",
-              properties: {
-                recommended_offer: { type: "string" },
-                recommended_style: { type: "string" },
-                recommended_class: { type: "string" },
-                personal_hook: { type: "string" },
-                urgency_angle: { type: "string" },
-                confidence: { type: "string" }
-              }
-            }
+            prompt: `Match this lead to the best offer from a dance studio:
+LEAD: Parent: ${lead.parent_name}, Child: ${lead.child_name || 'Unknown'}, Age: ${lead.child_age || 'Unknown'}, Interests: ${lead.child_interests?.join(', ') || 'Not specified'}, Source: ${lead.source}, Status: ${lead.funnel_status}
+AVAILABLE: Free Trial Class (styles: ${Object.keys(styleMap).join(', ')}), Open House Visit
+Return JSON: { "recommended_offer": "trial_class or open_house", "recommended_style": "style or null", "personal_hook": "something specific", "confidence": "high/medium/low" }`,
+            response_json_schema: { type: "object", properties: { recommended_offer: { type: "string" }, recommended_style: { type: "string" }, personal_hook: { type: "string" }, confidence: { type: "string" } } }
           });
 
           results.leads_processed++;
-
-          // Skip low confidence matches
           if (match.confidence === 'low') continue;
 
-          // =========================================
-          // STEP 4: DRAFT INVITATION
-          // =========================================
-          
-          const inviteSender = (() => {
-            const name = user.full_name || '';
-            if (name.includes('@') || name.includes('.')) return null;
-            return name.split(' ')[0];
-          })() || studioName.split(' ')[0];
-
-          const invitePrompt = `Write an invitation from a dance studio owner to a prospective family.
-
-SENDER: ${inviteSender} from ${studioName}
-PARENT: ${lead.parent_name}
-CHILD: ${lead.child_name || 'their child'}, age ${lead.child_age || 'unknown'}
-OFFER: ${match.recommended_offer === 'trial_class' ? 'Free Trial Class' : 'Open House Visit'}
-${match.recommended_style ? `STYLE: ${match.recommended_style}` : ''}
-${match.recommended_class ? `CLASS: ${match.recommended_class}` : ''}
-HOW THEY FOUND US: ${lead.source}
-${match.personal_hook ? `PERSONAL HOOK: ${match.personal_hook}` : ''}
-
-Write TWO versions:
-
-SMS VERSION (under 160 chars):
-- Casual, like texting a friend-of-a-friend
-- One clear action: "want me to save a spot?"
-
-EMAIL VERSION (under 4 sentences):
-- First person as ${inviteSender}
-- Reference how they found you if relevant
-- NO "I hope this email finds you well", NO corporate language
-- NO URLs, NO links (kills deliverability on cold emails)
-- NO formal sign-off. Just sign with "${inviteSender}"
-
-Return JSON: {
-  "sms": "the text message",
-  "email_subject": "casual subject line, lowercase ok",
-  "email_body": "the email"
-}`;
-
           const invitation = await base44.integrations.Core.InvokeLLM({
-            prompt: invitePrompt,
-            response_json_schema: {
-              type: "object",
-              properties: {
-                sms: { type: "string" },
-                email_subject: { type: "string" },
-                email_body: { type: "string" }
-              }
-            }
+            prompt: `Write an invitation from ${inviteSender} at ${studioName} to ${lead.parent_name} for their child ${lead.child_name || 'their child'} (age ${lead.child_age || 'unknown'}).
+Offer: ${match.recommended_offer === 'trial_class' ? 'Free Trial Class' : 'Open House Visit'}${match.recommended_style ? ` in ${match.recommended_style}` : ''}
+SMS VERSION (under 160 chars, casual). EMAIL VERSION (under 4 sentences, sign with "${inviteSender}"). No URLs. No formal sign-off.
+Return JSON: { "sms": "text", "email_subject": "subject", "email_body": "email" }`,
+            response_json_schema: { type: "object", properties: { sms: { type: "string" }, email_subject: { type: "string" }, email_body: { type: "string" } } }
           });
 
-          // Create GrowthAction for owner review
           await base44.asServiceRole.entities.GrowthAction.create({
-            studio_id,
-            outcome_id: offerOutcome?.id,
-            agent: 'offerer',
-            action_type: lead.parent_phone ? 'sms' : 'email',
-            status: 'pending_review',
+            studio_id, outcome_id: offerOutcome?.id, agent: 'offerer',
+            action_type: lead.parent_phone ? 'sms' : 'email', status: 'pending_review',
             priority: match.confidence === 'high' ? 'high' : 'medium',
-            target_type: 'lead',
-            target_id: lead.id,
-            target_name: lead.parent_name,
-            target_email: lead.parent_email,
-            target_phone: lead.parent_phone,
+            target_type: 'lead', target_id: lead.id, target_name: lead.parent_name,
+            target_email: lead.parent_email, target_phone: lead.parent_phone,
             title: `Invite ${lead.child_name || lead.parent_name} to ${match.recommended_offer === 'trial_class' ? 'trial' : 'open house'}`,
-            summary: match.personal_hook,
-            subject: invitation.email_subject,
+            summary: match.personal_hook, subject: invitation.email_subject,
             content: lead.parent_phone ? invitation.sms : invitation.email_body,
-            context: {
-              child_name: lead.child_name,
-              child_age: lead.child_age,
-              recommended_offer: match.recommended_offer,
-              recommended_style: match.recommended_style,
-              recommended_class: match.recommended_class,
-              urgency_angle: match.urgency_angle,
-              sms_version: invitation.sms,
-              email_version: invitation.email_body
-            }
+            context: { child_name: lead.child_name, recommended_offer: match.recommended_offer, recommended_style: match.recommended_style, sms_version: invitation.sms, email_version: invitation.email_body }
           });
-
           results.actions_created++;
         } catch (err) {
           console.error(`Error processing ${lead.parent_name}:`, err.message);
@@ -276,21 +104,13 @@ Return JSON: {
       }
     }
 
-    // =========================================
-    // STEP 5: Log activity
-    // =========================================
-    
     await base44.asServiceRole.entities.AgentLog.create({
-      studio_id,
-      agent: 'offerer',
-      outcome_id: offerOutcome?.id,
-      event_type: 'action',
+      studio_id, agent: 'offerer', outcome_id: offerOutcome?.id, event_type: 'action',
       summary: `Processed ${results.leads_processed} leads, created ${results.actions_created} invitation actions`,
       details: results
     });
 
     return Response.json({ success: true, ...results });
-
   } catch (error) {
     console.error('Offerer agent error:', error);
     return Response.json({ error: error.message }, { status: 500 });
