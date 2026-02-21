@@ -191,15 +191,15 @@ export default function TrialBooking() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div style={pageBg}>
       <div className="max-w-lg mx-auto px-5 py-8">
         {/* Studio Header */}
         <div className="text-center mb-8">
           {studio?.logo_url && (
             <img src={studio.logo_url} alt={studio.name} className="h-12 mx-auto mb-3 object-contain" />
           )}
-          <h1 className="text-2xl font-bold text-gray-800">{studio?.name || 'Studio'}</h1>
-          <p className="text-gray-500 mt-1">Book a Free Trial Class</p>
+          <h1 className="text-2xl font-bold" style={etchedTextStyle}>{studio?.name || 'Studio'}</h1>
+          <p className="mt-1 text-sm font-medium" style={mutedTextStyle}>Book a Free Trial Class</p>
         </div>
 
         {/* Progress Steps */}
@@ -207,7 +207,13 @@ export default function TrialBooking() {
           {[1, 2, 3].map(s => (
             <div
               key={s}
-              className={`h-1.5 rounded-full transition-all ${s <= step ? 'w-12 bg-rose-300' : 'w-8 bg-gray-200'}`}
+              className="h-1.5 rounded-full transition-all"
+              style={{
+                width: s <= step ? 48 : 32,
+                background: s <= step 
+                  ? 'linear-gradient(90deg, #c4a0a0, #8a7070)' 
+                  : 'rgba(200,180,170,0.2)',
+              }}
             />
           ))}
         </div>
