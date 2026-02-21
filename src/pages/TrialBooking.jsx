@@ -42,13 +42,8 @@ export default function TrialBooking() {
   const { data: bookingData, isLoading: isLoadingData } = useQuery({
     queryKey: ['trialBookingData', studioId],
     queryFn: async () => {
-      const res = await fetch('/api/getTrialBookingData', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studio_id: studioId }),
-      });
-      if (!res.ok) throw new Error('Failed to load booking data');
-      return res.json();
+      const res = await base44.functions.invoke('getTrialBookingData', { studio_id: studioId });
+      return res.data;
     },
     enabled: !!studioId,
   });
