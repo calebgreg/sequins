@@ -48,17 +48,31 @@ export default function OpportunityFeed({ partners, accessGroups, leads, actions
 
   partners.forEach(p => {
     const data = p.data || p;
+    const research = data.ai_research || {};
     const age = moment().diff(moment(p.created_date), 'hours');
     const relatedActions = actions.filter(a => (a.target_name === data.name || a.target_id === p.id));
     const hasPending = relatedActions.some(a => a.status === 'pending_review');
+
+    // Show the agent's reasoning, not just "Daycare"
+    const circleSize = research.circle_size;
+    const personRole = research.person_role;
+    const detail = circleSize 
+      ? `~${circleSize} families · ${personRole || CATEGORY_LABEL[data.category] || data.category}`
+      : CATEGORY_LABEL[data.category] || data.category || 'Business';
+    
+    // Subdetail = the angle or the reasoning, not the address
+    const subdetail = research.angle 
+      || research.circle_reasoning 
+      || data.notes
+      || data.address?.split(',').slice(0, 2).join(',');
 
     items.push({
       type: 'partner',
       id: p.id,
       raw: p,
       name: data.name,
-      detail: CATEGORY_LABEL[data.category] || data.category || 'Business',
-      subdetail: data.address?.split(',').slice(0, 2).join(','),
+      detail,
+      subdetail,
       status: data.relationship_status,
       statusLabel: data.relationship_status?.replace(/_/g, ' '),
       isNew: age < 72,
