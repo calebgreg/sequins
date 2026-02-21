@@ -381,14 +381,14 @@ export default function TrialBooking() {
 
         {/* Step 3: Pick a Class */}
         {step === 3 && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-            <h2 className="text-lg font-semibold text-gray-700 mb-4">Pick a Class</h2>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-5 p-6 rounded-3xl" style={glassCard}>
+            <h2 className="text-lg font-bold" style={etchedTextStyle}>Pick a Class</h2>
 
             {/* Group by day */}
             <div className="space-y-4">
               {dayOrder.filter(d => availableClasses.some(c => c.day === d)).map(day => (
                 <div key={day}>
-                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">{dayNames[day]}</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-wider mb-2" style={mutedTextStyle}>{dayNames[day]}</h3>
                   <div className="space-y-2">
                     {availableClasses.filter(c => c.day === day).sort((a, b) => a.start_time - b.start_time).map(cls => {
                       const selected = form.class_id === cls.id;
@@ -397,17 +397,26 @@ export default function TrialBooking() {
                           key={cls.id}
                           type="button"
                           onClick={() => handleFieldChange('class_id', cls.id)}
-                          className={`w-full text-left p-4 rounded-xl border-2 transition-all ${selected ? 'border-rose-300 bg-rose-50' : 'border-gray-100 bg-white hover:border-gray-200'}`}
+                          className="w-full text-left p-4 rounded-xl transition-all"
+                          style={{
+                            background: selected 
+                              ? 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)'
+                              : 'rgba(255,255,255,0.4)',
+                            boxShadow: selected 
+                              ? '0 4px 16px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)'
+                              : 'none',
+                            border: selected ? '2px solid rgba(196,160,160,0.4)' : '2px solid transparent',
+                          }}
                         >
                           <div className="flex justify-between items-center">
                             <div>
-                              <div className={`font-semibold ${selected ? 'text-rose-600' : 'text-gray-700'}`}>{cls.title}</div>
-                              <div className="text-sm text-gray-500 mt-0.5">
+                              <div className="font-bold text-sm" style={{ color: selected ? '#8a7070' : '#b5a599' }}>{cls.title}</div>
+                              <div className="text-xs mt-0.5" style={{ color: '#b5a599' }}>
                                 {formatTime(cls.start_time)} · {Math.round((cls.duration || 1) * 60)} min
                                 {cls.teacher && ` · ${cls.teacher}`}
                               </div>
                             </div>
-                            {selected && <Check className="w-5 h-5 text-rose-500" />}
+                            {selected && <Check className="w-5 h-5" style={{ color: '#8a7070' }} />}
                           </div>
                         </button>
                       );
@@ -418,13 +427,23 @@ export default function TrialBooking() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setStep(2)} className="flex-1 py-3.5 rounded-xl bg-gray-100 text-gray-600 font-medium flex items-center justify-center gap-2">
+              <button 
+                onClick={() => setStep(2)} 
+                className="flex-1 py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+                style={{ background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(200,180,170,0.2)', color: '#b5a599' }}
+              >
                 <ChevronLeft className="w-4 h-4" /> Back
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={!form.class_id || isSubmitting}
-                className="flex-1 py-3.5 rounded-xl bg-rose-400 text-white font-semibold flex items-center justify-center gap-2 hover:bg-rose-500 transition-all disabled:opacity-40"
+                className="flex-1 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40"
+                style={{
+                  background: 'linear-gradient(145deg, #c4a0a0 0%, #8a7070 100%)',
+                  color: 'white',
+                  boxShadow: '0 8px 24px -8px rgba(138,112,112,0.4)',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                }}
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Book Trial'}
               </button>
