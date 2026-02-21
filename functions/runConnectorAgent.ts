@@ -60,9 +60,17 @@ Deno.serve(async (req) => {
 
     const studioName = studio.name;
     const studioLocation = studio.address || "local area";
-    const ownerName = user?.full_name && !user.full_name.includes('@')
-      ? user.full_name.split(' ')[0]
-      : studioName.split(' ')[0];
+
+    // Get studio owner name from the Studio record
+    const ownerEmail = studio.owner_email;
+    let ownerName = studioName.split(' ')[0];
+    if (ownerEmail) {
+      const users = await base44.asServiceRole.entities.User.list();
+      const owner = users.find(u => u.email === ownerEmail);
+      if (owner?.full_name && !owner.full_name.includes('@')) {
+        ownerName = owner.full_name.split(' ')[0];
+      }
+    }
 
     // Get existing partners to avoid duplicates
     const existingPartners = await base44.asServiceRole.entities.Partner.filter({ studio_id });

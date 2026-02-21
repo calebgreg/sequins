@@ -35,7 +35,13 @@ Deno.serve(async (req) => {
 
     const results = { mode, studio_id, matches_found: 0, moments_found: 0, actions_created: 0, errors: [] };
 
-    const senderFirst = (user?.full_name && !user.full_name.includes('@') ? user.full_name.split(' ')[0] : null) || studioName.split(' ')[0];
+    // Get studio owner name
+    let senderFirst = studioName.split(' ')[0];
+    if (studio.owner_email) {
+      const users = await base44.asServiceRole.entities.User.list();
+      const owner = users.find(u => u.email === studio.owner_email);
+      if (owner?.full_name && !owner.full_name.includes('@')) senderFirst = owner.full_name.split(' ')[0];
+    }
 
     // MATCH FAMILIES TO PARTNERS
     if (mode === 'match' || mode === 'full') {

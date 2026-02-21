@@ -47,7 +47,13 @@ Deno.serve(async (req) => {
       const leadsNeedingOffer = leads.filter(l => l.funnel_status === 'new' || l.funnel_status === 'contacted');
       const allProspects = [...leadsNeedingOffer, ...prospects.filter(p => !p.converted_to_lead)];
 
-      const inviteSender = (user?.full_name && !user.full_name.includes('@') ? user.full_name.split(' ')[0] : null) || studioName.split(' ')[0];
+      // Get studio owner name for messages
+      let inviteSender = studioName.split(' ')[0];
+      if (studio.owner_email) {
+        const users = await base44.asServiceRole.entities.User.list();
+        const owner = users.find(u => u.email === studio.owner_email);
+        if (owner?.full_name && !owner.full_name.includes('@')) inviteSender = owner.full_name.split(' ')[0];
+      }
 
       for (const lead of allProspects.slice(0, 10)) {
         const existingActions = await base44.asServiceRole.entities.GrowthAction.filter({ studio_id, target_id: lead.id, agent: 'offerer', status: 'pending_review' });

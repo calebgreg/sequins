@@ -41,12 +41,15 @@ Deno.serve(async (req) => {
 
     const results = { mode, studio_id, students_analyzed: 0, at_risk_found: 0, wins_found: 0, actions_created: 0, errors: [] };
 
-    const ownerFirstName = (() => {
-      const name = user?.full_name || '';
-      if (name.includes('@') || name.includes('.')) return null;
-      return name.split(' ')[0];
-    })();
-    const senderFirst = ownerFirstName || studioName.split(' ')[0];
+    // Get studio owner name
+    let senderFirst = studioName.split(' ')[0];
+    if (studio.owner_email) {
+      const users = await base44.asServiceRole.entities.User.list();
+      const owner = users.find(u => u.email === studio.owner_email);
+      if (owner?.full_name && !owner.full_name.includes('@') && !owner.full_name.includes('.')) {
+        senderFirst = owner.full_name.split(' ')[0];
+      }
+    }
 
     // AT-RISK FAMILIES
     if (mode === 'analyze' || mode === 'at_risk' || mode === 'full') {

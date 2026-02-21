@@ -33,7 +33,13 @@ Deno.serve(async (req) => {
 
     const results = { mode, studio_id, trials_analyzed: 0, actions_created: 0, errors: [] };
 
-    const senderFirst = (user?.full_name && !user.full_name.includes('@') ? user.full_name.split(' ')[0] : null) || studioName.split(' ')[0];
+    // Get studio owner name
+    let senderFirst = studioName.split(' ')[0];
+    if (studio.owner_email) {
+      const users = await base44.asServiceRole.entities.User.list();
+      const owner = users.find(u => u.email === studio.owner_email);
+      if (owner?.full_name && !owner.full_name.includes('@')) senderFirst = owner.full_name.split(' ')[0];
+    }
 
     const trialCompletedNotEnrolled = leads.filter(l => l.funnel_status === 'trial_completed' || (l.funnel_status === 'offer_made' && l.trial_outcome === 'attended'));
     const noShows = leads.filter(l => l.trial_outcome === 'no_show' || (l.funnel_status === 'trial_scheduled' && l.trial_date && new Date(l.trial_date) < new Date()));
