@@ -4,16 +4,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
  * CONNECTOR AGENT — Circles of Influence
  * 
  * Mission: Find PEOPLE who influence the families we want.
- * Not a Yellow Pages search. Not a business directory.
  * 
- * Pipeline (runs fully automatically):
+ * Pipeline:
  * 1. DISCOVER — Find businesses near the studio that serve families with kids
  * 2. EVALUATE — Why this circle? How many families? Why does it matter?
- * 3. IDENTIFY THE PERSON — Who's at the center? Name, role, how to reach them
- * 4. FIND THE ANGLE — What's the genuine way in? Not transactional. Real.
+ * 3. IDENTIFY THE PERSON — Who's at the center?
+ * 4. FIND THE ANGLE — What's the genuine way in?
  * 5. DRAFT THE FIRST STEP — A message ready for the owner to approve
- * 
- * By the time the owner sees anything, the only decision is: send or don't.
  */
 
 const GOOGLE_MAPS_API_KEY = Deno.env.get("GOOGLE_MAPS_API_KEY");
@@ -48,31 +45,53 @@ async function searchNearbyPlaces(query, location) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { studio_id } = await req.json();
-    if (!studio_id) return Response.json({ error: 'studio_id required' }, { status: 400 });
+    // Try to get authenticated user; for scheduled automations there may be none
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+
+    // Parse body — handle empty body from automations
+    let body = {};
+    try { body = await req.json(); } catch (_) {}
+
+    let studio_id = body.studio_id;
+
+    // If no studio_id passed, look it up from user or just grab the first studio
+    if (!studio_id) {
+      if (user?.studio_id) {
+        studio_id = user.studio_id;
+      } else if (user?.data?.studio_id) {
+        studio_id = user.data.studio_id;
+      } else {
+        // Automation context — no user session. Grab the first active studio.
+        const allStudios = await base44.asServiceRole.entities.Studio.filter({ status: 'active' });
+        if (allStudios.length > 0) studio_id = allStudios[0].id;
+      }
+    }
+
+    if (!studio_id) return Response.json({ error: 'studio_id could not be determined' }, { status: 400 });
 
     // === GATHER CONTEXT ===
-    const allStudios = await base44.entities.Studio.list();
+    const allStudios = await base44.asServiceRole.entities.Studio.list();
     const studio = allStudios.find(s => s.id === studio_id);
     if (!studio) return Response.json({ error: 'Studio not found' }, { status: 404 });
 
     const studioName = studio.name;
     const studioLocation = studio.address || "local area";
-    const ownerName = user.full_name?.includes('@') ? studioName.split(' ')[0] : (user.full_name?.split(' ')[0] || 'there');
+    const ownerName = user?.full_name && !user.full_name.includes('@')
+      ? user.full_name.split(' ')[0]
+      : studioName.split(' ')[0];
 
     // Get existing partners to avoid duplicates
-    const existingPartners = await base44.entities.Partner.filter({ studio_id });
+    const existingPartners = await base44.asServiceRole.entities.Partner.filter({ studio_id });
     const existingNamesLower = new Set(existingPartners.map(p => (p.name || '').toLowerCase().trim()));
 
-    // Get students/families for context — what does this studio's demographic look like?
-    const students = await base44.entities.Student.filter({ studio_id });
+    // Get students/families for context
+    const students = await base44.asServiceRole.entities.Student.filter({ studio_id });
     const studioContext = {
       student_count: students.length,
       age_range: students.length > 0 
-        ? `${Math.min(...students.filter(s => s.age).map(s => s.age))}-${Math.max(...students.filter(s => s.age).map(s => s.age))}`
+        ? `${Math.min(...students.filter(s => s.age).map(s => s.age))||3}-${Math.max(...students.filter(s => s.age).map(s => s.age))||12}`
         : '3-12',
       styles: [...new Set(students.flatMap(s => s.interests || []))].slice(0, 5),
     };
@@ -89,7 +108,7 @@ Deno.serve(async (req) => {
     };
 
     // Get outcome tracking
-    const outcomes = await base44.entities.GrowthOutcome.filter({ studio_id, agent: 'connector' });
+    const outcomes = await base44.asServiceRole.entities.GrowthOutcome.filter({ studio_id, agent: 'connector' });
     const connectOutcome = outcomes.find(o => o.is_active);
 
     // === DISCOVER — Find circles of influence ===
@@ -121,14 +140,12 @@ Deno.serve(async (req) => {
 
     console.log(`[Connector] Discovered ${discovered.length} potential circles of influence`);
 
-    // === EVALUATE + IDENTIFY + ANGLE + DRAFT — all at once per prospect ===
-    // Pick the top prospects to fully process (limit to avoid timeout)
+    // === EVALUATE + IDENTIFY + ANGLE + DRAFT ===
     const toProcess = discovered.slice(0, 6);
     const results = { processed: 0, actions_created: 0, partners_created: 0 };
 
     for (const prospect of toProcess) {
       try {
-        // One LLM call that does EVERYTHING: evaluate, find the person, find the angle, draft the message
         const fullAnalysis = await base44.integrations.Core.InvokeLLM({
           prompt: `You are helping a dance studio owner find circles of influence — people who already have trusted relationships with families the studio wants to reach.
 
@@ -151,22 +168,15 @@ YOUR JOB — answer ALL of these:
 
 1. CIRCLE SIZE ESTIMATE: How many families with kids does a typical ${prospect.category} like "${prospect.name}" in this area likely touch? Give a rough number.
 
-2. THE PERSON: Who is the most likely decision-maker or center of influence at this business? Think about WHO actually talks to parents — it might be the owner, the front desk manager, the director, a teacher. Give your best guess at:
-   - Their likely ROLE (not name — we often can't know the name without deeper research)
-   - Why THEY specifically have influence over parents
+2. THE PERSON: Who is the most likely decision-maker or center of influence at this business? Give your best guess at their likely ROLE and why THEY specifically have influence over parents.
 
-3. THE ANGLE: What is the genuine, non-transactional reason ${ownerName} should reach out? NOT "let's do a cross-referral partnership." Think:
-   - What shared reality do they have? (Both serve families, both deal with busy parents, both care about kids' development)
-   - What could ${ownerName} OFFER that would make this person's day better? (Free demo class for their clients' kids? A fun flyer for their bulletin board? Volunteering at their event?)
-   - What's the one thing that would make this person say "oh that's cool, yeah let's grab coffee"?
+3. THE ANGLE: What is the genuine, non-transactional reason ${ownerName} should reach out? NOT "let's do a cross-referral partnership."
 
-4. FIRST STEP MESSAGE: Draft a short message (email or Instagram DM — pick whichever feels more natural for this type of business) from ${ownerName}. Rules:
-   - MAX 4 sentences. Seriously.
-   - Written like a text from a neighbor, not a business proposal
-   - Mention something SPECIFIC about THEIR business (even if you have to be slightly generic about the category, make it feel personal)
-   - The ask is LOW COMMITMENT: coffee, a quick hello, dropping something off
-   - No buzzwords: "synergy", "partnership", "collaborate", "win-win"
-   - No describing what the dance studio does. They don't care yet.
+4. FIRST STEP MESSAGE: Draft a short message (email or Instagram DM) from ${ownerName}. Rules:
+   - MAX 4 sentences
+   - Written like a text from a neighbor
+   - Low commitment ask: coffee, a quick hello
+   - No buzzwords
    - Sign off with just "${ownerName}"
 
 Return JSON with these exact fields.`,
@@ -174,27 +184,25 @@ Return JSON with these exact fields.`,
           response_json_schema: {
             type: "object",
             properties: {
-              circle_size_estimate: { type: "number", description: "Estimated families this business touches" },
-              circle_reasoning: { type: "string", description: "Why this is a valuable circle of influence (2-3 sentences max)" },
-              person_role: { type: "string", description: "Most likely role of the key person (e.g., 'Owner', 'Director', 'Front Desk Manager')" },
-              person_name: { type: "string", description: "Name if found on website, otherwise empty string" },
-              person_why: { type: "string", description: "Why this person has influence over parents (1 sentence)" },
-              angle: { type: "string", description: "The genuine, non-transactional way in (2-3 sentences)" },
-              channel: { type: "string", enum: ["email", "instagram_dm", "in_person_drop_by"], description: "Best channel for first contact" },
-              message_subject: { type: "string", description: "Email subject line if email, or empty" },
-              message_body: { type: "string", description: "The actual message, ready to send" },
-              confidence: { type: "string", enum: ["high", "medium", "low"], description: "How confident you are this is a good circle" }
+              circle_size_estimate: { type: "number" },
+              circle_reasoning: { type: "string" },
+              person_role: { type: "string" },
+              person_name: { type: "string" },
+              person_why: { type: "string" },
+              angle: { type: "string" },
+              channel: { type: "string", enum: ["email", "instagram_dm", "in_person_drop_by"] },
+              message_subject: { type: "string" },
+              message_body: { type: "string" },
+              confidence: { type: "string", enum: ["high", "medium", "low"] }
             }
           }
         });
 
-        // Skip low-confidence results
         if (fullAnalysis.confidence === 'low') {
           console.log(`[Connector] Skipping ${prospect.name} — low confidence`);
           continue;
         }
 
-        // Create the Partner record with full context
         const partner = await base44.asServiceRole.entities.Partner.create({
           studio_id,
           name: prospect.name,
@@ -219,26 +227,20 @@ Return JSON with these exact fields.`,
         });
         results.partners_created++;
 
-        // Create Contact if we found a name
         if (fullAnalysis.person_name) {
           await base44.asServiceRole.entities.Contact.create({
             studio_id,
             partner_id: partner.id,
             name: fullAnalysis.person_name,
             role: fullAnalysis.person_role,
-            email: '', // To be enriched
+            email: '',
             phone: prospect.phone,
             background: fullAnalysis.person_why,
             common_ground: fullAnalysis.angle,
           });
         }
 
-        // Create the GrowthAction — the outbound message for owner approval
-        const channelToActionType = {
-          email: 'email',
-          instagram_dm: 'message',
-          in_person_drop_by: 'task',
-        };
+        const channelToActionType = { email: 'email', instagram_dm: 'message', in_person_drop_by: 'task' };
 
         await base44.asServiceRole.entities.GrowthAction.create({
           studio_id,
