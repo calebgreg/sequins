@@ -325,6 +325,17 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
   };
 
   const handleSubmitAttendance = async () => {
+    // Check if any trial students are marked present without notes
+    const trialStudentsPresent = classData.student_names?.filter(name => 
+      isTrialStudent(name) && (attendance[name] === 'present' || attendance[name] === 'late') && !trialNotes[name]
+    ) || [];
+
+    if (trialStudentsPresent.length > 0) {
+      // Gate: require note for the first trial student without one
+      setTrialNoteGate({ childName: trialStudentsPresent[0], leadId: classTrialLeads.find(l => l.child_name === trialStudentsPresent[0])?.id });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const dateToSave = selectedDate || new Date().toISOString().split('T')[0];
@@ -337,6 +348,41 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
         status: status
       }));
       await base44.entities.Attendance.bulkCreate(records);
+
+      // Save trial notes as StudentNotes and update Lead records
+      for (const [childName, noteText] of Object.entries(trialNotes)) {
+        if (!noteText) continue;
+        await base44.entities.StudentNote.create({
+          studio_id: studioId,
+          student_name: childName,
+          class_name: classData.title,
+          teacher_name: currentTeacherName,
+          content: noteText,
+          category: 'general',
+          sentiment: 'positive',
+          tags: ['trial'],
+          date: dateToSave,
+        });
+        // Update Lead with teacher notes and mark trial completed
+        const lead = classTrialLeads.find(l => l.child_name === childName);
+        if (lead) {
+          await base44.entities.Lead.update(lead.id, {
+            teacher_notes: noteText,
+            trial_outcome: 'attended',
+            funnel_status: 'trial_completed',
+          });
+        }
+      }
+      
+      // Mark trial no-shows
+      for (const lead of classTrialLeads) {
+        if (attendance[lead.child_name] === 'absent' && !trialNotes[lead.child_name]) {
+          await base44.entities.Lead.update(lead.id, {
+            trial_outcome: 'no_show',
+            funnel_status: 'trial_completed',
+          });
+        }
+      }
 
       // Check for students who are attending as a makeup
       const allAttendance = await base44.entities.Attendance.list();
@@ -478,6 +524,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
           <div className="space-y-2 md:space-y-3 max-w-2xl mx-auto">
             {classData.student_names?.map((name, i) => {
                const status = attendance[name] || 'present';
+               const isTrial = isTrialStudent(name);
                return (
                  <motion.div 
                    key={name}
@@ -486,26 +533,41 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
                    transition={{ delay: i * 0.03 }}
                    className="rounded-xl md:rounded-2xl p-3 md:p-4 flex items-center justify-between gap-3"
                    style={{
-                     background: 'rgba(255,255,255,0.5)',
+                     background: isTrial 
+                       ? 'linear-gradient(145deg, rgba(251,191,36,0.08) 0%, rgba(245,158,11,0.04) 100%)'
+                       : 'rgba(255,255,255,0.5)',
                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)',
+                     border: isTrial ? '1px solid rgba(251,191,36,0.2)' : 'none',
                    }}
                  >
                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
                       <div 
                         className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0"
                         style={{
-                          background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
+                          background: isTrial
+                            ? 'linear-gradient(145deg, rgba(251,191,36,0.2) 0%, rgba(245,158,11,0.15) 100%)'
+                            : 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,252,250,0.8) 100%)',
                           boxShadow: 'inset 0 1px 1px rgba(255,255,255,1)',
                         }}
                       >
-                        <span className="text-sm font-medium" style={{ color: '#c9a99c' }}>{name.charAt(0)}</span>
+                        <span className="text-sm font-medium" style={{ color: isTrial ? '#d97706' : '#c9a99c' }}>{name.charAt(0)}</span>
                       </div>
-                      <span 
-                        className={`font-medium text-sm md:text-base truncate ${status === 'absent' ? 'line-through' : ''}`}
-                        style={{ color: status === 'absent' ? '#d4c4ba' : '#8b7d72' }}
-                      >
-                        {name}
-                      </span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span 
+                          className={`font-medium text-sm md:text-base truncate ${status === 'absent' ? 'line-through' : ''}`}
+                          style={{ color: status === 'absent' ? '#d4c4ba' : '#8b7d72' }}
+                        >
+                          {name}
+                        </span>
+                        {isTrial && (
+                          <span 
+                            className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0"
+                            style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#fff' }}
+                          >
+                            Trial
+                          </span>
+                        )}
+                      </div>
                    </div>
                    <div className="flex gap-1.5 md:gap-2 flex-shrink-0">
                       {['present', 'absent', 'late'].map(s => (
