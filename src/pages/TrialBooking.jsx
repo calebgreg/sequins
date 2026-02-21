@@ -54,11 +54,10 @@ export default function TrialBooking() {
     trial_date: '',
   });
 
-  const { data: bookingData, isLoading: isLoadingData } = useQuery({
+  const { data: bookingData, isLoading: isLoadingData, error: loadError } = useQuery({
     queryKey: ['trialBookingData', studioId],
     queryFn: async () => {
-      const res = await base44.functions.invoke('getTrialBookingData', { studio_id: studioId });
-      return res.data;
+      return callPublicFunction('getTrialBookingData', { studio_id: studioId });
     },
     enabled: !!studioId,
   });
