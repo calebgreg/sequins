@@ -83,8 +83,10 @@ function GrowthContent() {
     );
   }
 
-  // Chat view
-  if (view === 'chat') {
+  // Chat view (orchestrator or connector)
+  if (view === 'chat' || view === 'connector-chat') {
+    const chatAgent = view === 'connector-chat' ? 'connector' : 'growth_orchestrator';
+    const chatLabel = view === 'connector-chat' ? 'Connector' : 'Growth Engine';
     return (
       <div className="flex flex-col h-full overflow-hidden" style={{ fontFamily: "'DM Sans', -apple-system, sans-serif" }}>
         <div className="flex items-center gap-3 px-6 py-4 flex-shrink-0">
@@ -100,10 +102,10 @@ function GrowthContent() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <span className="text-sm font-semibold" style={{ color: '#8b7d72' }}>Growth Engine</span>
+          <span className="text-sm font-semibold" style={{ color: '#8b7d72' }}>{chatLabel}</span>
         </div>
         <div className="flex-1 min-h-0">
-          <GrowthChat agentName="growth_orchestrator" studioId={studioId} />
+          <GrowthChat agentName={chatAgent} studioId={studioId} />
         </div>
       </div>
     );
