@@ -5,23 +5,24 @@ import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AGENT_META = {
-  growth_orchestrator: { label: 'Growth Engine', emoji: '🧠', color: '#8a7070' },
-  connector: { label: 'Connector', emoji: '🤝', color: '#7eb89a' },
-  attender: { label: 'Attender', emoji: '🎪', color: '#d4a574' },
-  accessor: { label: 'Accessor', emoji: '🚪', color: '#a48bc4' },
-  offerer: { label: 'Offerer', emoji: '🎁', color: '#e08080' },
-  converter: { label: 'Converter', emoji: '✨', color: '#c9a99c' },
-  retainer: { label: 'Retainer', emoji: '💜', color: '#9a8aad' },
-  referrer: { label: 'Referrer', emoji: '📣', color: '#6aadad' },
+  growth_orchestrator: { label: 'Growth Engine', letter: 'G', color: '#8a7070' },
+  connector: { label: 'Connector', letter: 'C', color: '#7eb89a' },
+  attender: { label: 'Attender', letter: 'A', color: '#d4a574' },
+  accessor: { label: 'Accessor', letter: 'X', color: '#a48bc4' },
+  offerer: { label: 'Offerer', letter: 'O', color: '#e08080' },
+  converter: { label: 'Converter', letter: 'V', color: '#c9a99c' },
+  retainer: { label: 'Retainer', letter: 'R', color: '#9a8aad' },
+  referrer: { label: 'Referrer', letter: 'F', color: '#6aadad' },
 };
 
-export default function GrowthChat({ agentName = 'growth_orchestrator', studioId, onConversationChange }) {
+export default function GrowthChat({ agentName = 'growth_orchestrator', studioId, autoPrompt, onConversationChange }) {
   const [conversationId, setConversationId] = useState(null);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [autoPromptSent, setAutoPromptSent] = useState(false);
   const contentEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -34,6 +35,7 @@ export default function GrowthChat({ agentName = 'growth_orchestrator', studioId
       setMessages([]);
       setConversationId(null);
       setConversation(null);
+      setAutoPromptSent(false);
       
       const existing = await base44.agents.listConversations({ agent_name: agentName });
       
@@ -57,6 +59,14 @@ export default function GrowthChat({ agentName = 'growth_orchestrator', studioId
     });
     return () => unsub();
   }, [conversationId]);
+
+  // Auto-prompt: if there's no conversation and an autoPrompt was passed, fire it automatically
+  useEffect(() => {
+    if (!isLoading && !autoPromptSent && autoPrompt && !conversation && !conversationId) {
+      setAutoPromptSent(true);
+      handleSend(autoPrompt);
+    }
+  }, [isLoading, autoPrompt, conversation, conversationId, autoPromptSent]);
 
   // Auto-scroll
   useEffect(() => {
@@ -194,31 +204,36 @@ export default function GrowthChat({ agentName = 'growth_orchestrator', studioId
 
 function EmptyState({ meta, agentName, onPrompt }) {
   const prompts = agentName === 'growth_orchestrator' ? [
-    { text: "What should I focus on today?", icon: '🎯' },
-    { text: "How are we doing this week?", icon: '📊' },
-    { text: "What's falling behind?", icon: '⚠️' },
+    { text: "What should I focus on today?" },
+    { text: "How are we doing this week?" },
+    { text: "What's falling behind?" },
   ] : agentName === 'connector' ? [
-    { text: "Find new businesses to connect with", icon: '🔍' },
-    { text: "Who should I reach out to this week?", icon: '📬' },
-    { text: "Draft outreach for my top prospects", icon: '✍️' },
+    { text: "Find new businesses to connect with" },
+    { text: "Who should I reach out to this week?" },
+    { text: "Draft outreach for my top prospects" },
   ] : agentName === 'retainer' ? [
-    { text: "Any families at risk of leaving?", icon: '⚠️' },
-    { text: "Who should I celebrate this week?", icon: '🎉' },
-    { text: "Check attendance health", icon: '📋' },
+    { text: "Any families at risk of leaving?" },
+    { text: "Who should I celebrate this week?" },
+    { text: "Check attendance health" },
   ] : agentName === 'converter' ? [
-    { text: "Who needs a follow-up?", icon: '📞' },
-    { text: "Where are families dropping off?", icon: '📉' },
-    { text: "Help me close this month's trials", icon: '🎯' },
+    { text: "Who needs a follow-up?" },
+    { text: "Where are families dropping off?" },
+    { text: "Help me close this month's trials" },
   ] : [
-    { text: "What should I do next?", icon: '🎯' },
-    { text: "Give me a strategy update", icon: '📊' },
-    { text: "What opportunities am I missing?", icon: '💡' },
+    { text: "What should I do next?" },
+    { text: "Give me a strategy update" },
+    { text: "What opportunities am I missing?" },
   ];
 
   return (
     <div className="max-w-3xl py-8">
       <div className="flex items-center gap-3 mb-6">
-        <span className="text-3xl">{meta.emoji}</span>
+        <div 
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-bold"
+          style={{ background: `${meta.color}12`, color: meta.color }}
+        >
+          {meta.letter}
+        </div>
         <div>
           <h3 
             className="text-xl font-bold"
@@ -245,7 +260,6 @@ function EmptyState({ meta, agentName, onPrompt }) {
               border: '1px solid rgba(220, 200, 196, 0.15)',
             }}
           >
-            <span className="text-xl mb-3 block">{p.icon}</span>
             <span className="text-sm font-medium" style={{ color: '#6A5A56' }}>{p.text}</span>
             <ChevronRight 
               className="w-4 h-4 mt-2 opacity-0 group-hover:opacity-100 transition-opacity" 
@@ -269,10 +283,10 @@ function ThinkingIndicator({ meta }) {
     >
       <div className="flex items-center gap-3">
         <div 
-          className="w-8 h-8 rounded-xl flex items-center justify-center"
-          style={{ background: `${meta.color}15` }}
+          className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold"
+          style={{ background: `${meta.color}15`, color: meta.color }}
         >
-          <span className="text-sm">{meta.emoji}</span>
+          {meta.letter}
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium" style={{ color: '#8b7d72' }}>Thinking</span>

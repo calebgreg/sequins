@@ -16,8 +16,34 @@ const etchedText = {
   filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
 };
 
+function AutoLaunchConnector({ onLaunch }) {
+  // Auto-launch after a brief moment so the user sees what's happening
+  React.useEffect(() => {
+    const timer = setTimeout(onLaunch, 600);
+    return () => clearTimeout(timer);
+  }, [onLaunch]);
+
+  return (
+    <div className="text-center py-12">
+      <div 
+        className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center text-sm font-bold"
+        style={{ background: 'rgba(126,184,154,0.12)', color: '#7eb89a' }}
+      >
+        C
+      </div>
+      <p className="text-sm font-medium mb-1" style={{ color: '#6A5A56' }}>
+        Starting the Connector agent...
+      </p>
+      <p className="text-xs" style={{ color: '#b5a599' }}>
+        Finding circles of influence near your studio
+      </p>
+    </div>
+  );
+}
+
 function GrowthContent() {
-  const [view, setView] = useState('main'); // 'main' | 'agent:key' | 'chat' | 'connector-chat'
+  const [view, setView] = useState('main'); // 'main' | 'agent:key' | 'chat' | 'connector-auto'
+  const [autoLaunched, setAutoLaunched] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -83,10 +109,13 @@ function GrowthContent() {
     );
   }
 
-  // Chat view (orchestrator or connector)
-  if (view === 'chat' || view === 'connector-chat') {
-    const chatAgent = view === 'connector-chat' ? 'connector' : 'growth_orchestrator';
-    const chatLabel = view === 'connector-chat' ? 'Connector' : 'Growth Engine';
+  // Chat view (orchestrator or connector, with optional auto-prompt)
+  if (view === 'chat' || view === 'connector-auto') {
+    const chatAgent = view === 'connector-auto' ? 'connector' : 'growth_orchestrator';
+    const chatLabel = view === 'connector-auto' ? 'Connector' : 'Growth Engine';
+    const autoMsg = view === 'connector-auto' 
+      ? "Find circles of influence near my studio. Search for daycares, pediatricians, youth sports, schools, and any other places where parents of kids aged 3-12 already gather and trust someone. For each one, identify the person at the center, figure out a genuine angle to connect, and draft a first message I can approve."
+      : null;
     return (
       <div className="flex flex-col h-full overflow-hidden" style={{ fontFamily: "'DM Sans', -apple-system, sans-serif" }}>
         <div className="flex items-center gap-3 px-6 py-4 flex-shrink-0">
@@ -105,7 +134,7 @@ function GrowthContent() {
           <span className="text-sm font-semibold" style={{ color: '#8b7d72' }}>{chatLabel}</span>
         </div>
         <div className="flex-1 min-h-0">
-          <GrowthChat agentName={chatAgent} studioId={studioId} />
+          <GrowthChat agentName={chatAgent} studioId={studioId} autoPrompt={autoMsg} />
         </div>
       </div>
     );
@@ -166,66 +195,9 @@ function GrowthContent() {
             </div>
           )}
 
-          {/* Empty state — skip the dead dashboard, get them into the agent */}
-          {totalOpportunities === 0 && pendingActions.length === 0 && (
-            <div className="py-6">
-              <div className="text-center mb-8">
-                <p className="text-base font-medium mb-1" style={{ color: '#6A5A56' }}>
-                  No one's looking yet.
-                </p>
-                <p className="text-sm" style={{ color: '#b5a599' }}>
-                  The Connector agent finds people near your studio who already influence the families you want.
-                </p>
-              </div>
-
-              <div className="space-y-3 max-w-lg mx-auto">
-                <button
-                  onClick={() => { setView('connector-chat'); }}
-                  className="w-full text-left rounded-2xl p-5 transition-all hover:scale-[1.01] active:scale-[0.98] group"
-                  style={{
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(255,252,250,0.75) 100%)',
-                    boxShadow: '0 6px 24px -8px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.9)',
-                    border: '1px solid rgba(220,200,196,0.25)',
-                  }}
-                >
-                  <div className="flex items-center gap-4">
-                    <div 
-                      className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'rgba(126,184,154,0.12)' }}
-                    >
-                      <span className="text-lg">🤝</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold" style={{ color: '#5A4A46' }}>
-                        Find circles of influence near me
-                      </div>
-                      <div className="text-xs mt-0.5" style={{ color: '#b5a599' }}>
-                        Daycares, pediatricians, youth sports, schools — the people parents already trust
-                      </div>
-                    </div>
-                    <svg className="w-4 h-4 flex-shrink-0 opacity-40 group-hover:opacity-70 transition-opacity" fill="none" stroke="#b5a599" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setView('chat')}
-                  className="w-full text-left rounded-2xl p-4 transition-all hover:scale-[1.01] active:scale-[0.98]"
-                  style={{
-                    background: 'rgba(255,255,255,0.4)',
-                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-base">🧠</span>
-                    <span className="text-sm" style={{ color: '#b5a599' }}>
-                      Or tell the Growth Engine what you need...
-                    </span>
-                  </div>
-                </button>
-              </div>
-            </div>
+          {/* Empty state — no waiting, auto-launch the connector */}
+          {totalOpportunities === 0 && pendingActions.length === 0 && !autoLaunched && (
+            <AutoLaunchConnector onLaunch={() => { setAutoLaunched(true); setView('connector-auto'); }} />
           )}
         </div>
       </div>
