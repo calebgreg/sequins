@@ -11,6 +11,8 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
   const [selectedStudentForMessage, setSelectedStudentForMessage] = useState(null);
   const [selectedStudentForActivity, setSelectedStudentForActivity] = useState(null);
 
+  const trialStudentNames = classData.trial_student_names || [];
+
   // Fetch attendance records for this class
   const { data: attendanceRecords = [] } = useQuery({
     queryKey: ['classAttendance', classData.id],
@@ -108,7 +110,17 @@ export default function ClassRosterView({ classData, students, onBack, onSelectS
                   </div>
                   
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-medium truncate" style={{ color: '#8b7d72' }}>{student.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium truncate" style={{ color: '#8b7d72' }}>{student.name}</h3>
+                      {trialStudentNames.includes(student.name) && (
+                        <span 
+                          className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0"
+                          style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#fff' }}
+                        >
+                          Trial
+                        </span>
+                      )}
+                    </div>
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       <span 
                         className="px-2.5 py-0.5 rounded-full text-xs"
