@@ -162,3 +162,104 @@ export default function OpportunityPartnerDetail({ partner, relatedActions, onAc
     </motion.div>
   );
 }
+
+function DraftNowBlock({ partner, data, research, isDrafting, setIsDrafting, queryClient }) {
+  const handleDraftNow = async () => {
+    setIsDrafting(true);
+    
+    // Get studio context
+    const user = await base44.auth.me();
+    const studioId = data.studio_id || user?.studio_id || user?.data?.studio_id;
+    
+    let studioName = '';
+    if (studioId) {
+      const studios = await base44.entities.Studio.filter({ id: studioId });
+      if (studios.length > 0) studioName = studios[0].name;
+    }
+
+    // Use LLM to draft a real outreach email right now
+    const prompt = `You are writing a short, warm outreach email from "${studioName || 'a local dance studio'}" to "${data.name}", a ${data.category?.replace(/_/g, ' ') || 'local business'} located at ${data.address || 'nearby'}.
+
+${research.summary ? `About them: ${research.summary}` : ''}
+${research.why_good_fit ? `Why they're a good fit: ${research.why_good_fit}` : ''}
+${data.website ? `Their website: ${data.website}` : ''}
+
+Goal: Propose a casual cross-referral partnership. We send them families who need their services, they mention us to families with kids who might want dance classes.
+
+Rules:
+- Keep it under 120 words
+- Sound like a real human, not corporate
+- Reference something specific about THEIR business
+- Make it easy to say yes (suggest a quick call or coffee)
+- No subject line needed in the body`;
+
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          subject: { type: "string", description: "Email subject line, short and personal" },
+          body: { type: "string", description: "The email body" },
+        },
+        required: ["subject", "body"]
+      }
+    });
+
+    // Create the GrowthAction so it shows up as pending
+    await base44.entities.GrowthAction.create({
+      studio_id: studioId,
+      outcome_id: '',
+      agent: 'connector',
+      action_type: 'email',
+      status: 'pending_review',
+      priority: 'medium',
+      target_type: 'business',
+      target_id: partner.id,
+      target_name: data.name,
+      target_email: research.contact_email || '',
+      title: `Outreach to ${data.name}`,
+      summary: `Partnership outreach email to ${data.name}`,
+      content: result.body,
+      subject: result.subject,
+      context: {
+        partner_website: data.website,
+        partner_category: data.category,
+      },
+    });
+
+    queryClient.invalidateQueries(['growthActions']);
+    toast.success(`Draft ready for ${data.name}`);
+    setIsDrafting(false);
+  };
+
+  return (
+    <button
+      onClick={handleDraftNow}
+      disabled={isDrafting}
+      className="w-full rounded-xl p-4 flex items-center gap-3 transition-all active:scale-[0.98] hover:scale-[1.01] disabled:opacity-70"
+      style={{
+        background: 'linear-gradient(145deg, rgba(254,247,247,0.95) 0%, rgba(252,231,231,0.9) 50%, rgba(248,225,220,0.85) 100%)',
+        boxShadow: '0 6px 20px -4px rgba(180,150,140,0.25), inset 0 1px 2px rgba(255,255,255,0.8)',
+        border: '1px solid rgba(255,220,210,0.4)',
+      }}
+    >
+      {isDrafting ? (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" style={{ color: '#8a7070' }} />
+          <span className="text-sm font-semibold" style={{ color: '#8a7070' }}>
+            Researching & drafting outreach...
+          </span>
+        </>
+      ) : (
+        <>
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="#8a7070" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+          <span className="text-sm font-semibold" style={{ color: '#8a7070' }}>
+            Draft outreach now
+          </span>
+        </>
+      )}
+    </button>
+  );
+}
