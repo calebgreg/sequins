@@ -17,7 +17,7 @@ const etchedText = {
 };
 
 function GrowthContent() {
-  const [view, setView] = useState('main'); // 'main' | 'agent:key' | 'chat'
+  const [view, setView] = useState('main'); // 'main' | 'agent:key' | 'chat' | 'connector-chat'
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
