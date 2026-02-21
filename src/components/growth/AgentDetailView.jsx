@@ -166,7 +166,7 @@ export default function AgentDetailView({ agentKey, studioId, actions = [] }) {
 
       {/* Last run */}
       <div className="flex items-center gap-2 mt-4 mb-8">
-        <span className="text-xs" style={{ color: '#c4b5ab' }}>⏱</span>
+        <span className="text-xs" style={{ color: '#c4b5ab' }}>last ran</span>
         <span className="text-xs" style={{ color: '#b5a599' }}>
           Last ran: {formatTimeAgo(lastRun)}
         </span>
@@ -248,11 +248,11 @@ export default function AgentDetailView({ agentKey, studioId, actions = [] }) {
               >
                 <div className="mt-0.5">
                   {log.event_type === 'error' ? (
-                    <span className="text-xs">❌</span>
+                    <span className="w-2 h-2 rounded-full bg-red-300 mt-1" />
                   ) : log.event_type === 'success' ? (
-                    <span className="text-xs">✅</span>
+                    <span className="w-2 h-2 rounded-full mt-1" style={{ background: '#7eb89a' }} />
                   ) : (
-                    <span className="text-xs" style={{ color: '#c4b5ab' }}>→</span>
+                    <span className="w-2 h-2 rounded-full mt-1" style={{ background: '#c4b5ab' }} />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
