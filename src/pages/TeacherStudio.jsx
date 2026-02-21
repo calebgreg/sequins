@@ -73,7 +73,7 @@ const getActualStudentCount = (cls, students) => {
 };
 
 // --- SUB-COMPONENT: Class List View ---
-const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, students = [], filterType = 'class', subAssignments = [] }) => {
+const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, students = [], filterType = 'class', subAssignments = [], trialLeads = [] }) => {
   // Etched text style - EXACT copy from Billing page line 298-305
   const etchedTextStyle = {
     color: 'transparent',
@@ -174,6 +174,11 @@ const ClassListView = ({ classes, onSelectClass, selectedTeacher, selectedDate, 
                 >{cls.title}</h3>
                 <p className="text-xs md:text-sm mt-0.5 truncate" style={{ color: '#b5a599' }}>
                 {format(new Date().setHours(Math.floor(cls.start_time), (cls.start_time % 1) * 60), 'h:mm a')} · {Math.round((cls.duration || 1) * 60)} min · {getActualStudentCount(cls, students)} students
+                {(cls.trial_student_names?.length > 0 || trialLeads.some(l => l.trial_class_id === cls.id)) && (
+                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider" style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#fff' }}>
+                    {cls.trial_student_names?.length || trialLeads.filter(l => l.trial_class_id === cls.id).length} Trial
+                  </span>
+                )}
                 {hasSubOnDate(cls) && (
                   <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(126,184,154,0.2)', color: '#7eb89a' }}>
                     Sub: {getEffectiveTeacher(cls)?.split(' ')[0]}
@@ -1091,6 +1096,7 @@ export default function TeacherStudio() {
                   classes={classes} 
                   students={students}
                   subAssignments={subAssignments}
+                  trialLeads={trialLeads}
                   onSelectClass={setSelectedClass}
                   selectedTeacher={selectedTeacher}
                   selectedDate={selectedDate}
