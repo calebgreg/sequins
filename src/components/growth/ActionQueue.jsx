@@ -130,7 +130,14 @@ export default function ActionQueue({ actions, studioId }) {
                 }}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xl">{config.emoji}</span>
+                  <span
+                    className="text-sm font-bold w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,252,250,0.85))',
+                      boxShadow: '0 2px 6px -2px rgba(180,150,140,0.15), inset 0 1px 1px rgba(255,255,255,1)',
+                      color: '#8a7070',
+                    }}
+                  >{config.letter}</span>
                   <span
                     className="text-xs font-bold px-2.5 py-1 rounded-full"
                     style={{
