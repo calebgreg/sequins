@@ -11,10 +11,11 @@ import GrowthPipeline from '@/components/growth/GrowthPipeline';
 function categorizeAction(action) {
   const title = (action.title || '').toLowerCase();
   const agent = action.agent || '';
-  if (agent === 'retainer' || title.includes('check in') || title.includes('at risk') || title.includes('at-risk'))
-    return 'Retain';
+  // Check title-based categories FIRST (before agent), so "Celebrate X's win!" from retainer agent lands in Celebrate
   if (title.includes('celebrate') || title.includes('win') || title.includes('congrat'))
     return 'Celebrate';
+  if (agent === 'retainer' || title.includes('check in') || title.includes('at risk') || title.includes('at-risk'))
+    return 'Retain';
   if (agent === 'converter' || agent === 'offerer' || title.includes('follow') || title.includes('trial'))
     return 'Convert';
   if (agent === 'connector' || agent === 'accessor' || title.includes('reach out'))
