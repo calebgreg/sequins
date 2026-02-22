@@ -1,20 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
+import { AnimatePresence } from 'framer-motion';
 import AdminOnly from '@/components/layout/AdminOnly';
 import GrowthChat from '@/components/growth/GrowthChat';
-import OpportunityFeed from '@/components/growth/OpportunityFeed';
-import GrowthExpandedCard from '@/components/growth/GrowthExpandedCard';
-
-const CATEGORY_CONFIG = {
-  Celebrate: { color: '#C898A8', glow: 'rgba(180,120,140,0.5)', bg: 'rgba(180,120,140,0.12)' },
-  Retain:    { color: '#C8A898', glow: 'rgba(180,140,120,0.5)', bg: 'rgba(180,140,120,0.12)' },
-  Convert:   { color: '#98C8A8', glow: 'rgba(120,160,140,0.5)', bg: 'rgba(120,160,140,0.12)' },
-  Connect:   { color: '#A898C8', glow: 'rgba(140,120,180,0.5)', bg: 'rgba(140,120,180,0.12)' },
-  Other:     { color: '#B8A8C0', glow: 'rgba(160,140,170,0.5)', bg: 'rgba(160,140,170,0.12)' },
-};
+import GrowthActionCard, { CATEGORY_COLORS } from '@/components/growth/GrowthActionCard';
+import GrowthOverlay from '@/components/growth/GrowthOverlay';
+import GrowthPipeline from '@/components/growth/GrowthPipeline';
 
 function categorizeAction(action) {
   const title = (action.title || '').toLowerCase();
@@ -31,13 +23,14 @@ function categorizeAction(action) {
 }
 
 function GrowthContent() {
-  const [view, setView] = useState('main');
+  const [view, setView] = useState('actions'); // 'actions' | 'pipeline' | 'chat' | 'connector-auto'
   const [activeCategory, setActiveCategory] = useState(null);
-  const [expandedCardId, setExpandedCardId] = useState(null);
+  const [overlayItem, setOverlayItem] = useState(null);
+  const [overlayType, setOverlayType] = useState(null);
+  const [overlayCategory, setOverlayCategory] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
   const [autoLaunched, setAutoLaunched] = useState(false);
   const containerRef = useRef(null);
-  const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -65,30 +58,29 @@ function GrowthContent() {
     queryFn: () => base44.entities.Lead.filter({ studio_id: studioId }),
     enabled: !!studioId,
   });
-  const { data: agentLogs = [] } = useQuery({
-    queryKey: ['agentLogs', studioId],
-    queryFn: () => base44.entities.AgentLog.filter({ studio_id: studioId }),
-    enabled: !!studioId,
-  });
 
-  const pending = actions.filter(a => a.status === 'pending_review')
-    .sort((a, b) => {
-      const po = { high: 0, medium: 1, low: 2 };
-      return (po[a.priority] || 1) - (po[b.priority] || 1);
+  const pending = useMemo(() =>
+    actions.filter(a => a.status === 'pending_review')
+      .sort((a, b) => ({ high: 0, medium: 1, low: 2 }[a.priority] || 1) - ({ high: 0, medium: 1, low: 2 }[b.priority] || 1)),
+    [actions]
+  );
+
+  const grouped = useMemo(() => {
+    const g = {};
+    pending.forEach(a => {
+      const cat = categorizeAction(a);
+      if (!g[cat]) g[cat] = [];
+      g[cat].push(a);
     });
+    return g;
+  }, [pending]);
 
-  const grouped = {};
-  pending.forEach(a => {
-    const cat = categorizeAction(a);
-    if (!grouped[cat]) grouped[cat] = [];
-    grouped[cat].push(a);
-  });
-
-  const categories = Object.entries(grouped).sort((a, b) => b[1].length - a[1].length);
+  const categories = useMemo(() => Object.entries(grouped).sort((a, b) => b[1].length - a[1].length), [grouped]);
   const filteredActions = activeCategory ? (grouped[activeCategory] || []) : [];
-  const totalOpportunities = partners.length + accessGroups.length + leads.length;
+  const totalPipeline = partners.length + accessGroups.length + leads.length;
+  const actionableCount = pending.length;
 
-  // Mouse tracking for parallax
+  // Parallax
   useEffect(() => {
     const handler = (e) => {
       if (!containerRef.current) return;
@@ -99,42 +91,32 @@ function GrowthContent() {
     return () => window.removeEventListener('mousemove', handler);
   }, []);
 
-  // Auto-expand single card
-  useEffect(() => {
-    if (filteredActions.length === 1) setExpandedCardId(filteredActions[0].id);
-    else setExpandedCardId(null);
-  }, [activeCategory, filteredActions.length]);
+  const px = (mousePos.x - 0.5) * 15;
+  const py = (mousePos.y - 0.5) * 8;
 
-  const handleApprove = async (action, editedContent) => {
-    const updateData = { status: 'approved', approved_at: new Date().toISOString() };
-    if (editedContent !== undefined) updateData.content = editedContent;
-    await base44.entities.GrowthAction.update(action.id, updateData);
-    queryClient.invalidateQueries(['growthActions']);
-    toast.success(`Sent`);
-    setExpandedCardId(null);
-    // If category empty after removal, go back
-    const remaining = filteredActions.filter(a => a.id !== action.id);
-    if (remaining.length === 0) setActiveCategory(null);
-    else if (remaining.length === 1) setExpandedCardId(remaining[0].id);
+  const currentGlow = activeCategory
+    ? (CATEGORY_COLORS[activeCategory] || CATEGORY_COLORS.Other).glow
+    : 'rgba(180,160,170,0.3)';
+
+  const openActionOverlay = (action, category) => {
+    setOverlayItem(action);
+    setOverlayType('action');
+    setOverlayCategory(category);
   };
 
-  const handleDismiss = async (action) => {
-    await base44.entities.GrowthAction.update(action.id, { status: 'dismissed' });
-    queryClient.invalidateQueries(['growthActions']);
-    toast('Skipped');
-    setExpandedCardId(null);
-    const remaining = filteredActions.filter(a => a.id !== action.id);
-    if (remaining.length === 0) setActiveCategory(null);
-    else if (remaining.length === 1) setExpandedCardId(remaining[0].id);
+  const openPipelineOverlay = (item) => {
+    setOverlayItem(item.raw || item);
+    setOverlayType('pipeline');
+    setOverlayCategory(null);
   };
 
-  const px = (mousePos.x - 0.5) * 20;
-  const py = (mousePos.y - 0.5) * 10;
-  const currentColors = activeCategory
-    ? CATEGORY_CONFIG[activeCategory] || CATEGORY_CONFIG.Other
-    : { glow: 'rgba(180,160,170,0.3)' };
+  const closeOverlay = () => {
+    setOverlayItem(null);
+    setOverlayType(null);
+    setOverlayCategory(null);
+  };
 
-  // Chat view
+  // Chat views
   if (view === 'chat' || view === 'connector-auto') {
     const chatAgent = view === 'connector-auto' ? 'connector' : 'growth_orchestrator';
     const chatLabel = view === 'connector-auto' ? 'Connector' : 'Growth Engine';
@@ -144,12 +126,8 @@ function GrowthContent() {
     return (
       <div className="flex flex-col h-full overflow-hidden" style={{ fontFamily: "'DM Sans', -apple-system, sans-serif" }}>
         <div className="flex items-center gap-3 px-6 py-4 flex-shrink-0" style={{ background: '#1a1418' }}>
-          <button onClick={() => setView('main')}
-            className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
-            style={{ background: 'rgba(255,250,248,0.06)' }}>
-            <svg className="w-4 h-4" fill="none" stroke="rgba(255,235,230,0.4)" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
+          <button onClick={() => setView('actions')} className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,250,248,0.06)' }}>
+            <svg className="w-4 h-4" fill="none" stroke="rgba(255,235,230,0.4)" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
           </button>
           <span style={{ color: 'rgba(255,245,240,0.7)', fontSize: 14, fontWeight: 600 }}>{chatLabel}</span>
         </div>
@@ -160,173 +138,158 @@ function GrowthContent() {
     );
   }
 
-  // Opportunities sub-view
-  if (view === 'opportunities') {
+  // Empty state
+  if (actionableCount === 0 && totalPipeline === 0 && !autoLaunched) {
     return (
-      <div className="h-full overflow-y-auto" style={{ background: 'linear-gradient(165deg, #1a1418 0%, #0d0a0c 100%)', fontFamily: "'DM Sans', -apple-system, sans-serif" }}>
-        <div className="p-6 md:p-8 max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-6">
-            <button onClick={() => setView('main')}
-              className="w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-95"
-              style={{ background: 'rgba(255,250,248,0.06)' }}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="rgba(255,235,230,0.4)" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <span style={{ color: 'rgba(255,245,240,0.7)', fontSize: 16, fontWeight: 600 }}>What your agents found</span>
-          </div>
-          <OpportunityFeed partners={partners} accessGroups={accessGroups} leads={leads} actions={actions} agentLogs={agentLogs} />
-        </div>
-      </div>
-    );
-  }
-
-  // Empty state — auto launch connector
-  if (pending.length === 0 && totalOpportunities === 0 && !autoLaunched) {
-    return (
-      <div ref={containerRef} style={{ minHeight: '100vh', background: 'linear-gradient(165deg, #1a1418 0%, #0d0a0c 100%)', fontFamily: "'DM Sans', -apple-system, sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(165deg, #1a1418 0%, #0d0a0c 100%)', fontFamily: "'DM Sans', -apple-system, sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ fontSize: 14, color: 'rgba(255,235,230,0.4)', fontWeight: 300, marginBottom: 24 }}>No moves yet</div>
-        <button
-          onClick={() => { setAutoLaunched(true); setView('connector-auto'); }}
-          style={{ padding: '14px 28px', background: 'rgba(255,250,248,0.06)', border: '1px solid rgba(255,250,248,0.08)', borderRadius: 16, color: 'rgba(255,245,240,0.7)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
-        >
+        <button onClick={() => { setAutoLaunched(true); setView('connector-auto'); }}
+          style={{ padding: '14px 28px', background: 'rgba(255,250,248,0.06)', border: '1px solid rgba(255,250,248,0.08)', borderRadius: 16, color: 'rgba(255,245,240,0.7)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
           Start the Growth Engine
         </button>
       </div>
     );
   }
 
-  // Main dark UI
   return (
     <div ref={containerRef} style={{ minHeight: '100vh', background: 'linear-gradient(165deg, #1a1418 0%, #0d0a0c 100%)', fontFamily: "'DM Sans', -apple-system, sans-serif", overflow: 'hidden', position: 'relative' }}>
       {/* Ambient glow */}
       <div style={{
-        position: 'absolute', top: '40%', left: '50%', width: 1000, height: 800,
-        background: `radial-gradient(ellipse, ${currentColors.glow} 0%, transparent 70%)`,
+        position: 'absolute', top: '35%', left: '50%', width: 1000, height: 700,
+        background: `radial-gradient(ellipse, ${currentGlow} 0%, transparent 70%)`,
         transform: `translate(-50%, -50%) translate(${px * 2}px, ${py * 2}px)`,
-        opacity: 0.15, transition: 'background 0.6s ease', pointerEvents: 'none',
+        opacity: 0.2, transition: 'background 0.5s ease', pointerEvents: 'none',
       }} />
 
-      {/* Header */}
-      <div style={{ padding: '48px 48px 0', transform: `translate(${px * 0.15}px, ${py * 0.15}px)` }}>
-        <div style={{ fontSize: 56, fontWeight: 200, color: 'rgba(255,240,235,0.12)', letterSpacing: -2, marginBottom: 8 }}>
-          {pending.length}
-        </div>
-        <div style={{ fontSize: 13, fontWeight: 500, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,235,230,0.3)' }}>
-          moves ready
-        </div>
-      </div>
+      {/* Overlay */}
+      {overlayItem && (
+        <GrowthOverlay item={overlayItem} type={overlayType} category={overlayCategory} onClose={closeOverlay} />
+      )}
 
       {/* Main content */}
-      <div style={{ display: 'flex', padding: '32px 48px 120px', gap: 48 }} className="flex-col md:flex-row">
-        {/* Category sidebar */}
-        <div style={{ width: 240, flexShrink: 0, transform: `translate(${px * 0.1}px, ${py * 0.1}px)` }} className="hidden md:block">
-          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,235,230,0.25)', marginBottom: 20, paddingLeft: 4 }}>
-            Categories
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Header */}
+        <div style={{ padding: '40px 48px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }} className="flex-col md:flex-row gap-4">
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,235,230,0.25)', marginBottom: 8 }}>Growth Engine</div>
+            <div style={{ fontSize: 48, fontWeight: 200, color: 'rgba(255,240,235,0.12)', letterSpacing: -2 }}>
+              {actionableCount}
+              <span style={{ fontSize: 20, marginLeft: 12, color: 'rgba(255,240,235,0.08)' }}>need you</span>
+            </div>
           </div>
-          {categories.map(([cat, items]) => {
-            const c = CATEGORY_CONFIG[cat] || CATEGORY_CONFIG.Other;
-            const isActive = activeCategory === cat;
-            return (
-              <div key={cat} onClick={() => { setActiveCategory(isActive ? null : cat); setExpandedCardId(null); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', marginBottom: 8, cursor: 'pointer',
-                  background: isActive ? 'rgba(255,250,248,0.08)' : 'rgba(255,250,248,0.02)',
-                  backdropFilter: 'blur(20px)', borderRadius: 16, transition: 'all 0.3s ease',
-                  border: `1px solid ${isActive ? c.color + '44' : 'rgba(255,250,248,0.04)'}`,
-                  transform: isActive ? 'scale(1.02)' : 'scale(1)',
-                }}>
-                <div style={{ width: 12, height: 12, borderRadius: '50%', background: c.color, boxShadow: isActive ? `0 0 20px ${c.glow}` : 'none', transition: 'box-shadow 0.3s' }} />
-                <span style={{ fontSize: 15, color: isActive ? 'rgba(255,245,240,0.9)' : 'rgba(255,240,235,0.5)', fontWeight: isActive ? 600 : 400, flex: 1 }}>{cat}</span>
-                <span style={{ fontSize: 18, fontWeight: 600, color: isActive ? c.color : 'rgba(255,240,235,0.4)' }}>{items.length}</span>
-              </div>
-            );
-          })}
 
-          {/* Opportunities link */}
-          {totalOpportunities > 0 && (
-            <div onClick={() => setView('opportunities')} style={{
-              display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', marginTop: 24, cursor: 'pointer',
-              background: 'rgba(255,250,248,0.02)', borderRadius: 16, border: '1px solid rgba(255,250,248,0.04)',
-            }}>
-              <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(255,240,235,0.2)' }} />
-              <span style={{ fontSize: 14, color: 'rgba(255,240,235,0.4)', flex: 1 }}>Pipeline</span>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,240,235,0.3)' }}>{totalOpportunities}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Mobile category pills */}
-        <div className="flex md:hidden gap-2 overflow-x-auto pb-2 -mx-2 px-2" style={{ scrollbarWidth: 'none' }}>
-          {categories.map(([cat, items]) => {
-            const c = CATEGORY_CONFIG[cat] || CATEGORY_CONFIG.Other;
-            const isActive = activeCategory === cat;
-            return (
-              <button key={cat} onClick={() => { setActiveCategory(isActive ? null : cat); setExpandedCardId(null); }}
+          {/* View toggle */}
+          <div style={{ display: 'flex', gap: 4, padding: 4, background: 'rgba(255,250,248,0.03)', borderRadius: 14 }}>
+            {['actions', 'pipeline'].map(v => (
+              <button key={v} onClick={() => { setView(v); setActiveCategory(null); }}
                 style={{
-                  flexShrink: 0, padding: '10px 18px', borderRadius: 12, fontSize: 13, fontWeight: isActive ? 600 : 400, cursor: 'pointer',
-                  background: isActive ? 'rgba(255,250,248,0.08)' : 'rgba(255,250,248,0.03)',
-                  border: `1px solid ${isActive ? c.color + '44' : 'rgba(255,250,248,0.06)'}`,
-                  color: isActive ? 'rgba(255,245,240,0.9)' : 'rgba(255,240,235,0.5)',
+                  padding: '10px 20px', background: view === v ? 'rgba(255,250,248,0.08)' : 'transparent',
+                  border: 'none', borderRadius: 10,
+                  color: view === v ? 'rgba(255,245,240,0.9)' : 'rgba(255,240,235,0.4)',
+                  fontSize: 13, fontWeight: 500, cursor: 'pointer', textTransform: 'capitalize',
                 }}>
-                {cat} ({items.length})
+                {v}
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
 
-        {/* Cards area */}
-        <div style={{ flex: 1, maxWidth: 800 }}>
-          {!activeCategory ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: 'rgba(255,235,230,0.25)', fontSize: 16, fontWeight: 300 }}>
-              <div className="hidden md:block" style={{ marginBottom: 12, fontSize: 28, opacity: 0.4 }}>&#8592;</div>
-              <span className="hidden md:inline">Select a category to begin</span>
-              <span className="md:hidden">Tap a category above</span>
+        {/* ACTIONS VIEW */}
+        {view === 'actions' && (
+          <div style={{ display: 'flex', padding: '0 48px 48px', gap: 48 }} className="flex-col md:flex-row">
+            {/* Desktop sidebar */}
+            <div style={{ width: 220, flexShrink: 0 }} className="hidden md:block">
+              <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,235,230,0.2)', marginBottom: 16 }}>Categories</div>
+              {categories.map(([cat, items]) => {
+                const c = CATEGORY_COLORS[cat] || CATEGORY_COLORS.Other;
+                const isActive = activeCategory === cat;
+                return (
+                  <div key={cat} onClick={() => setActiveCategory(isActive ? null : cat)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', marginBottom: 6, cursor: 'pointer',
+                      background: isActive ? 'rgba(255,250,248,0.07)' : 'rgba(255,250,248,0.02)',
+                      borderRadius: 14, transition: 'all 0.25s ease',
+                    }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: c.accent, boxShadow: isActive ? `0 0 16px ${c.glow}` : 'none' }} />
+                    <span style={{ fontSize: 14, color: isActive ? 'rgba(255,245,240,0.9)' : 'rgba(255,240,235,0.5)', flex: 1 }}>{cat}</span>
+                    <span style={{ fontSize: 16, fontWeight: 600, color: isActive ? c.text : 'rgba(255,240,235,0.35)' }}>{items.length}</span>
+                  </div>
+                );
+              })}
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <AnimatePresence>
-                {filteredActions.map((action) => (
-                  <GrowthExpandedCard
-                    key={action.id}
-                    action={action}
-                    category={activeCategory}
-                    colors={CATEGORY_CONFIG[activeCategory] || CATEGORY_CONFIG.Other}
-                    isExpanded={expandedCardId === action.id}
-                    onToggle={() => setExpandedCardId(expandedCardId === action.id ? null : action.id)}
-                    onApprove={handleApprove}
-                    onDismiss={handleDismiss}
-                  />
-                ))}
-              </AnimatePresence>
+
+            {/* Mobile pills */}
+            <div className="flex md:hidden gap-2 overflow-x-auto pb-2 -mx-2 px-2" style={{ scrollbarWidth: 'none' }}>
+              {categories.map(([cat, items]) => {
+                const c = CATEGORY_COLORS[cat] || CATEGORY_COLORS.Other;
+                const isActive = activeCategory === cat;
+                return (
+                  <button key={cat} onClick={() => setActiveCategory(isActive ? null : cat)}
+                    style={{
+                      flexShrink: 0, padding: '10px 18px', borderRadius: 12, fontSize: 13, fontWeight: isActive ? 600 : 400, cursor: 'pointer',
+                      background: isActive ? 'rgba(255,250,248,0.08)' : 'rgba(255,250,248,0.03)',
+                      border: `1px solid ${isActive ? c.accent + '44' : 'rgba(255,250,248,0.06)'}`,
+                      color: isActive ? 'rgba(255,245,240,0.9)' : 'rgba(255,240,235,0.5)',
+                    }}>
+                    {cat} ({items.length})
+                  </button>
+                );
+              })}
             </div>
-          )}
-        </div>
+
+            {/* Cards */}
+            <div style={{ flex: 1 }}>
+              {!activeCategory ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: 'rgba(255,235,230,0.25)' }}>
+                  <div className="hidden md:block" style={{ fontSize: 28, marginBottom: 12, opacity: 0.4 }}>&#8592;</div>
+                  <span className="hidden md:inline">Select a category</span>
+                  <span className="md:hidden">Tap a category above</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {filteredActions.map(action => (
+                    <GrowthActionCard
+                      key={action.id}
+                      action={action}
+                      category={activeCategory}
+                      onClick={() => openActionOverlay(action, activeCategory)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* PIPELINE VIEW */}
+        {view === 'pipeline' && (
+          <GrowthPipeline
+            partners={partners}
+            accessGroups={accessGroups}
+            leads={leads}
+            onItemClick={openPipelineOverlay}
+          />
+        )}
       </div>
 
-      {/* Bottom bar — open chat */}
+      {/* Bottom chat bar */}
       <div style={{ position: 'sticky', bottom: 0, padding: '16px 48px 24px', zIndex: 30 }}>
         <button onClick={() => setView('chat')} style={{
           width: '100%', maxWidth: 600, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, padding: '18px 24px',
           background: 'rgba(255,250,248,0.04)', backdropFilter: 'blur(20px)', borderRadius: 20,
-          border: '1px solid rgba(255,250,248,0.06)', cursor: 'pointer', transition: 'all 0.2s',
+          border: '1px solid rgba(255,250,248,0.06)', cursor: 'pointer',
         }}>
-          <span style={{ fontSize: 14, color: 'rgba(255,235,230,0.3)', fontWeight: 400 }}>Tell the Growth Engine what to do...</span>
+          <span style={{ fontSize: 14, color: 'rgba(255,235,230,0.3)' }}>Tell the Growth Engine what to do...</span>
         </button>
       </div>
 
-      {/* Keyboard hints */}
+      {/* Hints */}
       <div className="hidden md:flex" style={{
-        position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)', gap: 24,
-        padding: '12px 24px', background: 'rgba(255,250,248,0.03)', backdropFilter: 'blur(16px)',
-        borderRadius: 16, border: '1px solid rgba(255,250,248,0.04)',
+        position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+        padding: '10px 20px', background: 'rgba(255,250,248,0.03)', backdropFilter: 'blur(16px)',
+        borderRadius: 12, fontSize: 11, color: 'rgba(255,235,230,0.25)',
       }}>
-        {[{ key: 'enter', label: 'confirm' }, { key: 'esc', label: 'collapse' }].map(({ key, label }) => (
-          <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,235,230,0.3)', padding: '4px 8px', background: 'rgba(255,250,248,0.06)', borderRadius: 5 }}>{key}</span>
-            <span style={{ fontSize: 11, color: 'rgba(255,235,230,0.2)' }}>{label}</span>
-          </div>
-        ))}
+        Click any card to expand · ESC to close
       </div>
     </div>
   );
