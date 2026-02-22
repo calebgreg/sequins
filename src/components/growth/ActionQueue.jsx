@@ -188,7 +188,7 @@ export default function ActionQueue({ actions, studioId }) {
                   </svg>
                 </button>
                 <span className="text-base font-bold" style={{ color: '#8b7d72' }}>
-                  {CATEGORY_CONFIG[activeCategory]?.emoji} {CATEGORY_CONFIG[activeCategory]?.label}
+                  {CATEGORY_CONFIG[activeCategory]?.label}
                 </span>
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'rgba(200,180,170,0.12)', color: '#b5a599' }}>
                   {displayItems.length}
