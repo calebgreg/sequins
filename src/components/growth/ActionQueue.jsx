@@ -15,10 +15,10 @@ const etchedText = {
 };
 
 const CATEGORY_CONFIG = {
-  retention: { label: 'Retention', emoji: '💜', desc: 'Keep families engaged' },
-  outreach: { label: 'Outreach', emoji: '🤝', desc: 'Build new relationships' },
-  follow_up: { label: 'Follow Up', emoji: '📬', desc: 'Continue conversations' },
-  other: { label: 'Actions', emoji: '✨', desc: 'Ready for your review' },
+  retention: { label: 'Retention', letter: 'R', desc: 'Keep families engaged' },
+  outreach: { label: 'Outreach', letter: 'O', desc: 'Build new relationships' },
+  follow_up: { label: 'Follow Up', letter: 'F', desc: 'Continue conversations' },
+  other: { label: 'Actions', letter: 'A', desc: 'Ready for your review' },
 };
 
 function categorizeAction(action) {
