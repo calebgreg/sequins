@@ -11,8 +11,14 @@ const STAGES = [
 
 function mapPartnerToStage(partner) {
   const status = partner.relationship_status || 'identified';
-  if (status === 'active_partner' || status === 'connected') return 'connected';
-  if (status === 'contacted') return 'sent';
+  // If stuck_reason or what_we_tried exists, it's stuck
+  if (partner.stuck_reason || (partner.what_we_tried && partner.what_we_tried.length > 0)) return 'stuck';
+  if (status === 'active_partner') return 'connected';
+  // If they replied, it's replied
+  if (partner.their_reply) return 'replied';
+  // If we sent a message, it's sent
+  if (status === 'contacted' || partner.sent_message) return 'sent';
+  if (status === 'connected') return 'connected';
   return 'ready'; // identified or other
 }
 
