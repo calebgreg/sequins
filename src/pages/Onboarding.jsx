@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Loader2, Users, Calendar, GraduationCap, MapPin, AlertTriangle, ChevronDown, ChevronUp, Building2 } from 'lucide-react';
+import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Loader2, Users, Calendar, GraduationCap, MapPin, AlertTriangle, ChevronDown, ChevronUp, Building2, Camera } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import AttendancePhotoImport from '../components/manager/AttendancePhotoImport';
 
 // Design tokens
 const colors = {
