@@ -103,7 +103,8 @@ export default function Onboarding() {
 
       const imageUrls = uploadedUrls.filter(u => u.type === 'image').map(u => u.url);
 
-      const prompt = `You are a smart import assistant for a dance studio management app. The user has uploaded ${files.length} document(s).
+      // === PASS 1: Identify document structure (type, class, dates, student names) ===
+      const pass1Prompt = `You are a smart import assistant for a dance studio management app. The user has uploaded ${files.length} document(s).
 
 User's context/instructions: "${context || 'No additional context provided'}"
 ${classContext}
@@ -111,26 +112,16 @@ ${classContext}
 ${csvDescriptions ? `\n${csvDescriptions}\n` : ''}
 
 For each document, analyze it and determine:
-1. Document type: "attendance" (attendance sheet with student names + markings), "roster" (list of students, possibly with class assignments), or "other"
-2. For attendance sheets: identify the class name and ALL dates with student statuses. A single sheet may contain MANY dates (columns, rows, pages). You MUST extract EVERY date found. Use the "attendance_entries" array to return one entry per date found.
+1. Document type: "attendance", "roster", or "other"
+2. For attendance sheets: identify the class name, ALL student names listed, and ALL dates that have markings. List EVERY date you can see — do not skip any.
 3. For roster documents: extract student names, class names, and any enrollment info
 
-IMPORTANT matching rules:
-- Match student names to the enrolled student lists above when possible
-- For attendance markings — ANY of these mean PRESENT: checkmark, ✓, tick mark, slash (/), vertical line (|), dash (-), horizontal line, single line, tally mark, or any non-letter mark. These are how teachers mark someone as "present."
-- ONLY these mean ABSENT: the letter "A", a circled "A", or the letter "X"
-- E = excused, L/T = late
-- A truly BLANK/EMPTY cell (no mark at all) means no data — do NOT include that student for that date.
-- If an entire date column has no markings for any student, SKIP that date.
-- Try to infer the class and dates from the document itself OR from user context
-- If you can't determine the class, use your best guess from the class list
-- For dates, use YYYY-MM-DD format
-- CRITICAL: Extract ALL dates that have actual markings. Do NOT stop at just a few. If a sheet has 16 dates with data, return all 16.
+For dates, use YYYY-MM-DD format. Try to infer class from the document or from the class list above.
 
-Return one entry per document uploaded. Each attendance document should have ALL its dates in the attendance_entries array.`;
+IMPORTANT: This is just the first pass — list all dates and student names you find. Do NOT extract individual attendance marks yet.`;
 
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt,
+      const pass1Result = await base44.integrations.Core.InvokeLLM({
+        prompt: pass1Prompt,
         file_urls: imageUrls.length > 0 ? imageUrls : undefined,
         response_json_schema: {
           type: "object",
@@ -140,43 +131,19 @@ Return one entry per document uploaded. Each attendance document should have ALL
               items: {
                 type: "object",
                 properties: {
-                  file_name: { type: "string", description: "Name or description of this document" },
+                  file_name: { type: "string" },
                   type: { type: "string", enum: ["attendance", "roster", "other"] },
-                  class_name: { type: "string", description: "Detected class name" },
-                  class_id: { type: "string", description: "Matched class ID if possible" },
-                  date: { type: "string", description: "Date in YYYY-MM-DD format" },
-                  summary: { type: "string", description: "Brief summary of what was found" },
-                  attendance_entries: {
-                    type: "array",
-                    description: "For attendance type: one entry per date found on the sheet. Extract ALL dates.",
-                    items: {
-                      type: "object",
-                      properties: {
-                        date: { type: "string", description: "Date in YYYY-MM-DD format" },
-                        student_records: {
-                          type: "array",
-                          items: {
-                            type: "object",
-                            properties: {
-                              student_name: { type: "string" },
-                              status: { type: "string", enum: ["present", "absent", "excused", "late"] },
-                              notes: { type: "string" },
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
+                  class_name: { type: "string" },
+                  summary: { type: "string" },
+                  student_names: { type: "array", items: { type: "string" }, description: "All student names found" },
+                  dates_found: { type: "array", items: { type: "string" }, description: "All dates with markings, YYYY-MM-DD" },
                   records: {
                     type: "array",
-                    description: "For roster type: list of students",
+                    description: "For roster type only",
                     items: {
                       type: "object",
                       properties: {
-                        student_name: { type: "string" },
-                        name: { type: "string", description: "For roster imports" },
-                        status: { type: "string", enum: ["present", "absent", "excused", "late"] },
-                        notes: { type: "string" },
+                        name: { type: "string" },
                         class_name: { type: "string" },
                         age: { type: "number" },
                         parent_email: { type: "string" },
@@ -185,7 +152,7 @@ Return one entry per document uploaded. Each attendance document should have ALL
                   },
                   classes: {
                     type: "array",
-                    description: "For roster type: detected classes",
+                    description: "For roster type only",
                     items: {
                       type: "object",
                       properties: {
@@ -202,10 +169,13 @@ Return one entry per document uploaded. Each attendance document should have ALL
         }
       });
 
-      // Process and flatten results
       const processedDocuments = [];
-      (result.documents || []).forEach((doc, idx) => {
-        if (doc.class_name && !doc.class_id) {
+
+      for (let docIdx = 0; docIdx < (pass1Result.documents || []).length; docIdx++) {
+        const doc = pass1Result.documents[docIdx];
+
+        // Match class
+        if (doc.class_name) {
           const match = classes.find(c =>
             c.title.toLowerCase().includes(doc.class_name.toLowerCase()) ||
             doc.class_name.toLowerCase().includes(c.title.toLowerCase())
@@ -215,23 +185,84 @@ Return one entry per document uploaded. Each attendance document should have ALL
             doc.class_name = match.title;
           }
         }
-        if (!doc.file_name && files[idx]) {
-          doc.file_name = files[idx].name;
+        if (!doc.file_name && files[docIdx]) {
+          doc.file_name = files[docIdx].name;
         }
 
-        if (doc.type === 'attendance' && doc.attendance_entries?.length > 0) {
-          for (const entry of doc.attendance_entries) {
+        // Non-attendance docs pass through directly
+        if (doc.type !== 'attendance' || !doc.dates_found?.length) {
+          processedDocuments.push(doc);
+          continue;
+        }
+
+        // === PASS 2: Process attendance dates in batches of 4 ===
+        const allDates = doc.dates_found;
+        const batchSize = 4;
+
+        for (let i = 0; i < allDates.length; i += batchSize) {
+          const dateBatch = allDates.slice(i, i + batchSize);
+          const batchLabel = `dates ${i + 1}-${Math.min(i + batchSize, allDates.length)} of ${allDates.length}`;
+
+          // Update processing message
+          setIsProcessing(true); // keep spinner going
+
+          const pass2Prompt = `Look at this attendance sheet for class "${doc.class_name || 'Unknown'}".
+
+Students on the sheet: ${(doc.student_names || []).join(', ')}
+
+Extract the attendance status for ONLY these specific dates: ${dateBatch.join(', ')}
+(Processing ${batchLabel})
+
+RULES:
+- ANY mark (checkmark, ✓, /, |, dash -, line, tally) = PRESENT
+- ONLY "A" or "X" = ABSENT
+- "E" = excused, "L"/"T" = late
+- Blank/empty cell = do NOT include that student for that date
+- Return data for ONLY the ${dateBatch.length} dates listed above`;
+
+          const pass2Result = await base44.integrations.Core.InvokeLLM({
+            prompt: pass2Prompt,
+            file_urls: imageUrls.length > 0 ? [imageUrls[docIdx] || imageUrls[0]] : undefined,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                attendance_entries: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      date: { type: "string" },
+                      student_records: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            student_name: { type: "string" },
+                            status: { type: "string", enum: ["present", "absent", "excused", "late"] },
+                            notes: { type: "string" },
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          });
+
+          // Flatten each date into its own document entry
+          for (const entry of (pass2Result.attendance_entries || [])) {
             processedDocuments.push({
-              ...doc,
+              file_name: doc.file_name,
+              type: 'attendance',
+              class_name: doc.class_name,
+              class_id: doc.class_id,
               date: entry.date,
               records: entry.student_records || [],
-              attendance_entries: undefined,
             });
           }
-        } else {
-          processedDocuments.push(doc);
         }
-      });
+      }
 
       setParsedResults(processedDocuments);
     } catch (err) {
