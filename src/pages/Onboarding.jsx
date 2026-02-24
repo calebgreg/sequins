@@ -779,7 +779,7 @@ export default function Onboarding() {
         )}
 
         {/* Error State */}
-        {importStatus === 'error' && (
+        {importStatus === 'error' && importMode === 'roster' && (
           <div style={{
             padding: '60px 40px',
             borderRadius: '32px',
