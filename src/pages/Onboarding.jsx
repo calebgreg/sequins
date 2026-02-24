@@ -111,17 +111,18 @@ ${csvDescriptions ? `\n${csvDescriptions}\n` : ''}
 
 For each document, analyze it and determine:
 1. Document type: "attendance" (attendance sheet with student names + markings), "roster" (list of students, possibly with class assignments), or "other"
-2. For attendance sheets: identify the class name, date, and each student's status (present/absent/excused/late)
+2. For attendance sheets: identify the class name and ALL dates with student statuses. A single sheet may contain MANY dates (columns, rows, pages). You MUST extract EVERY date found. Use the "attendance_entries" array to return one entry per date found.
 3. For roster documents: extract student names, class names, and any enrollment info
 
 IMPORTANT matching rules:
 - Match student names to the enrolled student lists above when possible
 - For attendance markings: checkmark/✓/P = present, A/X = absent, E = excused, L/T = late
-- Try to infer the class and date from the document itself OR from user context
+- Try to infer the class and dates from the document itself OR from user context
 - If you can't determine the class, use your best guess from the class list
 - For dates, use YYYY-MM-DD format
+- CRITICAL: Extract ALL dates from the document. Do NOT stop at just a few. If a sheet has 16 dates, return all 16.
 
-Return one entry per document uploaded.`;
+Return one entry per document uploaded. Each attendance document should have ALL its dates in the attendance_entries array.`;
 
     const result = await base44.integrations.Core.InvokeLLM({
       prompt,
