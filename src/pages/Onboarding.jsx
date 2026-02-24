@@ -197,8 +197,10 @@ Return one entry per document uploaded. Each attendance document should have ALL
       }
     });
 
-    // Match class IDs to extracted class names
-    const docs = (result.documents || []).map(doc => {
+    // Process and flatten results - each attendance date becomes its own entry
+    const processedDocuments = [];
+    (result.documents || []).forEach((doc, idx) => {
+      // Match class IDs
       if (doc.class_name && !doc.class_id) {
         const match = classes.find(c =>
           c.title.toLowerCase().includes(doc.class_name.toLowerCase()) ||
@@ -209,15 +211,26 @@ Return one entry per document uploaded. Each attendance document should have ALL
           doc.class_name = match.title;
         }
       }
-      // Attach file name
-      const idx = (result.documents || []).indexOf(doc);
       if (!doc.file_name && files[idx]) {
         doc.file_name = files[idx].name;
       }
-      return doc;
+
+      // Flatten attendance entries: one "doc" per date
+      if (doc.type === 'attendance' && doc.attendance_entries?.length > 0) {
+        for (const entry of doc.attendance_entries) {
+          processedDocuments.push({
+            ...doc,
+            date: entry.date,
+            records: entry.student_records || [],
+            attendance_entries: undefined,
+          });
+        }
+      } else {
+        processedDocuments.push(doc);
+      }
     });
 
-    setParsedResults(docs);
+    setParsedResults(processedDocuments);
     setIsProcessing(false);
   };
 
