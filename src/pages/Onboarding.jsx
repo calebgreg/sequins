@@ -651,7 +651,7 @@ export default function Onboarding() {
         )}
 
         {/* Importing State */}
-        {importStatus === 'importing' && (
+        {importStatus === 'importing' && importMode === 'roster' && (
           <div style={{
             padding: '60px 40px',
             borderRadius: '32px',
