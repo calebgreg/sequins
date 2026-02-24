@@ -473,6 +473,19 @@ export default function Onboarding() {
           )}
         </div>
 
+        {/* Attendance Photo Import Mode */}
+        {importMode === 'attendance' && studioId && (
+          <div style={{
+            padding: '32px',
+            borderRadius: '32px',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,252,250,0.9) 100%)',
+            border: '2px dashed rgba(200, 180, 170, 0.25)',
+            boxShadow: '0 4px 24px rgba(180, 120, 120, 0.08)',
+          }}>
+            <AttendancePhotoImport studioId={studioId} />
+          </div>
+        )}
+
         {/* No Studio Warning */}
         {currentUser && !studioId && (
           <div style={{
