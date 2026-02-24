@@ -324,7 +324,7 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
   const toggleStatus = (studentName) => {
     setAttendance(prev => {
       const current = prev[studentName];
-      const next = current === 'present' ? 'absent' : current === 'absent' ? 'late' : 'present';
+      const next = current === 'present' ? 'absent' : current === 'absent' ? 'late' : current === 'late' ? 'excused' : 'present';
       return { ...prev, [studentName]: next };
     });
   };
