@@ -21,7 +21,7 @@ const statusColors = {
   late: { bg: 'rgba(164,139,196,0.15)', text: '#a48bc4', label: 'Late' },
 };
 
-export default function SmartImportResults({ results, onSave, onReset, isSaving, saveComplete, saveResults }) {
+export default function SmartImportResults({ results, onSave, onReset, isSaving, saveComplete, saveResults, saveProgress }) {
 
   if (saveComplete && saveResults) {
     return (
@@ -56,6 +56,7 @@ export default function SmartImportResults({ results, onSave, onReset, isSaving,
       <div className="text-center py-16">
         <Loader2 size={48} className="animate-spin mx-auto" style={{ color: colors.etchLight }} />
         <p style={{ color: colors.ink, fontWeight: 600, marginTop: 24 }}>Saving records...</p>
+        {saveProgress && <p style={{ color: colors.muted, fontSize: 14, marginTop: 8 }}>{saveProgress}</p>}
       </div>
     );
   }
