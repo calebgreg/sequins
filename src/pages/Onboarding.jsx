@@ -486,6 +486,7 @@ Return one entry per document uploaded. Each attendance document should have ALL
             isSaving={isSaving}
             saveComplete={saveComplete}
             saveResults={saveResults}
+            saveProgress={saveProgress}
           />
         )}
 
