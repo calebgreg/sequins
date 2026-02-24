@@ -40,6 +40,7 @@ const EtchedText = ({ children, size = 'md', className = '' }) => {
 };
 
 export default function Onboarding() {
+  const [importMode, setImportMode] = useState('roster'); // 'roster' or 'attendance'
   const [file, setFile] = useState(null);
   const [csvData, setCsvData] = useState(null);
   const [importStatus, setImportStatus] = useState('idle'); // idle, parsing, previewing, importing, complete, error
