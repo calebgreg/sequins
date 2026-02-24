@@ -398,9 +398,9 @@ export default function Onboarding() {
         
         {/* Header */}
         <div className="text-center space-y-2">
-          <EtchedText size="2xl">Studio Onboarding</EtchedText>
+          <EtchedText size="2xl">Smart Import</EtchedText>
           <p style={{ color: colors.muted }}>
-            Import your roster to set up students, classes, teachers, and rooms
+            Import your roster, schedule, or attendance from any format
           </p>
           {studio && (
             <div style={{
@@ -416,6 +416,59 @@ export default function Onboarding() {
               <span style={{ fontSize: '14px', fontWeight: '500', color: colors.ink }}>
                 Importing to: {studio.name}
               </span>
+            </div>
+          )}
+
+          {/* Mode Tabs */}
+          {studioId && (
+            <div style={{
+              display: 'inline-flex',
+              gap: '4px',
+              padding: '4px',
+              borderRadius: '16px',
+              background: 'rgba(200,180,170,0.12)',
+              marginTop: '20px',
+            }}>
+              {[
+                { id: 'roster', label: 'CSV Roster', icon: FileSpreadsheet },
+                { id: 'attendance', label: 'Attendance Photo', icon: Camera },
+              ].map(tab => {
+                const Icon = tab.icon;
+                const isActive = importMode === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setImportMode(tab.id);
+                      // Reset roster state when switching
+                      if (tab.id !== 'roster') {
+                        setFile(null);
+                        setCsvData(null);
+                        setImportStatus('idle');
+                        setResults(null);
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 20px',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: isActive ? '600' : '400',
+                      background: isActive ? 'rgba(255,255,255,0.95)' : 'transparent',
+                      color: isActive ? colors.ink : colors.muted,
+                      boxShadow: isActive ? '0 2px 8px rgba(180,150,140,0.15)' : 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <Icon size={16} />
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
