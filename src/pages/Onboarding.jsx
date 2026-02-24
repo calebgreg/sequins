@@ -116,9 +116,11 @@ For each document, analyze it and determine:
 
 IMPORTANT matching rules:
 - Match student names to the enrolled student lists above when possible
-- For attendance markings: checkmark/✓/tick mark/slash mark/| = present, A/circled A/X = absent, E = excused, L/T = late
-- BLANK or EMPTY cells mean NO DATA was recorded — do NOT include that student for that date. Only include students who have a visible marking.
-- If an entire date column is blank/empty (no markings for any student), SKIP that date entirely — do not create an entry for it.
+- For attendance markings — ANY of these mean PRESENT: checkmark, ✓, tick mark, slash (/), vertical line (|), dash (-), horizontal line, single line, tally mark, or any non-letter mark. These are how teachers mark someone as "present."
+- ONLY these mean ABSENT: the letter "A", a circled "A", or the letter "X"
+- E = excused, L/T = late
+- A truly BLANK/EMPTY cell (no mark at all) means no data — do NOT include that student for that date.
+- If an entire date column has no markings for any student, SKIP that date.
 - Try to infer the class and dates from the document itself OR from user context
 - If you can't determine the class, use your best guess from the class list
 - For dates, use YYYY-MM-DD format
