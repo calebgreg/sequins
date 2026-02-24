@@ -141,8 +141,30 @@ Return one entry per document uploaded. Each attendance document should have ALL
                 class_id: { type: "string", description: "Matched class ID if possible" },
                 date: { type: "string", description: "Date in YYYY-MM-DD format" },
                 summary: { type: "string", description: "Brief summary of what was found" },
+                attendance_entries: {
+                  type: "array",
+                  description: "For attendance type: one entry per date found on the sheet. Extract ALL dates.",
+                  items: {
+                    type: "object",
+                    properties: {
+                      date: { type: "string", description: "Date in YYYY-MM-DD format" },
+                      student_records: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            student_name: { type: "string" },
+                            status: { type: "string", enum: ["present", "absent", "excused", "late"] },
+                            notes: { type: "string" },
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
                 records: {
                   type: "array",
+                  description: "For roster type: list of students",
                   items: {
                     type: "object",
                     properties: {
