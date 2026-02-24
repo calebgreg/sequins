@@ -575,28 +575,35 @@ const ClassDetailView = ({ classData, students, onBack, currentTeacherName, stud
                       </div>
                    </div>
                    <div className="flex gap-1.5 md:gap-2 flex-shrink-0">
-                      {['present', 'absent', 'late'].map(s => (
-                          <button
-                              key={s}
-                              onClick={() => setAttendance(prev => ({...prev, [name]: s}))}
-                              className="px-2.5 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-medium transition-all active:scale-95"
-                              style={{
-                                background: status === s 
-                                  ? (s === 'present' 
-                                    ? 'linear-gradient(145deg, rgba(126,184,154,0.2) 0%, rgba(126,184,154,0.1) 100%)'
-                                    : s === 'absent'
-                                    ? 'linear-gradient(145deg, rgba(212,165,116,0.2) 0%, rgba(212,165,116,0.1) 100%)'
-                                    : 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(164,139,196,0.1) 100%)')
-                                  : 'transparent',
-                                color: status === s 
-                                  ? (s === 'present' ? '#7eb89a' : s === 'absent' ? '#d4a574' : '#a48bc4')
-                                  : '#c4b5ab',
-                                boxShadow: status === s ? 'inset 0 1px 1px rgba(255,255,255,0.5)' : 'none',
-                              }}
-                          >
-                              {s === 'present' ? 'Here' : s === 'absent' ? 'Out' : 'Late'}
-                          </button>
-                      ))}
+                      {['present', 'absent', 'late', 'excused'].map(s => {
+                          const bgMap = {
+                            present: 'linear-gradient(145deg, rgba(126,184,154,0.2) 0%, rgba(126,184,154,0.1) 100%)',
+                            absent: 'linear-gradient(145deg, rgba(212,165,116,0.2) 0%, rgba(212,165,116,0.1) 100%)',
+                            late: 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(164,139,196,0.1) 100%)',
+                            excused: 'linear-gradient(145deg, rgba(140,180,200,0.2) 0%, rgba(140,180,200,0.1) 100%)',
+                          };
+                          const colorMap = {
+                            present: '#7eb89a',
+                            absent: '#d4a574',
+                            late: '#a48bc4',
+                            excused: '#8cb4c8',
+                          };
+                          const labelMap = { present: 'Here', absent: 'Out', late: 'Late', excused: 'Excused' };
+                          return (
+                            <button
+                                key={s}
+                                onClick={() => setAttendance(prev => ({...prev, [name]: s}))}
+                                className="px-2.5 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-xs font-medium transition-all active:scale-95"
+                                style={{
+                                  background: status === s ? bgMap[s] : 'transparent',
+                                  color: status === s ? colorMap[s] : '#c4b5ab',
+                                  boxShadow: status === s ? 'inset 0 1px 1px rgba(255,255,255,0.5)' : 'none',
+                                }}
+                            >
+                                {labelMap[s]}
+                            </button>
+                          );
+                      })}
                    </div>
                  </motion.div>
                );
