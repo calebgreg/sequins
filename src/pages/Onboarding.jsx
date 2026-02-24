@@ -504,7 +504,7 @@ export default function Onboarding() {
         )}
 
         {/* Upload Area */}
-        {importStatus === 'idle' && studioId && (
+        {importStatus === 'idle' && studioId && importMode === 'roster' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
