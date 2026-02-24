@@ -247,7 +247,8 @@ Return one entry per document uploaded. Each attendance document should have ALL
       if (doc.type === 'attendance' && doc.records?.length > 0) {
         const classId = doc.class_id || '';
         const className = doc.class_name || 'Unknown';
-        const date = doc.date || new Date().toISOString().split('T')[0];
+        const date = doc.date;
+        if (!date) continue;
 
         // Check for existing attendance
         let existing = [];
