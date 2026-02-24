@@ -181,7 +181,7 @@ export default function AttendanceModal({ isOpen, onOpenChange, classData, stude
                   </div>
 
                   <div className="flex gap-1">
-                    {['present', 'late', 'absent'].map((s) => (
+                    {['present', 'late', 'absent', 'excused'].map((s) => (
                       <Button
                         key={s}
                         size="icon"
@@ -190,6 +190,7 @@ export default function AttendanceModal({ isOpen, onOpenChange, classData, stude
                           status === s 
                             ? s === 'present' ? 'bg-green-500 hover:bg-green-600' 
                             : s === 'absent' ? 'bg-red-500 hover:bg-red-600'
+                            : s === 'excused' ? 'bg-blue-400 hover:bg-blue-500'
                             : 'bg-yellow-500 hover:bg-yellow-600'
                             : 'text-gray-300'
                         }`}
@@ -199,6 +200,7 @@ export default function AttendanceModal({ isOpen, onOpenChange, classData, stude
                         {s === 'present' && <CheckCircle2 className="w-4 h-4" />}
                         {s === 'absent' && <XCircle className="w-4 h-4" />}
                         {s === 'late' && <Clock className="w-4 h-4" />}
+                        {s === 'excused' && <AlertCircle className="w-4 h-4" />}
                       </Button>
                     ))}
                   </div>
