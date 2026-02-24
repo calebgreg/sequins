@@ -552,7 +552,7 @@ export default function Onboarding() {
         )}
 
         {/* Preview State */}
-        {importStatus === 'previewing' && preview && (
+        {importStatus === 'previewing' && importMode === 'roster' && preview && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
