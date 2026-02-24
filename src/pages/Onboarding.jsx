@@ -544,7 +544,7 @@ export default function Onboarding() {
         )}
 
         {/* Parsing State */}
-        {importStatus === 'parsing' && (
+        {importStatus === 'parsing' && importMode === 'roster' && (
           <div className="text-center py-20">
             <Loader2 size={48} className="animate-spin mx-auto" style={{ color: colors.etchLight }} />
             <p style={{ color: colors.muted, marginTop: '16px' }}>Reading your roster...</p>
