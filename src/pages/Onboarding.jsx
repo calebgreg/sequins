@@ -116,11 +116,13 @@ For each document, analyze it and determine:
 
 IMPORTANT matching rules:
 - Match student names to the enrolled student lists above when possible
-- For attendance markings: checkmark/✓/P = present, A/X = absent, E = excused, L/T = late
+- For attendance markings: checkmark/✓/tick mark/slash mark/| = present, A/circled A/X = absent, E = excused, L/T = late
+- BLANK or EMPTY cells mean NO DATA was recorded — do NOT include that student for that date. Only include students who have a visible marking.
+- If an entire date column is blank/empty (no markings for any student), SKIP that date entirely — do not create an entry for it.
 - Try to infer the class and dates from the document itself OR from user context
 - If you can't determine the class, use your best guess from the class list
 - For dates, use YYYY-MM-DD format
-- CRITICAL: Extract ALL dates from the document. Do NOT stop at just a few. If a sheet has 16 dates, return all 16.
+- CRITICAL: Extract ALL dates that have actual markings. Do NOT stop at just a few. If a sheet has 16 dates with data, return all 16.
 
 Return one entry per document uploaded. Each attendance document should have ALL its dates in the attendance_entries array.`;
 
