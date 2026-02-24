@@ -670,7 +670,7 @@ export default function Onboarding() {
         )}
 
         {/* Complete State */}
-        {importStatus === 'complete' && results && (
+        {importStatus === 'complete' && importMode === 'roster' && results && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
