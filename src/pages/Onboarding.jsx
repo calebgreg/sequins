@@ -103,76 +103,77 @@ export default function Onboarding() {
 
       const imageUrls = uploadedUrls.filter(u => u.type === 'image').map(u => u.url);
 
-      // === PASS 1: Identify document structure (type, class, dates, student names) ===
-      const pass1Prompt = `You are a smart import assistant for a dance studio management app. The user has uploaded ${files.length} document(s).
+      const processedDocuments = [];
+
+      // Process EACH file independently so class names don't get mixed up
+      for (let fileIdx = 0; fileIdx < uploadedUrls.length; fileIdx++) {
+        const uploaded = uploadedUrls[fileIdx];
+        const fileName = uploaded.name || files[fileIdx]?.name || `Document ${fileIdx + 1}`;
+        const isImage = uploaded.type === 'image';
+        const fileUrl = uploaded.url;
+        const csvContent = uploaded.type === 'csv' ? `CSV content:\n${uploaded.text}` : '';
+
+        // === PASS 1: Identify this single document ===
+        const pass1Prompt = `You are a smart import assistant for a dance studio management app. Analyze this SINGLE document: "${fileName}"
 
 User's context/instructions: "${context || 'No additional context provided'}"
 ${classContext}
 
-${csvDescriptions ? `\n${csvDescriptions}\n` : ''}
+${csvContent}
 
-For each document, analyze it and determine:
+Determine:
 1. Document type: "attendance", "roster", or "other"
-2. For attendance sheets: identify the class name, ALL student names listed, and ALL dates that have markings. List EVERY date you can see — do not skip any.
+2. For attendance sheets: identify the EXACT class name written on the sheet, ALL student names listed, and ALL dates that have markings. List EVERY date you can see — do not skip any.
 3. For roster documents: extract student names, class names, and any enrollment info
 
-For dates, use YYYY-MM-DD format. Try to infer class from the document or from the class list above.
+CRITICAL: Read the class name EXACTLY as written on this document. Do not assume it's the same class as other documents. Each sheet may be for a different class.
+
+For dates, use YYYY-MM-DD format. Try to match the class name to the existing class list above.
 
 IMPORTANT: This is just the first pass — list all dates and student names you find. Do NOT extract individual attendance marks yet.`;
 
-      const pass1Result = await base44.integrations.Core.InvokeLLM({
-        prompt: pass1Prompt,
-        file_urls: imageUrls.length > 0 ? imageUrls : undefined,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            documents: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  file_name: { type: "string" },
-                  type: { type: "string", enum: ["attendance", "roster", "other"] },
-                  class_name: { type: "string" },
-                  summary: { type: "string" },
-                  student_names: { type: "array", items: { type: "string" }, description: "All student names found" },
-                  dates_found: { type: "array", items: { type: "string" }, description: "All dates with markings, YYYY-MM-DD" },
-                  records: {
-                    type: "array",
-                    description: "For roster type only",
-                    items: {
-                      type: "object",
-                      properties: {
-                        name: { type: "string" },
-                        class_name: { type: "string" },
-                        age: { type: "number" },
-                        parent_email: { type: "string" },
-                      }
-                    }
-                  },
-                  classes: {
-                    type: "array",
-                    description: "For roster type only",
-                    items: {
-                      type: "object",
-                      properties: {
-                        title: { type: "string" },
-                        day: { type: "string" },
-                        student_names: { type: "array", items: { type: "string" } },
-                      }
-                    }
+        const pass1Result = await base44.integrations.Core.InvokeLLM({
+          prompt: pass1Prompt,
+          file_urls: isImage ? [fileUrl] : undefined,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              type: { type: "string", enum: ["attendance", "roster", "other"] },
+              class_name: { type: "string", description: "EXACT class name from the document" },
+              summary: { type: "string" },
+              student_names: { type: "array", items: { type: "string" } },
+              dates_found: { type: "array", items: { type: "string" }, description: "All dates YYYY-MM-DD" },
+              records: {
+                type: "array",
+                description: "For roster type only",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: { type: "string" },
+                    class_name: { type: "string" },
+                    age: { type: "number" },
+                    parent_email: { type: "string" },
+                  }
+                }
+              },
+              classes: {
+                type: "array",
+                description: "For roster type only",
+                items: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    day: { type: "string" },
+                    student_names: { type: "array", items: { type: "string" } },
                   }
                 }
               }
             }
           }
-        }
-      });
+        });
 
-      const processedDocuments = [];
-
-      for (let docIdx = 0; docIdx < (pass1Result.documents || []).length; docIdx++) {
-        const doc = pass1Result.documents[docIdx];
+        const doc = pass1Result;
+        doc.file_name = fileName;
 
         // Match class
         if (doc.class_name) {
@@ -184,9 +185,6 @@ IMPORTANT: This is just the first pass — list all dates and student names you 
             doc.class_id = match.id;
             doc.class_name = match.title;
           }
-        }
-        if (!doc.file_name && files[docIdx]) {
-          doc.file_name = files[docIdx].name;
         }
 
         // Non-attendance docs pass through directly
@@ -202,9 +200,6 @@ IMPORTANT: This is just the first pass — list all dates and student names you 
         for (let i = 0; i < allDates.length; i += batchSize) {
           const dateBatch = allDates.slice(i, i + batchSize);
           const batchLabel = `dates ${i + 1}-${Math.min(i + batchSize, allDates.length)} of ${allDates.length}`;
-
-          // Update processing message
-          setIsProcessing(true); // keep spinner going
 
           const pass2Prompt = `Look at this attendance sheet for class "${doc.class_name || 'Unknown'}".
 
@@ -222,7 +217,7 @@ RULES:
 
           const pass2Result = await base44.integrations.Core.InvokeLLM({
             prompt: pass2Prompt,
-            file_urls: imageUrls.length > 0 ? [imageUrls[docIdx] || imageUrls[0]] : undefined,
+            file_urls: isImage ? [fileUrl] : undefined,
             response_json_schema: {
               type: "object",
               properties: {
@@ -250,10 +245,9 @@ RULES:
             }
           });
 
-          // Flatten each date into its own document entry
           for (const entry of (pass2Result.attendance_entries || [])) {
             processedDocuments.push({
-              file_name: doc.file_name,
+              file_name: fileName,
               type: 'attendance',
               class_name: doc.class_name,
               class_id: doc.class_id,
