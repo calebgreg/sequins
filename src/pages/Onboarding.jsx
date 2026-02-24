@@ -45,6 +45,8 @@ export default function Onboarding() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveComplete, setSaveComplete] = useState(false);
   const [saveResults, setSaveResults] = useState(null);
+  const [processingError, setProcessingError] = useState(null);
+  const [saveProgress, setSaveProgress] = useState('');
 
   const queryClient = useQueryClient();
 
@@ -75,34 +77,33 @@ export default function Onboarding() {
     if (files.length === 0) return;
     setIsProcessing(true);
     setParsedResults(null);
+    setProcessingError(null);
 
-    // Upload all files
-    const uploadedUrls = [];
-    for (const file of files) {
-      // For CSVs, read text directly
-      if (file.name?.endsWith('.csv')) {
-        const text = await file.text();
-        uploadedUrls.push({ name: file.name, type: 'csv', text });
-      } else {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        uploadedUrls.push({ name: file.name, type: 'image', url: file_url });
+    try {
+      // Upload all files
+      const uploadedUrls = [];
+      for (const file of files) {
+        if (file.name?.endsWith('.csv')) {
+          const text = await file.text();
+          uploadedUrls.push({ name: file.name, type: 'csv', text });
+        } else {
+          const { file_url } = await base44.integrations.Core.UploadFile({ file });
+          uploadedUrls.push({ name: file.name, type: 'image', url: file_url });
+        }
       }
-    }
 
-    // Build class context for the AI
-    const classContext = classes.length > 0
-      ? `\n\nExisting classes in the studio:\n${classes.filter(c => c.type !== 'admin').map(c => `- "${c.title}" (${c.day}, students: ${c.student_names?.join(', ') || 'none'})`).join('\n')}`
-      : '';
+      const classContext = classes.length > 0
+        ? `\n\nExisting classes in the studio:\n${classes.filter(c => c.type !== 'admin').map(c => `- "${c.title}" (${c.day}, students: ${c.student_names?.join(', ') || 'none'})`).join('\n')}`
+        : '';
 
-    // CSV files: include content inline
-    const csvDescriptions = uploadedUrls
-      .filter(u => u.type === 'csv')
-      .map(u => `CSV file "${u.name}" content:\n${u.text}`)
-      .join('\n\n');
+      const csvDescriptions = uploadedUrls
+        .filter(u => u.type === 'csv')
+        .map(u => `CSV file "${u.name}" content:\n${u.text}`)
+        .join('\n\n');
 
-    const imageUrls = uploadedUrls.filter(u => u.type === 'image').map(u => u.url);
+      const imageUrls = uploadedUrls.filter(u => u.type === 'image').map(u => u.url);
 
-    const prompt = `You are a smart import assistant for a dance studio management app. The user has uploaded ${files.length} document(s).
+      const prompt = `You are a smart import assistant for a dance studio management app. The user has uploaded ${files.length} document(s).
 
 User's context/instructions: "${context || 'No additional context provided'}"
 ${classContext}
@@ -128,69 +129,70 @@ IMPORTANT matching rules:
 
 Return one entry per document uploaded. Each attendance document should have ALL its dates in the attendance_entries array.`;
 
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt,
-      file_urls: imageUrls.length > 0 ? imageUrls : undefined,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          documents: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                file_name: { type: "string", description: "Name or description of this document" },
-                type: { type: "string", enum: ["attendance", "roster", "other"] },
-                class_name: { type: "string", description: "Detected class name" },
-                class_id: { type: "string", description: "Matched class ID if possible" },
-                date: { type: "string", description: "Date in YYYY-MM-DD format" },
-                summary: { type: "string", description: "Brief summary of what was found" },
-                attendance_entries: {
-                  type: "array",
-                  description: "For attendance type: one entry per date found on the sheet. Extract ALL dates.",
-                  items: {
-                    type: "object",
-                    properties: {
-                      date: { type: "string", description: "Date in YYYY-MM-DD format" },
-                      student_records: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            student_name: { type: "string" },
-                            status: { type: "string", enum: ["present", "absent", "excused", "late"] },
-                            notes: { type: "string" },
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        file_urls: imageUrls.length > 0 ? imageUrls : undefined,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            documents: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  file_name: { type: "string", description: "Name or description of this document" },
+                  type: { type: "string", enum: ["attendance", "roster", "other"] },
+                  class_name: { type: "string", description: "Detected class name" },
+                  class_id: { type: "string", description: "Matched class ID if possible" },
+                  date: { type: "string", description: "Date in YYYY-MM-DD format" },
+                  summary: { type: "string", description: "Brief summary of what was found" },
+                  attendance_entries: {
+                    type: "array",
+                    description: "For attendance type: one entry per date found on the sheet. Extract ALL dates.",
+                    items: {
+                      type: "object",
+                      properties: {
+                        date: { type: "string", description: "Date in YYYY-MM-DD format" },
+                        student_records: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              student_name: { type: "string" },
+                              status: { type: "string", enum: ["present", "absent", "excused", "late"] },
+                              notes: { type: "string" },
+                            }
                           }
                         }
                       }
                     }
-                  }
-                },
-                records: {
-                  type: "array",
-                  description: "For roster type: list of students",
-                  items: {
-                    type: "object",
-                    properties: {
-                      student_name: { type: "string" },
-                      name: { type: "string", description: "For roster imports" },
-                      status: { type: "string", enum: ["present", "absent", "excused", "late"] },
-                      notes: { type: "string" },
-                      class_name: { type: "string" },
-                      age: { type: "number" },
-                      parent_email: { type: "string" },
+                  },
+                  records: {
+                    type: "array",
+                    description: "For roster type: list of students",
+                    items: {
+                      type: "object",
+                      properties: {
+                        student_name: { type: "string" },
+                        name: { type: "string", description: "For roster imports" },
+                        status: { type: "string", enum: ["present", "absent", "excused", "late"] },
+                        notes: { type: "string" },
+                        class_name: { type: "string" },
+                        age: { type: "number" },
+                        parent_email: { type: "string" },
+                      }
                     }
-                  }
-                },
-                classes: {
-                  type: "array",
-                  description: "For roster type: detected classes",
-                  items: {
-                    type: "object",
-                    properties: {
-                      title: { type: "string" },
-                      day: { type: "string" },
-                      student_names: { type: "array", items: { type: "string" } },
+                  },
+                  classes: {
+                    type: "array",
+                    description: "For roster type: detected classes",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        day: { type: "string" },
+                        student_names: { type: "array", items: { type: "string" } },
+                      }
                     }
                   }
                 }
@@ -198,102 +200,130 @@ Return one entry per document uploaded. Each attendance document should have ALL
             }
           }
         }
-      }
-    });
+      });
 
-    // Process and flatten results - each attendance date becomes its own entry
-    const processedDocuments = [];
-    (result.documents || []).forEach((doc, idx) => {
-      // Match class IDs
-      if (doc.class_name && !doc.class_id) {
-        const match = classes.find(c =>
-          c.title.toLowerCase().includes(doc.class_name.toLowerCase()) ||
-          doc.class_name.toLowerCase().includes(c.title.toLowerCase())
-        );
-        if (match) {
-          doc.class_id = match.id;
-          doc.class_name = match.title;
+      // Process and flatten results
+      const processedDocuments = [];
+      (result.documents || []).forEach((doc, idx) => {
+        if (doc.class_name && !doc.class_id) {
+          const match = classes.find(c =>
+            c.title.toLowerCase().includes(doc.class_name.toLowerCase()) ||
+            doc.class_name.toLowerCase().includes(c.title.toLowerCase())
+          );
+          if (match) {
+            doc.class_id = match.id;
+            doc.class_name = match.title;
+          }
         }
-      }
-      if (!doc.file_name && files[idx]) {
-        doc.file_name = files[idx].name;
-      }
-
-      // Flatten attendance entries: one "doc" per date
-      if (doc.type === 'attendance' && doc.attendance_entries?.length > 0) {
-        for (const entry of doc.attendance_entries) {
-          processedDocuments.push({
-            ...doc,
-            date: entry.date,
-            records: entry.student_records || [],
-            attendance_entries: undefined,
-          });
+        if (!doc.file_name && files[idx]) {
+          doc.file_name = files[idx].name;
         }
-      } else {
-        processedDocuments.push(doc);
-      }
-    });
 
-    setParsedResults(processedDocuments);
-    setIsProcessing(false);
+        if (doc.type === 'attendance' && doc.attendance_entries?.length > 0) {
+          for (const entry of doc.attendance_entries) {
+            processedDocuments.push({
+              ...doc,
+              date: entry.date,
+              records: entry.student_records || [],
+              attendance_entries: undefined,
+            });
+          }
+        } else {
+          processedDocuments.push(doc);
+        }
+      });
+
+      setParsedResults(processedDocuments);
+    } catch (err) {
+      console.error('Import processing error:', err);
+      setProcessingError(err.message || 'Processing failed. The document may be too complex — try uploading one sheet at a time.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleSave = async () => {
     if (!parsedResults || !studioId) return;
     setIsSaving(true);
+    setSaveProgress('Preparing...');
 
     let attendance_saved = 0;
     let students_created = 0;
     let classes_created = 0;
     let teachers_created = 0;
 
-    for (const doc of parsedResults) {
-      if (doc.type === 'attendance' && doc.records?.length > 0) {
+    try {
+      // Collect all attendance records to save, grouped for efficiency
+      const attendanceDocs = parsedResults.filter(d => d.type === 'attendance' && d.records?.length > 0 && d.date);
+      const rosterDocs = parsedResults.filter(d => d.type === 'roster' && d.records?.length > 0);
+
+      // Process attendance in batches
+      const allAttendanceRecords = [];
+      const allNotes = [];
+
+      for (let i = 0; i < attendanceDocs.length; i++) {
+        const doc = attendanceDocs[i];
+        setSaveProgress(`Checking duplicates... ${i + 1}/${attendanceDocs.length} dates`);
+
         const classId = doc.class_id || '';
         const className = doc.class_name || 'Unknown';
         const date = doc.date;
-        if (!date) continue;
 
-        // Check for existing attendance
         let existing = [];
         if (classId) {
           existing = await base44.entities.Attendance.filter({ class_id: classId, date });
         }
         const existingNames = new Set(existing.map(a => a.student_name));
 
-        const newRecords = doc.records
-          .filter(r => r.student_name && !existingNames.has(r.student_name))
-          .map(r => ({
-            studio_id: studioId,
-            class_id: classId,
-            class_name: className,
-            student_name: r.student_name,
-            date,
-            status: r.status || 'present',
-            notes: r.notes || undefined,
-          }));
-
-        if (newRecords.length > 0) {
-          await base44.entities.Attendance.bulkCreate(newRecords);
-          attendance_saved += newRecords.length;
-        }
-
-        // Save any notes
-        const notesToSave = doc.records.filter(r => r.notes?.trim());
-        if (notesToSave.length > 0) {
-          await base44.entities.StudentNote.bulkCreate(notesToSave.map(r => ({
-            studio_id: studioId,
-            student_name: r.student_name,
-            class_name: className,
-            content: r.notes,
-            category: 'general',
-            sentiment: 'neutral',
-            date,
-          })));
+        for (const r of doc.records) {
+          if (r.student_name && !existingNames.has(r.student_name)) {
+            allAttendanceRecords.push({
+              studio_id: studioId,
+              class_id: classId,
+              class_name: className,
+              student_name: r.student_name,
+              date,
+              status: r.status || 'present',
+              notes: r.notes || undefined,
+            });
+          }
+          if (r.notes?.trim()) {
+            allNotes.push({
+              studio_id: studioId,
+              student_name: r.student_name,
+              class_name: className,
+              content: r.notes,
+              category: 'general',
+              sentiment: 'neutral',
+              date,
+            });
+          }
         }
       }
 
-      if (doc.type === 'roster' && doc.records?.length > 0) {
+      // Bulk save attendance in chunks of 50
+      if (allAttendanceRecords.length > 0) {
+        const chunkSize = 50;
+        for (let i = 0; i < allAttendanceRecords.length; i += chunkSize) {
+          const chunk = allAttendanceRecords.slice(i, i + chunkSize);
+          setSaveProgress(`Saving attendance... ${Math.min(i + chunkSize, allAttendanceRecords.length)}/${allAttendanceRecords.length}`);
+          await base44.entities.Attendance.bulkCreate(chunk);
+          attendance_saved += chunk.length;
+        }
+      }
+
+      // Bulk save notes
+      if (allNotes.length > 0) {
+        setSaveProgress(`Saving ${allNotes.length} notes...`);
+        const chunkSize = 50;
+        for (let i = 0; i < allNotes.length; i += chunkSize) {
+          await base44.entities.StudentNote.bulkCreate(allNotes.slice(i, i + chunkSize));
+        }
+      }
+
+      // Process rosters
+      for (const doc of rosterDocs) {
+        setSaveProgress('Saving roster data...');
         const studentData = doc.records
           .filter(r => r.name || r.student_name)
           .map(r => ({
@@ -324,15 +354,21 @@ Return one entry per document uploaded. Each attendance document should have ALL
           classes_created += classData.length;
         }
       }
+
+      queryClient.invalidateQueries(['attendance']);
+      queryClient.invalidateQueries(['classes']);
+      queryClient.invalidateQueries(['students']);
+
+      setSaveResults({ attendance_saved, students_created, classes_created, teachers_created });
+      setSaveComplete(true);
+    } catch (err) {
+      console.error('Save error:', err);
+      setSaveResults({ attendance_saved, students_created, classes_created, teachers_created, error: err.message });
+      setSaveComplete(true);
+    } finally {
+      setIsSaving(false);
+      setSaveProgress('');
     }
-
-    queryClient.invalidateQueries(['attendance']);
-    queryClient.invalidateQueries(['classes']);
-    queryClient.invalidateQueries(['students']);
-
-    setSaveResults({ attendance_saved, students_created, classes_created, teachers_created });
-    setIsSaving(false);
-    setSaveComplete(true);
   };
 
   const handleReset = () => {
@@ -342,6 +378,8 @@ Return one entry per document uploaded. Each attendance document should have ALL
     setIsSaving(false);
     setSaveComplete(false);
     setSaveResults(null);
+    setProcessingError(null);
+    setSaveProgress('');
   };
 
   return (
@@ -414,8 +452,28 @@ Return one entry per document uploaded. Each attendance document should have ALL
               Analyzing {files.length} document{files.length !== 1 ? 's' : ''}...
             </p>
             <p style={{ color: colors.muted, fontSize: 14, marginTop: 8 }}>
-              Detecting document types, matching students, reading attendance
+              This can take 1-2 minutes for large attendance sheets. Please stay on this page.
             </p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {processingError && !isProcessing && (
+          <div style={{
+            padding: 24, borderRadius: 24,
+            background: `${colors.red}15`, border: `1px solid ${colors.red}40`,
+            textAlign: 'center',
+          }}>
+            <AlertTriangle size={32} style={{ color: colors.red, margin: '0 auto 12px' }} />
+            <p style={{ color: colors.ink, fontWeight: 600, fontSize: 16 }}>Import Failed</p>
+            <p style={{ color: colors.muted, marginTop: 8, fontSize: 14 }}>{processingError}</p>
+            <button
+              onClick={handleReset}
+              className="mt-4 px-6 py-2 rounded-xl text-sm font-medium"
+              style={{ background: colors.ink, color: 'white' }}
+            >
+              Try Again
+            </button>
           </div>
         )}
 
