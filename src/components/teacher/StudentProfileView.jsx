@@ -14,12 +14,15 @@ import NewJournalEntryModal from './NewJournalEntryModal';
 import StudentCommunicationTab from '../crm/StudentCommunicationTab';
 import StudentMeasurementsTab from './StudentMeasurementsTab';
 import MakeupClassModal from './MakeupClassModal';
+import ClassTransferModal from '../crm/ClassTransferModal';
 
 export default function StudentProfileView({ student, teacherName, onBack, onViewFamily }) {
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('activity');
   const [makeupModalOpen, setMakeupModalOpen] = useState(false);
   const [selectedAbsence, setSelectedAbsence] = useState(null);
+  const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [transferFromClass, setTransferFromClass] = useState(null);
 
   const { data: attendance = [] } = useQuery({
     queryKey: ['attendance', student?.name],
@@ -707,15 +710,20 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
                             {classRate}%
                           </span>
                         )}
-                        <svg 
-                          className="w-4 h-4 flex-shrink-0"
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                          style={{ color: '#d4c4ba' }}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTransferFromClass(cls);
+                            setTransferModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 rounded-xl text-xs font-medium transition-all hover:scale-105"
+                          style={{
+                            background: 'linear-gradient(145deg, rgba(164,139,196,0.2) 0%, rgba(180,160,200,0.15) 100%)',
+                            color: '#8b7d9a',
+                          }}
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                        </svg>
+                          Switch
+                        </button>
                      </div>
                    </motion.div>
                  );})}
@@ -867,6 +875,14 @@ export default function StudentProfileView({ student, teacherName, onBack, onVie
         onOpenChange={setMakeupModalOpen}
         absenceRecord={selectedAbsence}
         studentName={student.name}
+      />
+
+      <ClassTransferModal
+        isOpen={transferModalOpen}
+        onOpenChange={setTransferModalOpen}
+        student={student}
+        currentClass={transferFromClass}
+        allClasses={classes}
       />
     </div>
   );
