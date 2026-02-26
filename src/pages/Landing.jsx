@@ -159,7 +159,15 @@ export default function Landing() {
             {[['home', 'Home'], ['product', 'Product'], ['company', 'Company']].map(([id, label]) => (
               <a key={id} onClick={() => showPage(id)} style={{ textDecoration: 'none', fontSize: 13, fontWeight: 400, color: page === id ? C.roseDark : C.textFaint, transition: 'color 0.25s', cursor: 'pointer' }}>{label}</a>
             ))}
-            <a onClick={() => showPage('access')} style={{ textDecoration: 'none', fontSize: 13, fontWeight: 600, color: C.sage, cursor: 'pointer' }}>Get Access</a>
+            <a onClick={() => showPage('access')} style={{
+              textDecoration: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              color: 'transparent',
+              backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')`,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}>Get Access</a>
           </div>
 
           <button className="sq-hamburger" onClick={() => {}} style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: C.textFaint }}>
