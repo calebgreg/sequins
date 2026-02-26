@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import SequinsLogo from '@/components/landing/SequinsLogo';
 import {
   Sparkles, ArrowRight, CheckCircle2, ChevronDown,
   Mic, Music, FileText, UserCheck, Calendar, Users, CreditCard,
