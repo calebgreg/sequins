@@ -614,12 +614,7 @@ export default function Landing() {
         {/* Footer */}
         <footer style={{ padding: '36px 44px', borderTop: '1px solid rgba(200,180,170,0.1)' }}>
           <div style={{ maxWidth: 1060, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg,rgba(255,255,255,0.95),rgba(255,244,244,0.9))', boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)' }}>
-                <span style={{ ...etchedText, fontSize: 11, fontWeight: 700 }}>S</span>
-              </div>
-              <span style={{ fontWeight: 700, fontSize: 13, color: C.textFaint }}>Sequins</span>
-            </div>
+            <SequinsLogo size="sm" />
             <p style={{ fontSize: 12, color: C.textFainter }}>© 2026 Sequins. Built for dance.</p>
             <div style={{ display: 'flex', gap: 24 }}>
               {[['home', 'Home'], ['product', 'Product'], ['company', 'Company'], [null, 'Privacy'], [null, 'Terms']].map(([id, label], i) => (
