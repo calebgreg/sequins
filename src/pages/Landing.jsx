@@ -628,7 +628,7 @@ export default function Landing() {
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@900&display=swap');
         @keyframes sqFadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         @keyframes sqFadeIn { from { opacity:0; } to { opacity:1; } }
         @keyframes sqBreathe { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:0.8} }
