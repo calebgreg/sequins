@@ -52,7 +52,6 @@ import Billing from './pages/Billing';
 import ClassDetail from './pages/ClassDetail';
 import ClassManager from './pages/ClassManager';
 import FamilyRoom from './pages/FamilyRoom';
-import Features from './pages/Features';
 import Growth from './pages/Growth';
 import Home from './pages/Home';
 import Onboarding from './pages/Onboarding';
@@ -78,7 +77,6 @@ export const PAGES = {
     "ClassDetail": ClassDetail,
     "ClassManager": ClassManager,
     "FamilyRoom": FamilyRoom,
-    "Features": Features,
     "Growth": Growth,
     "Home": Home,
     "Onboarding": Onboarding,
