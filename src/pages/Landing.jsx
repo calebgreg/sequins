@@ -64,13 +64,6 @@ const FEATURES = [
     iconColor: '#7eb89a',
   },
   {
-    icon: Sparkles,
-    title: 'AI — Gene',
-    desc: 'Your studio\'s personal AI assistant surfaces retention risks, growth opportunities, and actionable insights before you even ask.',
-    accent: 'rgba(196,160,160,0.15)',
-    iconColor: '#c4a0a0',
-  },
-  {
     icon: Heart,
     title: 'Family Portal',
     desc: 'A beautiful, branded room for each family — schedules, invoices, student progress, and direct messaging.',
