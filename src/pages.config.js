@@ -68,6 +68,7 @@ import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
 import TrialBooking from './pages/TrialBooking';
+import Landing from './pages/Landing';
 import __Layout from './Layout.jsx';
 
 
@@ -93,6 +94,7 @@ export const PAGES = {
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
     "TrialBooking": TrialBooking,
+    "Landing": Landing,
 }
 
 export const pagesConfig = {
