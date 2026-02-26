@@ -79,26 +79,7 @@ const FEATURES = [
   },
 ];
 
-const TESTIMONIALS = [
-  {
-    name: 'Sarah M.',
-    role: 'Studio Director, Brooklyn Dance Arts',
-    quote: 'Sequins cut our admin time in half. The teacher app alone was worth the switch — my instructors actually love it.',
-    avatar: 'S',
-  },
-  {
-    name: 'Marcus C.',
-    role: 'Owner, Pacific Movement Studio',
-    quote: 'Gene caught a retention problem before I noticed. Three families almost left — now they\'re re-enrolled for another year.',
-    avatar: 'M',
-  },
-  {
-    name: 'Priya K.',
-    role: 'Director, The Dance Collective',
-    quote: 'Finally a platform that understands dance studios. Everything from billing to recital planning — in one place.',
-    avatar: 'P',
-  },
-];
+
 
 export default function Landing() {
   const [menuOpen, setMenuOpen] = useState(false);
