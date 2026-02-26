@@ -15,7 +15,7 @@ const AuthenticatedLayout = lazy(() => import('@/components/layout/Authenticated
 
 function isPublicPath(path) {
   const p = path.toLowerCase();
-  return p.includes('familyroom') || p.includes('familyportal') || p.includes('trialbooking');
+  return p.includes('familyroom') || p.includes('familyportal') || p.includes('trialbooking') || p.includes('landing');
 }
 
 export default function Layout({ children, currentPageName }) {
