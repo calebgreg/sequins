@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import CloudHero from '@/components/landing/CloudHero';
 
 // ── Etched text style (matches app sidebar/Teacher Studio) ──
 const etchedText = {
