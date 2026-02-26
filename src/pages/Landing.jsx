@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles, ArrowRight, CheckCircle2, ChevronDown,
   Mic, Music, FileText, UserCheck, Calendar, Users, CreditCard,
-  TrendingUp, Heart, Menu, X, BarChart3, Smartphone, Star
+  TrendingUp, Heart, Menu, X, BarChart3, Smartphone, Star, DollarSign, Bell, MessageSquare
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -14,69 +13,43 @@ const C = {
   rose: '#c4a0a0',
   roseDark: '#8a7070',
   roseMid: '#b5a599',
-  roseLight: '#e8d8d8',
+  text: '#8b7d72',
+  textFaint: '#b5a599',
+  textFainter: '#c4b5ab',
   sage: '#7eb89a',
   purple: '#a48bc4',
   amber: '#d4a574',
   blue: '#8cb4c8',
-  text: '#8b7d72',
-  textFaint: '#b5a599',
-  textFainter: '#c4b5ab',
 };
 
-// ─── Etched text ───
 const etchedText = {
   color: 'transparent',
   backgroundImage: `linear-gradient(180deg, ${C.rose} 0%, ${C.roseDark} 100%)`,
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
-  textShadow: '0 2px 3px rgba(255,255,255,0.7), 0 -1px 1px rgba(120,80,80,0.15)',
+  textShadow: '0 2px 3px rgba(255,255,255,0.7)',
   filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
 };
 
-// ─── Scroll reveal hook ───
+// ─── Scroll reveal ───
 const useReveal = () => {
   const ref = useRef(null);
   const [vis, setVis] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold: 0.12, rootMargin: '0px 0px -20px 0px' });
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
   return [ref, vis];
 };
 
-// ─── Reveal wrapper ───
 const Rv = ({ children, delay = 0, y = 16, style }) => {
   const [ref, vis] = useReveal();
   return (
-    <div ref={ref} style={{
-      opacity: vis ? 1 : 0,
-      transform: vis ? 'translateY(0)' : `translateY(${y}px)`,
-      transition: `opacity 0.75s ease ${delay}s, transform 0.75s ease ${delay}s`,
-      ...style,
-    }}>
+    <div ref={ref} style={{ opacity: vis ? 1 : 0, transform: vis ? 'translateY(0)' : `translateY(${y}px)`, transition: `opacity 0.75s ease ${delay}s, transform 0.75s ease ${delay}s`, ...style }}>
       {children}
-    </div>
-  );
-};
-
-// ─── Staggered list reveal ───
-const RvList = ({ items, renderItem, stagger = 0.08, baseDelay = 0 }) => {
-  const [ref, vis] = useReveal();
-  return (
-    <div ref={ref}>
-      {items.map((item, i) => (
-        <div key={i} style={{
-          opacity: vis ? 1 : 0,
-          transform: vis ? 'translateY(0)' : 'translateY(14px)',
-          transition: `opacity 0.6s ease ${baseDelay + i * stagger}s, transform 0.6s ease ${baseDelay + i * stagger}s`,
-        }}>
-          {renderItem(item, i)}
-        </div>
-      ))}
     </div>
   );
 };
@@ -105,31 +78,16 @@ const useTyper = (prompts) => {
   return text;
 };
 
-const TEACHER_FEATURES = [
-  { icon: CheckCircle2, label: 'One-tap attendance', color: C.sage },
-  { icon: Mic, label: 'AI voice notes', color: C.rose },
-  { icon: FileText, label: 'Lesson planner', color: C.purple },
-  { icon: Music, label: 'Music library', color: C.amber },
-  { icon: UserCheck, label: 'Sub request flow', color: C.blue },
-  { icon: Star, label: 'Trial dossiers', color: '#d97706' },
-];
+// ─── Shared divider ───
+const Dv = () => <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(196,160,160,0.12), transparent)', margin: '0 44px' }} />;
 
-const FEATURES = [
-  { icon: Users, title: 'Family CRM', desc: 'Deep profiles — attendance trends, skill notes, billing history, and communication all in one view.', accent: 'rgba(164,139,196,0.12)', iconColor: C.purple },
-  { icon: Calendar, title: 'Smart Scheduling', desc: 'Conflict detection, room management, and sub assignments that actually work.', accent: 'rgba(140,180,200,0.12)', iconColor: C.blue },
-  { icon: CreditCard, title: 'Automated Billing', desc: 'Tiered plans, sibling discounts, auto-pay, and invoice generation — billing runs itself.', accent: 'rgba(126,184,154,0.12)', iconColor: C.sage },
-  { icon: Heart, title: 'Family Portal', desc: 'A beautiful branded room for each family — schedules, invoices, progress, and messaging.', accent: 'rgba(212,165,116,0.12)', iconColor: C.amber },
-  { icon: TrendingUp, title: 'Growth Engine', desc: 'Track leads, trial bookings, conversions, and referrals. Sequins actively helps you grow.', accent: 'rgba(196,160,160,0.12)', iconColor: C.rose },
-];
-
-const NAV_LINKS = [
-  { label: 'Features', href: '#features' },
-  { label: 'Teacher Studio', href: '#teacher' },
-  { label: 'For Studios', href: '#studios' },
-];
+// ─── Label ───
+const SecLabel = ({ children }) => (
+  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(196,160,160,0.5)', marginBottom: 20 }}>{children}</div>
+);
 
 export default function Landing() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [page, setPage] = useState('home');
   const [scrolled, setScrolled] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -137,7 +95,7 @@ export default function Landing() {
   const typerText = useTyper([
     'Who needs a check-in this week?',
     'Which classes are at risk of cancellation?',
-    'Draft a re-enrollment message for Sofia Kim...',
+    'Draft a re-enrollment note for Sofia Kim...',
     'Show me billing gaps for March...',
     'Which trial students haven\'t enrolled yet?',
   ]);
@@ -148,528 +106,547 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', h);
   }, []);
 
+  const showPage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'instant' }); };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (emailInput) setSubmitted(true);
   };
 
+  const WaitlistInput = ({ id }) => (
+    <div>
+      {!submitted ? (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', maxWidth: 420, margin: '0 auto' }}>
+          <input type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="your@studio.com" required
+            style={{ flex: '1 1 200px', padding: '13px 18px', borderRadius: 14, fontSize: 14, border: '1px solid rgba(220,190,190,0.3)', background: 'rgba(255,255,255,0.7)', color: C.text, outline: 'none', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }} />
+          <button type="submit" style={{ flexShrink: 0, padding: '13px 28px', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: 'pointer', background: 'linear-gradient(145deg, rgba(254,247,247,0.95), rgba(252,231,231,0.9))', boxShadow: '0 6px 20px -4px rgba(180,150,140,0.3)', border: '1px solid rgba(220,190,190,0.4)', transition: 'all 0.2s' }}>
+            <span style={etchedText}>Get Access →</span>
+          </button>
+        </form>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 16, borderRadius: 16, maxWidth: 360, margin: '0 auto', background: 'rgba(126,184,154,0.12)' }}>
+          <CheckCircle2 style={{ width: 18, height: 18, color: C.sage }} />
+          <span style={{ fontSize: 14, fontWeight: 500, color: '#5a7d6a' }}>You're on the list! We'll be in touch soon.</span>
+        </div>
+      )}
+      <p style={{ fontSize: 12, color: C.textFainter, marginTop: 16, textAlign: 'center' }}>No credit card required · Cancel anytime</p>
+    </div>
+  );
+
+  const sec = { padding: '140px 44px', maxWidth: 820, margin: '0 auto' };
+  const secWide = { ...sec, maxWidth: 1060 };
+
   return (
     <div style={{ fontFamily: "'DM Sans', -apple-system, sans-serif", background: C.bg, minHeight: '100vh', overflowX: 'hidden', WebkitFontSmoothing: 'antialiased' }}>
 
-      {/* ── Ambient atmosphere (fixed) ── */}
+      {/* ── Atmosphere ── */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-        <div style={{ position: 'absolute', top: '-10%', right: '-5%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(244,206,206,0.45) 0%, transparent 65%)', animation: 'sqBreathe 9s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', bottom: '-15%', left: '-8%', width: 800, height: 800, borderRadius: '50%', background: 'radial-gradient(circle, rgba(232,218,210,0.35) 0%, transparent 65%)', animation: 'sqBreathe 12s ease-in-out infinite reverse' }} />
-        <div style={{ position: 'absolute', top: '45%', left: '35%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(164,139,196,0.08) 0%, transparent 65%)', animation: 'sqBreathe 15s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', inset: 0, opacity: 0.025, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
+        <div style={{ position: 'absolute', top: '-10%', right: '-5%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(244,206,206,0.4) 0%, transparent 65%)', animation: 'sqBreathe 9s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', bottom: '-15%', left: '-8%', width: 800, height: 800, borderRadius: '50%', background: 'radial-gradient(circle, rgba(232,218,210,0.3) 0%, transparent 65%)', animation: 'sqBreathe 13s ease-in-out infinite reverse' }} />
+        <div style={{ position: 'absolute', top: '40%', left: '30%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(164,139,196,0.06) 0%, transparent 65%)', animation: 'sqBreathe 16s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.022, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
       </div>
 
-      {/* ── Navbar ── */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        padding: scrolled ? '14px 44px' : '24px 44px',
-        transition: 'all 0.4s ease',
-        backgroundColor: scrolled ? 'rgba(253,249,248,0.88)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(24px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(200,170,160,0.1)' : 'none',
-      }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, rgba(255,255,255,0.95), rgba(255,244,244,0.9))', boxShadow: '0 4px 12px -4px rgba(180,150,140,0.3), inset 0 1px 1px rgba(255,255,255,1)' }}>
-              <span style={{ ...etchedText, fontSize: 14, fontWeight: 700 }}>S</span>
+      {/* ── Nav ── */}
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: scrolled ? '14px 44px' : '26px 44px', transition: 'all 0.4s', backgroundColor: scrolled ? 'rgba(253,249,248,0.9)' : 'transparent', backdropFilter: scrolled ? 'blur(24px)' : 'none', borderBottom: scrolled ? '1px solid rgba(200,170,160,0.1)' : 'none' }}>
+        <div style={{ maxWidth: 1060, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span onClick={() => showPage('home')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg,rgba(255,255,255,0.95),rgba(255,244,244,0.9))', boxShadow: '0 4px 12px -4px rgba(180,150,140,0.3), inset 0 1px 1px rgba(255,255,255,1)' }}>
+              <span style={{ ...etchedText, fontSize: 13, fontWeight: 700 }}>S</span>
             </div>
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.roseDark, letterSpacing: -0.3 }}>Sequins</span>
-          </div>
+            <span style={{ fontWeight: 700, fontSize: 15, color: C.roseDark }}>Sequins</span>
+          </span>
 
           <div className="sq-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-            {NAV_LINKS.map(link => (
-              <a key={link.label} href={link.href} style={{ textDecoration: 'none', fontSize: 13, fontWeight: 400, color: C.textFaint, transition: 'color 0.25s' }}
-                onMouseEnter={e => e.target.style.color = C.roseDark}
-                onMouseLeave={e => e.target.style.color = C.textFaint}>
-                {link.label}
-              </a>
+            {[['home', 'Home'], ['product', 'Product'], ['company', 'Company']].map(([id, label]) => (
+              <a key={id} onClick={() => showPage(id)} style={{ textDecoration: 'none', fontSize: 13, fontWeight: 400, color: page === id ? C.roseDark : C.textFaint, transition: 'color 0.25s', cursor: 'pointer' }}>{label}</a>
             ))}
+            <a onClick={() => showPage('access')} style={{ textDecoration: 'none', fontSize: 13, fontWeight: 600, color: C.sage, cursor: 'pointer' }}>Get Access</a>
           </div>
 
-          <div className="sq-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Link to={createPageUrl('Home')}>
-              <button style={{ fontSize: 13, fontWeight: 500, color: C.textFaint, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 12px', borderRadius: 10, transition: 'color 0.2s' }}
-                onMouseEnter={e => e.target.style.color = C.roseDark}
-                onMouseLeave={e => e.target.style.color = C.textFaint}>
-                Sign in
-              </button>
-            </Link>
-            <a href="#waitlist">
-              <button style={{ fontSize: 13, fontWeight: 600, color: C.roseDark, background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(220,190,190,0.35)', borderRadius: 10, padding: '8px 18px', cursor: 'pointer', boxShadow: '0 2px 12px -4px rgba(180,150,140,0.25)', transition: 'all 0.2s' }}
-                onMouseEnter={e => { e.target.style.background = 'rgba(255,255,255,1)'; e.target.style.boxShadow = '0 4px 20px -4px rgba(180,150,140,0.3)'; }}
-                onMouseLeave={e => { e.target.style.background = 'rgba(255,255,255,0.8)'; e.target.style.boxShadow = '0 2px 12px -4px rgba(180,150,140,0.25)'; }}>
-                Get Early Access
-              </button>
-            </a>
-          </div>
-
-          <button className="sq-hamburger" onClick={() => setMenuOpen(o => !o)} style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: C.textFaint }}>
-            {menuOpen ? <X style={{ width: 20, height: 20 }} /> : <Menu style={{ width: 20, height: 20 }} />}
+          <button className="sq-hamburger" onClick={() => {}} style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: C.textFaint }}>
+            <Menu style={{ width: 20, height: 20 }} />
           </button>
         </div>
-
-        {menuOpen && (
-          <div style={{ marginTop: 12, maxWidth: 1000, marginLeft: 'auto', marginRight: 'auto', borderRadius: 16, padding: 16, background: 'rgba(255,255,255,0.97)', boxShadow: '0 8px 40px rgba(180,150,140,0.15)', animation: 'sqFadeDown 0.2s ease' }}>
-            {NAV_LINKS.map(link => (
-              <a key={link.label} href={link.href} onClick={() => setMenuOpen(false)}
-                style={{ display: 'block', padding: '12px 16px', borderRadius: 10, fontSize: 14, fontWeight: 500, color: C.textFaint, textDecoration: 'none' }}>
-                {link.label}
-              </a>
-            ))}
-            <div style={{ paddingTop: 12, borderTop: '1px solid rgba(200,180,170,0.12)', display: 'flex', gap: 8 }}>
-              <Link to={createPageUrl('Home')} style={{ flex: 1 }}>
-                <button style={{ width: '100%', fontSize: 13, fontWeight: 500, padding: '10px', borderRadius: 10, background: 'rgba(244,206,206,0.2)', color: C.roseDark, border: 'none', cursor: 'pointer' }}>Sign in</button>
-              </Link>
-              <a href="#waitlist" style={{ flex: 1 }}>
-                <button style={{ width: '100%', fontSize: 13, fontWeight: 600, padding: '10px', borderRadius: 10, background: 'linear-gradient(145deg,#f4e8e8,#ede0dc)', color: C.roseDark, border: 'none', cursor: 'pointer' }}>Get Access</button>
-              </a>
-            </div>
-          </div>
-        )}
       </nav>
 
-      {/* ── HERO ── */}
-      <section style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '140px 44px 80px' }}>
+      <div style={{ position: 'relative', zIndex: 1 }}>
 
-        <div style={{ opacity: 0, animation: 'sqFadeUp 0.8s ease 0.1s forwards' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 999, marginBottom: 32, background: 'rgba(255,255,255,0.7)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,1), 0 2px 12px rgba(180,150,140,0.12)', border: '1px solid rgba(220,190,190,0.2)' }}>
-            <Sparkles style={{ width: 13, height: 13, color: C.rose }} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: C.textFaint }}>Dance Studio Operating System</span>
-          </div>
-        </div>
-
-        <h1 style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.25s forwards', fontSize: 'clamp(52px, 8vw, 100px)', fontWeight: 700, letterSpacing: -3, lineHeight: 0.95, ...etchedText, marginBottom: 28 }}>
-          Run your studio<br />
-          <span style={{ ...etchedText, opacity: 0.55 }}>without the chaos.</span>
-        </h1>
-
-        <p style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.4s forwards', fontSize: 18, fontWeight: 300, color: C.textFaint, maxWidth: 460, lineHeight: 1.75, marginBottom: 40 }}>
-          Sequins is the complete platform for dance studios — enrollment, scheduling, billing, and an AI that actively helps you grow.
-        </p>
-
-        <div style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.55s forwards', display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 20 }}>
-          <a href="#waitlist">
-            <button style={{ height: 52, padding: '0 36px', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: 'pointer', background: 'linear-gradient(145deg, rgba(254,247,247,0.95), rgba(252,231,231,0.9))', boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), inset 0 1px 2px rgba(255,255,255,0.8)', border: '1px solid rgba(255,220,210,0.5)', transition: 'all 0.2s' }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-              <span style={etchedText}>Get Early Access <ArrowRight style={{ display: 'inline', width: 15, height: 15, marginLeft: 4 }} /></span>
-            </button>
-          </a>
-          <a href="#features">
-            <button style={{ height: 52, padding: '0 36px', borderRadius: 16, fontSize: 15, fontWeight: 400, cursor: 'pointer', background: 'rgba(255,255,255,0.5)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)', border: 'none', color: C.textFaint, transition: 'all 0.2s' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.75)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.5)'}>
-              See how it works <ChevronDown style={{ display: 'inline', width: 15, height: 15, marginLeft: 4 }} />
-            </button>
-          </a>
-        </div>
-
-        <div style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.65s forwards', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 13, color: C.textFainter, marginBottom: 72 }}>
-          <CheckCircle2 style={{ width: 15, height: 15, color: C.sage }} />
-          Free 30-day trial · No credit card required
-        </div>
-
-        {/* Hero mock – typing prompt */}
-        <div style={{ opacity: 0, animation: 'sqFadeUp 1s ease 0.8s forwards', width: '100%', maxWidth: 620 }}>
-          <div style={{ borderRadius: 28, padding: '32px 36px', background: 'linear-gradient(145deg, rgba(254,240,240,0.95), rgba(252,235,235,0.9))', boxShadow: '0 40px 80px -20px rgba(180,150,140,0.25), inset 0 2px 12px rgba(180,120,120,0.05)' }}>
-
-            {/* Window dots */}
-            <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
-              {[0.4, 0.25, 0.15].map((o, i) => (
-                <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: `rgba(196,160,160,${o})` }} />
-              ))}
-            </div>
-
-            {/* Class header */}
-            <div style={{ textAlign: 'center', marginBottom: 28 }}>
-              <p style={{ fontSize: 13, color: C.textFaint, marginBottom: 4 }}>6:00 PM · 60 min</p>
-              <h2 style={{ fontSize: 32, fontWeight: 700, ...etchedText }}>Ballet Advanced</h2>
-              <p style={{ fontSize: 13, color: C.textFaint, marginTop: 4 }}>14 students enrolled</p>
-            </div>
-
-            {/* 6-card grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 24 }}>
-              {[
-                { label: 'ATTENDANCE', icon: CheckCircle2 },
-                { label: 'ROSTER', icon: Users },
-                { label: 'LESSON PLAN', icon: FileText },
-                { label: 'MUSIC', icon: Music },
-                { label: 'NOTES', icon: Mic },
-                { label: 'REQUEST SUB', icon: Calendar },
-              ].map(({ label, icon: Icon }, i) => (
-                <div key={label} style={{ borderRadius: 16, padding: '16px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.85)', boxShadow: '0 4px 16px -4px rgba(180,150,140,0.1), inset 0 1px 1px rgba(255,255,255,1)', animation: `sqFadeUp 0.5s ease ${0.9 + i * 0.07}s both` }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(196,160,160,0.08)' }}>
-                    <Icon style={{ width: 15, height: 15, color: C.rose }} />
-                  </div>
-                  <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, textAlign: 'center', color: '#a89890' }}>{label}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Gene typing prompt */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 18px', borderRadius: 14, background: 'rgba(255,255,255,0.6)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.08)', border: '1px solid rgba(220,190,190,0.18)' }}>
-              <Sparkles style={{ width: 15, height: 15, color: C.rose, flexShrink: 0 }} />
-              <span style={{ fontSize: 13, color: 'rgba(196,160,160,0.75)', flex: 1, textAlign: 'left' }}>{typerText}</span>
-              <span style={{ width: 2, height: 15, background: C.rose, borderRadius: 1, animation: 'sqBlink 1s step-end infinite' }} />
-            </div>
-
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div style={{ position: 'absolute', bottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, animation: 'sqFadeIn 1s ease 1.5s both' }}>
-          <div style={{ width: 1, height: 36, background: 'linear-gradient(to bottom, rgba(196,160,160,0.4), transparent)', animation: 'sqScrollLine 2.5s ease-in-out infinite' }} />
-          <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(196,160,160,0.4)' }}>Scroll</span>
-        </div>
-      </section>
-
-      {/* ── FEATURES ── */}
-      <section id="features" style={{ position: 'relative', zIndex: 1, padding: '120px 44px' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <Rv y={20}>
-            <div style={{ marginBottom: 16 }}>
-              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(196,160,160,0.5)' }}>Everything you need</span>
-            </div>
-          </Rv>
-          <Rv delay={0.05} y={20}>
-            <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
-              One platform.<br /><span style={{ ...etchedText, opacity: 0.55 }}>Every workflow.</span>
-            </h2>
-          </Rv>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16, marginTop: 56 }}>
-            <RvList
-              items={FEATURES}
-              stagger={0.09}
-              renderItem={(f, i) => (
-                <div style={{ borderRadius: 20, padding: 28, background: 'linear-gradient(145deg, rgba(255,255,255,0.7), rgba(255,252,250,0.5))', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 20px -8px rgba(180,150,140,0.12)', transition: 'transform 0.3s, box-shadow 0.3s', cursor: 'default' }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'inset 0 1px 1px rgba(255,255,255,0.7), 0 12px 32px -8px rgba(180,150,140,0.18)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'inset 0 1px 1px rgba(255,255,255,0.7), 0 4px 20px -8px rgba(180,150,140,0.12)'; }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: f.accent, marginBottom: 18 }}>
-                    <f.icon style={{ width: 18, height: 18, color: f.iconColor }} />
-                  </div>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 8 }}>{f.title}</div>
-                  <div style={{ fontSize: 13, lineHeight: 1.7, color: C.textFaint }}>{f.desc}</div>
-                </div>
-              )}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ── TEACHER STUDIO ── */}
-      <section id="teacher" style={{ position: 'relative', zIndex: 1, padding: '120px 44px' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <div style={{ borderRadius: 32, padding: '64px 56px', background: 'linear-gradient(145deg, rgba(254,240,240,0.8), rgba(252,235,235,0.6))', boxShadow: 'inset 0 2px 12px rgba(180,120,120,0.05)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 56, alignItems: 'center' }}>
-
-              <div>
-                <Rv y={20}>
-                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(196,160,160,0.5)', marginBottom: 20 }}>Teacher Studio</div>
-                </Rv>
-                <Rv delay={0.05} y={20}>
-                  <h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.05, ...etchedText, marginBottom: 16 }}>
-                    Built for teachers.<br />
-                    <span style={{ ...etchedText, opacity: 0.55 }}>Loved by studios.</span>
-                  </h2>
-                </Rv>
-                <Rv delay={0.1} y={20}>
-                  <p style={{ fontSize: 15, lineHeight: 1.75, color: C.textFaint, marginBottom: 28 }}>
-                    A dedicated mobile-first experience for the studio floor. Everything an instructor needs — nothing they don't.
-                  </p>
-                </Rv>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-                  <RvList
-                    items={TEACHER_FEATURES}
-                    stagger={0.07}
-                    baseDelay={0.15}
-                    renderItem={({ icon: Icon, label, color }) => (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.7)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }}>
-                        <Icon style={{ width: 14, height: 14, flexShrink: 0, color }} />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{label}</span>
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <RvList
-                  items={[
-                    { name: 'Emma Sullivan', status: 'present', trial: false },
-                    { name: 'Sofia Kim', status: 'trial', trial: true },
-                    { name: 'Lily Reyes', status: 'present', trial: false },
-                    { name: 'Ava Thompson', status: 'late', trial: false },
-                  ]}
-                  stagger={0.09}
-                  baseDelay={0.2}
-                  renderItem={(student) => (
-                    <div style={{ borderRadius: 14, padding: '13px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: student.trial ? 'linear-gradient(145deg, rgba(251,191,36,0.08), rgba(245,158,11,0.04))' : 'rgba(255,255,255,0.7)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)', border: student.trial ? '1px solid rgba(251,191,36,0.15)' : 'none' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 13, background: student.trial ? 'rgba(251,191,36,0.15)' : 'rgba(196,160,160,0.12)', color: student.trial ? '#d97706' : C.rose }}>
-                          {student.name[0]}
-                        </div>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{student.name}</span>
-                        {student.trial && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', color: '#fff', textTransform: 'uppercase', letterSpacing: 1 }}>Trial</span>}
-                      </div>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        {['Here', 'Out', 'Late'].map(s => {
-                          const colorMap = { Here: C.sage, Out: C.amber, Late: C.purple };
-                          const statusMap = { Here: 'present', Out: 'absent', Late: 'late' };
-                          const isActive = student.status === statusMap[s] || (s === 'Here' && student.status === 'trial');
-                          return (
-                            <div key={s} style={{ padding: '4px 9px', borderRadius: 8, fontSize: 10, fontWeight: 500, background: isActive ? `${colorMap[s]}22` : 'transparent', color: isActive ? colorMap[s] : '#d4c4ba' }}>{s}</div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                />
-
-                <Rv delay={0.55} y={12}>
-                  <div style={{ borderRadius: 14, padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.5)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)' }}>
-                    <div style={{ width: 34, height: 34, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'linear-gradient(145deg, rgba(196,160,160,0.2), rgba(196,160,160,0.1))', animation: 'sqPulse 2.5s ease-in-out infinite' }}>
-                      <Mic style={{ width: 14, height: 14, color: C.rose }} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ height: 7, borderRadius: 4, marginBottom: 6, background: 'rgba(196,160,160,0.15)', width: '78%' }} />
-                      <div style={{ height: 7, borderRadius: 4, background: 'rgba(196,160,160,0.1)', width: '52%' }} />
-                    </div>
-                    <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: C.rose }}>Live</span>
-                  </div>
-                </Rv>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── AI / DATA SECTION ── */}
-      <section id="studios" style={{ position: 'relative', zIndex: 1, padding: '120px 44px' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 64, alignItems: 'center' }}>
-
+        {/* ════════════ HOME ════════════ */}
+        {page === 'home' && (
           <div>
-            <Rv y={20}>
-              <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(196,160,160,0.5)', marginBottom: 20 }}>AI Intelligence</div>
-            </Rv>
-            <Rv delay={0.05} y={20}>
-              <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, lineHeight: 1.05, ...etchedText, marginBottom: 16 }}>
-                Data that dances.
-              </h2>
-            </Rv>
-            <Rv delay={0.1} y={20}>
-              <p style={{ fontSize: 15, lineHeight: 1.75, color: C.textFaint, marginBottom: 28 }}>
-                Sequins AI — called Gene by your studio — doesn't just report data. It actively watches your studio and tells you what to do about it.
-              </p>
-            </Rv>
-            <RvList
-              baseDelay={0.15}
-              stagger={0.07}
-              items={[
-                'Retention risk alerts before students drop',
-                'Revenue gap identification',
-                'Trial-to-enrollment conversion nudges',
-                'Class demand forecasting',
-                'Teacher performance insights',
-              ]}
-              renderItem={(item) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '7px 0', fontSize: 14, color: C.text }}>
-                  <CheckCircle2 style={{ width: 15, height: 15, flexShrink: 0, color: C.sage }} />
-                  {item}
-                </div>
-              )}
-            />
-          </div>
+            {/* Hero */}
+            <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '140px 44px 80px', position: 'relative' }}>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <Rv delay={0.1} y={20}>
-              <div style={{ borderRadius: 20, padding: 22, background: 'linear-gradient(145deg, rgba(196,160,160,0.1), rgba(196,160,160,0.05))', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                  <Sparkles style={{ width: 14, height: 14, color: C.rose }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: C.rose }}>Gene · Retention Alert</span>
-                  <div style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: C.sage, animation: 'sqPulse 2s ease-in-out infinite' }} />
-                </div>
-                <p style={{ fontSize: 13, lineHeight: 1.7, color: C.text }}>
-                  "3 advanced students have missed 2+ consecutive classes. Based on historical patterns, they're at high risk of dropping. I've drafted an outreach message for your review."
-                </p>
-                <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
-                  <button style={{ fontSize: 11, padding: '6px 14px', borderRadius: 8, fontWeight: 600, background: 'rgba(196,160,160,0.15)', color: C.roseDark, border: 'none', cursor: 'pointer' }}>Review Draft</button>
-                  <button style={{ fontSize: 11, padding: '6px 14px', borderRadius: 8, fontWeight: 400, background: 'none', color: C.textFainter, border: 'none', cursor: 'pointer' }}>Dismiss</button>
+              <div style={{ opacity: 0, animation: 'sqFadeUp 0.8s ease 0.1s forwards' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 999, marginBottom: 32, background: 'rgba(255,255,255,0.7)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,1), 0 2px 12px rgba(180,150,140,0.12)', border: '1px solid rgba(220,190,190,0.18)' }}>
+                  <Sparkles style={{ width: 12, height: 12, color: C.rose }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: C.textFaint }}>Dance Studio Operating System</span>
                 </div>
               </div>
-            </Rv>
 
-            <Rv delay={0.2} y={20}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <h1 style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.2s forwards', fontSize: 'clamp(52px,8vw,100px)', fontWeight: 700, letterSpacing: -3, lineHeight: 0.95, ...etchedText, marginBottom: 24, maxWidth: 800 }}>
+                Run your studio<br />
+                <span style={{ ...etchedText, opacity: 0.5 }}>without the chaos.</span>
+              </h1>
+
+              <p style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.35s forwards', fontSize: 18, fontWeight: 300, color: C.textFaint, maxWidth: 460, lineHeight: 1.75, marginBottom: 44 }}>
+                Sequins is the complete operating system for dance studios — from enrollment and scheduling to billing and AI-powered growth.
+              </p>
+
+              <div style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.5s forwards', display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 72 }}>
+                <button onClick={() => showPage('access')} style={{ height: 52, padding: '0 36px', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: 'pointer', background: 'linear-gradient(145deg, rgba(254,247,247,0.95), rgba(252,231,231,0.9))', boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), inset 0 1px 2px rgba(255,255,255,0.8)', border: '1px solid rgba(255,220,210,0.5)', transition: 'all 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                  <span style={etchedText}>Get Early Access <ArrowRight style={{ display: 'inline', width: 15, height: 15, marginLeft: 4 }} /></span>
+                </button>
+                <button onClick={() => showPage('product')} style={{ height: 52, padding: '0 36px', borderRadius: 16, fontSize: 15, fontWeight: 400, cursor: 'pointer', background: 'rgba(255,255,255,0.5)', border: 'none', color: C.textFaint, transition: 'all 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.8)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.5)'}>
+                  See how it works <ChevronDown style={{ display: 'inline', width: 15, height: 15, marginLeft: 4 }} />
+                </button>
+              </div>
+
+              {/* Scroll indicator */}
+              <div style={{ position: 'absolute', bottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, opacity: 0, animation: 'sqFadeIn 1s ease 1.4s forwards' }}>
+                <div style={{ width: 1, height: 36, background: 'linear-gradient(to bottom, rgba(196,160,160,0.4), transparent)', animation: 'sqScrollLine 2.5s ease-in-out infinite' }} />
+                <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(196,160,160,0.35)' }}>Scroll</span>
+              </div>
+            </section>
+
+            <Dv />
+
+            {/* Problem */}
+            <section style={sec}>
+              <Rv><SecLabel>The problem</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h2 style={{ fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 48 }}>
+                  Studios run on passion.<br />
+                  <span style={{ ...etchedText, opacity: 0.5 }}>Not spreadsheets.</span>
+                </h2>
+              </Rv>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
                 {[
-                  { icon: TrendingUp, value: '+12%', label: 'Attendance up', color: C.sage, bg: 'rgba(126,184,154,0.1)' },
-                  { icon: Heart, value: '94%', label: 'Retention rate', color: C.purple, bg: 'rgba(164,139,196,0.1)' },
-                ].map(({ icon: Icon, value, label, color, bg }) => (
-                  <div key={label} style={{ borderRadius: 20, padding: 20, background: `linear-gradient(145deg, ${bg}, transparent)`, boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.7)' }}>
-                    <Icon style={{ width: 18, height: 18, color, marginBottom: 10 }} />
-                    <div style={{ fontSize: 30, fontWeight: 700, color, marginBottom: 4 }}>{value}</div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color }}>{label}</div>
-                  </div>
+                  ['Billing is a nightmare of missed payments and manual invoices.', 'Sequins automates it.'],
+                  ['Teachers waste class time on attendance and admin.', 'Sequins puts everything on the studio floor.'],
+                  ['You lose students before you know they\'re at risk.', 'Gene tells you before they drop.'],
+                  ['Families are left in the dark on schedules and progress.', 'Sequins gives them their own room.'],
+                ].map(([problem, answer], i) => (
+                  <Rv key={i} delay={i * 0.07}>
+                    <div style={{ paddingLeft: 22, borderLeft: '2px solid rgba(196,160,160,0.15)' }}>
+                      <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7 }}>
+                        <span style={{ textDecoration: 'line-through', textDecorationColor: 'rgba(196,100,100,0.25)', color: 'rgba(180,150,140,0.5)' }}>{problem}</span>{' '}
+                        <span style={{ color: C.text, fontWeight: 500 }}>{answer}</span>
+                      </p>
+                    </div>
+                  </Rv>
                 ))}
               </div>
-            </Rv>
+            </section>
+
+            <Dv />
+
+            {/* Gene teaser */}
+            <section style={sec}>
+              <Rv><SecLabel>Meet Gene</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h2 style={{ fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 20 }}>
+                  Your studio's<br /><em style={{ fontStyle: 'italic', ...etchedText }}>AI that acts.</em>
+                </h2>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56, maxWidth: 520 }}>
+                  Gene doesn't hand you reports. It watches your studio, spots problems, and handles them — drafting messages, flagging billing gaps, and nudging at-risk families before they disappear.
+                </p>
+              </Rv>
+              <Rv delay={0.15}>
+                {/* Gene chat moment */}
+                <div style={{ paddingLeft: 22, borderLeft: '2px solid rgba(196,160,160,0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.sage, animation: 'sqPulse 2s ease-in-out infinite' }} />
+                    <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(196,160,160,0.55)' }}>Gene · Just now</span>
+                  </div>
+                  <p style={{ fontSize: 16, color: C.text, lineHeight: 1.75, maxWidth: 540, marginBottom: 18 }}>
+                    Lily Reyes has missed 3 consecutive Ballet classes and has an overdue invoice. Based on your studio's history, she's at high risk of not re-enrolling. I've drafted a personal check-in for your review.
+                  </p>
+                  <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: C.sage, cursor: 'pointer' }}>Review draft</span>
+                    <span style={{ color: 'rgba(196,160,160,0.3)' }}>·</span>
+                    <span style={{ fontSize: 14, color: C.textFaint, cursor: 'pointer' }}>View profile</span>
+                  </div>
+                  <p style={{ fontSize: 12, color: 'rgba(196,160,160,0.4)', marginTop: 10 }}>If she declines → escalate to phone call prompt</p>
+                </div>
+              </Rv>
+            </section>
+
+            <Dv />
+
+            {/* CTA */}
+            <section style={{ padding: '160px 44px', textAlign: 'center' }}>
+              <Rv>
+                <h2 style={{ fontSize: 'clamp(36px,5vw,60px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 20 }}>
+                  Stop managing.<br /><em style={{ fontStyle: 'italic' }}>Start growing.</em>
+                </h2>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 420, margin: '0 auto 48px' }}>
+                  Private beta for dance studios who are ready to run like a real business.
+                </p>
+              </Rv>
+              <Rv delay={0.15}><WaitlistInput id="home" /></Rv>
+            </section>
           </div>
-        </div>
-      </section>
+        )}
 
-      {/* ── GENE EXECUTION FLOW ── */}
-      <section style={{ position: 'relative', zIndex: 1, padding: '120px 44px' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto' }}>
+        {/* ════════════ PRODUCT ════════════ */}
+        {page === 'product' && (
+          <div>
+            <section style={{ ...sec, paddingTop: 180 }}>
+              <Rv><SecLabel>The platform</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h1 style={{ fontSize: 'clamp(40px,6vw,72px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 20 }}>
+                  One brain.<br /><em style={{ fontStyle: 'italic', ...etchedText, opacity: 0.6 }}>Every workflow.</em>
+                </h1>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 520 }}>
+                  Sequins isn't a bundle of features bolted together. It's a single platform where scheduling, billing, family communication, and AI all share context and work together.
+                </p>
+              </Rv>
+            </section>
+            <Dv />
 
-          <Rv y={20}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 999, marginBottom: 20, background: 'rgba(255,255,255,0.7)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,1), 0 2px 12px rgba(180,150,140,0.1)', border: '1px solid rgba(220,190,190,0.2)' }}>
-              <Sparkles style={{ width: 12, height: 12, color: C.rose }} />
-              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: C.textFaint }}>Meet Gene</span>
-            </div>
-          </Rv>
-          <Rv delay={0.05} y={20}>
-            <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, lineHeight: 1.05, ...etchedText, marginBottom: 12 }}>Not just insights. Action.</h2>
-          </Rv>
-          <Rv delay={0.1} y={20}>
-            <p style={{ fontSize: 15, color: C.textFaint, marginBottom: 72 }}>Gene notices a problem, reasons through it, and takes care of it.</p>
-          </Rv>
+            {/* Teacher Studio flow */}
+            <section style={sec}>
+              <Rv><SecLabel>Teacher Studio</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
+                  The studio floor, in your pocket.
+                </h2>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>A dedicated mobile-first teacher experience. Everything needed to run class — nothing else.</p>
+              </Rv>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {[
+                  { time: 'Class starts', event: 'Teacher opens Ballet Advanced', meta: '14 students · Room B · 60 min', type: 'neutral' },
+                  { time: '2 min in', event: 'Sofia Kim marked as Trial — dossier surfaces automatically', meta: 'Interests: Ballet · Parent: sarah@kim.com · 2nd visit', type: 'gold' },
+                  { time: '5 min in', event: 'Attendance locked. 12 present, 1 absent, 1 late.', meta: 'Absence auto-flagged for makeup scheduling', type: 'sage' },
+                  { time: 'After class', event: 'Voice note: "Emma is ready to level up to pointe"', meta: 'Transcribed · Tagged as progress note · Saved to Emma\'s profile', type: 'purple' },
+                  { time: 'Sub needed', event: 'Sub request sent. Gene suggests 3 qualified teachers.', meta: 'Matched by style, availability, and room familiarity', type: 'neutral' },
+                ].map(({ time, event, meta, type }, i) => (
+                  <Rv key={i} delay={i * 0.08}>
+                    <div style={{ display: 'flex', gap: 20, padding: '16px 0' }}>
+                      <div style={{ fontSize: 11, color: C.textFainter, width: 72, flexShrink: 0, paddingTop: 3, textAlign: 'right' }}>{time}</div>
+                      <div style={{ flex: 1, paddingLeft: 20, borderLeft: `2px solid ${type === 'gold' ? 'rgba(212,165,116,0.35)' : type === 'sage' ? 'rgba(126,184,154,0.25)' : type === 'purple' ? 'rgba(164,139,196,0.25)' : 'rgba(196,160,160,0.15)'}` }}>
+                        <div style={{ fontSize: 15, fontWeight: 500, color: type === 'gold' ? C.amber : type === 'sage' ? C.sage : type === 'purple' ? C.purple : C.text, marginBottom: 3 }}>{event}</div>
+                        <div style={{ fontSize: 12, color: C.textFainter }}>{meta}</div>
+                      </div>
+                    </div>
+                  </Rv>
+                ))}
+              </div>
+            </section>
+            <Dv />
 
-          <div style={{ position: 'relative' }}>
-            {/* Connector line */}
-            <div style={{ position: 'absolute', left: 20, top: 40, bottom: 40, width: 1, background: 'linear-gradient(180deg, rgba(196,160,160,0.25) 0%, rgba(196,160,160,0.04) 100%)' }} />
+            {/* Billing flow */}
+            <section style={sec}>
+              <Rv><SecLabel>Automated Billing</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
+                  Billing that runs itself.
+                </h2>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>Set up once. Sequins handles tuition plans, sibling discounts, autopay, and overdue follow-ups automatically.</p>
+              </Rv>
+              {/* Billing mock UI */}
+              <Rv delay={0.15}>
+                <div style={{ paddingLeft: 22, borderLeft: '2px solid rgba(196,160,160,0.15)' }}>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {/* Invoice line items */}
+                  <div style={{ marginBottom: 32 }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: C.textFainter, marginBottom: 16 }}>March Invoice · Kim Family</div>
+                    {[
+                      { label: 'Ballet Advanced · Sofia', amount: '$120', note: 'Monthly plan' },
+                      { label: 'Hip Hop Beginner · Mia', amount: '$95', note: 'Monthly plan' },
+                      { label: 'Sibling discount', amount: '−$20', note: 'Auto-applied', color: C.sage },
+                    ].map(({ label, amount, note, color }) => (
+                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 0', borderBottom: '1px solid rgba(196,160,160,0.08)' }}>
+                        <div>
+                          <span style={{ fontSize: 14, color: C.text }}>{label}</span>
+                          <span style={{ fontSize: 11, color: C.textFainter, marginLeft: 10 }}>{note}</span>
+                        </div>
+                        <span style={{ fontSize: 15, fontWeight: 600, color: color || C.text }}>{amount}</span>
+                      </div>
+                    ))}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '14px 0' }}>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: C.text }}>Total due</span>
+                      <span style={{ fontSize: 20, fontWeight: 700, ...etchedText }}>$195</span>
+                    </div>
+                  </div>
+
+                  {/* Gene billing nudge */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.6)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }}>
+                    <Sparkles style={{ width: 14, height: 14, color: C.rose, flexShrink: 0, marginTop: 2 }} />
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: C.rose, marginBottom: 6 }}>Gene · Billing Alert</div>
+                      <p style={{ fontSize: 13, color: C.text, lineHeight: 1.65 }}>Jack Torres has been overdue since January ($185). I've queued a gentle payment reminder alongside his family's check-in message. Want to send both together?</p>
+                      <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: C.sage, cursor: 'pointer' }}>Send together</span>
+                        <span style={{ fontSize: 13, color: C.textFainter, cursor: 'pointer' }}>Send separately</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Rv>
+            </section>
+            <Dv />
+
+            {/* Schedule flow */}
+            <section style={sec}>
+              <Rv><SecLabel>Smart Scheduling</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
+                  A schedule that thinks ahead.
+                </h2>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>Conflict detection, room management, teacher availability, and sub assignments — all connected.</p>
+              </Rv>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {[
+                  ['Monday', [{ title: 'Ballet Beginner', time: '4:00 PM', room: 'Studio A', teacher: 'Ms. Sarah', students: 8, color: C.rose }]],
+                  ['Tuesday', [
+                    { title: 'Jazz Intermediate', time: '5:30 PM', room: 'Studio B', teacher: 'Ms. Rivera', students: 11, color: C.purple },
+                    { title: 'Hip Hop Advanced', time: '6:30 PM', room: 'Studio A', teacher: 'Mr. Davis', students: 9, color: C.blue },
+                  ]],
+                  ['Wednesday', [
+                    { title: 'Ballet Advanced', time: '6:00 PM', room: 'Studio A', teacher: 'Ms. Sarah', students: 14, color: C.rose, conflict: true },
+                  ]],
+                ].map(([day, classes]) => (
+                  <Rv key={day} delay={0.08}>
+                    <div style={{ display: 'flex', gap: 20 }}>
+                      <div style={{ fontSize: 11, color: C.textFainter, width: 80, flexShrink: 0, paddingTop: 16, textAlign: 'right' }}>{day}</div>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 0' }}>
+                        {classes.map(cls => (
+                          <div key={cls.title} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderRadius: 14, borderLeft: `3px solid ${cls.color}`, background: 'rgba(255,255,255,0.65)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }}>
+                            <div>
+                              <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{cls.title}</div>
+                              <div style={{ fontSize: 11, color: C.textFainter }}>{cls.time} · {cls.room} · {cls.teacher}</div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{ fontSize: 11, color: C.textFainter }}>{cls.students} students</span>
+                              {cls.conflict && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 6, background: 'rgba(212,165,116,0.15)', color: C.amber }}>Sub needed</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </Rv>
+                ))}
+              </div>
+            </section>
+            <Dv />
+
+            {/* Family Portal flow */}
+            <section style={sec}>
+              <Rv><SecLabel>Family Portal</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
+                  A room of their own.
+                </h2>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>Every family gets a beautiful, branded space — schedule, invoices, student progress, and a direct line to the studio.</p>
+              </Rv>
+              <Rv delay={0.15}>
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {[
+                    { icon: Calendar, label: 'Sofia\'s schedule this week', value: 'Ballet Mon · Hip Hop Thu', color: C.rose },
+                    { icon: DollarSign, label: 'March invoice', value: '$195 · Due March 1 · Auto-pay on', color: C.sage },
+                    { icon: TrendingUp, label: 'Sofia\'s progress', value: '"Ready to move to pointe" — Ms. Sarah', color: C.purple },
+                    { icon: MessageSquare, label: 'Message from studio', value: 'Spring recital costumes due April 5th', color: C.amber },
+                  ].map(({ icon: Icon, label, value, color }) => (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.7)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: `${color}18` }}>
+                        <Icon style={{ width: 16, height: 16, color }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 11, color: C.textFainter, marginBottom: 3 }}>{label}</div>
+                        <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{value}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Rv>
+            </section>
+            <Dv />
+
+            {/* Growth engine flow */}
+            <section style={sec}>
+              <Rv><SecLabel>Growth Engine</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
+                  Sequins grows with you.
+                </h2>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>From the first inquiry to re-enrollment, Gene tracks every lead and nudges at every right moment.</p>
+              </Rv>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
+                {[
+                  { stage: 'Lead', name: 'Trial booking — Sofia Kim, 8yo, Ballet interest', meta: 'Came from Instagram · Parent: sarah@kim.com', color: C.amber },
+                  { stage: 'Trial', name: 'Sofia attended Ballet Beginner — trial dossier created', meta: '"Excellent natural turnout. Strong candidate for Intermediate." — Ms. Sarah', color: C.rose },
+                  { stage: 'Gene', name: 'Re-enrollment nudge sent to Sarah Kim — day 3 post-trial', meta: '"Sofia had a great class! Here\'s how to enroll for spring…"', color: C.sage, gene: true },
+                  { stage: 'Enrolled', name: 'Sofia enrolled in Ballet Advanced + Hip Hop', meta: 'Auto-pay set up · $215/month · Sibling discount applied', color: C.purple },
+                  { stage: 'Referral', name: 'Sarah Kim referred Emma Thompson', meta: 'Referral credit applied automatically', color: C.blue },
+                ].map(({ stage, name, meta, color, gene }, i) => (
+                  <React.Fragment key={i}>
+                    <Rv delay={i * 0.07} style={{ width: '100%' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 0 14px 0' }}>
+                        <div style={{ minWidth: 70, textAlign: 'right', paddingTop: 2 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: gene ? C.sage : color, padding: '3px 8px', borderRadius: 6, background: `${gene ? C.sage : color}14` }}>{stage}</span>
+                        </div>
+                        <div style={{ flex: 1, paddingLeft: 18, borderLeft: `2px solid ${color}30` }}>
+                          <div style={{ fontSize: 15, fontWeight: 500, color: C.text, marginBottom: 4 }}>{name}</div>
+                          <div style={{ fontSize: 12, color: C.textFainter, fontStyle: gene ? 'italic' : 'normal' }}>{meta}</div>
+                        </div>
+                      </div>
+                    </Rv>
+                    {i < 4 && <div style={{ width: 2, height: 12, marginLeft: 87, background: `${color}20` }} />}
+                  </React.Fragment>
+                ))}
+              </div>
+            </section>
+            <Dv />
+
+            <section style={{ padding: '160px 44px', textAlign: 'center' }}>
+              <Rv>
+                <h2 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 20 }}>
+                  Ready to see it<br /><em style={{ fontStyle: 'italic' }}>in your studio?</em>
+                </h2>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 420, margin: '0 auto 48px' }}>Private beta now open for dance studios.</p>
+              </Rv>
+              <Rv delay={0.15}><WaitlistInput id="product" /></Rv>
+            </section>
+          </div>
+        )}
+
+        {/* ════════════ COMPANY ════════════ */}
+        {page === 'company' && (
+          <div>
+            <section style={{ ...sec, paddingTop: 180 }}>
+              <Rv><SecLabel>Our story</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 40 }}>
+                  Built by people who<br /><em style={{ fontStyle: 'italic', ...etchedText, opacity: 0.7 }}>love the craft.</em>
+                </h1>
+              </Rv>
+            </section>
+            <Dv />
+            <section style={sec}>
+              <Rv>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+                  {[
+                    'Dance studios are run by deeply passionate people — teachers turned owners who built something out of love, not business school.',
+                    'But the admin side is brutal. Billing chases, attendance spreadsheets, parent emails at midnight, scheduling puzzles. Every hour on that is an hour not in the studio.',
+                    'Sequins exists to give that time back. Not with more dashboards — with a platform that actually runs in the background and surfaces only what needs a human decision.',
+                  ].map((p, i) => (
+                    <Rv key={i} delay={i * 0.08}>
+                      <p style={{ fontSize: 17, fontWeight: 300, color: i < 2 ? C.textFaint : 'rgba(126,184,154,0.75)', lineHeight: 1.8 }}>{p}</p>
+                    </Rv>
+                  ))}
+                </div>
+              </Rv>
+            </section>
+            <Dv />
+            <section style={sec}>
+              <Rv><SecLabel>Principles</SecLabel></Rv>
+              <Rv delay={0.05}><h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 48 }}>How Sequins <em style={{ fontStyle: 'italic' }}>thinks.</em></h2></Rv>
               {[
-                { label: 'Gene notices', icon: Sparkles, color: C.rose, bg: 'rgba(196,160,160,0.15)', text: 'Lily Reyes has missed 3 consecutive Ballet classes — unusual for her pattern.', delay: 0 },
-                { label: 'Gene reasons', icon: BarChart3, color: C.purple, bg: 'rgba(164,139,196,0.15)', text: 'Checks her history, invoice status, and family communication. Finds an overdue balance and no parent contact in 6 weeks.', delay: 0.1 },
-                { label: 'Gene acts', icon: CheckCircle2, color: C.sage, bg: 'rgba(126,184,154,0.15)', text: 'Drafts a warm check-in email + a soft billing reminder. Queues both for your one-click approval.', extra: '"Hi Sarah — we\'ve missed Lily in class! Is everything okay? We\'d love to see her back on the floor…"', delay: 0.2 },
-                { label: 'You approve in one click', icon: Heart, color: C.amber, bg: 'rgba(212,165,116,0.15)', text: "Lily's mom replies the same day. She re-enrolls for spring. Invoice paid.", badge: 'Student retained', delay: 0.3 },
-              ].map(({ label, icon: Icon, color, bg, text, extra, badge, delay }) => (
-                <Rv key={label} delay={delay} y={16}>
-                  <div style={{ display: 'flex', gap: 20, paddingLeft: 8 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: bg, zIndex: 1, marginTop: 14 }}>
-                      <Icon style={{ width: 13, height: 13, color }} />
-                    </div>
-                    <div style={{ flex: 1, borderRadius: 20, padding: '18px 22px', background: 'rgba(255,255,255,0.82)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 4px 20px -8px rgba(180,150,140,0.12)', marginBottom: 4 }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color, marginBottom: 8 }}>{label}</div>
-                      <p style={{ fontSize: 14, fontWeight: 500, color: C.text, lineHeight: 1.6 }}>{text}</p>
-                      {extra && (
-                        <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 10, background: `rgba(126,184,154,0.08)`, borderLeft: `2px solid rgba(126,184,154,0.3)`, fontSize: 12, fontStyle: 'italic', color: '#7a9e8a', lineHeight: 1.6 }}>
-                          {extra}
-                        </div>
-                      )}
-                      {badge && (
-                        <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(212,165,116,0.12)', color: '#b8845a' }}>
-                          <TrendingUp style={{ width: 12, height: 12 }} /> {badge}
-                        </div>
-                      )}
-                    </div>
+                ['Ambient, not demanding', 'No dashboard overload. Information surfaces through context — what you need to know, right when you need it.'],
+                ['Human in the loop', 'Gene plans, drafts, and flags — but you always make the call. Action with oversight, not automation without consent.'],
+                ['Built for the floor', 'The teacher experience comes first. If it doesn\'t work at 6pm on a Wednesday in a ballet studio, it doesn\'t ship.'],
+                ['One platform', 'Scheduling, billing, families, and growth share full context. Nothing falls through the cracks between disconnected tools.'],
+              ].map(([title, desc], i) => (
+                <Rv key={i} delay={i * 0.07}>
+                  <div style={{ padding: '28px 0 28px 22px', borderLeft: '2px solid rgba(196,160,160,0.12)', marginBottom: 8 }}>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 8 }}>{title}</div>
+                    <div style={{ fontSize: 14, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 480 }}>{desc}</div>
                   </div>
                 </Rv>
               ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── WAITLIST CTA ── */}
-      <section id="waitlist" style={{ position: 'relative', zIndex: 1, padding: '120px 44px 160px' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto' }}>
-          <Rv y={30}>
-            <div style={{ borderRadius: 32, padding: '72px 56px', textAlign: 'center', position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, rgba(254,240,240,0.95), rgba(252,232,232,0.9), rgba(250,238,238,0.85))', boxShadow: 'inset 0 2px 12px rgba(180,120,120,0.07), 0 40px 80px -20px rgba(180,150,140,0.2)' }}>
-              <div style={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(196,160,160,0.3) 0%, transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <h2 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
-                  Ready to elevate<br />your studio?
+            </section>
+            <Dv />
+            <section style={{ padding: '160px 44px', textAlign: 'center' }}>
+              <Rv>
+                <h2 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 20 }}>
+                  Want to build the future of<br /><em style={{ fontStyle: 'italic' }}>dance education?</em>
                 </h2>
-                <p style={{ fontSize: 15, color: C.textFaint, lineHeight: 1.7, marginBottom: 36 }}>
-                  Join studios on the Sequins waitlist. Get early access and 3 months free.
+              </Rv>
+              <Rv delay={0.1}><p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 420, margin: '0 auto 48px' }}>We're a small team. We move fast. We love dance studios.</p></Rv>
+              <Rv delay={0.15}><WaitlistInput id="company" /></Rv>
+            </section>
+          </div>
+        )}
+
+        {/* ════════════ ACCESS ════════════ */}
+        {page === 'access' && (
+          <div>
+            <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '120px 44px' }}>
+              <Rv><SecLabel>Private beta</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 20, maxWidth: 600 }}>
+                  Request <em style={{ fontStyle: 'italic', color: C.sage, backgroundImage: 'none', WebkitTextFillColor: C.sage }}>early access</em>
+                </h1>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 400, margin: '0 auto 48px' }}>
+                  Sequins is onboarding a small number of dance studios in our private beta. Leave your email and we'll reach out directly.
                 </p>
+              </Rv>
+              <Rv delay={0.15} style={{ maxWidth: 460, width: '90%' }}><WaitlistInput id="access" /></Rv>
+            </section>
+          </div>
+        )}
 
-                {!submitted ? (
-                  <form onSubmit={handleSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', maxWidth: 420, margin: '0 auto' }}>
-                    <input
-                      type="email"
-                      value={emailInput}
-                      onChange={e => setEmailInput(e.target.value)}
-                      placeholder="your@studio.com"
-                      required
-                      style={{ flex: '1 1 200px', padding: '13px 18px', borderRadius: 14, fontSize: 14, border: '1px solid rgba(220,190,190,0.3)', background: 'rgba(255,255,255,0.7)', color: C.text, outline: 'none', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }}
-                    />
-                    <button
-                      type="submit"
-                      style={{ flexShrink: 0, padding: '13px 28px', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: 'pointer', background: 'linear-gradient(145deg, rgba(254,247,247,0.95), rgba(252,231,231,0.9))', boxShadow: '0 6px 20px -4px rgba(180,150,140,0.3), inset 0 1px 2px rgba(255,255,255,0.8)', border: '1px solid rgba(220,190,190,0.4)', transition: 'all 0.2s' }}
-                      onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
-                      onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-                      <span style={etchedText}>Get Access →</span>
-                    </button>
-                  </form>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 16, borderRadius: 16, maxWidth: 360, margin: '0 auto', background: 'rgba(126,184,154,0.12)', animation: 'sqFadeUp 0.4s ease' }}>
-                    <CheckCircle2 style={{ width: 18, height: 18, color: C.sage }} />
-                    <span style={{ fontSize: 14, fontWeight: 500, color: '#5a7d6a' }}>You're on the list! We'll be in touch soon.</span>
-                  </div>
-                )}
-
-                <p style={{ fontSize: 12, color: C.textFainter, marginTop: 20 }}>No credit card required · Cancel anytime</p>
-
-                <div style={{ marginTop: 24 }}>
-                  <Link to={createPageUrl('Home')}>
-                    <button style={{ fontSize: 13, fontWeight: 500, padding: '10px 22px', borderRadius: 12, background: 'rgba(255,255,255,0.5)', color: C.textFaint, border: 'none', cursor: 'pointer', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)', transition: 'all 0.2s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.75)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.5)'}>
-                      Go to Dashboard →
-                    </button>
-                  </Link>
-                </div>
+        {/* Footer */}
+        <footer style={{ padding: '36px 44px', borderTop: '1px solid rgba(200,180,170,0.1)' }}>
+          <div style={{ maxWidth: 1060, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg,rgba(255,255,255,0.95),rgba(255,244,244,0.9))', boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)' }}>
+                <span style={{ ...etchedText, fontSize: 11, fontWeight: 700 }}>S</span>
               </div>
+              <span style={{ fontWeight: 700, fontSize: 13, color: C.textFaint }}>Sequins</span>
             </div>
-          </Rv>
-        </div>
-      </section>
-
-      {/* ── FOOTER ── */}
-      <footer style={{ position: 'relative', zIndex: 1, padding: '36px 44px', borderTop: '1px solid rgba(200,180,170,0.1)' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, rgba(255,255,255,0.95), rgba(255,244,244,0.9))', boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,1)' }}>
-              <span style={{ ...etchedText, fontSize: 12, fontWeight: 700 }}>S</span>
+            <p style={{ fontSize: 12, color: C.textFainter }}>© 2026 Sequins. Built for dance.</p>
+            <div style={{ display: 'flex', gap: 24 }}>
+              {[['home', 'Home'], ['product', 'Product'], ['company', 'Company'], [null, 'Privacy'], [null, 'Terms']].map(([id, label], i) => (
+                <a key={i} onClick={id ? () => showPage(id) : undefined} style={{ fontSize: 12, color: C.textFainter, textDecoration: 'none', cursor: id ? 'pointer' : 'default', transition: 'color 0.2s' }}
+                  onMouseEnter={e => { if (id) e.target.style.color = C.roseDark; }}
+                  onMouseLeave={e => { if (id) e.target.style.color = C.textFainter; }}>{label}</a>
+              ))}
             </div>
-            <span style={{ fontWeight: 700, fontSize: 13, color: C.textFaint }}>Sequins</span>
           </div>
-          <p style={{ fontSize: 12, color: C.textFainter }}>© 2026 Sequins. Built for dance.</p>
-          <div style={{ display: 'flex', gap: 24 }}>
-            {['Privacy', 'Terms', 'Contact'].map(link => (
-              <a key={link} href="#" style={{ fontSize: 12, color: C.textFainter, textDecoration: 'none', transition: 'color 0.2s' }}
-                onMouseEnter={e => e.target.style.color = C.roseDark}
-                onMouseLeave={e => e.target.style.color = C.textFainter}>{link}</a>
-            ))}
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
 
-      {/* ── Global keyframes ── */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
         @keyframes sqFadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes sqFadeDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes sqFadeIn { from { opacity:0 } to { opacity:1 } }
-        @keyframes sqBreathe { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: 0.8; } }
-        @keyframes sqScrollLine { 0%,100% { opacity:0.25; transform: scaleY(1); } 50% { opacity:0.8; transform: scaleY(1.2); } }
-        @keyframes sqBlink { 0%,100% { opacity:1; } 50% { opacity:0; } }
-        @keyframes sqPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(196,160,160,0.2); } 50% { box-shadow: 0 0 0 6px rgba(196,160,160,0); } }
+        @keyframes sqFadeIn { from { opacity:0; } to { opacity:1; } }
+        @keyframes sqBreathe { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:0.8} }
+        @keyframes sqScrollLine { 0%,100%{opacity:0.25;transform:scaleY(1)}50%{opacity:0.8;transform:scaleY(1.2)} }
+        @keyframes sqPulse { 0%,100%{box-shadow:0 0 0 0 rgba(126,184,154,0.3)}50%{box-shadow:0 0 0 5px rgba(126,184,154,0)} }
         * { margin:0; padding:0; box-sizing:border-box; }
         .sq-nav-links { display: flex; }
         .sq-hamburger { display: none !important; }
-        @media (max-width: 680px) {
-          .sq-nav-links { display: none !important; }
-          .sq-hamburger { display: flex !important; }
+        @media (max-width:680px) {
+          .sq-nav-links { display:none!important; }
+          .sq-hamburger { display:flex!important; }
         }
       `}</style>
     </div>
