@@ -54,6 +54,7 @@ import ClassManager from './pages/ClassManager';
 import FamilyRoom from './pages/FamilyRoom';
 import Growth from './pages/Growth';
 import Home from './pages/Home';
+import Landing from './pages/Landing';
 import Onboarding from './pages/Onboarding';
 import Performances from './pages/Performances';
 import RunBilling from './pages/RunBilling';
@@ -67,7 +68,6 @@ import TeacherStudio from './pages/TeacherStudio';
 import TeacherTimeManagement from './pages/TeacherTimeManagement';
 import Teachers from './pages/Teachers';
 import TrialBooking from './pages/TrialBooking';
-import Landing from './pages/Landing';
 import __Layout from './Layout.jsx';
 
 
@@ -79,6 +79,7 @@ export const PAGES = {
     "FamilyRoom": FamilyRoom,
     "Growth": Growth,
     "Home": Home,
+    "Landing": Landing,
     "Onboarding": Onboarding,
     "Performances": Performances,
     "RunBilling": RunBilling,
@@ -92,7 +93,6 @@ export const PAGES = {
     "TeacherTimeManagement": TeacherTimeManagement,
     "Teachers": Teachers,
     "TrialBooking": TrialBooking,
-    "Landing": Landing,
 }
 
 export const pagesConfig = {
