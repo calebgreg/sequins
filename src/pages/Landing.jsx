@@ -151,11 +151,8 @@ export default function Landing() {
       {/* ── Nav ── */}
       <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: scrolled ? '14px 44px' : '26px 44px', transition: 'all 0.4s', backgroundColor: scrolled ? 'rgba(253,249,248,0.9)' : 'transparent', backdropFilter: scrolled ? 'blur(24px)' : 'none', borderBottom: scrolled ? '1px solid rgba(200,170,160,0.1)' : 'none' }}>
         <div style={{ maxWidth: 1060, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span onClick={() => showPage('home')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-            <div style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg,rgba(255,255,255,0.95),rgba(255,244,244,0.9))', boxShadow: '0 4px 12px -4px rgba(180,150,140,0.3), inset 0 1px 1px rgba(255,255,255,1)' }}>
-              <span style={{ ...etchedText, fontSize: 13, fontWeight: 700 }}>S</span>
-            </div>
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.roseDark }}>Sequins</span>
+          <span onClick={() => showPage('home')} style={{ cursor: 'pointer' }}>
+            <SequinsLogo size="sm" />
           </span>
 
           <div className="sq-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
