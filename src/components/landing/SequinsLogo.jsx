@@ -11,11 +11,11 @@ export default function SequinsLogo({ size = 'md' }) {
       fontSize,
       letterSpacing: '1px',
       color: 'transparent',
-      backgroundImage: 'linear-gradient(180deg, #b0a0a8 0%, #7a6e75 100%)',
+      backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')`,
       backgroundClip: 'text',
       WebkitBackgroundClip: 'text',
-      textShadow: '0 2px 3px rgba(255,255,255,0.7)',
-      filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
       lineHeight: 1,
     }}>
       sequins
