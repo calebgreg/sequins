@@ -293,10 +293,15 @@ export default function Landing() {
               </div>
             </div>
             <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-              {['Students', 'Classes', 'Billing', 'Teacher Studio'].map((label, i) => (
+              {[
+                { label: 'Students', Icon: Users },
+                { label: 'Classes', Icon: Calendar },
+                { label: 'Billing', Icon: CreditCard },
+                { label: 'Teacher Studio', Icon: Sparkles },
+              ].map(({ label, Icon }) => (
                 <div key={label} className="rounded-xl p-4 bg-white shadow-sm flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center">
-                    {[Users, Calendar, CreditCard, Sparkles][i]({ className: 'w-4 h-4 text-gray-400' })}
+                    <Icon className="w-4 h-4 text-gray-400" />
                   </div>
                   <span className="text-sm font-medium text-gray-600">{label}</span>
                 </div>
