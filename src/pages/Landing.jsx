@@ -590,10 +590,10 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Gene AI Demo ── */}
+      {/* ── Gene AI Execution Flow ── */}
       <section className="py-24 px-6">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-14">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
               style={{
                 background: 'rgba(255,255,255,0.7)',
@@ -603,101 +603,139 @@ export default function Landing() {
               <Sparkles className="w-3.5 h-3.5" style={{ color: '#c4a0a0' }} />
               <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#b5a599' }}>Meet Gene</span>
             </div>
-            <h2 className="text-4xl font-bold mb-3" style={etchedText}>Your studio's AI assistant.</h2>
-            <p className="text-base" style={{ color: '#b5a599' }}>Gene doesn't just report data — it watches your studio and tells you what to do about it.</p>
+            <h2 className="text-4xl font-bold mb-3" style={etchedText}>Not just insights. Action.</h2>
+            <p className="text-base" style={{ color: '#b5a599' }}>Gene notices a problem, reasons through it, and takes care of it.</p>
           </div>
 
-          <div
-            className="rounded-3xl overflow-hidden"
-            style={{
-              background: 'linear-gradient(145deg, rgba(254,240,240,0.8) 0%, rgba(252,232,232,0.6) 100%)',
-              boxShadow: 'inset 0 2px 12px rgba(180,120,120,0.06), 0 20px 60px -20px rgba(180,150,140,0.2)',
-            }}
-          >
-            {/* Chat header */}
-            <div className="px-6 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(200,170,160,0.12)' }}>
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(145deg, rgba(196,160,160,0.2), rgba(196,160,160,0.1))' }}
-              >
-                <Sparkles className="w-4 h-4" style={{ color: '#c4a0a0' }} />
-              </div>
-              <div>
-                <div className="text-sm font-bold" style={{ color: '#8b7d72' }}>Gene</div>
-                <div className="text-xs" style={{ color: '#b5a599' }}>Sequins AI · always watching your studio</div>
-              </div>
-              <div className="ml-auto flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#7eb89a' }} />
-                <span className="text-xs" style={{ color: '#7eb89a' }}>Live</span>
-              </div>
-            </div>
+          <div className="relative">
+            {/* Vertical connector line */}
+            <div className="absolute left-[22px] top-12 bottom-12 w-px md:left-1/2 md:-translate-x-px hidden md:block"
+              style={{ background: 'linear-gradient(180deg, rgba(196,160,160,0.3) 0%, rgba(196,160,160,0.08) 100%)' }} />
 
-            {/* Messages */}
-            <div className="p-6 space-y-4">
-              {/* Gene proactive message */}
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: 'rgba(196,160,160,0.15)' }}>
-                  <Sparkles className="w-3.5 h-3.5" style={{ color: '#c4a0a0' }} />
+            <div className="space-y-4">
+
+              {/* Step 0: Trigger */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0 }}
+                className="flex items-start gap-4 md:justify-center"
+              >
+                <div
+                  className="relative z-10 w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(196,160,160,0.2), rgba(196,160,160,0.1))',
+                    boxShadow: '0 4px 12px -4px rgba(180,150,140,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+                  }}
+                >
+                  <Sparkles className="w-5 h-5" style={{ color: '#c4a0a0' }} />
                 </div>
-                <div className="flex-1 space-y-2">
+                <div
+                  className="rounded-2xl px-5 py-4 max-w-sm"
+                  style={{
+                    background: 'rgba(255,255,255,0.85)',
+                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 4px 16px -8px rgba(180,150,140,0.15)',
+                  }}
+                >
+                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#c4a0a0' }}>Gene notices</div>
+                  <p className="text-sm font-medium" style={{ color: '#8b7d72' }}>
+                    Lily Reyes has missed 3 consecutive Ballet classes — unusual for her pattern.
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Step 1: Reasoning */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+                className="flex items-start gap-4 md:flex-row-reverse md:justify-center"
+              >
+                <div
+                  className="relative z-10 w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(164,139,196,0.2), rgba(164,139,196,0.1))',
+                    boxShadow: '0 4px 12px -4px rgba(164,139,196,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+                  }}
+                >
+                  <BarChart3 className="w-5 h-5" style={{ color: '#a48bc4' }} />
+                </div>
+                <div
+                  className="rounded-2xl px-5 py-4 max-w-sm"
+                  style={{
+                    background: 'rgba(255,255,255,0.85)',
+                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 4px 16px -8px rgba(164,139,196,0.12)',
+                  }}
+                >
+                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#a48bc4' }}>Gene reasons</div>
+                  <p className="text-sm font-medium" style={{ color: '#8b7d72' }}>
+                    Checks her history, invoice status, and family communication. Finds an overdue balance and no parent contact in 6 weeks.
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Step 2: Acts */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+                className="flex items-start gap-4 md:justify-center"
+              >
+                <div
+                  className="relative z-10 w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(126,184,154,0.2), rgba(126,184,154,0.1))',
+                    boxShadow: '0 4px 12px -4px rgba(126,184,154,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+                  }}
+                >
+                  <CheckCircle2 className="w-5 h-5" style={{ color: '#7eb89a' }} />
+                </div>
+                <div
+                  className="rounded-2xl px-5 py-4 max-w-sm"
+                  style={{
+                    background: 'rgba(255,255,255,0.85)',
+                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 4px 16px -8px rgba(126,184,154,0.12)',
+                  }}
+                >
+                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#7eb89a' }}>Gene acts</div>
+                  <p className="text-sm font-medium mb-3" style={{ color: '#8b7d72' }}>
+                    Drafts a warm personal check-in email + a soft billing reminder. Queues both for your one-click approval.
+                  </p>
                   <div
-                    className="rounded-2xl rounded-tl-sm p-4 text-sm leading-relaxed"
-                    style={{ background: 'rgba(255,255,255,0.85)', color: '#8b7d72', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }}
+                    className="rounded-xl p-3 text-xs italic leading-relaxed"
+                    style={{ background: 'rgba(126,184,154,0.08)', color: '#7a9e8a', borderLeft: '2px solid rgba(126,184,154,0.3)' }}
                   >
-                    Good morning! I noticed Lily Reyes, Emma Sullivan, and Jack Torres have all missed 3+ classes this month — that's unusual for them. Based on your studio's history, families that go quiet like this often don't re-enroll. Want me to draft a personal check-in for each of their parents?
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-all"
-                      style={{ background: 'rgba(196,160,160,0.15)', color: '#8a7070' }}>
-                      Yes, draft messages
-                    </button>
-                    <button className="text-xs px-3 py-1.5 rounded-lg font-medium"
-                      style={{ color: '#c4b5ab' }}>
-                      View their profiles
-                    </button>
+                    "Hi Sarah — we've missed Lily in class! Is everything okay? We'd love to see her back on the floor. Also wanted to touch base about February's balance…"
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* User reply */}
-              <div className="flex justify-end">
-                <div
-                  className="rounded-2xl rounded-tr-sm px-4 py-3 text-sm max-w-xs"
-                  style={{ background: 'linear-gradient(145deg, rgba(196,160,160,0.2), rgba(196,160,160,0.12))', color: '#8a7070' }}
-                >
-                  Yes, and also flag any billing issues for those families
-                </div>
-              </div>
-
-              {/* Gene response */}
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: 'rgba(196,160,160,0.15)' }}>
-                  <Sparkles className="w-3.5 h-3.5" style={{ color: '#c4a0a0' }} />
-                </div>
-                <div
-                  className="rounded-2xl rounded-tl-sm p-4 text-sm leading-relaxed flex-1"
-                  style={{ background: 'rgba(255,255,255,0.85)', color: '#8b7d72', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }}
-                >
-                  Done. 3 personalized drafts are ready in your Outreach queue. Also flagged: Jack Torres has an overdue invoice from January ($185). I've added a gentle payment reminder to his family's draft. Want me to send them now, or review first?
-                </div>
-              </div>
-            </div>
-
-            {/* Fake input */}
-            <div className="px-6 pb-6">
-              <div
-                className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-                style={{
-                  background: 'rgba(255,255,255,0.6)',
-                  boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 8px rgba(180,150,140,0.08)',
-                  border: '1px solid rgba(220,190,190,0.2)',
-                }}
+              {/* Step 3: Outcome */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
+                className="flex items-start gap-4 md:flex-row-reverse md:justify-center"
               >
-                <span className="text-sm flex-1" style={{ color: '#c4b5ab' }}>Ask Gene anything about your studio...</span>
-                <Sparkles className="w-4 h-4 flex-shrink-0" style={{ color: '#c4a0a0' }} />
-              </div>
+                <div
+                  className="relative z-10 w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(212,165,116,0.2), rgba(212,165,116,0.1))',
+                    boxShadow: '0 4px 12px -4px rgba(212,165,116,0.2), inset 0 1px 1px rgba(255,255,255,0.8)',
+                  }}
+                >
+                  <Heart className="w-5 h-5" style={{ color: '#d4a574' }} />
+                </div>
+                <div
+                  className="rounded-2xl px-5 py-4 max-w-sm"
+                  style={{
+                    background: 'rgba(255,255,255,0.85)',
+                    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8), 0 4px 16px -8px rgba(212,165,116,0.12)',
+                  }}
+                >
+                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#d4a574' }}>You approve in one click</div>
+                  <p className="text-sm font-medium" style={{ color: '#8b7d72' }}>
+                    Lily's mom replies the same day. She re-enrolls for spring. Invoice paid.
+                  </p>
+                  <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
+                    style={{ background: 'rgba(212,165,116,0.12)', color: '#b8845a' }}>
+                    <TrendingUp className="w-3.5 h-3.5" /> Student retained
+                  </div>
+                </div>
+              </motion.div>
+
             </div>
           </div>
         </div>
