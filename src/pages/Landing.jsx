@@ -395,10 +395,10 @@ export default function Landing() {
 
                   {/* Invoice line items */}
                   <div style={{ marginBottom: 32 }}>
-                    <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: C.textFainter, marginBottom: 16 }}>March Invoice · Kim Family</div>
+                    <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: C.textFainter, marginBottom: 16 }}>March Invoice · Holloway Family</div>
                     {[
-                      { label: 'Ballet Advanced · Sofia', amount: '$120', note: 'Monthly plan' },
-                      { label: 'Hip Hop Beginner · Mia', amount: '$95', note: 'Monthly plan' },
+                      { label: 'Ballet Advanced · Juno', amount: '$120', note: 'Monthly plan' },
+                      { label: 'Hip Hop Beginner · Wren', amount: '$95', note: 'Monthly plan' },
                       { label: 'Sibling discount', amount: '−$20', note: 'Auto-applied', color: C.sage },
                     ].map(({ label, amount, note, color }) => (
                       <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 0', borderBottom: '1px solid rgba(196,160,160,0.08)' }}>
