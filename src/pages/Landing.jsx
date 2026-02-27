@@ -258,7 +258,7 @@ export default function Landing() {
                 {[
                   ['Billing is a nightmare of missed payments and manual invoices.', 'Sequins automates it.'],
                   ['Teachers waste class time on attendance and admin.', 'Sequins puts everything on the studio floor.'],
-                  ['You lose students before you know they\'re at risk.', 'Gene tells you before they drop.'],
+                  ['You lose students before you know they\'re at risk.', 'Sequins flags them before they drop.'],
                   ['Families are left in the dark on schedules and progress.', 'Sequins gives them their own room.'],
                 ].map(([problem, answer], i) => (
                   <Rv key={i} delay={i * 0.07}>
