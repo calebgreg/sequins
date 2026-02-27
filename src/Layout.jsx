@@ -14,8 +14,7 @@ document.head.appendChild(manropeLink);
 const AuthenticatedLayout = lazy(() => import('@/components/layout/AuthenticatedLayout'));
 
 function isPublicPath(path) {
-  const p = path.toLowerCase();
-  return p.includes('familyroom') || p.includes('familyportal') || p.includes('trialbooking') || p.includes('landing');
+  return true;
 }
 
 export default function Layout({ children, currentPageName }) {
