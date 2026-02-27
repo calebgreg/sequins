@@ -361,7 +361,7 @@ export default function Landing() {
                   { time: '2 min in', event: 'Zoe Patel marked as Trial — dossier surfaces automatically', meta: 'Interests: Ballet · Parent: priya@patel.com · 2nd visit', type: 'gold' },
                   { time: '5 min in', event: 'Attendance locked. 12 present, 1 absent, 1 late.', meta: 'Absence auto-flagged for makeup scheduling', type: 'sage' },
                   { time: 'After class', event: 'Voice note: "Isla is ready to level up to pointe"', meta: 'Transcribed · Tagged as progress note · Saved to Isla\'s profile', type: 'purple' },
-                  { time: 'Sub needed', event: 'Sub request sent. Gene suggests 3 qualified teachers.', meta: 'Matched by style, availability, and room familiarity', type: 'neutral' },
+                  { time: 'Sub needed', event: 'Sub request sent. Sequins suggests 3 qualified teachers.', meta: 'Matched by style, availability, and room familiarity', type: 'neutral' },
                 ].map(({ time, event, meta, type }, i) => (
                   <Rv key={i} delay={i * 0.08}>
                     <div style={{ display: 'flex', gap: 20, padding: '16px 0' }}>
