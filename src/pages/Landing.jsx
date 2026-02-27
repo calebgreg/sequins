@@ -650,9 +650,9 @@ export default function Landing() {
                         <span style={{ fontSize: 36, fontWeight: 300, letterSpacing: -1, color: C.text }}>{students}</span>
                         <span style={{ fontSize: 13, color: C.textFainter, marginLeft: 8, fontWeight: 300 }}>students</span>
                       </div>
-                      <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 3, padding: '10px 26px', borderRadius: 999, background: C.roseDark, marginBottom: 36 }}>
-                        <span style={{ fontSize: 20, fontWeight: 600, color: '#fff' }}>{price}</span>
-                        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 300 }}>/ month</span>
+                      <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 3, padding: '10px 26px', borderRadius: 999, background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(230,210,215,0.5)', marginBottom: 36 }}>
+                        <span style={{ fontSize: 20, fontWeight: 600, color: C.text }}>{price}</span>
+                        <span style={{ fontSize: 12, color: C.textFainter, fontWeight: 300 }}>/ month</span>
                       </div>
                       <button onClick={() => showPage('access')} style={{ width: '100%', padding: '13px 0', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(196,160,160,0.25)', color: C.textFaint, transition: 'all 0.2s' }}
                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.8)'; e.currentTarget.style.borderColor = 'rgba(196,160,160,0.4)'; }}
