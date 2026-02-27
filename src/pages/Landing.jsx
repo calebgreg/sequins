@@ -441,7 +441,7 @@ export default function Landing() {
                 </h2>
               </Rv>
               <Rv delay={0.1}>
-                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>Conflict detection, room management, teacher availability, and sub assignments — all connected.</p>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>Conflict detection, room management, teacher availability, and sub assignments. All connected.</p>
               </Rv>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {[
