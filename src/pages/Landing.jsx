@@ -227,7 +227,7 @@ export default function Landing() {
                 <button onClick={() => showPage('access')} style={{ height: 52, padding: '0 36px', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: 'pointer', background: 'linear-gradient(145deg, rgba(254,247,247,0.95), rgba(252,231,231,0.9))', boxShadow: '0 8px 24px -4px rgba(180,150,140,0.35), inset 0 1px 2px rgba(255,255,255,0.8)', border: '1px solid rgba(255,220,210,0.5)', transition: 'all 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
                   onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-                  <span style={etchedText}>Get Early Access <ArrowRight style={{ display: 'inline', width: 15, height: 15, marginLeft: 4 }} /></span>
+                  <span style={etchedText}>Book a Demo <ArrowRight style={{ display: 'inline', width: 15, height: 15, marginLeft: 4 }} /></span>
                 </button>
                 <button onClick={() => showPage('product')} style={{ height: 52, padding: '0 36px', borderRadius: 16, fontSize: 15, fontWeight: 400, cursor: 'pointer', background: 'rgba(255,255,255,0.5)', border: 'none', color: C.textFaint, transition: 'all 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.8)'}
