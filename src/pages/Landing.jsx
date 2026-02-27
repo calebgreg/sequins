@@ -110,7 +110,7 @@ export default function Landing() {
   const typerText = useTyper([
     'Who needs a check-in this week?',
     'Which classes are at risk of cancellation?',
-    'Draft a re-enrollment note for Sofia Kim...',
+    'Draft a re-enrollment note for Ava Mercer...',
     'Show me billing gaps for March...',
     'Which trial students haven\'t enrolled yet?',
   ]);
