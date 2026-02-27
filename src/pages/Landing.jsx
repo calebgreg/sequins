@@ -277,7 +277,7 @@ export default function Landing() {
 
             {/* Gene teaser */}
             <section style={sec}>
-              <Rv><SecLabel>Meet Gene</SecLabel></Rv>
+              <Rv><SecLabel>Built-in intelligence</SecLabel></Rv>
               <Rv delay={0.05}>
                 <h2 style={{ fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 20 }}>
                   Your studio's<br /><em style={{ fontStyle: 'italic', ...etchedText }}>AI that acts.</em>
@@ -285,18 +285,17 @@ export default function Landing() {
               </Rv>
               <Rv delay={0.1}>
                 <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56, maxWidth: 520 }}>
-                  Gene doesn't hand you reports. It watches your studio, spots problems, and handles them: drafting messages, flagging billing gaps, and nudging at-risk families before they disappear.
+                  Sequins doesn't hand you reports. It watches your studio, spots problems, and handles them: drafting messages, flagging billing gaps, and nudging at-risk families before they disappear.
                 </p>
               </Rv>
               <Rv delay={0.15}>
-                {/* Gene chat moment */}
                 <div style={{ paddingLeft: 22, borderLeft: '2px solid rgba(196,160,160,0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.sage, animation: 'sqPulse 2s ease-in-out infinite' }} />
-                    <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(196,160,160,0.55)' }}>Gene · Just now</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(196,160,160,0.55)' }}>Sequins · Just now</span>
                   </div>
                   <p style={{ fontSize: 16, color: C.text, lineHeight: 1.75, maxWidth: 540, marginBottom: 18 }}>
-                    Chloe Navarro has missed 3 consecutive Ballet classes and has an overdue invoice. Based on your studio's history, she's at high risk of not re-enrolling. I've drafted a personal check-in for your review.
+                    Chloe Navarro has missed 3 consecutive Ballet classes and has an overdue invoice. Based on your studio's history, she's at high risk of not re-enrolling. A personal check-in has been drafted for your review.
                   </p>
                   <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
                     <span style={{ fontSize: 14, fontWeight: 600, color: C.sage, cursor: 'pointer' }}>Review draft</span>
