@@ -192,9 +192,9 @@ export default function Landing() {
         {mobileMenuOpen && (
           <div style={{ display: 'flex', flexDirection: 'column', background: 'rgba(253,249,248,0.97)', backdropFilter: 'blur(24px)', borderTop: '1px solid rgba(200,170,160,0.1)' }}>
             {[['product', 'Product'], ['pricing', 'Pricing'], ['company', 'Company']].map(([id, label]) => (
-              <a key={id} onClick={() => { showPage(id); setMobileMenuOpen(false); }} style={{ padding: '16px 24px', fontSize: 15, fontWeight: 400, color: page === id ? C.roseDark : C.textFaint, cursor: 'pointer', borderBottom: '1px solid rgba(200,170,160,0.08)', display: 'block' }}>{label}</a>
+              <a key={id} onClick={() => { showPage(id); setMobileMenuOpen(false); }} style={{ padding: '20px 28px', fontSize: 16, fontWeight: 400, color: page === id ? C.roseDark : C.textFaint, cursor: 'pointer', borderBottom: '1px solid rgba(200,170,160,0.08)', display: 'block' }}>{label}</a>
             ))}
-            <a onClick={() => { showPage('access'); setMobileMenuOpen(false); }} style={{ padding: '16px 24px', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'block', color: 'transparent', backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')`, backgroundClip: 'text', WebkitBackgroundClip: 'text', backgroundSize: 'cover' }}>Get Access</a>
+            <a onClick={() => { showPage('access'); setMobileMenuOpen(false); }} style={{ padding: '20px 28px', fontSize: 16, fontWeight: 700, cursor: 'pointer', display: 'block', color: 'transparent', backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')`, backgroundClip: 'text', WebkitBackgroundClip: 'text', backgroundSize: 'cover' }}>Get Access</a>
           </div>
         )}
       </nav>
