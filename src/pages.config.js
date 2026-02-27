@@ -47,56 +47,16 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Attendance from './pages/Attendance';
-import Billing from './pages/Billing';
-import ClassDetail from './pages/ClassDetail';
-import ClassManager from './pages/ClassManager';
-import FamilyRoom from './pages/FamilyRoom';
-import Growth from './pages/Growth';
-import Home from './pages/Home';
-import Onboarding from './pages/Onboarding';
-import Performances from './pages/Performances';
-import RunBilling from './pages/RunBilling';
-import Settings from './pages/Settings';
-import StaffDirectory from './pages/StaffDirectory';
-import Students from './pages/Students';
-import SuperAdmin from './pages/SuperAdmin';
-import Tasks from './pages/Tasks';
-import TeacherDetails from './pages/TeacherDetails';
-import TeacherStudio from './pages/TeacherStudio';
-import TeacherTimeManagement from './pages/TeacherTimeManagement';
-import Teachers from './pages/Teachers';
-import TrialBooking from './pages/TrialBooking';
 import Landing from './pages/Landing';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Attendance": Attendance,
-    "Billing": Billing,
-    "ClassDetail": ClassDetail,
-    "ClassManager": ClassManager,
-    "FamilyRoom": FamilyRoom,
-    "Growth": Growth,
-    "Home": Home,
-    "Onboarding": Onboarding,
-    "Performances": Performances,
-    "RunBilling": RunBilling,
-    "Settings": Settings,
-    "StaffDirectory": StaffDirectory,
-    "Students": Students,
-    "SuperAdmin": SuperAdmin,
-    "Tasks": Tasks,
-    "TeacherDetails": TeacherDetails,
-    "TeacherStudio": TeacherStudio,
-    "TeacherTimeManagement": TeacherTimeManagement,
-    "Teachers": Teachers,
-    "TrialBooking": TrialBooking,
     "Landing": Landing,
 }
 
 export const pagesConfig = {
-    mainPage: "TeacherStudio",
+    mainPage: "Landing",
     Pages: PAGES,
     Layout: __Layout,
 };
