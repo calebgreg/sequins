@@ -719,7 +719,7 @@ export default function Landing() {
             <SequinsLogo size="sm" />
             <p style={{ fontSize: 12, color: C.textFainter }}>© 2026 Sequins. Built for dance.</p>
             <div style={{ display: 'flex', gap: 24 }}>
-              {[['home', 'Home'], ['product', 'Product'], ['company', 'Company'], [null, 'Privacy'], [null, 'Terms']].map(([id, label], i) => (
+              {[['product', 'Product'], ['pricing', 'Pricing'], ['company', 'Company'], [null, 'Privacy'], [null, 'Terms']].map(([id, label], i) => (
                 <a key={i} onClick={id ? () => showPage(id) : undefined} style={{ fontSize: 12, color: C.textFainter, textDecoration: 'none', cursor: id ? 'pointer' : 'default', transition: 'color 0.2s' }}
                   onMouseEnter={e => { if (id) e.target.style.color = C.roseDark; }}
                   onMouseLeave={e => { if (id) e.target.style.color = C.textFainter; }}>{label}</a>
