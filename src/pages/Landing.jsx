@@ -685,7 +685,7 @@ export default function Landing() {
                         <button onClick={() => showPage('access')} style={{ width: '100%', padding: '13px 0', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(196,160,160,0.25)', color: C.textFaint, transition: 'all 0.2s' }}
                           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.8)'; e.currentTarget.style.borderColor = 'rgba(196,160,160,0.4)'; }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(196,160,160,0.25)'; }}>
-                          Get Early Access →
+                          Book a Demo →
                         </button>
                       </div>
                     </Rv>
