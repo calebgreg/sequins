@@ -208,7 +208,7 @@ export default function Landing() {
             <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '140px 44px 80px', position: 'relative' }}>
 
               <div style={{ opacity: 0, animation: 'sqFadeUp 0.8s ease 0.1s forwards' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 999, marginBottom: 32, background: 'rgba(255,255,255,0.7)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,1), 0 2px 12px rgba(180,150,140,0.12)', border: '1px solid rgba(220,190,190,0.18)' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 999, marginBottom: 32 }}>
                   <Sparkles style={{ width: 12, height: 12, color: C.rose }} />
                   <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', ...seqLabelText }}>Dance Studio Operating System</span>
                 </div>
