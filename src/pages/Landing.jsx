@@ -85,8 +85,18 @@ const useTyper = (prompts) => {
 const Dv = () => <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(196,160,160,0.12), transparent)', margin: '0 44px' }} />;
 
 // ─── Label ───
+const SEQUINS_IMG = "url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')";
+const seqLabelText = {
+  color: 'transparent',
+  backgroundImage: SEQUINS_IMG,
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+};
+
 const SecLabel = ({ children }) => (
-  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(196,160,160,0.5)', marginBottom: 20 }}>{children}</div>
+  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 20, ...seqLabelText }}>{children}</div>
 );
 
 export default function Landing() {
