@@ -648,13 +648,13 @@ export default function Landing() {
                 {/* Toggle */}
                 <Rv delay={0.15}>
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '10px 20px', borderRadius: 999, background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(220,215,225,0.4)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9)' }}>
-                    <span style={{ fontSize: 13, fontWeight: annual ? 600 : 300, ...( annual ? seqText : { color: '#b0bad0' }) }}>annual</span>
-                    <div onClick={() => setAnnual(a => !a)} style={{ width: 44, height: 24, borderRadius: 999, background: annual ? 'rgba(220,210,230,0.5)' : 'rgba(200,210,220,0.4)', cursor: 'pointer', position: 'relative', transition: 'background 0.3s', border: '1px solid rgba(220,215,225,0.4)' }}>
-                      <div style={{ position: 'absolute', top: 3, left: annual ? 3 : 19, width: 16, height: 16, borderRadius: '50%', background: annual ? 'rgba(210,185,200,0.9)' : 'rgba(180,195,215,0.9)', transition: 'left 0.25s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} />
+                    <span style={{ fontSize: 13, fontWeight: annual ? 600 : 400, color: annual ? '#8a9ab0' : '#c0cad8' }}>annual</span>
+                    <div onClick={() => setAnnual(a => !a)} style={{ width: 44, height: 24, borderRadius: 999, background: 'rgba(210,215,225,0.5)', cursor: 'pointer', position: 'relative', border: '1px solid rgba(220,215,225,0.4)' }}>
+                      <div style={{ position: 'absolute', top: 3, left: annual ? 3 : 19, width: 16, height: 16, borderRadius: '50%', background: '#a0aec0', transition: 'left 0.25s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} />
                     </div>
-                    <span style={{ fontSize: 13, fontWeight: annual ? 300 : 600, ...(!annual ? seqText : { color: '#b0bad0' }) }}>monthly</span>
+                    <span style={{ fontSize: 13, fontWeight: annual ? 400 : 600, color: annual ? '#c0cad8' : '#8a9ab0' }}>monthly</span>
                     {annual && (
-                      <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, ...seqText, border: '1px solid rgba(220,215,225,0.5)', background: 'rgba(255,255,255,0.6)' }}>save ~20%</span>
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, color: '#8a9ab0', border: '1px solid rgba(220,215,225,0.5)', background: 'rgba(255,255,255,0.6)' }}>save ~20%</span>
                     )}
                   </div>
                 </Rv>
