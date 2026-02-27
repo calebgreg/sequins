@@ -445,13 +445,13 @@ export default function Landing() {
               </Rv>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {[
-                  ['Monday', [{ title: 'Ballet Beginner', time: '4:00 PM', room: 'Studio A', teacher: 'Ms. Sarah', students: 8, color: C.rose }]],
+                  ['Monday', [{ title: 'Ballet Beginner', time: '4:00 PM', room: 'Studio A', teacher: 'Ms. Chen', students: 8, color: C.rose }]],
                   ['Tuesday', [
-                    { title: 'Jazz Intermediate', time: '5:30 PM', room: 'Studio B', teacher: 'Ms. Rivera', students: 11, color: C.purple },
-                    { title: 'Hip Hop Advanced', time: '6:30 PM', room: 'Studio A', teacher: 'Mr. Davis', students: 9, color: C.blue },
+                    { title: 'Jazz Intermediate', time: '5:30 PM', room: 'Studio B', teacher: 'Ms. Okafor', students: 11, color: C.purple },
+                    { title: 'Hip Hop Advanced', time: '6:30 PM', room: 'Studio A', teacher: 'Mr. Reyes', students: 9, color: C.blue },
                   ]],
                   ['Wednesday', [
-                    { title: 'Ballet Advanced', time: '6:00 PM', room: 'Studio A', teacher: 'Ms. Sarah', students: 14, color: C.rose, conflict: true },
+                    { title: 'Ballet Advanced', time: '6:00 PM', room: 'Studio A', teacher: 'Ms. Chen', students: 14, color: C.rose, conflict: true },
                   ]],
                 ].map(([day, classes]) => (
                   <Rv key={day} delay={0.08}>
