@@ -285,7 +285,7 @@ export default function Landing() {
               </Rv>
               <Rv delay={0.1}>
                 <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56, maxWidth: 520 }}>
-                  Gene doesn't hand you reports. It watches your studio, spots problems, and handles them — drafting messages, flagging billing gaps, and nudging at-risk families before they disappear.
+                  Gene doesn't hand you reports. It watches your studio, spots problems, and handles them: drafting messages, flagging billing gaps, and nudging at-risk families before they disappear.
                 </p>
               </Rv>
               <Rv delay={0.15}>
