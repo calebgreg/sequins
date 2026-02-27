@@ -359,9 +359,9 @@ export default function Landing() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 {[
                   { time: 'Class starts', event: 'Teacher opens Ballet Advanced', meta: '14 students · Room B · 60 min', type: 'neutral' },
-                  { time: '2 min in', event: 'Sofia Kim marked as Trial — dossier surfaces automatically', meta: 'Interests: Ballet · Parent: sarah@kim.com · 2nd visit', type: 'gold' },
+                  { time: '2 min in', event: 'Zoe Patel marked as Trial — dossier surfaces automatically', meta: 'Interests: Ballet · Parent: priya@patel.com · 2nd visit', type: 'gold' },
                   { time: '5 min in', event: 'Attendance locked. 12 present, 1 absent, 1 late.', meta: 'Absence auto-flagged for makeup scheduling', type: 'sage' },
-                  { time: 'After class', event: 'Voice note: "Emma is ready to level up to pointe"', meta: 'Transcribed · Tagged as progress note · Saved to Emma\'s profile', type: 'purple' },
+                  { time: 'After class', event: 'Voice note: "Isla is ready to level up to pointe"', meta: 'Transcribed · Tagged as progress note · Saved to Isla\'s profile', type: 'purple' },
                   { time: 'Sub needed', event: 'Sub request sent. Gene suggests 3 qualified teachers.', meta: 'Matched by style, availability, and room familiarity', type: 'neutral' },
                 ].map(({ time, event, meta, type }, i) => (
                   <Rv key={i} delay={i * 0.08}>
