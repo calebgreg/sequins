@@ -487,7 +487,7 @@ export default function Landing() {
                 </h2>
               </Rv>
               <Rv delay={0.1}>
-                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>Every family gets a beautiful, branded space — schedule, invoices, student progress, and a direct line to the studio.</p>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>Every family gets a beautiful, branded space: schedule, invoices, student progress, and a direct line to the studio.</p>
               </Rv>
               <Rv delay={0.15}>
                 <div style={{ display: 'grid', gap: 10 }}>
