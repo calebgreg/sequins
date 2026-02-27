@@ -630,54 +630,33 @@ export default function Landing() {
             <Dv />
 
             <section style={{ ...secWide, paddingTop: 80, paddingBottom: 80 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
                 {[
-                  { tier: 'starting', students: '< 100', price: '$65', featured: false },
-                  { tier: 'growing', students: '101 – 500', price: '$125', featured: true },
-                  { tier: 'grown', students: '> 501', price: '$215', featured: false },
-                ].map(({ tier, students, price, featured }, i) => (
+                  { tier: 'starting', students: '< 100', price: '$65' },
+                  { tier: 'growing', students: '101 – 500', price: '$125' },
+                  { tier: 'grown', students: '> 501', price: '$215' },
+                ].map(({ tier, students, price }, i) => (
                   <Rv key={tier} delay={i * 0.08}>
                     <div style={{
-                      borderRadius: 28,
-                      padding: '44px 36px',
-                      background: featured
-                        ? 'linear-gradient(160deg, rgba(255,240,245,0.98) 0%, rgba(255,230,240,0.92) 100%)'
-                        : 'rgba(255,255,255,0.82)',
-                      boxShadow: featured
-                        ? '0 20px 60px -12px rgba(200,150,170,0.18), inset 0 1px 2px rgba(255,255,255,1)'
-                        : '0 4px 24px -4px rgba(180,160,180,0.08), inset 0 1px 1px rgba(255,255,255,0.9)',
-                      border: featured ? '1px solid rgba(230,190,210,0.5)' : '1px solid rgba(230,215,225,0.4)',
-                      transform: featured ? 'scale(1.04)' : 'scale(1)',
-                      position: 'relative',
+                      borderRadius: 24,
+                      padding: '40px 32px',
+                      background: 'rgba(255,255,255,0.75)',
+                      boxShadow: '0 4px 24px -4px rgba(196,160,160,0.1), inset 0 1px 1px rgba(255,255,255,0.9)',
+                      border: '1px solid rgba(230,210,215,0.35)',
                       backdropFilter: 'blur(12px)',
                     }}>
-                      {featured && (
-                        <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', padding: '4px 18px', borderRadius: 999, background: 'rgba(255,255,255,0.95)', border: '1px solid rgba(230,190,210,0.5)', boxShadow: '0 4px 16px rgba(200,150,170,0.15)', whiteSpace: 'nowrap' }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', ...etchedText }}>Most popular</span>
-                        </div>
-                      )}
-                      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(180,150,170,0.5)', marginBottom: 28 }}>{tier}</div>
-                      <div style={{ marginBottom: 28, padding: '18px 22px', borderRadius: 16, background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(230,215,225,0.4)' }}>
-                        <span style={{ fontSize: 38, fontWeight: 300, letterSpacing: -2, color: 'rgba(120,100,115,0.9)' }}>{students}</span>
-                        <span style={{ fontSize: 13, color: 'rgba(180,160,175,0.6)', marginLeft: 8, fontWeight: 300 }}>students</span>
+                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', color: C.textFainter, marginBottom: 28 }}>{tier}</div>
+                      <div style={{ marginBottom: 28, padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(230,210,215,0.25)' }}>
+                        <span style={{ fontSize: 36, fontWeight: 300, letterSpacing: -1, color: C.text }}>{students}</span>
+                        <span style={{ fontSize: 13, color: C.textFainter, marginLeft: 8, fontWeight: 300 }}>students</span>
                       </div>
-                      <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 3, padding: '11px 28px', borderRadius: 999, background: 'linear-gradient(135deg, rgba(180,140,160,0.85), rgba(160,120,145,0.9))', marginBottom: 36, boxShadow: '0 4px 16px rgba(160,120,145,0.25)' }}>
-                        <span style={{ fontSize: 22, fontWeight: 600, color: '#fff', letterSpacing: -0.5 }}>{price}</span>
-                        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', fontWeight: 300 }}>/ month</span>
+                      <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 3, padding: '10px 26px', borderRadius: 999, background: C.roseDark, marginBottom: 36 }}>
+                        <span style={{ fontSize: 20, fontWeight: 600, color: '#fff' }}>{price}</span>
+                        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 300 }}>/ month</span>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 36 }}>
-                        {['Full platform access', 'Unlimited staff accounts', 'Gene AI assistant', 'Family portal', 'Automated billing', 'Priority support'].map(feat => (
-                          <div key={feat} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(126,184,154,0.12)', border: '1px solid rgba(126,184,154,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(126,184,154,0.7)' }} />
-                            </div>
-                            <span style={{ fontSize: 13, color: 'rgba(140,120,135,0.75)', fontWeight: 300 }}>{feat}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <button onClick={() => showPage('access')} style={{ width: '100%', padding: '14px 0', borderRadius: 16, fontSize: 14, fontWeight: 600, cursor: 'pointer', background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(220,190,210,0.4)', color: 'rgba(150,120,140,0.8)', transition: 'all 0.2s', letterSpacing: 0.2 }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.95)'; e.currentTarget.style.transform = 'scale(1.02)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.7)'; e.currentTarget.style.transform = 'scale(1)'; }}>
+                      <button onClick={() => showPage('access')} style={{ width: '100%', padding: '13px 0', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(196,160,160,0.25)', color: C.textFaint, transition: 'all 0.2s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.8)'; e.currentTarget.style.borderColor = 'rgba(196,160,160,0.4)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(196,160,160,0.25)'; }}>
                         Get Early Access →
                       </button>
                     </div>
