@@ -92,6 +92,7 @@ export default function Landing() {
   const [scrolled, setScrolled] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const typerText = useTyper([
     'Who needs a check-in this week?',
