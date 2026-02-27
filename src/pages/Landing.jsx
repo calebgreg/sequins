@@ -354,7 +354,7 @@ export default function Landing() {
                 </h2>
               </Rv>
               <Rv delay={0.1}>
-                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>A dedicated mobile-first teacher experience. Everything needed to run class — nothing else.</p>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>A dedicated mobile-first teacher experience. Everything needed to run class, nothing else.</p>
               </Rv>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 {[
