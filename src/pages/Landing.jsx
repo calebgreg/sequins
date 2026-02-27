@@ -654,7 +654,7 @@ export default function Landing() {
                     </div>
                     <span style={{ fontSize: 13, fontWeight: annual ? 300 : 600, ...(!annual ? seqText : { color: '#b0bad0' }) }}>monthly</span>
                     {annual && (
-                      <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, ...seqText, border: '1px solid rgba(220,215,225,0.5)', background: 'rgba(255,255,255,0.6)' }}>save ~20%</span>
+                      <span style={{ fontSize: 11, fontWeight: 500, color: '#b0bad0' }}>save ~20%</span>
                     )}
                   </div>
                 </Rv>
