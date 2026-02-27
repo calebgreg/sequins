@@ -645,7 +645,7 @@ export default function Landing() {
                       border: '1px solid rgba(230,210,215,0.35)',
                       backdropFilter: 'blur(12px)',
                     }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', color: C.textFainter, marginBottom: 28 }}>{tier}</div>
+                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', color: '#b0bad0', marginBottom: 28 }}>{tier}</div>
                       <div style={{ marginBottom: 28, padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(220,215,225,0.3)' }}>
                         <span style={{ fontSize: 36, fontWeight: 300, letterSpacing: -1, color: '#8a9ab0' }}>{students}</span>
                         <span style={{ fontSize: 13, color: '#b0bad0', marginLeft: 8, fontWeight: 300 }}>students</span>
