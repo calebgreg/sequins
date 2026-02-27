@@ -544,7 +544,7 @@ export default function Landing() {
                 </h2>
               </Rv>
               <Rv delay={0.1}>
-                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 420, margin: '0 auto 48px' }}>Private beta now open for dance studios.</p>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 420, margin: '0 auto 48px' }}>For dance studios ready to leave the chaos behind.</p>
               </Rv>
               <Rv delay={0.15}><WaitlistInput id="product" /></Rv>
             </section>
