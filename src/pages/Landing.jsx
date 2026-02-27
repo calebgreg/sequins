@@ -596,7 +596,7 @@ export default function Landing() {
               <Rv delay={0.05}><h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 48 }}>How Sequins <em style={{ fontStyle: 'italic' }}>thinks.</em></h2></Rv>
               {[
                 ['Ambient, not demanding', 'No dashboard overload. Information surfaces through context. What you need to know, right when you need it.'],
-                ['Human in the loop', 'Gene plans, drafts, and flags. But you always make the call. Action with oversight, not automation without consent.'],
+                ['Human in the loop', 'Sequins plans, drafts, and flags. But you always make the call. Action with oversight, not automation without consent.'],
                 ['Built for the floor', 'The teacher experience comes first. If it doesn\'t work at 6pm on a Wednesday in a ballet studio, it doesn\'t ship.'],
                 ['One platform', 'Scheduling, billing, families, and growth share full context. Nothing falls through the cracks between disconnected tools.'],
               ].map(([title, desc], i) => (
