@@ -220,7 +220,7 @@ export default function Landing() {
               </h1>
 
               <p style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.35s forwards', fontSize: 18, fontWeight: 300, color: C.textFaint, maxWidth: 460, lineHeight: 1.75, marginBottom: 44 }}>
-                Sequins is the complete operating system for dance studios — from enrollment and scheduling to billing and AI-powered growth.
+                Sequins is the complete operating system for dance studios, from enrollment and scheduling to billing and AI-powered growth.
               </p>
 
               <div style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.5s forwards', display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 72 }}>
