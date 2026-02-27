@@ -718,15 +718,15 @@ export default function Landing() {
         {page === 'access' && (
           <div>
             <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '120px 44px' }}>
-              <Rv><SecLabel>Early access</SecLabel></Rv>
+              <Rv><SecLabel>Book a demo</SecLabel></Rv>
               <Rv delay={0.05}>
                 <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 20, maxWidth: 600 }}>
-                  Get <em style={{ fontStyle: 'italic', color: C.sage, backgroundImage: 'none', WebkitTextFillColor: C.sage }}>early access</em>
+                  See Sequins<br /><em style={{ fontStyle: 'italic', ...etchedText, opacity: 0.6 }}>in your studio.</em>
                 </h1>
               </Rv>
               <Rv delay={0.1}>
                 <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 400, margin: '0 auto 48px' }}>
-                  Leave your email and we'll reach out directly.
+                  Drop your email and we'll be in touch to schedule a walkthrough.
                 </p>
               </Rv>
               <Rv delay={0.15} style={{ maxWidth: 460, width: '90%' }}><WaitlistInput id="access" /></Rv>
