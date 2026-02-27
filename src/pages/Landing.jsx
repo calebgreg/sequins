@@ -613,15 +613,15 @@ export default function Landing() {
         {page === 'access' && (
           <div>
             <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '120px 44px' }}>
-              <Rv><SecLabel>Private beta</SecLabel></Rv>
+              <Rv><SecLabel>Early access</SecLabel></Rv>
               <Rv delay={0.05}>
                 <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 20, maxWidth: 600 }}>
-                  Request <em style={{ fontStyle: 'italic', color: C.sage, backgroundImage: 'none', WebkitTextFillColor: C.sage }}>early access</em>
+                  Get <em style={{ fontStyle: 'italic', color: C.sage, backgroundImage: 'none', WebkitTextFillColor: C.sage }}>early access</em>
                 </h1>
               </Rv>
               <Rv delay={0.1}>
                 <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 400, margin: '0 auto 48px' }}>
-                  Sequins is onboarding a small number of dance studios in our private beta. Leave your email and we'll reach out directly.
+                  Leave your email and we'll reach out directly.
                 </p>
               </Rv>
               <Rv delay={0.15} style={{ maxWidth: 460, width: '90%' }}><WaitlistInput id="access" /></Rv>
