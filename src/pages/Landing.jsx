@@ -526,7 +526,7 @@ export default function Landing() {
                 {[
                   { stage: 'Lead', name: 'Trial booking — Zoe Patel, 8yo, Ballet interest', meta: 'Came from Instagram · Parent: priya@patel.com', color: C.amber },
                   { stage: 'Trial', name: 'Zoe attended Ballet Beginner — trial dossier created', meta: '"Excellent natural turnout. Strong candidate for Intermediate." — Ms. Chen', color: C.rose },
-                  { stage: 'Gene', name: 'Re-enrollment nudge sent to Priya Patel — day 3 post-trial', meta: '"Zoe had a great class! Here\'s how to enroll for spring…"', color: C.sage, gene: true },
+                  { stage: 'AI nudge', name: 'Re-enrollment nudge sent to Priya Patel — day 3 post-trial', meta: '"Zoe had a great class! Here\'s how to enroll for spring…"', color: C.sage, gene: true },
                   { stage: 'Enrolled', name: 'Zoe enrolled in Ballet Advanced + Hip Hop', meta: 'Auto-pay set up · $215/month · Sibling discount applied', color: C.purple },
                   { stage: 'Referral', name: 'Priya Patel referred Dana Whitfield', meta: 'Referral credit applied automatically', color: C.blue },
                 ].map(({ stage, name, meta, color, gene }, i) => (
