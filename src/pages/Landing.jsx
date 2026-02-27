@@ -675,8 +675,8 @@ export default function Landing() {
                       }}>
                         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 28, ...seqText }}>{tier}</div>
                         <div style={{ marginBottom: 28, padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(220,215,225,0.3)' }}>
-                          <span style={{ fontSize: 36, fontWeight: 300, letterSpacing: -1, ...seqText }}>{students}</span>
-                          <span style={{ fontSize: 13, color: '#b0bad0', marginLeft: 8, fontWeight: 300 }}>students</span>
+                          <span style={{ fontSize: 28, fontWeight: 300, letterSpacing: -1, ...seqText }}>{students}</span>
+                          <div style={{ fontSize: 12, color: '#b0bad0', fontWeight: 300, marginTop: 4 }}>students</div>
                         </div>
                         <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 3, padding: '10px 26px', borderRadius: 999, background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(220,215,225,0.4)', marginBottom: 36 }}>
                           <span style={{ fontSize: 20, fontWeight: 600, ...seqText }}>{annual ? annualPrice : monthly}</span>
