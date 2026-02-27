@@ -611,6 +611,88 @@ export default function Landing() {
           </div>
         )}
 
+        {/* ════════════ PRICING ════════════ */}
+        {page === 'pricing' && (
+          <div>
+            <section style={{ ...sec, paddingTop: 180, textAlign: 'center' }}>
+              <Rv><SecLabel>Pricing</SecLabel></Rv>
+              <Rv delay={0.05}>
+                <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 16 }}>
+                  Simple pricing.<br /><em style={{ fontStyle: 'italic', ...etchedText, opacity: 0.6 }}>No surprises.</em>
+                </h1>
+              </Rv>
+              <Rv delay={0.1}>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 420, margin: '0 auto' }}>
+                  One plan per studio size. Everything included.
+                </p>
+              </Rv>
+            </section>
+            <Dv />
+
+            <section style={{ ...secWide, paddingTop: 80, paddingBottom: 80 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+                {[
+                  { tier: 'starting', students: '< 100', price: '$65', featured: false },
+                  { tier: 'growing', students: '101 – 500', price: '$125', featured: true },
+                  { tier: 'grown', students: '> 501', price: '$215', featured: false },
+                ].map(({ tier, students, price, featured }, i) => (
+                  <Rv key={tier} delay={i * 0.08}>
+                    <div style={{
+                      borderRadius: 24,
+                      padding: '40px 32px',
+                      background: featured ? 'linear-gradient(145deg, rgba(254,247,247,0.95), rgba(252,235,235,0.9))' : 'rgba(255,255,255,0.7)',
+                      boxShadow: featured
+                        ? '0 12px 40px -8px rgba(180,140,130,0.25), inset 0 1px 2px rgba(255,255,255,0.9)'
+                        : '0 4px 20px -4px rgba(180,140,130,0.12), inset 0 1px 1px rgba(255,255,255,0.8)',
+                      border: featured ? '1px solid rgba(220,190,190,0.4)' : '1px solid rgba(220,190,190,0.15)',
+                      transform: featured ? 'scale(1.03)' : 'scale(1)',
+                      position: 'relative',
+                    }}>
+                      {featured && (
+                        <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', padding: '4px 16px', borderRadius: 999, background: 'linear-gradient(145deg, rgba(254,247,247,0.95), rgba(252,231,231,0.9))', border: '1px solid rgba(220,190,190,0.4)', boxShadow: '0 4px 12px rgba(180,140,130,0.2)' }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', ...etchedText }}>Most popular</span>
+                        </div>
+                      )}
+                      <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: C.textFainter, marginBottom: 24 }}>{tier}</div>
+                      <div style={{ marginBottom: 24, padding: '16px 20px', borderRadius: 14, background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(220,190,190,0.12)' }}>
+                        <span style={{ fontSize: 36, fontWeight: 700, letterSpacing: -1, color: C.text }}>{students}</span>
+                        <span style={{ fontSize: 13, color: C.textFainter, marginLeft: 8 }}>students</span>
+                      </div>
+                      <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4, padding: '10px 24px', borderRadius: 999, background: C.roseDark, marginBottom: 32 }}>
+                        <span style={{ fontSize: 22, fontWeight: 700, color: '#fff' }}>{price}</span>
+                        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>/ month</span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
+                        {['Full platform access', 'Unlimited staff accounts', 'Gene AI assistant', 'Family portal', 'Automated billing', 'Priority support'].map(feat => (
+                          <div key={feat} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 16, height: 16, borderRadius: '50%', background: `${C.sage}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.sage }} />
+                            </div>
+                            <span style={{ fontSize: 13, color: C.textFaint }}>{feat}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={() => showPage('access')} style={{ width: '100%', padding: '13px 0', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: 'pointer', background: featured ? 'linear-gradient(145deg, rgba(254,247,247,0.95), rgba(252,231,231,0.9))' : 'rgba(255,255,255,0.6)', boxShadow: featured ? '0 6px 20px -4px rgba(180,150,140,0.3)' : 'none', border: '1px solid rgba(220,190,190,0.3)', transition: 'all 0.2s' }}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                        <span style={etchedText}>Get Early Access →</span>
+                      </button>
+                    </div>
+                  </Rv>
+                ))}
+              </div>
+            </section>
+            <Dv />
+            <section style={{ padding: '100px 44px', textAlign: 'center' }}>
+              <Rv>
+                <p style={{ fontSize: 14, color: C.textFainter, lineHeight: 1.75 }}>
+                  All plans include a free onboarding session. No credit card required to start.
+                </p>
+              </Rv>
+            </section>
+          </div>
+        )}
+
         {/* ════════════ ACCESS ════════════ */}
         {page === 'access' && (
           <div>
