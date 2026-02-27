@@ -306,7 +306,7 @@ export default function Landing() {
               </Rv>
               <Rv delay={0.1}>
                 <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 420, margin: '0 auto 48px' }}>
-                  Private beta for dance studios who are ready to run like a real business.
+                  For dance studios who are ready to run like a real business.
                 </p>
               </Rv>
               <Rv delay={0.15}><WaitlistInput id="home" /></Rv>
