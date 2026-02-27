@@ -520,7 +520,7 @@ export default function Landing() {
                 </h2>
               </Rv>
               <Rv delay={0.1}>
-                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>From the first inquiry to re-enrollment, Gene tracks every lead and nudges at every right moment.</p>
+                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, marginBottom: 56 }}>From the first inquiry to re-enrollment, Sequins tracks every lead and nudges at every right moment.</p>
               </Rv>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
                 {[
