@@ -580,9 +580,9 @@ export default function Landing() {
               <Rv>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                   {[
-                    'Dance studios are run by deeply passionate people — teachers turned owners who built something out of love, not business school.',
+                    'Dance studios are run by deeply passionate people. Teachers turned owners who built something out of love, not business school.',
                     'But the admin side is brutal. Billing chases, attendance spreadsheets, parent emails at midnight, scheduling puzzles. Every hour on that is an hour not in the studio.',
-                    'Sequins exists to give that time back. Not with more dashboards — with a platform that actually runs in the background and surfaces only what needs a human decision.',
+                    'Sequins exists to give that time back. Not with more dashboards. A platform that actually runs in the background and surfaces only what needs a human decision.',
                   ].map((p, i) => (
                     <Rv key={i} delay={i * 0.08}>
                       <p style={{ fontSize: 17, fontWeight: 300, color: i < 2 ? C.textFaint : 'rgba(126,184,154,0.75)', lineHeight: 1.8 }}>{p}</p>
