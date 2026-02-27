@@ -177,7 +177,6 @@ export default function Landing() {
         </div>
 
         {mobileMenuOpen && (
-
           <div style={{ display: 'flex', flexDirection: 'column', background: 'rgba(253,249,248,0.97)', backdropFilter: 'blur(24px)', borderTop: '1px solid rgba(200,170,160,0.1)' }}>
             {[['home', 'Home'], ['product', 'Product'], ['company', 'Company']].map(([id, label]) => (
               <a key={id} onClick={() => { showPage(id); setMobileMenuOpen(false); }} style={{ padding: '16px 24px', fontSize: 15, fontWeight: 400, color: page === id ? C.roseDark : C.textFaint, cursor: 'pointer', borderBottom: '1px solid rgba(200,170,160,0.08)', display: 'block' }}>{label}</a>
