@@ -95,6 +95,7 @@ export default function Landing() {
   const [emailInput, setEmailInput] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [annualBilling, setAnnualBilling] = useState(true);
 
   const typerText = useTyper([
     'Who needs a check-in this week?',
