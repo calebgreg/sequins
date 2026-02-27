@@ -525,11 +525,11 @@ export default function Landing() {
               </Rv>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
                 {[
-                  { stage: 'Lead', name: 'Trial booking — Sofia Kim, 8yo, Ballet interest', meta: 'Came from Instagram · Parent: sarah@kim.com', color: C.amber },
-                  { stage: 'Trial', name: 'Sofia attended Ballet Beginner — trial dossier created', meta: '"Excellent natural turnout. Strong candidate for Intermediate." — Ms. Sarah', color: C.rose },
-                  { stage: 'Gene', name: 'Re-enrollment nudge sent to Sarah Kim — day 3 post-trial', meta: '"Sofia had a great class! Here\'s how to enroll for spring…"', color: C.sage, gene: true },
-                  { stage: 'Enrolled', name: 'Sofia enrolled in Ballet Advanced + Hip Hop', meta: 'Auto-pay set up · $215/month · Sibling discount applied', color: C.purple },
-                  { stage: 'Referral', name: 'Sarah Kim referred Emma Thompson', meta: 'Referral credit applied automatically', color: C.blue },
+                  { stage: 'Lead', name: 'Trial booking — Zoe Patel, 8yo, Ballet interest', meta: 'Came from Instagram · Parent: priya@patel.com', color: C.amber },
+                  { stage: 'Trial', name: 'Zoe attended Ballet Beginner — trial dossier created', meta: '"Excellent natural turnout. Strong candidate for Intermediate." — Ms. Chen', color: C.rose },
+                  { stage: 'Gene', name: 'Re-enrollment nudge sent to Priya Patel — day 3 post-trial', meta: '"Zoe had a great class! Here\'s how to enroll for spring…"', color: C.sage, gene: true },
+                  { stage: 'Enrolled', name: 'Zoe enrolled in Ballet Advanced + Hip Hop', meta: 'Auto-pay set up · $215/month · Sibling discount applied', color: C.purple },
+                  { stage: 'Referral', name: 'Priya Patel referred Dana Whitfield', meta: 'Referral credit applied automatically', color: C.blue },
                 ].map(({ stage, name, meta, color, gene }, i) => (
                   <React.Fragment key={i}>
                     <Rv delay={i * 0.07} style={{ width: '100%' }}>
