@@ -614,7 +614,8 @@ export default function Landing() {
 
         {/* ════════════ PRICING ════════════ */}
         {page === 'pricing' && (() => {
-          const [annual, setAnnual] = React.useState(true);
+          const annual = annualBilling;
+          const setAnnual = setAnnualBilling;
           const SEQUINS_IMG = "url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')";
           const seqText = {
             color: 'transparent',
