@@ -296,7 +296,7 @@ export default function Landing() {
                     <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(196,160,160,0.55)' }}>Gene · Just now</span>
                   </div>
                   <p style={{ fontSize: 16, color: C.text, lineHeight: 1.75, maxWidth: 540, marginBottom: 18 }}>
-                    Lily Reyes has missed 3 consecutive Ballet classes and has an overdue invoice. Based on your studio's history, she's at high risk of not re-enrolling. I've drafted a personal check-in for your review.
+                    Chloe Navarro has missed 3 consecutive Ballet classes and has an overdue invoice. Based on your studio's history, she's at high risk of not re-enrolling. I've drafted a personal check-in for your review.
                   </p>
                   <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
                     <span style={{ fontSize: 14, fontWeight: 600, color: C.sage, cursor: 'pointer' }}>Review draft</span>
