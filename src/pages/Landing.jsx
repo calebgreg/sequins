@@ -612,68 +612,95 @@ export default function Landing() {
         )}
 
         {/* ════════════ PRICING ════════════ */}
-        {page === 'pricing' && (
-          <div>
-            <section style={{ ...sec, paddingTop: 180, textAlign: 'center' }}>
-              <Rv><SecLabel>Pricing</SecLabel></Rv>
-              <Rv delay={0.05}>
-                <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 16 }}>
-                  Simple pricing.<br /><em style={{ fontStyle: 'italic', ...etchedText, opacity: 0.6 }}>No surprises.</em>
-                </h1>
-              </Rv>
-              <Rv delay={0.1}>
-                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 420, margin: '0 auto' }}>
-                  One plan per studio size. Everything included.
-                </p>
-              </Rv>
-            </section>
-            <Dv />
+        {page === 'pricing' && (() => {
+          const [annual, setAnnual] = React.useState(true);
+          const SEQUINS_IMG = "url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')";
+          const seqText = {
+            color: 'transparent',
+            backgroundImage: SEQUINS_IMG,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          };
+          const plans = [
+            { tier: 'starting', students: '< 100', monthly: '$65', annual: '$50' },
+            { tier: 'growing', students: '101 – 500', monthly: '$125', annual: '$100' },
+            { tier: 'grown',   students: '> 501',    monthly: '$215', annual: '$185' },
+          ];
+          return (
+            <div>
+              <section style={{ ...sec, paddingTop: 180, textAlign: 'center' }}>
+                <Rv><SecLabel>Pricing</SecLabel></Rv>
+                <Rv delay={0.05}>
+                  <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 16 }}>
+                    Simple pricing.<br /><em style={{ fontStyle: 'italic', ...etchedText, opacity: 0.6 }}>No surprises.</em>
+                  </h1>
+                </Rv>
+                <Rv delay={0.1}>
+                  <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.75, maxWidth: 420, margin: '0 auto 40px' }}>
+                    One plan per studio size. Everything included.
+                  </p>
+                </Rv>
 
-            <section style={{ ...secWide, paddingTop: 80, paddingBottom: 80 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
-                {[
-                  { tier: 'starting', students: '< 100', price: '$65' },
-                  { tier: 'growing', students: '101 – 500', price: '$125' },
-                  { tier: 'grown', students: '> 501', price: '$215' },
-                ].map(({ tier, students, price }, i) => (
-                  <Rv key={tier} delay={i * 0.08}>
-                    <div style={{
-                      borderRadius: 24,
-                      padding: '40px 32px',
-                      background: 'rgba(255,255,255,0.75)',
-                      boxShadow: '0 4px 24px -4px rgba(196,160,160,0.1), inset 0 1px 1px rgba(255,255,255,0.9)',
-                      border: '1px solid rgba(230,210,215,0.35)',
-                      backdropFilter: 'blur(12px)',
-                    }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', color: '#b0bad0', marginBottom: 28 }}>{tier}</div>
-                      <div style={{ marginBottom: 28, padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(220,215,225,0.3)' }}>
-                        <span style={{ fontSize: 36, fontWeight: 300, letterSpacing: -1, color: '#8a9ab0' }}>{students}</span>
-                        <span style={{ fontSize: 13, color: '#b0bad0', marginLeft: 8, fontWeight: 300 }}>students</span>
-                      </div>
-                      <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 3, padding: '10px 26px', borderRadius: 999, background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(220,215,225,0.4)', marginBottom: 36 }}>
-                        <span style={{ fontSize: 20, fontWeight: 600, color: '#8a9ab0' }}>{price}</span>
-                        <span style={{ fontSize: 12, color: '#b0bad0', fontWeight: 300 }}>/ month</span>
-                      </div>
-                      <button onClick={() => showPage('access')} style={{ width: '100%', padding: '13px 0', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(196,160,160,0.25)', color: C.textFaint, transition: 'all 0.2s' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.8)'; e.currentTarget.style.borderColor = 'rgba(196,160,160,0.4)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(196,160,160,0.25)'; }}>
-                        Get Early Access →
-                      </button>
+                {/* Toggle */}
+                <Rv delay={0.15}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '10px 20px', borderRadius: 999, background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(220,215,225,0.4)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9)' }}>
+                    <span style={{ fontSize: 13, fontWeight: annual ? 600 : 300, ...( annual ? seqText : { color: '#b0bad0' }) }}>annual</span>
+                    <div onClick={() => setAnnual(a => !a)} style={{ width: 44, height: 24, borderRadius: 999, background: annual ? 'rgba(220,210,230,0.5)' : 'rgba(200,210,220,0.4)', cursor: 'pointer', position: 'relative', transition: 'background 0.3s', border: '1px solid rgba(220,215,225,0.4)' }}>
+                      <div style={{ position: 'absolute', top: 3, left: annual ? 3 : 19, width: 16, height: 16, borderRadius: '50%', background: annual ? 'rgba(210,185,200,0.9)' : 'rgba(180,195,215,0.9)', transition: 'left 0.25s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} />
                     </div>
-                  </Rv>
-                ))}
-              </div>
-            </section>
-            <Dv />
-            <section style={{ padding: '100px 44px', textAlign: 'center' }}>
-              <Rv>
-                <p style={{ fontSize: 13, color: 'rgba(180,160,175,0.5)', lineHeight: 1.75, fontWeight: 300 }}>
-                  All plans include a free onboarding session. No credit card required to start.
-                </p>
-              </Rv>
-            </section>
-          </div>
-        )}
+                    <span style={{ fontSize: 13, fontWeight: annual ? 300 : 600, ...(!annual ? seqText : { color: '#b0bad0' }) }}>monthly</span>
+                    {annual && (
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, ...seqText, border: '1px solid rgba(220,215,225,0.5)', background: 'rgba(255,255,255,0.6)' }}>save ~20%</span>
+                    )}
+                  </div>
+                </Rv>
+              </section>
+              <Dv />
+
+              <section style={{ ...secWide, paddingTop: 80, paddingBottom: 80 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+                  {plans.map(({ tier, students, monthly, annual: annualPrice }, i) => (
+                    <Rv key={tier} delay={i * 0.08}>
+                      <div style={{
+                        borderRadius: 24,
+                        padding: '40px 32px',
+                        background: 'rgba(255,255,255,0.75)',
+                        boxShadow: '0 4px 24px -4px rgba(196,160,160,0.1), inset 0 1px 1px rgba(255,255,255,0.9)',
+                        border: '1px solid rgba(230,210,215,0.35)',
+                        backdropFilter: 'blur(12px)',
+                      }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 28, ...seqText }}>{tier}</div>
+                        <div style={{ marginBottom: 28, padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.6)', border: '1px solid rgba(220,215,225,0.3)' }}>
+                          <span style={{ fontSize: 36, fontWeight: 300, letterSpacing: -1, ...seqText }}>{students}</span>
+                          <span style={{ fontSize: 13, color: '#b0bad0', marginLeft: 8, fontWeight: 300 }}>students</span>
+                        </div>
+                        <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 3, padding: '10px 26px', borderRadius: 999, background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(220,215,225,0.4)', marginBottom: 36 }}>
+                          <span style={{ fontSize: 20, fontWeight: 600, ...seqText }}>{annual ? annualPrice : monthly}</span>
+                          <span style={{ fontSize: 12, color: '#b0bad0', fontWeight: 300 }}>/ month</span>
+                        </div>
+                        <button onClick={() => showPage('access')} style={{ width: '100%', padding: '13px 0', borderRadius: 14, fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(196,160,160,0.25)', color: C.textFaint, transition: 'all 0.2s' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.8)'; e.currentTarget.style.borderColor = 'rgba(196,160,160,0.4)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(196,160,160,0.25)'; }}>
+                          Get Early Access →
+                        </button>
+                      </div>
+                    </Rv>
+                  ))}
+                </div>
+              </section>
+              <Dv />
+              <section style={{ padding: '100px 44px', textAlign: 'center' }}>
+                <Rv>
+                  <p style={{ fontSize: 13, color: 'rgba(180,160,175,0.5)', lineHeight: 1.75, fontWeight: 300 }}>
+                    All plans include a free onboarding session. No credit card required to start.
+                  </p>
+                </Rv>
+              </section>
+            </div>
+          );
+        })()}
 
         {/* ════════════ ACCESS ════════════ */}
         {page === 'access' && (
