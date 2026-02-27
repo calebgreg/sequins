@@ -492,9 +492,9 @@ export default function Landing() {
               <Rv delay={0.15}>
                 <div style={{ display: 'grid', gap: 10 }}>
                   {[
-                    { icon: Calendar, label: 'Sofia\'s schedule this week', value: 'Ballet Mon · Hip Hop Thu', color: C.rose },
+                    { icon: Calendar, label: 'Juno\'s schedule this week', value: 'Ballet Mon · Hip Hop Thu', color: C.rose },
                     { icon: DollarSign, label: 'March invoice', value: '$195 · Due March 1 · Auto-pay on', color: C.sage },
-                    { icon: TrendingUp, label: 'Sofia\'s progress', value: '"Ready to move to pointe" — Ms. Sarah', color: C.purple },
+                    { icon: TrendingUp, label: 'Juno\'s progress', value: '"Ready to move to pointe" — Ms. Chen', color: C.purple },
                     { icon: MessageSquare, label: 'Message from studio', value: 'Spring recital costumes due April 5th', color: C.amber },
                   ].map(({ icon: Icon, label, value, color }) => (
                     <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.7)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }}>
