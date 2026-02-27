@@ -300,7 +300,7 @@ export default function Landing() {
             {/* CTA */}
             <section style={{ padding: '160px 44px', textAlign: 'center' }}>
               <Rv>
-                <h2 style={{ fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 700, letterSpacing: -1, lineHeight: 1.3, ...etchedText, marginBottom: 20, padding: '4px 8px', margin: '0 -8px 20px' }}>
+                <h2 style={{ fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 700, letterSpacing: -1, lineHeight: 1.3, ...etchedText, marginBottom: 20, paddingBottom: 8 }}>
                   Stop managing.<br /><em style={{ fontStyle: 'italic' }}>Start growing.</em>
                 </h2>
               </Rv>
