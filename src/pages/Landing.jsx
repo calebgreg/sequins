@@ -418,7 +418,7 @@ export default function Landing() {
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '16px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.6)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }}>
                     <Sparkles style={{ width: 14, height: 14, color: C.rose, flexShrink: 0, marginTop: 2 }} />
                     <div>
-                      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: C.rose, marginBottom: 6 }}>Gene · Billing Alert</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: C.rose, marginBottom: 6 }}>Sequins · Billing Alert</div>
                       <p style={{ fontSize: 13, color: C.text, lineHeight: 1.65 }}>Marco Delgado has been overdue since January ($185). I've queued a gentle payment reminder alongside his family's check-in message. Want to send both together?</p>
                       <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: C.sage, cursor: 'pointer' }}>Send together</span>
