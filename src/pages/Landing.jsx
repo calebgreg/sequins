@@ -582,8 +582,8 @@ export default function Landing() {
                     { text: 'How something is done matters as much as what gets done. Every dancer knows that. Every studio is built on it. It\'s the difference between hitting the move and performing it. Between running a class and creating an experience. Between a recital that happened and one that families remember.', accent: false },
                     { text: 'That same sensibility belongs in every part of the studio. Enrollment. Tuition. Communication. Scheduling. Families experience all of it, and all of it says something. A clunky billing process and a beautiful recital don\'t live in separate worlds — they\'re the same studio.', accent: false },
                     { text: 'Sequins is built for that reality. Billing that doesn\'t make things weird with families. Communication that doesn\'t disappear between September and recital week. Scheduling that actually works when things get busy.', accent: false },
-                    { text: 'Doing it isn\'t doing it. Doing it right is.', accent: true },
-                    { text: 'It\'s showtime. All the time.', accent: true },
+                    { text: 'Doing it isn\'t doing it. Doing it right is.', accent: true, seq: false },
+                    { text: 'It\'s showtime. All the time.', accent: true, seq: true },
                   ].map(({ text, accent }, i) => (
                     <Rv key={i} delay={i * 0.08}>
                       <p style={{ fontSize: accent ? 19 : 17, fontWeight: accent ? 500 : 300, lineHeight: 1.8, fontStyle: accent ? 'italic' : 'normal', color: accent ? C.text : C.textFaint }}>{text}</p>
