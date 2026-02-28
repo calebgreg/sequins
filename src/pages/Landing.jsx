@@ -264,9 +264,20 @@ export default function Landing() {
                   <Rv key={i} delay={i * 0.07}>
                     <div style={{ paddingLeft: 22, borderLeft: '2px solid rgba(196,160,160,0.15)' }}>
                       <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7 }}>
-                        <span style={{ position: 'relative', display: 'inline', color: C.textFaint }}>
+                        <span style={{ display: 'inline-block', position: 'relative', color: C.textFaint }}>
                           {problem}
-                          <span style={{ position: 'absolute', left: 0, right: 0, top: '52%', height: 2, transform: 'translateY(-50%)', background: 'linear-gradient(90deg, #d4a574, #c4a0a0, #a48bc4, #8cb4c8, #7eb89a)', borderRadius: 2, pointerEvents: 'none' }} />
+                          <svg style={{ position: 'absolute', left: 0, top: '50%', width: '100%', height: 4, overflow: 'visible', pointerEvents: 'none' }} preserveAspectRatio="none">
+                            <defs>
+                              <linearGradient id="sqStrike" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#d4a574" />
+                                <stop offset="25%" stopColor="#c4a0a0" />
+                                <stop offset="50%" stopColor="#a48bc4" />
+                                <stop offset="75%" stopColor="#8cb4c8" />
+                                <stop offset="100%" stopColor="#7eb89a" />
+                              </linearGradient>
+                            </defs>
+                            <line x1="0" y1="1" x2="100%" y2="1" stroke="url(#sqStrike)" strokeWidth="2" />
+                          </svg>
                         </span>{' '}
                         <span style={{ color: C.text, fontWeight: 500 }}>{answer}</span>
                       </p>
