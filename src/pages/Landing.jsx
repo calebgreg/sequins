@@ -584,7 +584,7 @@ export default function Landing() {
                     { text: 'Sequins is built for that reality. Billing that doesn\'t make things weird with families. Communication that doesn\'t disappear between September and recital week. Scheduling that actually works when things get busy.', accent: false },
                     { text: 'Doing it isn\'t doing it. Doing it right is.', accent: true, seq: false },
                     { text: 'It\'s showtime. All the time.', accent: true, seq: true },
-                  ].map(({ text, accent }, i) => (
+                  ].map(({ text, accent, seq }, i) => (
                     <Rv key={i} delay={i * 0.08}>
                       <p style={{ fontSize: accent ? 19 : 17, fontWeight: accent ? 500 : 300, lineHeight: 1.8, fontStyle: accent ? 'italic' : 'normal', ...(seq ? seqLabelText : { color: accent ? C.text : C.textFaint }) }}>{text}</p>
                     </Rv>
