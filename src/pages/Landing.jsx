@@ -586,7 +586,7 @@ export default function Landing() {
                     { text: 'It\'s showtime. All the time.', accent: true },
                   ].map(({ text, accent }, i) => (
                     <Rv key={i} delay={i * 0.08}>
-                      <p style={{ fontSize: accent ? 19 : 17, fontWeight: accent ? 500 : 300, color: accent ? 'rgba(126,184,154,0.85)' : C.textFaint, lineHeight: 1.8, fontStyle: accent ? 'italic' : 'normal' }}>{text}</p>
+                      <p style={{ fontSize: accent ? 19 : 17, fontWeight: accent ? 500 : 300, lineHeight: 1.8, fontStyle: accent ? 'italic' : 'normal', ...(accent ? seqLabelText : { color: C.textFaint }) }}>{text}</p>
                     </Rv>
                   ))}
                 </div>
