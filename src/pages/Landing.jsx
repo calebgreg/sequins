@@ -257,7 +257,7 @@ export default function Landing() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
                 {[
                   ['Billing is a nightmare of missed payments and manual invoices.', 'Sequins automates it.'],
-                  ['Teachers waste class time on attendance and admin.', 'Sequins puts everything on the studio floor.'],
+                  ['Teachers waste class time on attendance and admin.', 'Sequins handles the admin so teachers can teach.'],
                   ['You lose students before you know they\'re at risk.', 'Sequins flags them before they drop.'],
                   ['Families are left in the dark on schedules and progress.', 'Sequins gives them their own room.'],
                 ].map(([problem, answer], i) => (
