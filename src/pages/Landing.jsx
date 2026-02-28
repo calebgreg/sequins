@@ -579,12 +579,14 @@ export default function Landing() {
               <Rv>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                   {[
-                    'Dance studios are run by deeply passionate people. Teachers turned owners who built something out of love, not business school.',
-                    'But the admin side is brutal. Billing chases, attendance spreadsheets, parent emails at midnight, scheduling puzzles. Every hour on that is an hour not in the studio.',
-                    'Sequins exists to give that time back. Not with more dashboards. A platform that actually runs in the background and surfaces only what needs a human decision.',
-                  ].map((p, i) => (
+                    { text: 'How something is done matters as much as what gets done. Every dancer knows that. Every studio is built on it. It\'s the difference between hitting the move and performing it. Between running a class and creating an experience. Between a recital that happened and one that families remember.', accent: false },
+                    { text: 'That same sensibility belongs in every part of the studio. Enrollment. Tuition. Communication. Scheduling. Families experience all of it, and all of it says something. A clunky billing process and a beautiful recital don\'t live in separate worlds — they\'re the same studio.', accent: false },
+                    { text: 'Sequins is built for that reality. Billing that doesn\'t make things weird with families. Communication that doesn\'t disappear between September and recital week. Scheduling that actually works when things get busy.', accent: false },
+                    { text: 'Doing it isn\'t doing it. Doing it right is.', accent: true },
+                    { text: 'It\'s showtime. All the time.', accent: true },
+                  ].map(({ text, accent }, i) => (
                     <Rv key={i} delay={i * 0.08}>
-                      <p style={{ fontSize: 17, fontWeight: 300, color: i < 2 ? C.textFaint : 'rgba(126,184,154,0.75)', lineHeight: 1.8 }}>{p}</p>
+                      <p style={{ fontSize: accent ? 19 : 17, fontWeight: accent ? 500 : 300, color: accent ? 'rgba(126,184,154,0.85)' : C.textFaint, lineHeight: 1.8, fontStyle: accent ? 'italic' : 'normal' }}>{text}</p>
                     </Rv>
                   ))}
                 </div>
