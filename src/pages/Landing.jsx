@@ -264,21 +264,7 @@ export default function Landing() {
                   <Rv key={i} delay={i * 0.07}>
                     <div style={{ paddingLeft: 22, borderLeft: '2px solid rgba(196,160,160,0.15)' }}>
                       <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7 }}>
-                        <span style={{ display: 'inline-block', position: 'relative', color: C.textFaint }}>
-                          {problem}
-                          <svg style={{ position: 'absolute', left: 0, top: '50%', width: '100%', height: 4, overflow: 'visible', pointerEvents: 'none' }} preserveAspectRatio="none">
-                            <defs>
-                              <linearGradient id="sqStrike" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#d4a574" />
-                                <stop offset="25%" stopColor="#c4a0a0" />
-                                <stop offset="50%" stopColor="#a48bc4" />
-                                <stop offset="75%" stopColor="#8cb4c8" />
-                                <stop offset="100%" stopColor="#7eb89a" />
-                              </linearGradient>
-                            </defs>
-                            <line x1="0" y1="1" x2="100%" y2="1" stroke="url(#sqStrike)" strokeWidth="2" />
-                          </svg>
-                        </span>{' '}
+                        <span style={{ textDecoration: 'line-through', textDecorationColor: '#a48bc4', textDecorationThickness: 2, color: C.textFaint }}>{problem}</span>{' '}
                         <span style={{ color: C.text, fontWeight: 500 }}>{answer}</span>
                       </p>
                     </div>
