@@ -264,7 +264,7 @@ export default function Landing() {
                   <Rv key={i} delay={i * 0.07}>
                     <div style={{ paddingLeft: 22, borderLeft: '2px solid rgba(196,160,160,0.15)' }}>
                       <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7 }}>
-                        <span style={{ textDecoration: 'line-through', textDecorationColor: '#a48bc4', textDecorationThickness: 2, color: 'rgba(180,150,140,0.5)' }}>{problem}</span>{' '}
+                        <span style={{ textDecoration: 'line-through', textDecorationColor: '#a48bc4', textDecorationThickness: 2, color: C.textFaint }}>{problem}</span>{' '}
                         <span style={{ color: C.text, fontWeight: 500 }}>{answer}</span>
                       </p>
                     </div>
