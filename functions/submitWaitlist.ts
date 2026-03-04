@@ -18,8 +18,8 @@ Deno.serve(async (req) => {
       body: `A new person joined the waitlist!\n\nEmail: ${email}\nSource: ${source || 'unknown'}\n\nTimestamp: ${new Date().toISOString()}`
     });
 
-    return Response.json({ success: true });
+    return Response.json({ success: true }, { status: 200 });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ success: false, error: error.message }, { status: 500 });
   }
 });
