@@ -132,8 +132,6 @@ const SecLabel = ({ children }) => (
 export default function Landing() {
   const [page, setPage] = useState('home');
   const [scrolled, setScrolled] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [submitted, setSubmitted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [annualBilling, setAnnualBilling] = useState(true);
 
