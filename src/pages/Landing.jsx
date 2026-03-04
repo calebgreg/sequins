@@ -62,19 +62,26 @@ const WaitlistInput = ({ id }) => {
   const [emailInput, setEmailInput] = React.useState('');
   const [submitted, setSubmitted] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!emailInput) return;
     
     setLoading(true);
+    setError(false);
     try {
-      await base44.functions.invoke('submitWaitlist', { email: emailInput, source: id });
+      const res = await base44.functions.invoke('submitWaitlist', { email: emailInput, source: id });
+      if (res.data.success) {
+        setSubmitted(true);
+      } else {
+        setError(true);
+      }
     } catch (error) {
       console.error('Error submitting waitlist:', error);
+      setError(true);
     } finally {
       setLoading(false);
-      setSubmitted(true);
     }
   };
 
@@ -83,10 +90,11 @@ const WaitlistInput = ({ id }) => {
       {!submitted ? (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', maxWidth: 420, margin: '0 auto' }}>
           <input type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="your@studio.com" required
-            style={{ flex: '1 1 200px', padding: '13px 18px', borderRadius: 14, fontSize: 14, border: '1px solid rgba(220,190,190,0.3)', background: 'rgba(255,255,255,0.7)', color: C.text, outline: 'none', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }} />
+            style={{ flex: '1 1 200px', padding: '13px 18px', borderRadius: 14, fontSize: 14, border: error ? '1px solid #d9534f' : '1px solid rgba(220,190,190,0.3)', background: 'rgba(255,255,255,0.7)', color: C.text, outline: 'none', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.8)' }} />
           <button type="submit" disabled={loading} style={{ flexShrink: 0, padding: '13px 28px', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', background: 'linear-gradient(145deg, rgba(254,247,247,0.95), rgba(252,231,231,0.9))', boxShadow: '0 6px 20px -4px rgba(180,150,140,0.3)', border: '1px solid rgba(220,190,190,0.4)', transition: 'all 0.2s', opacity: loading ? 0.6 : 1 }}>
             <span style={etchedText}>{loading ? 'Submitting...' : 'Get Access →'}</span>
           </button>
+          {error && <span style={{ fontSize: 12, color: '#d9534f', width: '100%', textAlign: 'center' }}>Something went wrong. Please try again.</span>}
         </form>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 16, borderRadius: 16, maxWidth: 360, margin: '0 auto', background: 'rgba(126,184,154,0.12)' }}>
