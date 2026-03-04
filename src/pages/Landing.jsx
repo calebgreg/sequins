@@ -70,11 +70,11 @@ const WaitlistInput = ({ id }) => {
     setLoading(true);
     try {
       await base44.functions.invoke('submitWaitlist', { email: emailInput, source: id });
-      setSubmitted(true);
     } catch (error) {
       console.error('Error submitting waitlist:', error);
     } finally {
       setLoading(false);
+      setSubmitted(true);
     }
   };
 
