@@ -11,12 +11,12 @@ Deno.serve(async (req) => {
       source
     });
 
-    // Send notification email
-    await base44.integrations.Core.SendEmail({
+    // Send notification email (non-blocking - don't fail if email fails)
+    base44.integrations.Core.SendEmail({
       to: Deno.env.get('WAITLIST_ADMIN_EMAIL'),
       subject: `New waitlist signup: ${email}`,
       body: `A new person joined the waitlist!\n\nEmail: ${email}\nSource: ${source || 'unknown'}\n\nTimestamp: ${new Date().toISOString()}`
-    });
+    }).catch(err => console.error('Email notification failed:', err));
 
     return Response.json({ success: true }, { status: 200 });
   } catch (error) {
