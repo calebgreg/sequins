@@ -12,9 +12,9 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'Name and email required' }, { status: 400 });
     }
 
-    // Save to database
+    // Save to database using service role (no auth required)
     try {
-      await base44.asServiceRole.entities.Lead.create({
+      const leadId = await base44.asServiceRole.entities.Lead.create({
         name,
         phone: phone || '',
         email,
@@ -73,7 +73,7 @@ Submitted: ${new Date().toLocaleString()}
       }
     }
 
-    return Response.json({ success: true, data: { name: formData.name } }, { status: 200 });
+    return Response.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return Response.json({ success: false, error: 'Server error' }, { status: 500 });
