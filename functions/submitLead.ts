@@ -73,7 +73,7 @@ Submitted: ${new Date().toLocaleString()}
       }
     }
 
-    return Response.json({ success: true }, { status: 200 });
+    return Response.json({ success: true, data: { name: formData.name } }, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return Response.json({ success: false, error: 'Server error' }, { status: 500 });
