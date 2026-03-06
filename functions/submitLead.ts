@@ -1,10 +1,10 @@
-import { createServiceClient } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createServiceClient();
+    const base44 = createClientFromRequest(req);
     const { name, phone, email, studentCount, expectations, preferPhone, preferEmail, subscribeNewsletter } = await req.json();
 
     // Validate required fields
@@ -12,9 +12,9 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'Name and email required' }, { status: 400 });
     }
 
-    // Save to database
+    // Save to database using service role (bypasses auth)
     try {
-      await base44.entities.Lead.create({
+      await base44.asServiceRole.entities.Lead.create({
         name,
         phone: phone || '',
         email,
