@@ -288,7 +288,7 @@ export default function Landing() {
               <Rv delay={0.05}>
                 <h2 style={{ fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 48 }}>
                   Studios run on passion.<br />
-                  <span style={{ ...etchedTextWithSequins, opacity: 0.5 }}>Not spreadsheets.</span>
+                  <span style={{ ...etchedTextWithSequins, opacity: 0.8 }}>Not spreadsheets.</span>
                 </h2>
               </Rv>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -317,7 +317,7 @@ export default function Landing() {
               <Rv><SecLabel>Built-in intelligence</SecLabel></Rv>
               <Rv delay={0.05}>
                 <h2 style={{ fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 20 }}>
-                  Your studio's<br /><em style={{ fontStyle: 'italic', ...etchedTextWithSequins }}>AI that acts.</em>
+                  Your studio's<br /><em style={{ fontStyle: 'italic', ...etchedTextWithSequins, opacity: 0.8 }}>AI that acts.</em>
                 </h2>
               </Rv>
               <Rv delay={0.1}>
