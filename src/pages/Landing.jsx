@@ -44,10 +44,10 @@ const etchedTextWithSequins = {
   backgroundImage: SEQUINS_IMG,
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
-  backgroundSize: '350%',
+  backgroundSize: '100%',
   backgroundPosition: 'center',
   textShadow: 'inset -2px -2px 4px rgba(0,0,0,0.4), inset 1px 1px 2px rgba(255,255,255,0.6)',
-  filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.15)) saturate(1.8)',
+  filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.15))',
   paddingBottom: '0.15em',
 };
 
@@ -155,9 +155,8 @@ const seqLabelText = {
   backgroundImage: SEQUINS_IMG,
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
-  backgroundSize: '350%',
+  backgroundSize: '100%',
   backgroundPosition: 'center',
-  filter: 'saturate(1.3)',
 };
 
 const SecLabel = ({ children }) => (
