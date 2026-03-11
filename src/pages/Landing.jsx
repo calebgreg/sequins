@@ -253,7 +253,7 @@ export default function Landing() {
 
               <h1 style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.2s forwards', fontSize: 'clamp(52px,8vw,100px)', fontWeight: 700, letterSpacing: -3, lineHeight: 0.95, ...etchedTextWithSequins, marginBottom: 24, maxWidth: 800 }}>
                 Run your studio<br />
-                <span style={{ ...etchedTextWithSequins, opacity: 0.5 }}>without the chaos.</span>
+                <span style={{ ...etchedTextWithSequins, opacity: 0.8 }}>without the chaos.</span>
               </h1>
 
               <p style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.35s forwards', fontSize: 18, fontWeight: 300, color: C.textFaint, maxWidth: 460, lineHeight: 1.75, marginBottom: 44 }}>
@@ -589,7 +589,7 @@ export default function Landing() {
             <section style={{ padding: '160px 44px', textAlign: 'center' }}>
               <Rv>
                 <h2 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 20 }}>
-                  Ready to see it<br /><em style={{ fontStyle: 'italic' }}>in your studio?</em>
+                  Ready to see it<br /><em style={{ fontStyle: 'italic', opacity: 0.8 }}>in your studio?</em>
                 </h2>
               </Rv>
               <Rv delay={0.1}>
