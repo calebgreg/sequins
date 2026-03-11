@@ -155,8 +155,9 @@ const seqLabelText = {
   backgroundImage: SEQUINS_IMG,
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
-  backgroundSize: 'cover',
+  backgroundSize: '350%',
   backgroundPosition: 'center',
+  filter: 'saturate(1.3)',
 };
 
 const SecLabel = ({ children }) => (
