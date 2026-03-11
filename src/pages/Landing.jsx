@@ -44,7 +44,7 @@ const etchedTextWithSequins = {
   backgroundImage: SEQUINS_IMG,
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
-  backgroundSize: 'cover',
+  backgroundSize: '200%',
   backgroundPosition: 'center',
   textShadow: '0 2px 3px rgba(255,255,255,0.7)',
   filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
