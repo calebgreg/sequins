@@ -284,9 +284,9 @@ export default function Landing() {
             <section style={sec}>
               <Rv><SecLabel>The problem</SecLabel></Rv>
               <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 48 }}>
+                <h2 style={{ fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 48 }}>
                   Studios run on passion.<br />
-                  <span style={{ ...etchedText, opacity: 0.5 }}>Not spreadsheets.</span>
+                  <span style={{ ...etchedTextWithSequins, opacity: 0.5 }}>Not spreadsheets.</span>
                 </h2>
               </Rv>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -314,8 +314,8 @@ export default function Landing() {
             <section style={sec}>
               <Rv><SecLabel>Built-in intelligence</SecLabel></Rv>
               <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 20 }}>
-                  Your studio's<br /><em style={{ fontStyle: 'italic', ...etchedText }}>AI that acts.</em>
+                <h2 style={{ fontSize: 'clamp(32px,4.5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 20 }}>
+                  Your studio's<br /><em style={{ fontStyle: 'italic', ...etchedTextWithSequins }}>AI that acts.</em>
                 </h2>
               </Rv>
               <Rv delay={0.1}>
@@ -347,7 +347,7 @@ export default function Landing() {
             {/* CTA */}
             <section style={{ padding: '160px 44px', textAlign: 'center' }}>
               <Rv>
-                <h2 style={{ fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 700, letterSpacing: -1, lineHeight: 1.3, ...etchedText, marginBottom: 20, paddingBottom: 8 }}>
+                <h2 style={{ fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 700, letterSpacing: -1, lineHeight: 1.3, ...etchedTextWithSequins, marginBottom: 20, paddingBottom: 8 }}>
                   Stop managing.<br /><em style={{ fontStyle: 'italic' }}>Start growing.</em>
                 </h2>
               </Rv>
@@ -367,8 +367,8 @@ export default function Landing() {
             <section style={{ ...sec, paddingTop: 180 }}>
               <Rv><SecLabel>The platform</SecLabel></Rv>
               <Rv delay={0.05}>
-                <h1 style={{ fontSize: 'clamp(40px,6vw,72px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 20 }}>
-                  One brain.<br /><em style={{ fontStyle: 'italic', ...etchedText, opacity: 0.6 }}>Every workflow.</em>
+                <h1 style={{ fontSize: 'clamp(40px,6vw,72px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedTextWithSequins, marginBottom: 20 }}>
+                  One brain.<br /><em style={{ fontStyle: 'italic', ...etchedTextWithSequins, opacity: 0.6 }}>Every workflow.</em>
                 </h1>
               </Rv>
               <Rv delay={0.1}>
@@ -383,7 +383,7 @@ export default function Landing() {
             <section style={sec}>
               <Rv><SecLabel>Teacher Studio</SecLabel></Rv>
               <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
+                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 16 }}>
                   The studio floor, in your pocket.
                 </h2>
               </Rv>
@@ -416,7 +416,7 @@ export default function Landing() {
             <section style={sec}>
               <Rv><SecLabel>Automated Billing</SecLabel></Rv>
               <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
+                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 16 }}>
                   Billing that runs itself.
                 </h2>
               </Rv>
@@ -470,7 +470,7 @@ export default function Landing() {
             <section style={sec}>
               <Rv><SecLabel>Smart Scheduling</SecLabel></Rv>
               <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
+                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 16 }}>
                   A schedule that thinks ahead.
                 </h2>
               </Rv>
@@ -516,7 +516,7 @@ export default function Landing() {
             <section style={sec}>
               <Rv><SecLabel>Family Portal</SecLabel></Rv>
               <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
+                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 16 }}>
                   A room of their own.
                 </h2>
               </Rv>
@@ -550,7 +550,7 @@ export default function Landing() {
             <section style={sec}>
               <Rv><SecLabel>Growth Engine</SecLabel></Rv>
               <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 16 }}>
+                <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 16 }}>
                   Sequins grows with you.
                 </h2>
               </Rv>
@@ -586,7 +586,7 @@ export default function Landing() {
 
             <section style={{ padding: '160px 44px', textAlign: 'center' }}>
               <Rv>
-                <h2 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 20 }}>
+                <h2 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 20 }}>
                   Ready to see it<br /><em style={{ fontStyle: 'italic' }}>in your studio?</em>
                 </h2>
               </Rv>
@@ -604,8 +604,8 @@ export default function Landing() {
             <section style={{ ...sec, paddingTop: 180 }}>
               <Rv><SecLabel>Our story</SecLabel></Rv>
               <Rv delay={0.05}>
-                <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 40 }}>
-                  Built by people who<br /><em style={{ fontStyle: 'italic', ...etchedText, opacity: 0.7 }}>love the craft.</em>
+                <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedTextWithSequins, marginBottom: 40 }}>
+                  Built by people who<br /><em style={{ fontStyle: 'italic', ...etchedTextWithSequins, opacity: 0.7 }}>love the craft.</em>
                 </h1>
               </Rv>
             </section>
@@ -630,7 +630,7 @@ export default function Landing() {
             <Dv />
             <section style={sec}>
               <Rv><SecLabel>Principles</SecLabel></Rv>
-              <Rv delay={0.05}><h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 48 }}>How Sequins <em style={{ fontStyle: 'italic' }}>thinks.</em></h2></Rv>
+              <Rv delay={0.05}><h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 48 }}>How Sequins <em style={{ fontStyle: 'italic' }}>thinks.</em></h2></Rv>
               {[
                 ['Ambient, not demanding', 'No dashboard overload. Information surfaces through context. What you need to know, right when you need it.'],
                 ['Human in the loop', 'Sequins plans, drafts, and flags. But you always make the call. Action with oversight, not automation without consent.'],
@@ -648,7 +648,7 @@ export default function Landing() {
             <Dv />
             <section style={{ padding: '160px 44px', textAlign: 'center' }}>
               <Rv>
-                <h2 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedText, marginBottom: 20 }}>
+                <h2 style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 20 }}>
                   Want to build the future of<br /><em style={{ fontStyle: 'italic' }}>dance education?</em>
                 </h2>
               </Rv>
@@ -681,8 +681,8 @@ export default function Landing() {
               <section style={{ ...sec, paddingTop: 180, textAlign: 'center' }}>
                 <Rv><SecLabel>Pricing</SecLabel></Rv>
                 <Rv delay={0.05}>
-                  <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedText, marginBottom: 16 }}>
-                    Simple pricing.<br /><em style={{ fontStyle: 'italic', ...etchedText, opacity: 0.6 }}>No surprises.</em>
+                  <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedTextWithSequins, marginBottom: 16 }}>
+                    Simple pricing.<br /><em style={{ fontStyle: 'italic', ...etchedTextWithSequins, opacity: 0.6 }}>No surprises.</em>
                   </h1>
                 </Rv>
                 <Rv delay={0.1}>
