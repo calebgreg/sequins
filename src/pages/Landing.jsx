@@ -25,6 +25,9 @@ const C = {
   blue: '#8cb4c8',
 };
 
+// ─── Label ───
+const SEQUINS_IMG = "url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')";
+
 const etchedText = {
   color: 'transparent',
   backgroundImage: `linear-gradient(180deg, ${C.rose} 0%, ${C.roseDark} 100%)`,
@@ -145,8 +148,6 @@ const useTyper = (prompts) => {
 // ─── Shared divider ───
 const Dv = () => <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(196,160,160,0.12), transparent)', margin: '0 44px' }} />;
 
-// ─── Label ───
-const SEQUINS_IMG = "url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')";
 const seqLabelText = {
   color: 'transparent',
   backgroundImage: SEQUINS_IMG,
