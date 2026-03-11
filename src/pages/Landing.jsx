@@ -36,6 +36,16 @@ const etchedText = {
   paddingBottom: '0.15em',
 };
 
+const etchedTextWithSequins = {
+  color: 'transparent',
+  backgroundImage: SEQUINS_IMG,
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  textShadow: '0 2px 3px rgba(255,255,255,0.7)',
+  filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
+  paddingBottom: '0.15em',
+};
+
 // ─── Scroll reveal ───
 const useReveal = () => {
   const ref = useRef(null);
@@ -238,9 +248,9 @@ export default function Landing() {
                 </div>
               </div>
 
-              <h1 style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.2s forwards', fontSize: 'clamp(52px,8vw,100px)', fontWeight: 700, letterSpacing: -3, lineHeight: 0.95, ...etchedText, marginBottom: 24, maxWidth: 800 }}>
+              <h1 style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.2s forwards', fontSize: 'clamp(52px,8vw,100px)', fontWeight: 700, letterSpacing: -3, lineHeight: 0.95, ...etchedTextWithSequins, marginBottom: 24, maxWidth: 800 }}>
                 Run your studio<br />
-                <span style={{ ...etchedText, opacity: 0.5 }}>without the chaos.</span>
+                <span style={{ ...etchedTextWithSequins, opacity: 0.5 }}>without the chaos.</span>
               </h1>
 
               <p style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.35s forwards', fontSize: 18, fontWeight: 300, color: C.textFaint, maxWidth: 460, lineHeight: 1.75, marginBottom: 44 }}>
