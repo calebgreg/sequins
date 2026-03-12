@@ -607,7 +607,7 @@ export default function Landing() {
               <Rv><SecLabel>Our story</SecLabel></Rv>
               <Rv delay={0.05}>
                 <h1 style={{ fontSize: 'clamp(40px,6vw,68px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedTextWithSequins, marginBottom: 40 }}>
-                  Built by people who<br /><em style={{ fontStyle: 'italic', ...etchedTextWithSequins, opacity: 0.7 }}>love the craft.</em>
+                  Built by people who<br /><em style={{ fontStyle: 'italic', ...etchedTextWithSequins, opacity: 0.8 }}>love the craft.</em>
                 </h1>
               </Rv>
             </section>
