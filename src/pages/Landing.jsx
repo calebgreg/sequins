@@ -386,7 +386,7 @@ export default function Landing() {
               <Rv><SecLabel>Teacher Studio</SecLabel></Rv>
               <Rv delay={0.05}>
                 <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 700, letterSpacing: -2, lineHeight: 1.0, ...etchedTextWithSequins, marginBottom: 16 }}>
-                  The studio floor, in your pocket.
+                  Every class, in your pocket.
                 </h2>
               </Rv>
               <Rv delay={0.1}>
