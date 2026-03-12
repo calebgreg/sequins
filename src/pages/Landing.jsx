@@ -160,7 +160,7 @@ const seqLabelText = {
 };
 
 const SecLabel = ({ children }) => (
-  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 20, ...seqLabelText }}>{children}</div>
+  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 20, color: C.rose }}>{children}</div>
 );
 
 export default function Landing() {
