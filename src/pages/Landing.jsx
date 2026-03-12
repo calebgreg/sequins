@@ -370,7 +370,7 @@ export default function Landing() {
               <Rv><SecLabel>The platform</SecLabel></Rv>
               <Rv delay={0.05}>
                 <h1 style={{ fontSize: 'clamp(40px,6vw,72px)', fontWeight: 700, letterSpacing: -2, lineHeight: 0.95, ...etchedTextWithSequins, marginBottom: 20 }}>
-                  One brain.<br /><em style={{ fontStyle: 'italic', ...etchedTextWithSequins, opacity: 0.6 }}>Every workflow.</em>
+                  One brain.<br /><em style={{ fontStyle: 'italic', ...etchedTextWithSequins, opacity: 0.8 }}>Every workflow.</em>
                 </h1>
               </Rv>
               <Rv delay={0.1}>
