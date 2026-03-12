@@ -247,7 +247,7 @@ export default function Landing() {
               <div style={{ opacity: 0, animation: 'sqFadeUp 0.8s ease 0.1s forwards' }}>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 999, marginBottom: 32 }}>
                   <Sparkles style={{ width: 12, height: 12, color: C.rose }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', ...seqLabelText }}>Dance Studio Operating System</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: C.rose }}>Dance Studio Operating System</span>
                 </div>
               </div>
 
