@@ -1,0 +1,23 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this user belongs to"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user",
+        "teacher"
+      ],
+      "default": "user",
+      "description": "User role - admin has full access, teacher has limited access"
+    }
+  },
+  "required": [
+    "studio_id"
+  ]
+}

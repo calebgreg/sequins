@@ -1,0 +1,29 @@
+{
+  "name": "TimeSheetAcknowledgement",
+  "type": "object",
+  "properties": {
+    "teacher_name": {
+      "type": "string"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "total_hours": {
+      "type": "number"
+    },
+    "acknowledged_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "teacher_name",
+    "period_end",
+    "total_hours"
+  ]
+}

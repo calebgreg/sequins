@@ -1,0 +1,90 @@
+{
+  "name": "Invoice",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this invoice belongs to"
+    },
+    "family_id": {
+      "type": "string",
+      "description": "ID of the family this invoice is for"
+    },
+    "parent_email": {
+      "type": "string",
+      "description": "Email of the parent/guardian"
+    },
+    "parent_name": {
+      "type": "string",
+      "description": "Name of the parent/guardian"
+    },
+    "issue_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the invoice was issued"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the invoice is due"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "sent",
+        "paid",
+        "overdue",
+        "cancelled"
+      ],
+      "default": "draft"
+    },
+    "line_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "student_name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "number",
+            "default": 1
+          }
+        }
+      }
+    },
+    "subtotal": {
+      "type": "number"
+    },
+    "discounts": {
+      "type": "number",
+      "default": 0
+    },
+    "fees": {
+      "type": "number",
+      "default": 0
+    },
+    "total_amount": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "stripe_invoice_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "studio_id",
+    "parent_email",
+    "issue_date",
+    "total_amount"
+  ]
+}

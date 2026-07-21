@@ -1,0 +1,26 @@
+{
+  "name": "FamilyNote",
+  "type": "object",
+  "properties": {
+    "parent_email": {
+      "type": "string",
+      "description": "Email of the parent to link the note to"
+    },
+    "content": {
+      "type": "string",
+      "description": "The content of the note"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Name of the staff member who created the note"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "parent_email",
+    "content"
+  ]
+}

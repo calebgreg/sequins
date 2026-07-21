@@ -1,0 +1,150 @@
+{
+  "name": "Partner",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this partner belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Business name"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "daycare",
+        "pediatrician",
+        "gym",
+        "salon",
+        "church",
+        "school",
+        "sports_league",
+        "other"
+      ],
+      "description": "Type of business"
+    },
+    "address": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "description": "Contact email for the partner"
+    },
+    "linkedin": {
+      "type": "string",
+      "description": "LinkedIn profile URL"
+    },
+    "instagram": {
+      "type": "string",
+      "description": "Instagram handle or URL"
+    },
+    "relationship_status": {
+      "type": "string",
+      "enum": [
+        "identified",
+        "contacted",
+        "connected",
+        "active_partner",
+        "dormant"
+      ],
+      "default": "identified"
+    },
+    "referrals_sent": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of referrals we sent to them"
+    },
+    "referrals_received": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of referrals they sent to us"
+    },
+    "referral_balance": {
+      "type": "number",
+      "default": 0,
+      "description": "Net referral balance (positive = we owe them)"
+    },
+    "last_contact_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "ai_research": {
+      "type": "object",
+      "description": "Agent-gathered research about this business"
+    },
+    "sent_message": {
+      "type": "string",
+      "description": "The message that was sent to this partner"
+    },
+    "sent_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the outreach message was sent"
+    },
+    "follow_up_draft": {
+      "type": "string",
+      "description": "AI-generated follow-up draft for stale outreach"
+    },
+    "their_reply": {
+      "type": "string",
+      "description": "The partner's reply message"
+    },
+    "reply_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the partner replied"
+    },
+    "suggested_response": {
+      "type": "string",
+      "description": "AI-suggested response to their reply"
+    },
+    "families_from_partner": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "family_name": {
+            "type": "string"
+          },
+          "monthly_revenue": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Families that came through this partner"
+    },
+    "stuck_reason": {
+      "type": "string",
+      "description": "Why outreach is stuck (e.g., no contact info)"
+    },
+    "what_we_found": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of things the AI found about this partner"
+    },
+    "what_we_tried": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of contact methods already tried that failed"
+    }
+  },
+  "required": [
+    "studio_id",
+    "name",
+    "category"
+  ]
+}

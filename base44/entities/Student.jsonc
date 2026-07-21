@@ -1,0 +1,147 @@
+{
+  "name": "Student",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this student belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Student's first name"
+    },
+    "age": {
+      "type": "number",
+      "description": "Student's age"
+    },
+    "level": {
+      "type": "string",
+      "default": "Beginner",
+      "description": "Dance skill level (defined in StudioSettings)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "prospect",
+        "alumni"
+      ],
+      "default": "active",
+      "description": "Current enrollment status"
+    },
+    "billing_method": {
+      "type": "string",
+      "enum": [
+        "auto_pay",
+        "manual"
+      ],
+      "default": "manual",
+      "description": "Preferred billing method for the family"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Styles interested in (e.g. Ballet, Tap)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Smart tags for personalization"
+    },
+    "color": {
+      "type": "string",
+      "description": "UI color theme for the student"
+    },
+    "parent_email": {
+      "type": "string",
+      "description": "Link to the parent user"
+    },
+    "parent_name": {
+      "type": "string",
+      "description": "Name of the parent/guardian"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone number"
+    },
+    "address": {
+      "type": "string",
+      "description": "Home address"
+    },
+    "emergency_contact": {
+      "type": "string",
+      "description": "Emergency contact name and number"
+    },
+    "joined_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "attendance_alert": {
+      "type": "boolean",
+      "default": false,
+      "description": "Flag for low attendance"
+    },
+    "attendance_summary": {
+      "type": "string",
+      "description": "AI-generated summary of attendance habits"
+    },
+    "tuition_plan_id": {
+      "type": "string",
+      "description": "ID of the assigned tuition plan"
+    },
+    "measurements": {
+      "type": "object",
+      "description": "Costume measurements for the dancer",
+      "properties": {
+        "height": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "string"
+        },
+        "chest": {
+          "type": "string"
+        },
+        "waist": {
+          "type": "string"
+        },
+        "hips": {
+          "type": "string"
+        },
+        "inseam": {
+          "type": "string"
+        },
+        "girth": {
+          "type": "string"
+        },
+        "torso": {
+          "type": "string"
+        },
+        "shoe_size": {
+          "type": "string"
+        },
+        "tight_size": {
+          "type": "string"
+        },
+        "leotard_size": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    }
+  },
+  "required": [
+    "studio_id",
+    "name",
+    "color",
+    "status"
+  ]
+}

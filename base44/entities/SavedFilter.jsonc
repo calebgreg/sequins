@@ -1,0 +1,111 @@
+{
+  "name": "SavedFilter",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this filter belongs to"
+    },
+    "filter_name": {
+      "type": "string",
+      "description": "A user-friendly name for the saved filter"
+    },
+    "natural_language_query": {
+      "type": "string",
+      "description": "The original natural language query"
+    },
+    "parsed_criteria_json": {
+      "type": "object",
+      "description": "The AI-generated JSON object containing filter criteria",
+      "properties": {
+        "filters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive",
+                "prospect",
+                "alumni"
+              ]
+            },
+            "billing_method": {
+              "type": "string",
+              "enum": [
+                "auto_pay",
+                "manual"
+              ]
+            },
+            "age": {
+              "type": "object",
+              "properties": {
+                "$eq": {
+                  "type": "number"
+                },
+                "$gt": {
+                  "type": "number"
+                },
+                "$gte": {
+                  "type": "number"
+                },
+                "$lt": {
+                  "type": "number"
+                },
+                "$lte": {
+                  "type": "number"
+                }
+              }
+            },
+            "level": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "class_filters": {
+          "type": "object",
+          "properties": {
+            "day": {
+              "type": "string",
+              "enum": [
+                "M",
+                "T",
+                "W",
+                "R",
+                "F",
+                "S",
+                "U"
+              ]
+            },
+            "style": {
+              "type": "string"
+            },
+            "teacher": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "is_shared": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, visible to all staff"
+    }
+  },
+  "required": [
+    "studio_id",
+    "filter_name",
+    "natural_language_query",
+    "parsed_criteria_json"
+  ]
+}

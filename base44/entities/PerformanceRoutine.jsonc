@@ -1,0 +1,159 @@
+{
+  "name": "PerformanceRoutine",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this routine belongs to"
+    },
+    "performance_id": {
+      "type": "string",
+      "description": "The performance this routine belongs to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Name of the routine/dance"
+    },
+    "song_title": {
+      "type": "string"
+    },
+    "artist": {
+      "type": "string"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 180,
+      "description": "Length of the routine in seconds"
+    },
+    "order_index": {
+      "type": "number",
+      "description": "Sequence number in the show"
+    },
+    "class_id": {
+      "type": "string",
+      "description": "Linked class if applicable"
+    },
+    "choreographer": {
+      "type": "string",
+      "description": "Name of the teacher/choreographer"
+    },
+    "performers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of student IDs"
+    },
+    "costume_details": {
+      "type": "string"
+    },
+    "costume_product_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "grooming": {
+      "type": "object",
+      "properties": {
+        "hair": {
+          "type": "string"
+        },
+        "hair_image": {
+          "type": "string"
+        },
+        "makeup": {
+          "type": "string"
+        },
+        "makeup_image": {
+          "type": "string"
+        },
+        "tights": {
+          "type": "string"
+        },
+        "tights_image": {
+          "type": "string"
+        },
+        "shoes": {
+          "type": "string"
+        },
+        "shoes_image": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "rehearsals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "start_time": {
+            "type": "string"
+          },
+          "end_time": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "lighting_notes": {
+      "type": "string"
+    },
+    "music_file_url": {
+      "type": "string"
+    },
+    "spotify_link": {
+      "type": "string"
+    },
+    "apple_music_link": {
+      "type": "string"
+    },
+    "album_artwork_url": {
+      "type": "string"
+    },
+    "apple_music_preview_url": {
+      "type": "string"
+    },
+    "itunes_buy_link": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "studio_id",
+    "performance_id",
+    "title"
+  ]
+}

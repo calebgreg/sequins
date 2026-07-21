@@ -1,0 +1,59 @@
+{
+  "name": "AgentLog",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this log belongs to"
+    },
+    "agent": {
+      "type": "string",
+      "enum": [
+        "connector",
+        "attender",
+        "accessor",
+        "offerer",
+        "converter",
+        "retainer",
+        "referrer"
+      ]
+    },
+    "outcome_id": {
+      "type": "string"
+    },
+    "action_id": {
+      "type": "string",
+      "description": "Related action if applicable"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "research",
+        "strategy",
+        "draft",
+        "learn",
+        "error",
+        "success"
+      ],
+      "description": "What the agent was doing"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Human-readable summary"
+    },
+    "details": {
+      "type": "object",
+      "description": "Full details of agent activity"
+    },
+    "tokens_used": {
+      "type": "number",
+      "description": "AI tokens consumed"
+    }
+  },
+  "required": [
+    "studio_id",
+    "agent",
+    "event_type",
+    "summary"
+  ]
+}

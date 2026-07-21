@@ -1,0 +1,93 @@
+{
+  "name": "FamilyTask",
+  "type": "object",
+  "properties": {
+    "parent_email": {
+      "type": "string",
+      "description": "Email of the parent to link the task to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Task description"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed notes"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "archived"
+      ],
+      "default": "pending"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "billing",
+        "enrollment",
+        "communication",
+        "event"
+      ],
+      "default": "admin"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Staff name"
+    },
+    "collaborators": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of emails of people collaborating on this task"
+    },
+    "is_shared": {
+      "type": "boolean",
+      "default": false,
+      "description": "Visible to family in portal"
+    },
+    "checklist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "description": "Sub-tasks"
+    },
+    "performance_id": {
+      "type": "string",
+      "description": "Linked performance ID if applicable"
+    }
+  },
+  "required": [
+    "title"
+  ]
+}

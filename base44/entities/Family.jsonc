@@ -1,0 +1,110 @@
+{
+  "name": "Family",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this family belongs to"
+    },
+    "parent_email": {
+      "type": "string",
+      "description": "Unique identifier - the parent's email address"
+    },
+    "parent_name": {
+      "type": "string",
+      "description": "Name of the primary parent/guardian"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone number"
+    },
+    "address": {
+      "type": "string",
+      "description": "Home address"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "autopay",
+        "invoice",
+        "no_method"
+      ],
+      "default": "no_method",
+      "description": "Payment method status"
+    },
+    "card_last4": {
+      "type": "string",
+      "description": "Last 4 digits of card on file"
+    },
+    "card_brand": {
+      "type": "string",
+      "description": "Card brand (e.g., 'Visa', 'Mastercard')"
+    },
+    "card_expiry_month": {
+      "type": "number",
+      "description": "Card expiration month (1-12)"
+    },
+    "card_expiry_year": {
+      "type": "number",
+      "description": "Card expiration year"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe Customer ID for this family"
+    },
+    "account_id": {
+      "type": "string",
+      "description": "Internal account ID for display purposes"
+    },
+    "joined_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When the family joined the studio"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes about this family"
+    },
+    "billing_adjustments": {
+      "type": "array",
+      "description": "Manual billing adjustments applied to this family",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "fee",
+              "discount"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "student_name": {
+            "type": "string"
+          },
+          "recurring": {
+            "type": "boolean",
+            "default": false
+          },
+          "created_date": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "studio_id",
+    "parent_email",
+    "parent_name"
+  ]
+}

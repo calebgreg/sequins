@@ -1,0 +1,134 @@
+{
+  "name": "Performance",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this performance belongs to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Name of the event (e.g., 'Spring Recital 2025')"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "venue": {
+      "type": "object",
+      "description": "Location details of the performance venue",
+      "properties": {
+        "venue_name": {
+          "type": "string"
+        },
+        "formatted_address": {
+          "type": "string"
+        },
+        "place_id": {
+          "type": "string"
+        },
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planning",
+        "rehearsal",
+        "showtime",
+        "completed",
+        "archived"
+      ],
+      "default": "planning"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "recital",
+        "competition",
+        "showcase",
+        "community_event"
+      ],
+      "default": "recital"
+    },
+    "description": {
+      "type": "string"
+    },
+    "tickets_link": {
+      "type": "string"
+    },
+    "cover_image": {
+      "type": "string"
+    },
+    "timeline_milestones": {
+      "type": "array",
+      "description": "Auto-generated production timeline milestones",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "days_from_now": {
+            "type": "number"
+          },
+          "days_before_show": {
+            "type": "number"
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "task": {
+                  "type": "string"
+                },
+                "priority": {
+                  "type": "string",
+                  "enum": [
+                    "critical",
+                    "high",
+                    "medium",
+                    "low"
+                  ]
+                },
+                "family_task_id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "task",
+                "priority"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "due_date",
+          "days_from_now",
+          "days_before_show",
+          "tasks"
+        ]
+      }
+    }
+  },
+  "required": [
+    "studio_id",
+    "title",
+    "date"
+  ]
+}

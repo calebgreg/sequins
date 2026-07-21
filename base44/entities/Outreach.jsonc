@@ -1,0 +1,96 @@
+{
+  "name": "Outreach",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "partner",
+        "contact",
+        "lead",
+        "family"
+      ],
+      "description": "What kind of entity we're reaching out to"
+    },
+    "target_id": {
+      "type": "string",
+      "description": "ID of the target entity"
+    },
+    "target_name": {
+      "type": "string",
+      "description": "Name for quick reference"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "email",
+        "sms",
+        "phone",
+        "in_person",
+        "social"
+      ],
+      "default": "email"
+    },
+    "agent": {
+      "type": "string",
+      "enum": [
+        "connector",
+        "attender",
+        "accessor",
+        "offerer",
+        "converter",
+        "retainer",
+        "referrer"
+      ],
+      "description": "Which agent generated this outreach"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject if applicable"
+    },
+    "content": {
+      "type": "string",
+      "description": "The message content"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "opened_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "replied_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "sent",
+        "opened",
+        "replied",
+        "positive",
+        "negative",
+        "no_response"
+      ],
+      "default": "pending"
+    },
+    "outcome_notes": {
+      "type": "string",
+      "description": "Details about the outcome"
+    }
+  },
+  "required": [
+    "studio_id",
+    "target_type",
+    "target_id",
+    "channel",
+    "content"
+  ]
+}

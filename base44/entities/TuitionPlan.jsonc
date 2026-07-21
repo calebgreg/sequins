@@ -1,0 +1,41 @@
+{
+  "name": "TuitionPlan",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Plan name (e.g. 'Monthly Standard')"
+    },
+    "description": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Base amount"
+    },
+    "billing_frequency": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "quarterly",
+        "semester",
+        "annual",
+        "per_class"
+      ],
+      "default": "monthly"
+    },
+    "class_limit": {
+      "type": "number",
+      "description": "Max classes per week (0 for unlimited)"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "amount",
+    "billing_frequency"
+  ]
+}

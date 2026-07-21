@@ -1,0 +1,74 @@
+{
+  "name": "Room",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this room belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Room name (e.g., Studio A)"
+    },
+    "capacity": {
+      "type": "number",
+      "description": "Maximum number of dancers"
+    },
+    "floor_type": {
+      "type": "string",
+      "enum": [
+        "marley",
+        "hardwood",
+        "sprung",
+        "vinyl",
+        "concrete",
+        "carpet"
+      ],
+      "description": "Type of flooring"
+    },
+    "tap_ok": {
+      "type": "boolean",
+      "default": false,
+      "description": "Can teach tap in this room"
+    },
+    "has_mirrors": {
+      "type": "boolean",
+      "default": false,
+      "description": "Room has mirrors"
+    },
+    "has_barres": {
+      "type": "boolean",
+      "default": false,
+      "description": "Room has ballet barres"
+    },
+    "has_sound_system": {
+      "type": "boolean",
+      "default": false,
+      "description": "Room has sound system"
+    },
+    "acro_safe": {
+      "type": "boolean",
+      "default": false,
+      "description": "Safe for acro and tumbling"
+    },
+    "styles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Dance styles suitable for this room"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "Optional room photo"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the room"
+    }
+  },
+  "required": [
+    "studio_id",
+    "name"
+  ]
+}

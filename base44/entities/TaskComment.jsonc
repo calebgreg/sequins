@@ -1,0 +1,38 @@
+{
+  "name": "TaskComment",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "ID of the FamilyTask"
+    },
+    "content": {
+      "type": "string",
+      "description": "The comment text"
+    },
+    "author_email": {
+      "type": "string",
+      "description": "Email of the user who commented"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Name of the user who commented"
+    },
+    "mentions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of emails mentioned in this comment"
+    },
+    "ai_generated": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "task_id",
+    "content",
+    "author_email"
+  ]
+}

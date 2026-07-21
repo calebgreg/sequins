@@ -1,0 +1,64 @@
+{
+  "name": "Contact",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio"
+    },
+    "partner_id": {
+      "type": "string",
+      "description": "ID of the partner business this contact works at"
+    },
+    "name": {
+      "type": "string",
+      "description": "Contact's full name"
+    },
+    "role": {
+      "type": "string",
+      "description": "Their role at the business (e.g., Owner, Manager, Director)"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "preferred_channel": {
+      "type": "string",
+      "enum": [
+        "email",
+        "phone",
+        "text",
+        "in_person"
+      ],
+      "default": "email"
+    },
+    "background": {
+      "type": "string",
+      "description": "Personal background info"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Known interests and hobbies"
+    },
+    "common_ground": {
+      "type": "string",
+      "description": "Things we have in common for rapport building"
+    },
+    "last_contact_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "studio_id",
+    "name"
+  ]
+}

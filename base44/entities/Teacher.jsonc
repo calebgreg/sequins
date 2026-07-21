@@ -1,0 +1,79 @@
+{
+  "name": "Teacher",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this teacher belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Full name of the teacher"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email address"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number (E.164 format preferred)"
+    },
+    "sms_opt_in": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether teacher has opted in to receive SMS"
+    },
+    "sms_consent_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date when SMS opt-in consent was given"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short biography and background"
+    },
+    "title": {
+      "type": "string",
+      "description": "Job title"
+    },
+    "styles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Dance styles they can teach"
+    },
+    "availability": {
+      "type": "string",
+      "description": "General availability notes"
+    },
+    "performance_summary": {
+      "type": "string",
+      "description": "AI-generated performance review"
+    },
+    "last_review_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "manager_id": {
+      "type": "string",
+      "description": "ID of the staff member's direct manager"
+    },
+    "team_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of Team IDs this staff member belongs to"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "URL for the staff member's profile picture"
+    }
+  },
+  "required": [
+    "studio_id",
+    "name",
+    "styles"
+  ]
+}

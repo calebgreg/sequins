@@ -1,0 +1,63 @@
+{
+  "name": "Transaction",
+  "type": "object",
+  "properties": {
+    "invoice_id": {
+      "type": "string",
+      "description": "Related invoice ID"
+    },
+    "parent_email": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "payment",
+        "refund",
+        "adjustment",
+        "credit"
+      ],
+      "default": "payment"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "credit_card",
+        "bank_transfer",
+        "cash",
+        "check",
+        "venmo",
+        "other"
+      ],
+      "default": "credit_card"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "succeeded",
+        "pending",
+        "failed"
+      ],
+      "default": "succeeded"
+    },
+    "reference_id": {
+      "type": "string",
+      "description": "External ID (e.g. Stripe Charge ID)"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "amount",
+    "date",
+    "type"
+  ]
+}

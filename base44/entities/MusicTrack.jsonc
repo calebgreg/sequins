@@ -1,0 +1,60 @@
+{
+  "name": "MusicTrack",
+  "type": "object",
+  "properties": {
+    "class_id": {
+      "type": "string",
+      "description": "ID of the class this track is associated with"
+    },
+    "title": {
+      "type": "string",
+      "description": "Song title"
+    },
+    "artist": {
+      "type": "string",
+      "description": "Artist name"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "spotify",
+        "apple_music",
+        "youtube",
+        "file",
+        "other"
+      ],
+      "default": "apple_music"
+    },
+    "url": {
+      "type": "string",
+      "description": "Link to the track (Apple Music, Spotify, etc.)"
+    },
+    "artwork_url": {
+      "type": "string",
+      "description": "Album artwork image URL"
+    },
+    "preview_url": {
+      "type": "string",
+      "description": "30-second preview audio URL"
+    },
+    "duration": {
+      "type": "string",
+      "description": "Duration string (e.g. 3:45)"
+    },
+    "bpm": {
+      "type": "number",
+      "description": "Beats per minute (optional)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Usage tags (e.g. 'Warmup', 'Adagio')"
+    }
+  },
+  "required": [
+    "title",
+    "class_id"
+  ]
+}

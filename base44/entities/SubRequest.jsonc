@@ -1,0 +1,58 @@
+{
+  "name": "SubRequest",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this sub request belongs to"
+    },
+    "teacher_name": {
+      "type": "string",
+      "description": "Requesting teacher"
+    },
+    "class_id": {
+      "type": "string"
+    },
+    "class_name": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    },
+    "suggested_subs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of teacher names suggested"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "filled"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "studio_id",
+    "teacher_name",
+    "class_id",
+    "reason"
+  ]
+}

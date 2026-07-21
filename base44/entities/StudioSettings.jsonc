@@ -1,0 +1,86 @@
+{
+  "name": "StudioSettings",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio these settings belong to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Studio Name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "competitive",
+        "recreational",
+        "mixed"
+      ],
+      "default": "mixed"
+    },
+    "ai_assistant_name": {
+      "type": "string",
+      "default": "Gene",
+      "description": "Name of the studio's AI assistant"
+    },
+    "pricing_model": {
+      "type": "string",
+      "enum": [
+        "hourly",
+        "per_class",
+        "flat_rate"
+      ],
+      "default": "per_class",
+      "description": "How tuition is calculated globally"
+    },
+    "hourly_rate_tiers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hours": {
+            "type": "number"
+          },
+          "rate": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "For hourly pricing: tiered rates"
+    },
+    "levels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "Beginner",
+        "Intermediate",
+        "Advanced"
+      ],
+      "description": "Custom defined levels for the studio"
+    },
+    "costume_vendors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of preferred costume vendor websites"
+    },
+    "apple_music_user_token": {
+      "type": "string",
+      "description": "User token for Apple Music integration"
+    },
+    "apple_music_connected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When Apple Music was connected"
+    }
+  },
+  "required": [
+    "studio_id",
+    "type",
+    "pricing_model"
+  ]
+}

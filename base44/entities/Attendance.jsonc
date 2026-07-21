@@ -1,0 +1,66 @@
+{
+  "name": "Attendance",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this attendance record belongs to"
+    },
+    "class_id": {
+      "type": "string",
+      "description": "ID of the class"
+    },
+    "class_name": {
+      "type": "string",
+      "description": "Name of the class (snapshot)"
+    },
+    "student_name": {
+      "type": "string",
+      "description": "Name of the student"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the class"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "present",
+        "absent",
+        "excused",
+        "late",
+        "made_up"
+      ],
+      "default": "present"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes"
+    },
+    "makeup_class_id": {
+      "type": "string",
+      "description": "ID of the makeup class assigned (if absent)"
+    },
+    "makeup_class_name": {
+      "type": "string",
+      "description": "Name of the makeup class"
+    },
+    "makeup_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the makeup class"
+    },
+    "original_absence_id": {
+      "type": "string",
+      "description": "For makeup attendance records, link to the original absence"
+    }
+  },
+  "required": [
+    "studio_id",
+    "class_id",
+    "student_name",
+    "date",
+    "status"
+  ]
+}

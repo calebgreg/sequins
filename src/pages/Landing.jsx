@@ -25,8 +25,9 @@ const C = {
   blue: '#8cb4c8',
 };
 
-// ─── Label ───
-const SEQUINS_IMG = "url('https://media.base44.com/images/public/69a0745a12ebbb83d6190412/32f58a64a_ChatGPTImageFeb242026at10_46_54AM.png')";
+// ─── Sequins ───
+const SEQUINS_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png';
+const SEQUINS_SIZE = '80px';
 
 const etchedText = {
   color: 'transparent',
@@ -34,20 +35,18 @@ const etchedText = {
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
   WebkitBoxDecorationBreak: 'clone',
-  textShadow: '0 2px 3px rgba(255,255,255,0.7)',
-  filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.5))',
   paddingBottom: '0.15em',
 };
 
 const etchedTextWithSequins = {
   color: 'transparent',
-  backgroundImage: SEQUINS_IMG,
+  backgroundImage: `url('${SEQUINS_URL}')`,
+  backgroundSize: SEQUINS_SIZE,
+  backgroundPosition: 'center',
+  backgroundRepeat: 'repeat',
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
-  backgroundSize: '120%',
-  backgroundPosition: '30% center',
-  textShadow: 'inset -2px -2px 4px rgba(0,0,0,0.4), inset 1px 1px 2px rgba(255,255,255,0.6)',
-  filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.15))',
+  WebkitTextFillColor: 'transparent',
   paddingBottom: '0.15em',
 };
 
@@ -152,11 +151,13 @@ const Dv = () => <div style={{ height: 1, background: 'linear-gradient(90deg, tr
 
 const seqLabelText = {
   color: 'transparent',
-  backgroundImage: SEQUINS_IMG,
+  backgroundImage: `url('${SEQUINS_URL}')`,
+  backgroundSize: SEQUINS_SIZE,
+  backgroundPosition: 'center',
+  backgroundRepeat: 'repeat',
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
-  backgroundSize: '100%',
-  backgroundPosition: 'center',
+  WebkitTextFillColor: 'transparent',
 };
 
 const SecLabel = ({ children }) => (
@@ -213,11 +214,13 @@ export default function Landing() {
             <a onClick={() => showPage('access')} style={{
               textDecoration: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer',
               color: 'transparent',
-              backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')`,
+              backgroundImage: `url('${SEQUINS_URL}')`,
+              backgroundSize: SEQUINS_SIZE,
+              backgroundPosition: 'center',
+              backgroundRepeat: 'repeat',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              WebkitTextFillColor: 'transparent',
             }}>Get Access</a>
           </div>
 
@@ -231,7 +234,7 @@ export default function Landing() {
             {[['product', 'Product'], ['pricing', 'Pricing'], ['company', 'Company']].map(([id, label]) => (
               <a key={id} onClick={() => { showPage(id); setMobileMenuOpen(false); }} style={{ padding: '20px 28px', fontSize: 16, fontWeight: 400, color: page === id ? C.roseDark : C.textFaint, cursor: 'pointer', borderBottom: '1px solid rgba(200,170,160,0.08)', display: 'block' }}>{label}</a>
             ))}
-            <a onClick={() => { showPage('access'); setMobileMenuOpen(false); }} style={{ padding: '20px 28px', fontSize: 16, fontWeight: 700, cursor: 'pointer', display: 'block', color: 'transparent', backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png')`, backgroundClip: 'text', WebkitBackgroundClip: 'text', backgroundSize: 'cover' }}>Get Access</a>
+            <a onClick={() => { showPage('access'); setMobileMenuOpen(false); }} style={{ padding: '20px 28px', fontSize: 16, fontWeight: 700, cursor: 'pointer', display: 'block', color: 'transparent', backgroundImage: `url('${SEQUINS_URL}')`, backgroundSize: SEQUINS_SIZE, backgroundRepeat: 'repeat', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Get Access</a>
           </div>
         )}
       </nav>
@@ -664,14 +667,15 @@ export default function Landing() {
         {page === 'pricing' && (() => {
           const annual = annualBilling;
           const setAnnual = setAnnualBilling;
-          const SEQUINS_IMG = "url('https://media.base44.com/images/public/69a0745a12ebbb83d6190412/32f58a64a_ChatGPTImageFeb242026at10_46_54AM.png')";
           const seqText = {
             color: 'transparent',
-            backgroundImage: SEQUINS_IMG,
+            backgroundImage: `url('${SEQUINS_URL}')`,
+            backgroundSize: SEQUINS_SIZE,
+            backgroundPosition: 'center',
+            backgroundRepeat: 'repeat',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            WebkitTextFillColor: 'transparent',
           };
           const plans = [
             { tier: 'starting', students: '< 100', monthly: '$65', annual: '$50' },

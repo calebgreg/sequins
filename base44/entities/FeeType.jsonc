@@ -1,0 +1,34 @@
+{
+  "name": "FeeType",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of fee (e.g. 'Registration Fee')"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "billing_frequency": {
+      "type": "string",
+      "enum": [
+        "one_time",
+        "annual",
+        "monthly",
+        "per_session"
+      ],
+      "default": "one_time"
+    },
+    "is_mandatory": {
+      "type": "boolean",
+      "default": false
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "amount"
+  ]
+}

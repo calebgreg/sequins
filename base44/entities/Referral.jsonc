@@ -1,0 +1,68 @@
+{
+  "name": "Referral",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "outbound",
+        "inbound"
+      ],
+      "description": "outbound = we sent to partner, inbound = partner sent to us"
+    },
+    "partner_id": {
+      "type": "string",
+      "description": "ID of the partner business"
+    },
+    "partner_name": {
+      "type": "string",
+      "description": "Quick reference"
+    },
+    "family_id": {
+      "type": "string",
+      "description": "ID of family (if inbound) or lead (if from us)"
+    },
+    "family_name": {
+      "type": "string"
+    },
+    "referred_person_name": {
+      "type": "string",
+      "description": "Who was actually referred"
+    },
+    "referral_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "converted",
+        "not_converted",
+        "unknown"
+      ],
+      "default": "pending"
+    },
+    "outcome_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "outcome_notes": {
+      "type": "string"
+    },
+    "thanked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Did we thank the referrer?"
+    }
+  },
+  "required": [
+    "studio_id",
+    "direction",
+    "partner_id"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "name": "GrowthOutcome",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this outcome belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable outcome name"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "acquisition",
+        "conversion",
+        "retention",
+        "referral"
+      ],
+      "description": "Which growth category this belongs to"
+    },
+    "agent": {
+      "type": "string",
+      "enum": [
+        "connector",
+        "attender",
+        "accessor",
+        "offerer",
+        "converter",
+        "retainer",
+        "referrer"
+      ],
+      "description": "Which agent is responsible for this outcome"
+    },
+    "target_count": {
+      "type": "number",
+      "description": "Target number to hit"
+    },
+    "target_period": {
+      "type": "string",
+      "enum": [
+        "week",
+        "month"
+      ],
+      "description": "Time period for the target"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the outcome"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "studio_id",
+    "name",
+    "category",
+    "agent",
+    "target_count",
+    "target_period"
+  ]
+}

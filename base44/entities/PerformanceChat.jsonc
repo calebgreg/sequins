@@ -1,0 +1,31 @@
+{
+  "name": "PerformanceChat",
+  "type": "object",
+  "properties": {
+    "performance_id": {
+      "type": "string",
+      "description": "The ID of the performance draft"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "assistant"
+      ],
+      "description": "Who sent the message"
+    },
+    "content": {
+      "type": "string",
+      "description": "The message content"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "performance_id",
+    "role",
+    "content"
+  ]
+}

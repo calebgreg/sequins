@@ -1,0 +1,54 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Lead's full name"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number"
+    },
+    "email": {
+      "type": "string",
+      "description": "Work email address"
+    },
+    "studentCount": {
+      "type": "string",
+      "enum": [
+        "<100",
+        "101-200",
+        ">201"
+      ],
+      "description": "Current student count"
+    },
+    "expectations": {
+      "type": "string",
+      "description": "What they're hoping to see"
+    },
+    "preferPhone": {
+      "type": "boolean",
+      "default": false,
+      "description": "Prefer to be contacted by phone"
+    },
+    "preferEmail": {
+      "type": "boolean",
+      "default": true,
+      "description": "Prefer to be contacted by email"
+    },
+    "subscribeNewsletter": {
+      "type": "boolean",
+      "default": false,
+      "description": "Subscribed to newsletter"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where they submitted from (book_demo, etc.)"
+    }
+  },
+  "required": [
+    "name",
+    "email"
+  ]
+}

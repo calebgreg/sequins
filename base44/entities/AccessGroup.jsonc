@@ -1,0 +1,87 @@
+{
+  "name": "AccessGroup",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio"
+    },
+    "name": {
+      "type": "string",
+      "description": "Organization name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "daycare",
+        "school",
+        "league",
+        "church_group",
+        "mommy_group",
+        "other"
+      ],
+      "description": "Type of group"
+    },
+    "estimated_families": {
+      "type": "number",
+      "description": "Estimated number of families we can reach"
+    },
+    "gatekeeper_contact_id": {
+      "type": "string",
+      "description": "ID of the Contact who controls access"
+    },
+    "gatekeeper_name": {
+      "type": "string",
+      "description": "Quick reference to gatekeeper"
+    },
+    "access_type": {
+      "type": "string",
+      "enum": [
+        "flyers",
+        "newsletter",
+        "demo",
+        "presentation",
+        "event",
+        "partnership"
+      ],
+      "description": "What kind of access we have"
+    },
+    "access_status": {
+      "type": "string",
+      "enum": [
+        "identified",
+        "pursuing",
+        "granted",
+        "active",
+        "expired"
+      ],
+      "default": "identified"
+    },
+    "access_granted_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "access_expiration": {
+      "type": "string",
+      "format": "date",
+      "description": "When access needs to be renewed"
+    },
+    "last_activation_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Last time we used this access"
+    },
+    "leads_generated": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "studio_id",
+    "name",
+    "type"
+  ]
+}

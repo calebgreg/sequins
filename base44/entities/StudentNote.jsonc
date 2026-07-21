@@ -1,0 +1,62 @@
+{
+  "name": "StudentNote",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this note belongs to"
+    },
+    "student_name": {
+      "type": "string",
+      "description": "Name of the student this note is about"
+    },
+    "class_name": {
+      "type": "string",
+      "description": "Context of the class"
+    },
+    "teacher_name": {
+      "type": "string",
+      "description": "Author of the note"
+    },
+    "content": {
+      "type": "string",
+      "description": "The specific feedback or observation"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "technique",
+        "behavior",
+        "progress",
+        "general"
+      ],
+      "default": "general"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": [
+        "positive",
+        "neutral",
+        "constructive"
+      ],
+      "default": "neutral"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for AI context and filtering"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "studio_id",
+    "student_name",
+    "content",
+    "date"
+  ]
+}

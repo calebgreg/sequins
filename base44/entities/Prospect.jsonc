@@ -1,0 +1,109 @@
+{
+  "name": "Prospect",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this prospect belongs to"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "google_places",
+        "competitor_review",
+        "event",
+        "extension",
+        "serp",
+        "facebook_group",
+        "yelp",
+        "eventbrite"
+      ],
+      "description": "Where we found this prospect"
+    },
+    "source_detail": {
+      "type": "string",
+      "description": "Specific source info - which group, search query, review page"
+    },
+    "original_content": {
+      "type": "string",
+      "description": "The post, review, or signal we found"
+    },
+    "person_name": {
+      "type": "string",
+      "description": "Name if known"
+    },
+    "contact_info": {
+      "type": "string",
+      "description": "Email, phone, or social handle if found"
+    },
+    "child_age": {
+      "type": "number",
+      "description": "Child's age if mentioned"
+    },
+    "child_name": {
+      "type": "string",
+      "description": "Child's name if mentioned"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Dance styles or activities mentioned"
+    },
+    "location": {
+      "type": "string",
+      "description": "Location if mentioned"
+    },
+    "signal_type": {
+      "type": "string",
+      "enum": [
+        "buying_intent",
+        "latent_intent",
+        "new_mover",
+        "unhappy_competitor",
+        "event_attendee",
+        "referral_mention"
+      ],
+      "description": "Type of buying signal detected"
+    },
+    "signal_strength": {
+      "type": "string",
+      "enum": [
+        "hot",
+        "warm",
+        "cool"
+      ],
+      "default": "warm",
+      "description": "How strong is the buying signal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "claimed",
+        "converted_to_lead",
+        "skipped"
+      ],
+      "default": "new"
+    },
+    "agent_notes": {
+      "type": "string",
+      "description": "AI analysis of why this is a good prospect"
+    },
+    "claimed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "converted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "studio_id",
+    "source",
+    "signal_type",
+    "status"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "name": "GrowthPeriodProgress",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this progress belongs to"
+    },
+    "outcome_id": {
+      "type": "string",
+      "description": "Which outcome this tracks"
+    },
+    "period_type": {
+      "type": "string",
+      "enum": [
+        "week",
+        "month"
+      ]
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Start date of the tracking period"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date",
+      "description": "End date of the tracking period"
+    },
+    "target_count": {
+      "type": "number",
+      "description": "Target for this period"
+    },
+    "current_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Current progress"
+    },
+    "actions_pending": {
+      "type": "number",
+      "default": 0
+    },
+    "actions_completed": {
+      "type": "number",
+      "default": 0
+    },
+    "is_on_track": {
+      "type": "boolean",
+      "description": "AI assessment"
+    },
+    "agent_notes": {
+      "type": "string",
+      "description": "AI agent's notes on progress"
+    }
+  },
+  "required": [
+    "studio_id",
+    "outcome_id",
+    "period_type",
+    "period_start",
+    "period_end",
+    "target_count"
+  ]
+}

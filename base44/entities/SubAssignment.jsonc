@@ -1,0 +1,68 @@
+{
+  "name": "SubAssignment",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio"
+    },
+    "class_id": {
+      "type": "string",
+      "description": "ID of the class being covered"
+    },
+    "class_name": {
+      "type": "string",
+      "description": "Name of the class (snapshot)"
+    },
+    "original_teacher": {
+      "type": "string",
+      "description": "Name of the primary teacher"
+    },
+    "sub_teacher": {
+      "type": "string",
+      "description": "Name of the substitute teacher"
+    },
+    "sub_teacher_id": {
+      "type": "string",
+      "description": "ID of the substitute teacher"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "The specific date the sub is covering"
+    },
+    "start_time": {
+      "type": "number",
+      "description": "Class start time (for timecard calculation)"
+    },
+    "duration": {
+      "type": "number",
+      "description": "Class duration in hours (for timecard calculation)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "completed",
+        "cancelled"
+      ],
+      "default": "scheduled",
+      "description": "Status of the sub assignment"
+    },
+    "assigned_by": {
+      "type": "string",
+      "description": "Email of admin who assigned the sub"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes about the assignment"
+    }
+  },
+  "required": [
+    "studio_id",
+    "class_id",
+    "original_teacher",
+    "sub_teacher",
+    "date"
+  ]
+}

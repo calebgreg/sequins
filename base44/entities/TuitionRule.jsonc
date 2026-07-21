@@ -1,0 +1,65 @@
+{
+  "name": "TuitionRule",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this rule belongs to"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "base_pricing",
+        "class_exception",
+        "package",
+        "discount",
+        "fee"
+      ],
+      "description": "Type of tuition rule"
+    },
+    "priority": {
+      "type": "number",
+      "default": 0,
+      "description": "Higher priority rules are evaluated first"
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "operator": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Conditions that must be met for the rule to apply"
+    },
+    "value": {
+      "type": "object",
+      "description": "Rule configuration (method, amount, rates, etc.)"
+    },
+    "note": {
+      "type": "string",
+      "description": "Human-readable name/description of the rule"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the rule is currently active"
+    }
+  },
+  "required": [
+    "studio_id",
+    "type",
+    "value"
+  ]
+}

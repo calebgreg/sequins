@@ -1,0 +1,95 @@
+{
+  "name": "GrowthTarget",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this target belongs to"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "business",
+        "partner",
+        "community_group",
+        "event",
+        "prospect_family"
+      ],
+      "description": "Type of growth target"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the business, group, or event"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "social_links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "category": {
+      "type": "string",
+      "description": "Business category"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "prospect",
+        "contacted",
+        "connected",
+        "partner",
+        "inactive"
+      ],
+      "default": "prospect"
+    },
+    "relationship_score": {
+      "type": "number",
+      "description": "AI-calculated relationship strength 0-100"
+    },
+    "last_contact_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ai_research": {
+      "type": "object",
+      "description": "AI-gathered research"
+    },
+    "referrals_sent": {
+      "type": "number",
+      "default": 0
+    },
+    "referrals_received": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "studio_id",
+    "target_type",
+    "name"
+  ]
+}

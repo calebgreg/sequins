@@ -1,0 +1,89 @@
+{
+  "name": "CommunityEvent",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio"
+    },
+    "name": {
+      "type": "string",
+      "description": "Event name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "carnival",
+        "festival",
+        "fair",
+        "library",
+        "school",
+        "community",
+        "sports",
+        "other"
+      ],
+      "description": "Type of event"
+    },
+    "discovery_source": {
+      "type": "string",
+      "description": "How we found out about this event"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "time": {
+      "type": "string",
+      "description": "Event time"
+    },
+    "location": {
+      "type": "string"
+    },
+    "registration_deadline": {
+      "type": "string",
+      "format": "date"
+    },
+    "booth_cost": {
+      "type": "number",
+      "description": "Cost to participate"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "identified",
+        "evaluating",
+        "registered",
+        "attended",
+        "skipped"
+      ],
+      "default": "identified"
+    },
+    "fit_score": {
+      "type": "number",
+      "description": "Agent-calculated fit score 0-100"
+    },
+    "fit_reasoning": {
+      "type": "string",
+      "description": "Why this event is/isn't a good fit"
+    },
+    "expected_attendance": {
+      "type": "number"
+    },
+    "actual_attendance": {
+      "type": "number",
+      "description": "How many people we talked to"
+    },
+    "leads_generated": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "studio_id",
+    "name",
+    "date"
+  ]
+}

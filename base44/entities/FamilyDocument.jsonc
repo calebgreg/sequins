@@ -1,0 +1,36 @@
+{
+  "name": "FamilyDocument",
+  "type": "object",
+  "properties": {
+    "parent_email": {
+      "type": "string",
+      "description": "Email of the parent"
+    },
+    "name": {
+      "type": "string",
+      "description": "Document name"
+    },
+    "url": {
+      "type": "string",
+      "description": "File URL"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "waiver",
+        "contract",
+        "medical",
+        "other"
+      ],
+      "default": "other"
+    },
+    "uploaded_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "parent_email",
+    "name",
+    "url"
+  ]
+}

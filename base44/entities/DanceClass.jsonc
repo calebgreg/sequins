@@ -1,0 +1,85 @@
+{
+  "name": "DanceClass",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this class belongs to"
+    },
+    "title": {
+      "type": "string",
+      "description": "Class name (e.g., Ballet, Jazz) or Task name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "class",
+        "admin"
+      ],
+      "default": "class",
+      "description": "Type of the time block"
+    },
+    "style": {
+      "type": "string",
+      "description": "Normalized dance style (e.g. 'Ballet', 'Hip Hop')"
+    },
+    "day": {
+      "type": "string",
+      "enum": [
+        "M",
+        "T",
+        "W",
+        "R",
+        "F",
+        "S",
+        "U"
+      ],
+      "description": "Day of the week"
+    },
+    "start_time": {
+      "type": "number",
+      "description": "Start hour in 24h format (e.g., 18 for 6pm, 18.5 for 6:30pm)"
+    },
+    "duration": {
+      "type": "number",
+      "description": "Duration in hours (e.g., 1, 1.5)"
+    },
+    "student_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of students enrolled"
+    },
+    "trial_student_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of trial students attending this class"
+    },
+    "teacher": {
+      "type": "string",
+      "description": "Name of the instructor"
+    },
+    "room": {
+      "type": "string",
+      "description": "Studio room name/number"
+    },
+    "color": {
+      "type": "string",
+      "description": "Display color hex or class"
+    },
+    "tuition_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Cost per session/month for this specific class"
+    }
+  },
+  "required": [
+    "studio_id",
+    "title",
+    "day",
+    "start_time"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "ConversationMessage",
+  "type": "object",
+  "properties": {
+    "phone_number": {
+      "type": "string",
+      "description": "Phone number of the user"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "assistant"
+      ],
+      "description": "Who sent the message"
+    },
+    "content": {
+      "type": "string",
+      "description": "The message content"
+    },
+    "teacher_email": {
+      "type": "string",
+      "description": "Email of the teacher if identified"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "phone_number",
+    "role",
+    "content"
+  ]
+}

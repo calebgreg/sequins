@@ -1,0 +1,35 @@
+{
+  "name": "TimeLog",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this time log belongs to"
+    },
+    "teacher_name": {
+      "type": "string",
+      "description": "Name of the teacher"
+    },
+    "clock_in": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "clock_out": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "studio_id",
+    "teacher_name",
+    "clock_in"
+  ]
+}

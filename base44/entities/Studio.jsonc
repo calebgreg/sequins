@@ -1,0 +1,54 @@
+{
+  "name": "Studio",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Official name of the dance studio"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the primary owner/admin for this studio"
+    },
+    "address": {
+      "type": "string",
+      "description": "Physical address of the studio"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone number for the studio"
+    },
+    "website": {
+      "type": "string",
+      "description": "Website URL of the studio"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL to the studio's logo image"
+    },
+    "timezone": {
+      "type": "string",
+      "default": "America/New_York",
+      "description": "Timezone for this studio"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "description": "Default currency for billing"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "trial"
+      ],
+      "default": "trial",
+      "description": "Current status of the studio's subscription"
+    }
+  },
+  "required": [
+    "name",
+    "owner_email"
+  ]
+}

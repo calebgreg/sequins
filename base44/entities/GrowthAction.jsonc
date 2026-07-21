@@ -1,0 +1,138 @@
+{
+  "name": "GrowthAction",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this action belongs to"
+    },
+    "outcome_id": {
+      "type": "string",
+      "description": "Which outcome this action contributes to"
+    },
+    "agent": {
+      "type": "string",
+      "enum": [
+        "connector",
+        "attender",
+        "accessor",
+        "offerer",
+        "converter",
+        "retainer",
+        "referrer"
+      ],
+      "description": "Which agent generated this action"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "message",
+        "email",
+        "sms",
+        "call",
+        "task",
+        "event",
+        "research",
+        "offer",
+        "referral_out",
+        "shareable_moment",
+        "register"
+      ],
+      "description": "Type of action"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "approved",
+        "sent",
+        "completed",
+        "dismissed",
+        "failed"
+      ],
+      "default": "pending_review",
+      "description": "Current status of the action"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "medium"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "family",
+        "student",
+        "business",
+        "partner",
+        "community_group",
+        "event",
+        "lead",
+        "access_group",
+        "note"
+      ],
+      "description": "What type of entity this action targets"
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "target_name": {
+      "type": "string"
+    },
+    "target_email": {
+      "type": "string"
+    },
+    "target_phone": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "description": "Short title for the action"
+    },
+    "summary": {
+      "type": "string",
+      "description": "AI-generated summary"
+    },
+    "content": {
+      "type": "string",
+      "description": "The actual message/email content"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject line if applicable"
+    },
+    "context": {
+      "type": "object",
+      "description": "Additional context"
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "result": {
+      "type": "string",
+      "description": "Outcome/result of the action"
+    }
+  },
+  "required": [
+    "studio_id",
+    "agent",
+    "action_type",
+    "title"
+  ]
+}

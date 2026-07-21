@@ -1,0 +1,51 @@
+{
+  "name": "DiscountRule",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the discount (e.g. 'Sibling Discount')"
+    },
+    "code": {
+      "type": "string",
+      "description": "Short code for reference"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "percent",
+        "fixed"
+      ],
+      "default": "percent"
+    },
+    "value": {
+      "type": "number",
+      "description": "Amount to discount (e.g. 10 for 10% or $10)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "sibling",
+        "multi_class",
+        "scholarship",
+        "employee",
+        "promo"
+      ],
+      "default": "promo"
+    },
+    "apply_automatically": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, applied by the invoice generator logic automatically"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "value"
+  ]
+}

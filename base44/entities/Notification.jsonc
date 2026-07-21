@@ -1,0 +1,44 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "recipient_email": {
+      "type": "string",
+      "description": "Who receives the notification"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "mention",
+        "assignment",
+        "update",
+        "ai_suggestion"
+      ],
+      "default": "mention"
+    },
+    "title": {
+      "type": "string",
+      "description": "Short title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification body"
+    },
+    "link": {
+      "type": "string",
+      "description": "URL or internal path to the relevant resource"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Extra data like task_id, etc."
+    }
+  },
+  "required": [
+    "recipient_email",
+    "message"
+  ]
+}

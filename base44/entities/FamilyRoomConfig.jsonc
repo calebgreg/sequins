@@ -1,0 +1,171 @@
+{
+  "name": "FamilyRoomConfig",
+  "type": "object",
+  "properties": {
+    "parent_email": {
+      "type": "string",
+      "description": "The unique identifier for the family (email)"
+    },
+    "page_title": {
+      "type": "string",
+      "default": "Your Dance Journey",
+      "description": "Title displayed on the browser tab"
+    },
+    "header_text": {
+      "type": "string",
+      "default": "The Studio",
+      "description": "Text displayed in the top left header"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Unique URL slug for the room"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "theme": {
+      "type": "string",
+      "enum": [
+        "elegant",
+        "energetic",
+        "minimal"
+      ],
+      "default": "elegant"
+    },
+    "footer_settings": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "default": "The Studio"
+        },
+        "description": {
+          "type": "string",
+          "default": "Excellence in dance education since 2010."
+        },
+        "contact_email": {
+          "type": "string",
+          "default": "hello@studio.com"
+        },
+        "contact_phone": {
+          "type": "string",
+          "default": "(555) 123-4567"
+        },
+        "contact_address": {
+          "type": "string",
+          "default": "123 Dance Ave, NY"
+        },
+        "show_footer": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "default": {
+        "title": "The Studio",
+        "description": "Excellence in dance education since 2010.",
+        "contact_email": "hello@studio.com",
+        "contact_phone": "(555) 123-4567",
+        "contact_address": "123 Dance Ave, NY",
+        "show_footer": true
+      }
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "hero",
+              "text_block",
+              "video_embed",
+              "file_download",
+              "invoice_highlight",
+              "class_recommendation",
+              "cta_button",
+              "task_list",
+              "event_details_card"
+            ]
+          },
+          "content": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "subtitle": {
+                "type": "string"
+              },
+              "heading": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "caption": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "style": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "image_url": {
+                "type": "string"
+              },
+              "images": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "class_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "performance_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "isVisible": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "description": "Ordered list of content modules"
+    },
+    "last_viewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "parent_email"
+  ]
+}

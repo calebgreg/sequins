@@ -1,0 +1,51 @@
+{
+  "name": "LessonPlan",
+  "type": "object",
+  "properties": {
+    "class_id": {
+      "type": "string",
+      "description": "ID of the class this plan belongs to"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "theme": {
+      "type": "string",
+      "description": "Main focus of the lesson (e.g., 'Pirouette technique', 'Musicality')"
+    },
+    "level_adjustments": {
+      "type": "string",
+      "description": "Notes on how to adjust for different skill levels"
+    },
+    "timeline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "section": {
+            "type": "string"
+          },
+          "duration_minutes": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "music_suggestion": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Ordered list of class segments"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Teacher's private notes"
+    }
+  },
+  "required": [
+    "class_id",
+    "theme"
+  ]
+}

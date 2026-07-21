@@ -1,0 +1,76 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this message belongs to"
+    },
+    "content": {
+      "type": "string",
+      "description": "The message body"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject line"
+    },
+    "student_id": {
+      "type": "string",
+      "description": "ID of the related student"
+    },
+    "parent_email": {
+      "type": "string",
+      "description": "Email address of the recipient/sender"
+    },
+    "sender": {
+      "type": "string",
+      "enum": [
+        "user",
+        "parent",
+        "system"
+      ],
+      "default": "user"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound"
+      ],
+      "default": "outbound"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "email",
+        "sms",
+        "app"
+      ],
+      "default": "email"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "sent",
+        "failed",
+        "read"
+      ],
+      "default": "sent"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_alert": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "studio_id",
+    "content",
+    "sender",
+    "student_id"
+  ]
+}

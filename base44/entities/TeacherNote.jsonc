@@ -1,0 +1,38 @@
+{
+  "name": "TeacherNote",
+  "type": "object",
+  "properties": {
+    "studio_id": {
+      "type": "string",
+      "description": "ID of the studio this note belongs to"
+    },
+    "teacher_id": {
+      "type": "string",
+      "description": "ID of the teacher this note is about"
+    },
+    "teacher_name": {
+      "type": "string",
+      "description": "Name of the teacher (snapshot)"
+    },
+    "content": {
+      "type": "string",
+      "description": "The note content"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Name of who wrote the note"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the note"
+    }
+  },
+  "required": [
+    "studio_id",
+    "teacher_id",
+    "content",
+    "author_name",
+    "date"
+  ]
+}
