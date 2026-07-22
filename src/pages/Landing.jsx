@@ -649,72 +649,51 @@ export default function Landing() {
 
         {/* ════════════ PRICING ════════════ */}
         {page === 'pricing' && (() => {
-          const annual = annualBilling;
-          const setAnnual = setAnnualBilling;
           const plans = [
-            { tier: 'starting', students: '< 100', monthly: '$65', annual: '$50' },
-            { tier: 'growing', students: '101 – 500', monthly: '$125', annual: '$100' },
-            { tier: 'grown',   students: '> 501',    monthly: '$215', annual: '$185' },
+            { students: 'Under 100 students', monthly: '$65/mo', annual: '$50/mo annual' },
+            { students: '101 – 500 students', monthly: '$125/mo', annual: '$100/mo annual' },
+            { students: '501+ students', monthly: '$215/mo', annual: '$185/mo annual' },
           ];
           return (
             <div>
-              <section style={{ ...sec, paddingTop: 180, textAlign: 'center', position: 'relative' }}>
+              <section style={{ ...secWide, paddingTop: 180, position: 'relative' }}>
                 <Spotlights />
                 <Rv style={{ position: 'relative' }}><SecLabel>Pricing</SecLabel></Rv>
                 <Rv delay={0.05} style={{ position: 'relative' }}>
-                  <h1 style={{ fontSize: 'clamp(42px,6.5vw,76px)', letterSpacing: -1, lineHeight: 1.02, ...serifSeq, marginBottom: 16 }}>
-                    Simple. No surprises.
+                  <h1 style={{ fontSize: 'clamp(42px,7vw,84px)', letterSpacing: -1.5, lineHeight: 1, marginBottom: 12 }}>
+                    <span style={{ ...etchedText, fontFamily: "'Playfair Display', serif", fontWeight: 900 }}>Simple. </span>
+                    <span style={{ ...serifSeq, fontStyle: 'italic' }}>No surprises.</span>
                   </h1>
-                  <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7, maxWidth: 380, margin: '0 auto 40px' }}>
+                  <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7, maxWidth: 420, marginTop: 20 }}>
                     One plan per studio size. Everything included.
                   </p>
                 </Rv>
 
-                <Rv delay={0.15} style={{ position: 'relative' }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '10px 20px', borderRadius: 999, ...cardStyle }}>
-                    <span style={{ fontSize: 13, fontWeight: annual ? 700 : 300, color: annual ? C.roseBright : C.textFainter }}>annual</span>
-                    <div onClick={() => setAnnual(a => !a)} style={{ width: 44, height: 24, borderRadius: 999, background: 'rgba(232,180,184,0.18)', cursor: 'pointer', position: 'relative', border: '1px solid rgba(232,180,184,0.25)' }}>
-                      <div style={{ position: 'absolute', top: 3, left: annual ? 3 : 19, width: 16, height: 16, borderRadius: '50%', background: C.rose, transition: 'left 0.25s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
-                    </div>
-                    <span style={{ fontSize: 13, fontWeight: annual ? 300 : 700, color: annual ? C.textFainter : C.roseBright }}>monthly</span>
-                    {annual && <span style={{ fontSize: 11, fontWeight: 500, color: C.sage }}>save ~20%</span>}
-                  </div>
-                </Rv>
-              </section>
-              <Dv />
-
-              <section style={{ ...secWide, paddingTop: 80, paddingBottom: 80 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
-                  {plans.map(({ tier, students, monthly, annual: annualPrice }, i) => (
-                    <Rv key={tier} delay={i * 0.08}>
-                      <div style={{ borderRadius: 24, padding: '40px 32px', textAlign: 'center', ...cardStyle }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 28, ...seqFill, display: 'inline-block' }}>{tier}</div>
-                        <div style={{ marginBottom: 24 }}>
-                          <span style={{ fontSize: 'clamp(34px,4vw,44px)', ...serifSeq }}>{students}</span>
-                          <div style={{ fontSize: 12, color: C.textFainter, fontWeight: 300, marginTop: 6 }}>students</div>
-                        </div>
-                        <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4, marginBottom: 36 }}>
-                          <span style={{ fontSize: 26, fontWeight: 700, ...etchedText }}>{annual ? annualPrice : monthly}</span>
-                          <span style={{ fontSize: 12, color: C.textFainter, fontWeight: 300 }}>/ month</span>
-                        </div>
-                        <button onClick={() => showPage('access')} style={{ width: '100%', padding: '14px 0', borderRadius: 999, fontSize: 14, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', ...pinkButton }}
-                          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
-                          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-                          Book a Demo →
-                        </button>
+                <div style={{ marginTop: 72, position: 'relative' }}>
+                  {plans.map(({ students, monthly, annual: annualPrice }, i) => (
+                    <Rv key={students} delay={i * 0.1}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', padding: '34px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(232,180,184,0.12)' }}>
+                        <span style={{ fontSize: 'clamp(22px,3vw,30px)', fontWeight: 600, color: C.text, letterSpacing: -0.5 }}>{students}</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 12 }}>
+                          <span style={{ fontSize: 'clamp(24px,3vw,32px)', fontWeight: 700, ...etchedText }}>{monthly}</span>
+                          <span style={{ fontSize: 13, fontWeight: 300, color: C.textFainter }}>{annualPrice}</span>
+                        </span>
                       </div>
                     </Rv>
                   ))}
+                  <div style={{ borderTop: '1px solid rgba(232,180,184,0.12)' }} />
                 </div>
-              </section>
-              <Dv />
-              <section style={{ padding: '100px 44px', textAlign: 'center' }}>
-                <Rv>
-                  <p style={{ fontSize: 13, color: C.textFainter, lineHeight: 1.75, fontWeight: 300 }}>
-                    All plans include a free onboarding session. No credit card required to start.
-                  </p>
+
+                <Rv delay={0.35} style={{ position: 'relative', marginTop: 56, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>
+                  <button onClick={() => showPage('access')} style={{ height: 52, padding: '0 38px', borderRadius: 999, fontSize: 15, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', ...pinkButton }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                    Book a Demo <ArrowRight style={{ display: 'inline', width: 15, height: 15, marginLeft: 4, verticalAlign: -2 }} />
+                  </button>
+                  <span style={{ fontSize: 13, color: C.textFainter, fontWeight: 300 }}>Free onboarding included · No credit card required</span>
                 </Rv>
               </section>
+              <div style={{ height: 120 }} />
             </div>
           );
         })()}
