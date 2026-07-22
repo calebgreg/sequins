@@ -144,8 +144,8 @@ const WaitlistInput = ({ id }) => {
 // they rasterize up-front instead of popping in blocky on first paint.
 const Spotlights = () => (
   <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-    <div style={{ position: 'absolute', top: -80, left: '18%', width: 420, height: 720, background: 'linear-gradient(180deg, rgba(244,206,206,0.14), transparent 75%)', transform: 'rotate(16deg) translateZ(0)', filter: 'blur(38px)', transformOrigin: 'top center', willChange: 'transform, filter' }} />
-    <div style={{ position: 'absolute', top: -80, right: '18%', width: 420, height: 720, background: 'linear-gradient(180deg, rgba(244,206,206,0.12), transparent 75%)', transform: 'rotate(-16deg) translateZ(0)', filter: 'blur(38px)', transformOrigin: 'top center', willChange: 'transform, filter' }} />
+    <div style={{ position: 'absolute', top: -80, left: '18%', width: 420, height: 720, background: 'linear-gradient(180deg, rgba(244,206,206,0.14), transparent 75%)', transform: 'translateZ(0) rotate(16deg)', filter: 'blur(38px)', transformOrigin: 'top center', willChange: 'transform, filter' }} />
+    <div style={{ position: 'absolute', top: -80, right: '18%', width: 420, height: 720, background: 'linear-gradient(180deg, rgba(244,206,206,0.12), transparent 75%)', transform: 'translateZ(0) rotate(-16deg)', filter: 'blur(38px)', transformOrigin: 'top center', willChange: 'transform, filter' }} />
     <div style={{ position: 'absolute', top: -120, left: '50%', transform: 'translate(-50%, 0) translateZ(0)', width: 560, height: 800, background: 'radial-gradient(ellipse 50% 60% at 50% 0%, rgba(232,180,184,0.16), transparent 70%)', filter: 'blur(20px)', willChange: 'transform, filter' }} />
   </div>
 );
