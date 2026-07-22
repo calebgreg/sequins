@@ -140,11 +140,13 @@ const WaitlistInput = ({ id }) => {
 };
 
 // ─── Spotlight cones ───
+// Blurred layers get their own GPU compositing layer (translateZ + willChange) so
+// they rasterize up-front instead of popping in blocky on first paint.
 const Spotlights = () => (
   <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-    <div style={{ position: 'absolute', top: -80, left: '18%', width: 420, height: 720, background: 'linear-gradient(180deg, rgba(244,206,206,0.14), transparent 75%)', transform: 'rotate(16deg)', filter: 'blur(38px)', transformOrigin: 'top center' }} />
-    <div style={{ position: 'absolute', top: -80, right: '18%', width: 420, height: 720, background: 'linear-gradient(180deg, rgba(244,206,206,0.12), transparent 75%)', transform: 'rotate(-16deg)', filter: 'blur(38px)', transformOrigin: 'top center' }} />
-    <div style={{ position: 'absolute', top: -120, left: '50%', transform: 'translateX(-50%)', width: 560, height: 800, background: 'radial-gradient(ellipse 50% 60% at 50% 0%, rgba(232,180,184,0.16), transparent 70%)', filter: 'blur(20px)' }} />
+    <div style={{ position: 'absolute', top: -80, left: '18%', width: 420, height: 720, background: 'linear-gradient(180deg, rgba(244,206,206,0.14), transparent 75%)', transform: 'rotate(16deg) translateZ(0)', filter: 'blur(38px)', transformOrigin: 'top center', willChange: 'transform, filter' }} />
+    <div style={{ position: 'absolute', top: -80, right: '18%', width: 420, height: 720, background: 'linear-gradient(180deg, rgba(244,206,206,0.12), transparent 75%)', transform: 'rotate(-16deg) translateZ(0)', filter: 'blur(38px)', transformOrigin: 'top center', willChange: 'transform, filter' }} />
+    <div style={{ position: 'absolute', top: -120, left: '50%', transform: 'translate(-50%, 0) translateZ(0)', width: 560, height: 800, background: 'radial-gradient(ellipse 50% 60% at 50% 0%, rgba(232,180,184,0.16), transparent 70%)', filter: 'blur(20px)', willChange: 'transform, filter' }} />
   </div>
 );
 
@@ -174,10 +176,10 @@ export default function Landing() {
   return (
     <div style={{ fontFamily: "'DM Sans', -apple-system, sans-serif", background: C.bg, minHeight: '100vh', overflowX: 'hidden', WebkitFontSmoothing: 'antialiased', color: C.text }}>
 
-      {/* ── Ambient glow ── */}
+      {/* ── Ambient glow (soft radial gradients — no blur filter, animate opacity/scale on GPU) ── */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-        <div style={{ position: 'absolute', top: '30%', left: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(196,168,232,0.05) 0%, transparent 65%)', animation: 'sqBreathe 14s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', bottom: '-15%', right: '-8%', width: 800, height: 800, borderRadius: '50%', background: 'radial-gradient(circle, rgba(232,180,184,0.06) 0%, transparent 65%)', animation: 'sqBreathe 11s ease-in-out infinite reverse' }} />
+        <div style={{ position: 'absolute', top: '30%', left: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(196,168,232,0.05) 0%, transparent 65%)', animation: 'sqBreathe 14s ease-in-out infinite', willChange: 'transform, opacity', transform: 'translateZ(0)' }} />
+        <div style={{ position: 'absolute', bottom: '-15%', right: '-8%', width: 800, height: 800, borderRadius: '50%', background: 'radial-gradient(circle, rgba(232,180,184,0.06) 0%, transparent 65%)', animation: 'sqBreathe 11s ease-in-out infinite reverse', willChange: 'transform, opacity', transform: 'translateZ(0)' }} />
         <div style={{ position: 'absolute', inset: 0, opacity: 0.04, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
       </div>
 
@@ -291,7 +293,7 @@ export default function Landing() {
               <Rv delay={0.12}>
                 <div style={{ position: 'relative', maxWidth: 560, margin: '0 auto' }}>
                   {/* spotlight on card */}
-                  <div style={{ position: 'absolute', top: -140, left: '50%', transform: 'translateX(-50%)', width: 500, height: 400, background: 'radial-gradient(ellipse 55% 60% at 50% 0%, rgba(244,206,206,0.14), transparent 70%)', filter: 'blur(16px)', pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', top: -140, left: '50%', transform: 'translate(-50%, 0) translateZ(0)', width: 500, height: 400, background: 'radial-gradient(ellipse 55% 60% at 50% 0%, rgba(244,206,206,0.14), transparent 70%)', filter: 'blur(16px)', pointerEvents: 'none', willChange: 'transform, filter' }} />
                   <div style={{ ...cardStyle, borderRadius: 22, padding: '28px 30px', position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                       <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.sage, animation: 'sqPulse 2s ease-in-out infinite' }} />
