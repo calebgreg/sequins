@@ -61,6 +61,19 @@ const cardStyle = {
   backdropFilter: 'blur(12px)',
 };
 
+// A more crafted, dimensional card surface (Supabase-grade): layered gradient fill,
+// hairline border, top-edge highlight, and a soft outer + inner glow.
+const panelStyle = {
+  background: 'linear-gradient(180deg, rgba(42,30,36,0.9) 0%, rgba(30,22,26,0.9) 100%)',
+  border: '1px solid rgba(232,180,184,0.16)',
+  boxShadow: '0 24px 70px -24px rgba(0,0,0,0.75), 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.07)',
+  backdropFilter: 'blur(16px)',
+  position: 'relative',
+  overflow: 'hidden',
+};
+
+const mono = "'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+
 const pinkButton = {
   background: 'linear-gradient(145deg, #d99aa2, #c9848f)',
   color: '#2a1a1e',
@@ -291,21 +304,45 @@ export default function Landing() {
                 </p>
               </Rv>
               <Rv delay={0.12}>
-                <div style={{ position: 'relative', maxWidth: 560, margin: '0 auto' }}>
+                <div style={{ position: 'relative', maxWidth: 520, margin: '0 auto' }}>
                   {/* spotlight on card */}
                   <div style={{ position: 'absolute', top: -140, left: '50%', transform: 'translate(-50%, 0) translateZ(0)', width: 500, height: 400, background: 'radial-gradient(ellipse 55% 60% at 50% 0%, rgba(244,206,206,0.14), transparent 70%)', filter: 'blur(16px)', pointerEvents: 'none', willChange: 'transform, filter' }} />
-                  <div style={{ ...cardStyle, borderRadius: 22, padding: '28px 30px', position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.sage, animation: 'sqPulse 2s ease-in-out infinite' }} />
-                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: C.roseDark }}>Sequins · Just now</span>
+                  <div style={{ ...panelStyle, borderRadius: 18 }}>
+                    {/* top-edge highlight */}
+                    <div style={{ position: 'absolute', top: 0, left: 24, right: 24, height: 1, background: 'linear-gradient(90deg, transparent, rgba(244,206,206,0.35), transparent)' }} />
+
+                    {/* Header row */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 22px', borderBottom: '1px solid rgba(232,180,184,0.1)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                        <div style={{ position: 'relative', width: 8, height: 8, flexShrink: 0 }}>
+                          <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: C.sage }} />
+                          <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: `1px solid ${C.sage}`, opacity: 0.4, animation: 'sqRing 2.2s ease-out infinite' }} />
+                        </div>
+                        <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: C.rose }}>Sequins</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 6, background: 'rgba(232,196,152,0.12)', border: '1px solid rgba(232,196,152,0.25)', color: C.amber }}>Retention risk</span>
+                      </div>
+                      <span style={{ fontFamily: mono, fontSize: 11, color: C.textFainter, letterSpacing: 0.5 }}>just now</span>
                     </div>
-                    <p style={{ fontSize: 16, color: C.text, lineHeight: 1.75, marginBottom: 20 }}>
-                      Chloe has missed 3 Ballet classes and has an overdue invoice. She's at high risk of not re-enrolling — a personal check-in is drafted for your review.
-                    </p>
-                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: C.sage, cursor: 'pointer' }}>Review draft</span>
-                      <span style={{ color: 'rgba(232,180,184,0.3)' }}>·</span>
-                      <span style={{ fontSize: 14, color: C.textFaint, cursor: 'pointer' }}>View profile</span>
+
+                    {/* Body */}
+                    <div style={{ padding: '20px 22px 22px' }}>
+                      <p style={{ fontSize: 15.5, color: C.text, lineHeight: 1.7, marginBottom: 18, textAlign: 'left' }}>
+                        <span style={{ fontWeight: 600, color: C.roseBright }}>Chloe</span> has missed 3 Ballet classes and has an overdue invoice. She's at high risk of not re-enrolling — a personal check-in is drafted for your review.
+                      </p>
+
+                      {/* Action row */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <button style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: 'pointer', background: 'rgba(143,212,174,0.12)', border: '1px solid rgba(143,212,174,0.3)', color: C.sage, transition: 'all 0.2s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(143,212,174,0.2)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'rgba(143,212,174,0.12)'}>
+                          <Sparkles style={{ width: 13, height: 13 }} /> Review draft
+                        </button>
+                        <button style={{ padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(232,180,184,0.18)', color: C.textFaint, transition: 'all 0.2s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(232,180,184,0.08)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                          View profile
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -727,12 +764,13 @@ export default function Landing() {
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap');
         @keyframes sqFadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         @keyframes sqFadeIn { from { opacity:0; } to { opacity:1; } }
         @keyframes sqBreathe { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:0.8} }
         @keyframes sqScrollLine { 0%,100%{opacity:0.25;transform:scaleY(1)}50%{opacity:0.8;transform:scaleY(1.2)} }
         @keyframes sqPulse { 0%,100%{box-shadow:0 0 0 0 rgba(143,212,174,0.3)}50%{box-shadow:0 0 0 5px rgba(143,212,174,0)} }
+        @keyframes sqRing { 0%{transform:scale(1);opacity:0.5}100%{transform:scale(2.6);opacity:0} }
         * { margin:0; padding:0; box-sizing:border-box; }
         .sq-nav-links { display: flex; }
         .sq-hamburger { display: none !important; }
