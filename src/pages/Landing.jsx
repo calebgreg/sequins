@@ -84,7 +84,19 @@ const stage = {
 
 function Eyebrow({ children }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, fontFamily: mono, color: C.rose, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 24,
+        fontFamily: mono,
+        color: C.rose,
+        fontSize: 10,
+        letterSpacing: '0.16em',
+        textTransform: 'uppercase',
+      }}
+    >
       <span style={{ width: 18, height: 1, background: C.rose }} />
       {children}
     </div>
@@ -95,7 +107,15 @@ function StatusDot({ color = C.sage }) {
   return (
     <span style={{ position: 'relative', width: 7, height: 7, display: 'inline-block' }}>
       <span style={{ position: 'absolute', inset: 0, borderRadius: 20, background: color }} />
-      <span style={{ position: 'absolute', inset: -3, borderRadius: 20, border: `1px solid ${color}`, opacity: 0.35 }} />
+      <span
+        style={{
+          position: 'absolute',
+          inset: -3,
+          borderRadius: 20,
+          border: `1px solid ${color}`,
+          opacity: 0.35,
+        }}
+      />
     </span>
   );
 }
@@ -103,8 +123,13 @@ function StatusDot({ color = C.sage }) {
 function ProductCell({ icon: Icon, label, title, body, accent, children, className = '' }) {
   return (
     <article className={`sq-product-cell ${className}`}>
-      <div className="sq-cell-label"><Icon size={14} strokeWidth={1.6} color={accent} /><span>{label}</span></div>
-      <h3>{title}</h3><p>{body}</p>{children}
+      <div className="sq-cell-label">
+        <Icon size={14} strokeWidth={1.6} color={accent} />
+        <span>{label}</span>
+      </div>
+      <h3>{title}</h3>
+      <p>{body}</p>
+      {children}
     </article>
   );
 }
@@ -112,38 +137,87 @@ function ProductCell({ icon: Icon, label, title, body, accent, children, classNa
 function ProductGrid() {
   return (
     <div className="sq-product-grid">
-      <ProductCell className="sq-cell-wide" icon={CalendarDays} label="Studio calendar" title="The whole studio, in one view." body="Classes, rooms, teachers, trials, and conflicts stay synchronized without the spreadsheet archaeology." accent={C.rose}>
+      <ProductCell
+        className="sq-cell-wide"
+        icon={CalendarDays}
+        label="Studio calendar"
+        title="The whole studio, in one view."
+        body="Classes, rooms, teachers, trials, and conflicts stay synchronized without the spreadsheet archaeology."
+        accent={C.rose}
+      >
         <div className="sq-calendar">
-          <div className="sq-calendar-head"><span>Today · Wednesday</span><span>14 classes</span></div>
+          <div className="sq-calendar-head">
+            <span>Today · Wednesday</span>
+            <span>14 classes</span>
+          </div>
           {[
             ['04:00', 'Ballet foundations', 'Studio A', C.rose],
             ['05:30', 'Jazz intermediate', 'Studio B', C.purple],
             ['06:00', 'Ballet advanced', 'Studio A', C.blue],
           ].map(([time, name, room, color]) => (
-            <div className="sq-calendar-row" key={name}><span className="sq-mono">{time}</span><span className="sq-event-line" style={{ background: color }} /><strong>{name}</strong><span>{room}</span></div>
+            <div className="sq-calendar-row" key={name}>
+              <span className="sq-mono">{time}</span>
+              <span className="sq-event-line" style={{ background: color }} />
+              <strong>{name}</strong>
+              <span>{room}</span>
+            </div>
           ))}
         </div>
       </ProductCell>
 
-      <ProductCell icon={Sparkles} label="Sequins intelligence" title="AI that notices—and then helps." body="Retention risk, billing friction, and follow-ups surface with a thoughtful next step." accent={C.sage}>
+      <ProductCell
+        icon={Sparkles}
+        label="Sequins intelligence"
+        title="AI that notices—and then helps."
+        body="Retention risk, billing friction, and follow-ups surface with a thoughtful next step."
+        accent={C.sage}
+      >
         <div className="sq-signal">
-          <div><StatusDot /><span className="sq-mono"> RETENTION SIGNAL</span></div>
-          <p>Chloe missed three classes. A personal check-in is ready for your review.</p>
+          <div>
+            <StatusDot />
+            <span className="sq-mono"> RETENTION SIGNAL</span>
+          </div>
+          <p>
+            Chloe missed three classes. A personal check-in is ready for your review.
+          </p>
           <button>Review draft <ArrowRight size={12} /></button>
         </div>
       </ProductCell>
 
-      <ProductCell icon={CircleDollarSign} label="Billing" title="Revenue, without the runaround." body="Plans, discounts, autopay, and gentle reminders run quietly in the background." accent={C.amber}>
-        <div className="sq-metric"><span>Collected this month</span><strong>$48,920</strong><div><span style={{ width: '82%' }} /></div><small>96.4% collected on time</small></div>
+      <ProductCell
+        icon={CircleDollarSign}
+        label="Billing"
+        title="Revenue, without the runaround."
+        body="Plans, discounts, autopay, and gentle reminders run quietly in the background."
+        accent={C.amber}
+      >
+        <div className="sq-metric">
+          <span>Collected this month</span>
+          <strong>$48,920</strong>
+          <div><span style={{ width: '82%' }} /></div>
+          <small>96.4% collected on time</small>
+        </div>
       </ProductCell>
 
-      <ProductCell className="sq-cell-wide" icon={Users} label="Family room" title="Every family knows what comes next." body="Schedules, balances, progress, messages, and recital details—clear, calm, and always current." accent={C.blue}>
+      <ProductCell
+        className="sq-cell-wide"
+        icon={Users}
+        label="Family room"
+        title="Every family knows what comes next."
+        body="Schedules, balances, progress, messages, and recital details—clear, calm, and always current."
+        accent={C.blue}
+      >
         <div className="sq-family-row">
           {[
             ['Next class', 'Ballet · Mon 4:00', C.rose],
             ['Balance', '$195 · Autopay on', C.sage],
             ['Progress', 'Ready for pointe', C.purple],
-          ].map(([label, value, color]) => <div key={label}><span style={{ color }}>{label}</span><strong>{value}</strong></div>)}
+          ].map(([label, value, color]) => (
+            <div key={label}>
+              <span style={{ color }}>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          ))}
         </div>
       </ProductCell>
     </div>
@@ -152,73 +226,142 @@ function ProductGrid() {
 
 function Home({ showPage }) {
   return (
-    <main>
-      <section className="sq-hero">
-        <div className="sq-hero-glow" />
-        <div style={stage} className="sq-hero-grid">
-          <div>
-            <Eyebrow>Operating system for dance studios</Eyebrow>
-            <h1>Run the studio.<br /><span style={sequinText}>Keep the magic.</span></h1>
-            <div className="sq-hero-actions">
-              <button style={buttonPrimary} onClick={() => showPage('access')}>Book a demo <ArrowRight size={14} /></button>
-              <button style={buttonSecondary} onClick={() => showPage('product')}>Explore the platform</button>
+    <>
+      <main>
+        <section className="sq-hero">
+          <div className="sq-hero-glow" />
+          <div style={stage} className="sq-hero-grid">
+            <div>
+              <Eyebrow>Operating system for dance studios</Eyebrow>
+              <h1 style={sequinText}>
+                Run the studio.
+                <br />
+                Keep the magic.
+              </h1>
+              <div className="sq-hero-actions">
+                <button style={buttonPrimary} onClick={() => showPage('access')}>
+                  Book a demo <ArrowRight size={14} />
+                </button>
+                <button style={buttonSecondary} onClick={() => showPage('product')}>
+                  Explore the platform
+                </button>
+              </div>
+            </div>
+            <div className="sq-hero-copy">
+              <p>
+                Sequins brings enrollment, scheduling, billing, family communication,
+                and studio intelligence into one beautifully run system.
+              </p>
+              <div className="sq-proof-line">
+                <StatusDot />
+                <span>Built for the 6pm rush, not the quarterly demo.</span>
+              </div>
             </div>
           </div>
-          <div className="sq-hero-copy">
-            <p>Sequins brings enrollment, scheduling, billing, family communication, and studio intelligence into one beautifully run system.</p>
-            <div className="sq-proof-line"><StatusDot /><span>Built for the 6pm rush, not the quarterly demo.</span></div>
+          <div style={stage}>
+            <ProductGrid />
           </div>
-        </div>
-        <div style={stage}><ProductGrid /></div>
-      </section>
+        </section>
 
-      <section className="sq-statement">
-        <div style={stage} className="sq-statement-grid">
-          <Eyebrow>One calm system</Eyebrow>
-          <div><h2>The work disappears.<br /><span>The craft doesn’t.</span></h2><p>Sequins handles the operational choreography so owners can lead, teachers can teach, and families can feel cared for.</p></div>
-        </div>
-      </section>
-
-      <section className="sq-flow">
-        <div style={stage}>
-          <div className="sq-section-head"><div><Eyebrow>From first inquiry to final bow</Eyebrow><h2>A single thread through the entire season.</h2></div><p>Every handoff stays connected, so no family—or opportunity—falls between tools.</p></div>
-          <div className="sq-flow-list">
-            {[
-              ['01', 'Inquiry arrives', 'Captured with interests, age, source, and availability.'],
-              ['02', 'Trial is booked', 'The right class, teacher, and room are matched automatically.'],
-              ['03', 'Teacher gets context', 'A clean dossier appears before class—not another inbox request.'],
-              ['04', 'Follow-up is drafted', 'Personal, timely, and ready for a human yes.'],
-              ['05', 'Family enrolls', 'Plan, billing, portal, and schedule begin as one connected flow.'],
-            ].map(([number, title, copy], i) => (
-              <div className="sq-flow-row" key={number}><span className="sq-mono">{number}</span><h3>{title}</h3><p>{copy}</p><span className="sq-flow-state">{i === 4 ? 'ENROLLED' : 'AUTOMATED'}</span></div>
-            ))}
+        <section className="sq-statement">
+          <div style={stage} className="sq-statement-grid">
+            <Eyebrow>One calm system</Eyebrow>
+            <div>
+              <h2>
+                The work disappears.
+                <br />
+                <span>The craft doesn’t.</span>
+              </h2>
+              <p>
+                Sequins handles the operational choreography so owners can lead,
+                teachers can teach, and families can feel cared for.
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="sq-cta">
-        <div className="sq-cta-glow" /><div style={stage}><SequinsLogo size="lg" /><h2>Your studio already has a rhythm.<br /><span style={sequinText}>Let the software find it.</span></h2><button style={buttonPrimary} onClick={() => showPage('access')}>Book a private demo <ArrowRight size={14} /></button></div>
-      </section>
-    </main>
+        <section className="sq-flow">
+          <div style={stage}>
+            <div className="sq-section-head">
+              <div>
+                <Eyebrow>From first inquiry to final bow</Eyebrow>
+                <h2>A single thread through the entire season.</h2>
+              </div>
+              <p>
+                Every handoff stays connected, so no family—or opportunity—falls
+                between tools.
+              </p>
+            </div>
+            <div className="sq-flow-list">
+              {[
+                ['01', 'Inquiry arrives', 'Captured with interests, age, source, and availability.'],
+                ['02', 'Trial is booked', 'The right class, teacher, and room are matched automatically.'],
+                ['03', 'Teacher gets context', 'A clean dossier appears before class—not another inbox request.'],
+                ['04', 'Follow-up is drafted', 'Personal, timely, and ready for a human yes.'],
+                ['05', 'Family enrolls', 'Plan, billing, portal, and schedule begin as one connected flow.'],
+              ].map(([number, title, copy], i) => (
+                <div className="sq-flow-row" key={number}>
+                  <span className="sq-mono">{number}</span>
+                  <h3>{title}</h3>
+                  <p>{copy}</p>
+                  <span className="sq-flow-state">{i === 4 ? 'ENROLLED' : 'AUTOMATED'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="sq-cta">
+          <div className="sq-cta-glow" />
+          <div style={stage}>
+            <SequinsLogo size="lg" />
+            <h2>
+              Your studio already has a rhythm.
+              <br />
+              <span style={sequinText}>Let the software find it.</span>
+            </h2>
+            <button style={buttonPrimary} onClick={() => showPage('access')}>
+              Book a private demo <ArrowRight size={14} />
+            </button>
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
 
 function ProductPage({ showPage }) {
   return (
-    <main className="sq-inner-page"><div style={stage}>
-      <Eyebrow>Product</Eyebrow>
-      <div className="sq-inner-intro"><h1>Everything a studio needs. Nothing it doesn’t.</h1><p>A connected operating system for the people running the studio, the teachers on the floor, and the families at home.</p></div>
-      <ProductGrid />
-      <div className="sq-principles">
-        {[
-          ['01', 'Ambient, not demanding', 'The right signal appears at the right moment.'],
-          ['02', 'Human in the loop', 'Sequins drafts and flags. You make the call.'],
-          ['03', 'Built for the floor', 'Fast, clear, and useful in the middle of a real class day.'],
-          ['04', 'One source of truth', 'No gaps between scheduling, billing, and communication.'],
-        ].map(([n, title, copy]) => <div key={n}><span className="sq-mono">{n}</span><h3>{title}</h3><p>{copy}</p></div>)}
+    <main className="sq-inner-page">
+      <div style={stage}>
+        <Eyebrow>Product</Eyebrow>
+        <div className="sq-inner-intro">
+          <h1>Everything a studio needs. Nothing it doesn’t.</h1>
+          <p>
+            A connected operating system for the people running the studio, the
+            teachers on the floor, and the families at home.
+          </p>
+        </div>
+        <ProductGrid />
+        <div className="sq-principles">
+          {[
+            ['01', 'Ambient, not demanding', 'The right signal appears at the right moment.'],
+            ['02', 'Human in the loop', 'Sequins drafts and flags. You make the call.'],
+            ['03', 'Built for the floor', 'Fast, clear, and useful in the middle of a real class day.'],
+            ['04', 'One source of truth', 'No gaps between scheduling, billing, and communication.'],
+          ].map(([n, title, copy]) => (
+            <div key={n}>
+              <span className="sq-mono">{n}</span>
+              <h3>{title}</h3>
+              <p>{copy}</p>
+            </div>
+          ))}
+        </div>
+        <button style={buttonPrimary} onClick={() => showPage('access')}>
+          See Sequins in action <ArrowRight size={14} />
+        </button>
       </div>
-      <button style={buttonPrimary} onClick={() => showPage('access')}>See Sequins in action <ArrowRight size={14} /></button>
-    </div></main>
+    </main>
   );
 }
 
@@ -229,26 +372,56 @@ function PricingPage({ showPage }) {
     ['501+ students', '$215', '$185 / mo annual'],
   ];
   return (
-    <main className="sq-inner-page"><div style={stage}>
-      <Eyebrow>Pricing</Eyebrow>
-      <div className="sq-inner-intro"><h1>Simple by design. Everything included.</h1><p>One complete product, priced to the size of your studio.</p></div>
-      <div className="sq-pricing-table">{plans.map(([size, monthly, annual]) => <div className="sq-price-row" key={size}><span>{size}</span><strong>{monthly}<small> / month</small></strong><span>{annual}</span><button style={buttonSecondary} onClick={() => showPage('access')}>Book a demo</button></div>)}</div>
-      <div className="sq-included">{['Free onboarding', 'Unlimited staff', 'All product modules', 'No credit card required'].map(item => <span key={item}><Check size={13} /> {item}</span>)}</div>
-    </div></main>
+    <main className="sq-inner-page">
+      <div style={stage}>
+        <Eyebrow>Pricing</Eyebrow>
+        <div className="sq-inner-intro">
+          <h1>Simple by design. Everything included.</h1>
+          <p>One complete product, priced to the size of your studio.</p>
+        </div>
+        <div className="sq-pricing-table">
+          {plans.map(([size, monthly, annual]) => (
+            <div className="sq-price-row" key={size}>
+              <span>{size}</span>
+              <strong>{monthly}<small> / month</small></strong>
+              <span>{annual}</span>
+              <button style={buttonSecondary} onClick={() => showPage('access')}>Book a demo</button>
+            </div>
+          ))}
+        </div>
+        <div className="sq-included">
+          {['Free onboarding', 'Unlimited staff', 'All product modules', 'No credit card required'].map(item => (
+            <span key={item}><Check size={13} /> {item}</span>
+          ))}
+        </div>
+      </div>
+    </main>
   );
 }
 
 function CompanyPage() {
   return (
-    <main className="sq-inner-page"><div style={stage}>
-      <Eyebrow>Company</Eyebrow>
-      <div className="sq-inner-intro sq-company-intro"><h1>Built by people who love the craft.</h1><p>A clunky payment flow and a beautiful recital are experienced as the same studio. We believe how it’s done matters as much as what gets done.</p></div>
-      <div className="sq-beliefs">{[
-        ['Families feel everything.', 'Every operational detail is part of the experience.'],
-        ['Software should know its place.', 'Quiet when it can be. Essential when it needs to be.'],
-        ['Doing it isn’t doing it.', 'Doing it right is.'],
-      ].map(([title, copy]) => <div key={title}><h2>{title}</h2><p>{copy}</p></div>)}</div>
-    </div></main>
+    <main className="sq-inner-page">
+      <div style={stage}>
+        <Eyebrow>Company</Eyebrow>
+        <div className="sq-inner-intro sq-company-intro">
+          <h1>Built by people who love the craft.</h1>
+          <p>
+            A clunky payment flow and a beautiful recital are experienced as the
+            same studio. We believe how it’s done matters as much as what gets done.
+          </p>
+        </div>
+        <div className="sq-beliefs">
+          {[
+            ['Families feel everything.', 'Every operational detail is part of the experience.'],
+            ['Software should know its place.', 'Quiet when it can be. Essential when it needs to be.'],
+            ['Doing it isn’t doing it.', 'Doing it right is.'],
+          ].map(([title, copy]) => (
+            <div key={title}><h2>{title}</h2><p>{copy}</p></div>
+          ))}
+        </div>
+      </div>
+    </main>
   );
 }
 
@@ -263,18 +436,32 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const showPage = (next) => { setPage(next); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }); };
+  const showPage = (next) => {
+    setPage(next);
+    setMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
 
   return (
     <div className="sq-site">
       <nav className={scrolled ? 'sq-nav is-scrolled' : 'sq-nav'}>
         <div style={stage} className="sq-nav-inner">
-          <button className="sq-logo-button" onClick={() => showPage('home')}><SequinsLogo size="sm" /></button>
+          <button className="sq-logo-button" onClick={() => showPage('home')}>
+            <SequinsLogo size="sm" />
+          </button>
           <div className={menuOpen ? 'sq-nav-links is-open' : 'sq-nav-links'}>
-            {[['product', 'Product'], ['pricing', 'Pricing'], ['company', 'Company']].map(([id, label]) => <button className={page === id ? 'is-active' : ''} onClick={() => showPage(id)} key={id}>{label}</button>)}
+            {[
+              ['product', 'Product'],
+              ['pricing', 'Pricing'],
+              ['company', 'Company'],
+            ].map(([id, label]) => (
+              <button className={page === id ? 'is-active' : ''} onClick={() => showPage(id)} key={id}>{label}</button>
+            ))}
             <button className="sq-nav-cta" onClick={() => showPage('access')}>Book a demo</button>
           </div>
-          <button className="sq-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
+          <button className="sq-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </nav>
 
@@ -282,9 +469,20 @@ export default function Landing() {
       {page === 'product' && <ProductPage showPage={showPage} />}
       {page === 'pricing' && <PricingPage showPage={showPage} />}
       {page === 'company' && <CompanyPage />}
-      {page === 'access' && <main className="sq-access"><div className="sq-cta-glow" /><div style={stage}><BookDemoForm /></div></main>}
+      {page === 'access' && (
+        <main className="sq-access">
+          <div className="sq-cta-glow" />
+          <div style={stage}><BookDemoForm /></div>
+        </main>
+      )}
 
-      <footer className="sq-footer"><div style={stage} className="sq-footer-inner"><SequinsLogo size="sm" /><span>Operating system for dance studios.</span><span>© 2026 Sequins</span></div></footer>
+      <footer className="sq-footer">
+        <div style={stage} className="sq-footer-inner">
+          <SequinsLogo size="sm" />
+          <span>Operating system for dance studios.</span>
+          <span>© 2026 Sequins</span>
+        </div>
+      </footer>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
@@ -303,7 +501,7 @@ export default function Landing() {
         .sq-nav-links button:hover, .sq-nav-links button.is-active { color: ${C.text}; }
         .sq-nav-links .sq-nav-cta { padding: 9px 14px; border: 1px solid ${C.borderStrong}; border-radius: 7px; color: ${C.text}; background: rgba(255,255,255,.035); }
         .sq-menu { display: none; padding: 8px; }
-        .sq-hero { min-height: 100vh; padding: 164px 0 96px; position: relative; background-image: linear-gradient(${C.border} 1px, transparent 1px), linear-gradient(90deg, ${C.border} 1px, transparent 1px); background-size: 88px 88px; background-position: center top; }
+        .sq-hero { min-height: 100vh; padding: 164px 0 96px; position: relative; background: radial-gradient(ellipse 60% 42% at 28% 4%, rgba(233,181,188,.10), transparent 72%), radial-gradient(ellipse 44% 34% at 82% 18%, rgba(184,162,223,.045), transparent 76%), ${C.bg}; }
         .sq-hero:after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, ${C.bg}00 0%, ${C.bg}00 55%, ${C.bg} 100%); }
         .sq-hero-glow, .sq-cta-glow { position: absolute; width: 760px; height: 560px; border-radius: 50%; top: -200px; left: 18%; background: radial-gradient(circle, rgba(233,181,188,.13), transparent 68%); pointer-events: none; }
         .sq-hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.25fr .75fr; gap: 90px; align-items: end; margin-bottom: 96px !important; }
@@ -391,7 +589,7 @@ export default function Landing() {
           .sq-nav-links.is-open { display: flex; }
           .sq-nav-links button { text-align: left; padding: 12px; }
           .sq-menu { display: block; }
-          .sq-hero { padding-top: 130px; background-size: 64px 64px; }
+          .sq-hero { padding-top: 130px; }
           .sq-hero-grid, .sq-statement-grid, .sq-section-head, .sq-inner-intro { grid-template-columns: 1fr; gap: 38px; }
           .sq-hero-grid { margin-bottom: 66px !important; }
           .sq-product-grid { grid-template-columns: 1fr; }
@@ -405,6 +603,7 @@ export default function Landing() {
           .sq-price-row button { width: 120px; }
         }
         @media (max-width: 520px) {
+          ${''}
           .sq-hero h1 { font-size: 50px; }
           .sq-hero-actions { flex-direction: column; }
           .sq-hero-actions button { justify-content: center; width: 100%; }
