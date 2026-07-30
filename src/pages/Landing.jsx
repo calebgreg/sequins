@@ -314,11 +314,14 @@ function Home({ showPage }) {
         <section className="sq-cta">
           <div className="sq-cta-glow" />
           <div style={stage}>
-            <SequinsLogo size="lg" />
+            <div className="sq-cta-eyebrow">
+              <span />
+              Ready when you are
+            </div>
             <h2>
               Your studio already has a rhythm.
               <br />
-              <span style={sequinText}>Let the software find it.</span>
+              Let the software find it.
             </h2>
             <button style={buttonPrimary} onClick={() => showPage('access')}>
               Book a private demo <ArrowRight size={14} />
@@ -552,9 +555,11 @@ export default function Landing() {
         .sq-flow-row p { margin: 0; color: ${C.muted}; font-size: 13px; line-height: 1.5; }
         .sq-flow-state { color: ${C.sage}; border: 1px solid rgba(146,213,174,.2); background: rgba(146,213,174,.07); padding: 5px 7px; border-radius: 5px; font-family: ${mono}; font-size: 8px; text-align: center; letter-spacing: .08em; }
         .sq-cta { position: relative; text-align: center; padding: 170px 0; border-top: 1px solid ${C.border}; overflow: hidden; }
-        .sq-cta-glow { top: 10%; left: calc(50% - 380px); }
+        .sq-cta-glow { top: 10%; left: calc(50% - 380px); opacity: .5; }
         .sq-cta > div:last-child { position: relative; z-index: 1; }
-        .sq-cta h2 { font-size: clamp(40px, 5.2vw, 70px); margin: 28px auto 42px; }
+        .sq-cta-eyebrow { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 30px; color: ${C.rose}; font-family: ${mono}; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+        .sq-cta-eyebrow span { width: 18px; height: 1px; background: ${C.rose}; }
+        .sq-cta h2 { max-width: 980px; font-size: clamp(40px, 5.2vw, 70px); margin: 0 auto 42px; color: ${C.text}; }
         .sq-inner-page { padding: 170px 0 140px; min-height: calc(100vh - 90px); }
         .sq-inner-intro { display: grid; grid-template-columns: 1.3fr .7fr; gap: 80px; align-items: end; margin-bottom: 80px; }
         .sq-inner-intro h1 { font-size: clamp(46px, 6vw, 82px); }
