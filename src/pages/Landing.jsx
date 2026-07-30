@@ -77,6 +77,22 @@ const buttonSecondary = {
   cursor: 'pointer',
 };
 
+const sequinButton = {
+  height: 52,
+  padding: '0 28px',
+  borderRadius: 10,
+  border: '1px solid rgba(245,215,218,.55)',
+  backgroundImage: `linear-gradient(rgba(23,16,21,.34), rgba(23,16,21,.34)), url('${SEQUINS_URL}')`,
+  backgroundSize: 'auto, 110px',
+  backgroundPosition: 'center',
+  color: '#fff7f8',
+  fontSize: 14,
+  fontWeight: 700,
+  textShadow: '0 1px 5px rgba(0,0,0,.75)',
+  boxShadow: 'inset 0 1px rgba(255,255,255,.35), 0 12px 32px rgba(0,0,0,.28)',
+  cursor: 'pointer',
+};
+
 const stage = {
   width: 'min(1180px, calc(100% - 48px))',
   margin: '0 auto',
@@ -318,12 +334,12 @@ function Home({ showPage }) {
               <span />
               Ready when you are
             </div>
-            <h2>
+            <h2 style={sequinText}>
               Your studio already has a rhythm.
               <br />
               Let the software find it.
             </h2>
-            <button style={buttonPrimary} onClick={() => showPage('access')}>
+            <button style={sequinButton} onClick={() => showPage('access')}>
               Book a private demo <ArrowRight size={14} />
             </button>
           </div>
