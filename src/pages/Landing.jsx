@@ -77,8 +77,8 @@ const mono = "'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
 const pinkButton = {
   background: 'linear-gradient(145deg, #d99aa2, #c9848f)',
   color: '#2a1a1e',
-  border: '1px solid rgba(244,206,206,0.35)',
-  boxShadow: '0 8px 28px -6px rgba(217,154,162,0.45), inset 0 1px 1px rgba(255,255,255,0.35)',
+  border: '1px solid rgba(244,206,206,0.5)',
+  boxShadow: '0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(160,90,100,0.35)',
 };
 
 // ─── Scroll reveal ───
@@ -235,7 +235,8 @@ export default function Landing() {
               <Spotlights />
 
               <div style={{ opacity: 0, animation: 'sqFadeUp 0.8s ease 0.1s forwards', position: 'relative' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 999, marginBottom: 36, border: '1px solid rgba(232,180,184,0.2)', background: 'rgba(232,180,184,0.05)' }}>
+                <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 9, padding: '8px 18px', borderRadius: 999, marginBottom: 36, border: '1px solid rgba(232,180,184,0.18)', background: 'linear-gradient(180deg, rgba(232,180,184,0.09) 0%, rgba(232,180,184,0.03) 100%)', boxShadow: '0 4px 20px -6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: 0, left: 18, right: 18, height: 1, background: 'linear-gradient(90deg, transparent, rgba(244,206,206,0.4), transparent)' }} />
                   <Sparkles style={{ width: 12, height: 12, color: C.rose }} />
                   <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: 'uppercase', color: C.rose }}>Dance Studio Operating System</span>
                 </div>
@@ -255,9 +256,9 @@ export default function Landing() {
                   onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
                   Book a Demo <ArrowRight style={{ display: 'inline', width: 15, height: 15, marginLeft: 4, verticalAlign: -2 }} />
                 </button>
-                <button onClick={() => showPage('product')} style={{ height: 52, padding: '0 32px', borderRadius: 999, fontSize: 15, fontWeight: 400, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(232,180,184,0.2)', color: C.textFaint, transition: 'all 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(232,180,184,0.08)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <button onClick={() => showPage('product')} style={{ height: 52, padding: '0 32px', borderRadius: 999, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(232,180,184,0.18)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)', color: C.textFaint, transition: 'all 0.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(232,180,184,0.35)'; e.currentTarget.style.color = C.text; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232,180,184,0.18)'; e.currentTarget.style.color = C.textFaint; }}>
                   See how it works <ChevronDown style={{ display: 'inline', width: 15, height: 15, marginLeft: 4, verticalAlign: -2 }} />
                 </button>
               </div>
@@ -367,10 +368,11 @@ export default function Landing() {
                   { icon: TrendingUp, title: 'Growth', line: 'Every lead nudged at the right moment.', color: C.purple },
                 ].map(({ icon: Icon, title, line, color }, i) => (
                   <Rv key={title} delay={i * 0.08}>
-                    <div style={{ ...cardStyle, borderRadius: 20, padding: '30px 26px', height: '100%', transition: 'transform 0.25s' }}
-                      onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'}
-                      onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
-                      <div style={{ width: 42, height: 42, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, background: `${color}1a`, border: `1px solid ${color}30` }}>
+                    <div style={{ ...panelStyle, borderRadius: 18, padding: '28px 26px', height: '100%', transition: 'transform 0.25s, box-shadow 0.25s' }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 32px 80px -24px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.09)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = panelStyle.boxShadow; }}>
+                      <div style={{ position: 'absolute', top: 0, left: 24, right: 24, height: 1, background: `linear-gradient(90deg, transparent, ${color}55, transparent)` }} />
+                      <div style={{ width: 42, height: 42, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, background: `linear-gradient(180deg, ${color}22, ${color}0d)`, border: `1px solid ${color}30`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.08)` }}>
                         <Icon style={{ width: 18, height: 18, color }} />
                       </div>
                       <div style={{ fontSize: 17, fontWeight: 700, color: C.text, marginBottom: 8 }}>{title}</div>
