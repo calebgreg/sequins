@@ -78,26 +78,28 @@ const buttonSecondary = {
 };
 
 const sequinButton = {
-  height: 52,
-  padding: '0 28px',
-  borderRadius: 10,
+  height: 48,
+  padding: '0 22px',
+  borderRadius: 8,
   border: `1px solid ${C.borderStrong}`,
-  background: 'rgba(255,255,255,.025)',
-  boxShadow: 'inset 0 1px rgba(255,255,255,.06), 0 12px 32px rgba(0,0,0,.2)',
+  background: 'rgba(255,255,255,.018)',
+  boxShadow: 'inset 0 1px rgba(255,255,255,.05), 0 10px 28px rgba(0,0,0,.18)',
   cursor: 'pointer',
 };
 
 const sequinButtonText = {
   color: 'transparent',
   backgroundImage: `url('${SEQUINS_URL}')`,
-  backgroundSize: '90px',
+  backgroundSize: '62px',
   backgroundPosition: 'center',
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
-  fontSize: 14,
-  fontWeight: 800,
-  filter: 'drop-shadow(0 2px 8px rgba(245,215,218,.16))',
+  fontFamily: "'Playfair Display', serif",
+  fontSize: 18,
+  fontWeight: 900,
+  letterSpacing: '.005em',
+  filter: 'drop-shadow(0 2px 8px rgba(245,215,218,.14))',
 };
 
 const stage = {
