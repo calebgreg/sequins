@@ -1,784 +1,422 @@
-import React, { useState, useEffect, useRef } from 'react';
-import SequinsLogo from '@/components/landing/SequinsLogo';
+import { useEffect, useState } from 'react';
 import BookDemoForm from '@/components/landing/BookDemoForm';
-import { base44 } from '@/api/base44Client';
+import SequinsLogo from '@/components/landing/SequinsLogo';
 import {
-  Sparkles, ArrowRight, CheckCircle2, ChevronDown,
-  Calendar, DollarSign, TrendingUp, MessageSquare, Menu, X
+  ArrowRight,
+  CalendarDays,
+  Check,
+  CircleDollarSign,
+  Menu,
+  Sparkles,
+  Users,
+  X,
 } from 'lucide-react';
 
-// ─── Dark stage palette ───
 const C = {
-  bg: '#1c1418',
-  rose: '#e8b4b8',
-  roseBright: '#f4cece',
-  roseDark: '#c98f96',
-  text: '#f0e4e6',
-  textFaint: '#c9b2b8',
-  textFainter: '#8f767e',
-  sage: '#8fd4ae',
-  purple: '#c4a8e8',
-  amber: '#e8c498',
-  blue: '#a8ccdf',
+  bg: '#171015',
+  panel: '#1d151a',
+  panelRaised: '#21181e',
+  border: 'rgba(238, 194, 201, 0.14)',
+  borderStrong: 'rgba(238, 194, 201, 0.24)',
+  rose: '#e9b5bc',
+  roseBright: '#f5d7da',
+  text: '#f3e9eb',
+  muted: '#b9a6ab',
+  faint: '#806e74',
+  sage: '#92d5ae',
+  purple: '#b8a2df',
+  amber: '#e2bf8d',
+  blue: '#9cc8d9',
 };
 
-// ─── Sequins ───
-const SEQUINS_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png';
-const SEQUINS_SIZE = '80px';
+const SEQUINS_URL =
+  'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png';
 
-const etchedText = {
-  color: 'transparent',
-  backgroundImage: `linear-gradient(180deg, ${C.roseBright} 0%, ${C.rose} 100%)`,
-  backgroundClip: 'text',
-  WebkitBackgroundClip: 'text',
-  WebkitBoxDecorationBreak: 'clone',
-  paddingBottom: '0.15em',
-};
-
-const seqFill = {
+const sequinText = {
   color: 'transparent',
   backgroundImage: `url('${SEQUINS_URL}')`,
-  backgroundSize: SEQUINS_SIZE,
+  backgroundSize: '92px',
   backgroundPosition: 'center',
   backgroundRepeat: 'repeat',
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
-  paddingBottom: '0.12em',
+  filter: 'drop-shadow(0 4px 20px rgba(245, 215, 218, 0.16))',
 };
 
-const serifSeq = {
-  fontFamily: "'Playfair Display', serif",
+const displayText = {
+  fontFamily: "'Playfair Display', Georgia, serif",
   fontWeight: 900,
-  ...seqFill,
-  filter: 'drop-shadow(0 3px 16px rgba(244,206,206,0.22))',
-};
-
-const cardStyle = {
-  background: 'rgba(255,255,255,0.045)',
-  border: '1px solid rgba(232,180,184,0.14)',
-  boxShadow: '0 10px 40px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
-  backdropFilter: 'blur(12px)',
-};
-
-// A more crafted, dimensional card surface (Supabase-grade): layered gradient fill,
-// hairline border, top-edge highlight, and a soft outer + inner glow.
-const panelStyle = {
-  background: 'linear-gradient(180deg, rgba(42,30,36,0.9) 0%, rgba(30,22,26,0.9) 100%)',
-  border: '1px solid rgba(232,180,184,0.16)',
-  boxShadow: '0 24px 70px -24px rgba(0,0,0,0.75), 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.07)',
-  backdropFilter: 'blur(16px)',
-  position: 'relative',
-  overflow: 'hidden',
+  letterSpacing: '-0.035em',
 };
 
 const mono = "'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
 
-const pinkButton = {
-  background: 'linear-gradient(145deg, #d99aa2, #c9848f)',
-  color: '#2a1a1e',
-  border: '1px solid rgba(244,206,206,0.5)',
-  boxShadow: '0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(160,90,100,0.35)',
+const buttonPrimary = {
+  height: 44,
+  padding: '0 20px',
+  borderRadius: 8,
+  border: '1px solid rgba(245,215,218,.42)',
+  background: 'linear-gradient(180deg, #e9b5bc 0%, #cd8f99 100%)',
+  color: '#2a171d',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,.45), 0 8px 24px rgba(0,0,0,.18)',
+  fontSize: 13,
+  fontWeight: 700,
+  cursor: 'pointer',
 };
 
-// ─── Scroll reveal ───
-const useReveal = () => {
-  const ref = useRef(null);
-  const [vis, setVis] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  return [ref, vis];
+const buttonSecondary = {
+  height: 44,
+  padding: '0 20px',
+  borderRadius: 8,
+  border: `1px solid ${C.borderStrong}`,
+  background: 'rgba(255,255,255,.025)',
+  color: C.text,
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: 'pointer',
 };
 
-const Rv = ({ children, delay = 0, y = 20, style }) => {
-  const [ref, vis] = useReveal();
+const stage = {
+  width: 'min(1180px, calc(100% - 48px))',
+  margin: '0 auto',
+};
+
+function Eyebrow({ children }) {
   return (
-    <div ref={ref} style={{ opacity: vis ? 1 : 0, transform: vis ? 'translateY(0)' : `translateY(${y}px)`, transition: `opacity 0.85s ease ${delay}s, transform 0.85s ease ${delay}s`, ...style }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, fontFamily: mono, color: C.rose, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+      <span style={{ width: 18, height: 1, background: C.rose }} />
       {children}
     </div>
   );
-};
+}
 
-const WaitlistInput = ({ id }) => {
-  const [emailInput, setEmailInput] = React.useState('');
-  const [submitted, setSubmitted] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!emailInput) return;
-    setLoading(true);
-    setError(false);
-    try {
-      const res = await base44.functions.invoke('submitWaitlist', { email: emailInput, source: id });
-      if (res.data.success) {
-        setSubmitted(true);
-      } else {
-        setError(true);
-      }
-    } catch (error) {
-      console.error('Error submitting waitlist:', error);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+function StatusDot({ color = C.sage }) {
   return (
-    <div>
-      {!submitted ? (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', maxWidth: 440, margin: '0 auto' }}>
-          <input type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="your@studio.com" required
-            style={{ flex: '1 1 200px', padding: '14px 18px', borderRadius: 14, fontSize: 14, border: error ? '1px solid #e77' : '1px solid rgba(232,180,184,0.25)', background: 'rgba(255,255,255,0.06)', color: C.text, outline: 'none' }} />
-          <button type="submit" disabled={loading} style={{ flexShrink: 0, padding: '14px 28px', borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.2s', opacity: loading ? 0.6 : 1, ...pinkButton }}>
-            {loading ? 'Submitting...' : 'Get Access →'}
-          </button>
-          {error && <span style={{ fontSize: 12, color: '#e77', width: '100%', textAlign: 'center' }}>Something went wrong. Please try again.</span>}
-        </form>
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 16, borderRadius: 16, maxWidth: 380, margin: '0 auto', background: 'rgba(143,212,174,0.1)', border: '1px solid rgba(143,212,174,0.2)' }}>
-          <CheckCircle2 style={{ width: 18, height: 18, color: C.sage }} />
-          <span style={{ fontSize: 14, fontWeight: 500, color: C.sage }}>You're on the list! We'll be in touch soon.</span>
+    <span style={{ position: 'relative', width: 7, height: 7, display: 'inline-block' }}>
+      <span style={{ position: 'absolute', inset: 0, borderRadius: 20, background: color }} />
+      <span style={{ position: 'absolute', inset: -3, borderRadius: 20, border: `1px solid ${color}`, opacity: 0.35 }} />
+    </span>
+  );
+}
+
+function ProductCell({ icon: Icon, label, title, body, accent, children, className = '' }) {
+  return (
+    <article className={`sq-product-cell ${className}`}>
+      <div className="sq-cell-label"><Icon size={14} strokeWidth={1.6} color={accent} /><span>{label}</span></div>
+      <h3>{title}</h3><p>{body}</p>{children}
+    </article>
+  );
+}
+
+function ProductGrid() {
+  return (
+    <div className="sq-product-grid">
+      <ProductCell className="sq-cell-wide" icon={CalendarDays} label="Studio calendar" title="The whole studio, in one view." body="Classes, rooms, teachers, trials, and conflicts stay synchronized without the spreadsheet archaeology." accent={C.rose}>
+        <div className="sq-calendar">
+          <div className="sq-calendar-head"><span>Today · Wednesday</span><span>14 classes</span></div>
+          {[
+            ['04:00', 'Ballet foundations', 'Studio A', C.rose],
+            ['05:30', 'Jazz intermediate', 'Studio B', C.purple],
+            ['06:00', 'Ballet advanced', 'Studio A', C.blue],
+          ].map(([time, name, room, color]) => (
+            <div className="sq-calendar-row" key={name}><span className="sq-mono">{time}</span><span className="sq-event-line" style={{ background: color }} /><strong>{name}</strong><span>{room}</span></div>
+          ))}
         </div>
-      )}
-      <p style={{ fontSize: 12, color: C.textFainter, marginTop: 16, textAlign: 'center' }}>No credit card required · Cancel anytime</p>
+      </ProductCell>
+
+      <ProductCell icon={Sparkles} label="Sequins intelligence" title="AI that notices—and then helps." body="Retention risk, billing friction, and follow-ups surface with a thoughtful next step." accent={C.sage}>
+        <div className="sq-signal">
+          <div><StatusDot /><span className="sq-mono"> RETENTION SIGNAL</span></div>
+          <p>Chloe missed three classes. A personal check-in is ready for your review.</p>
+          <button>Review draft <ArrowRight size={12} /></button>
+        </div>
+      </ProductCell>
+
+      <ProductCell icon={CircleDollarSign} label="Billing" title="Revenue, without the runaround." body="Plans, discounts, autopay, and gentle reminders run quietly in the background." accent={C.amber}>
+        <div className="sq-metric"><span>Collected this month</span><strong>$48,920</strong><div><span style={{ width: '82%' }} /></div><small>96.4% collected on time</small></div>
+      </ProductCell>
+
+      <ProductCell className="sq-cell-wide" icon={Users} label="Family room" title="Every family knows what comes next." body="Schedules, balances, progress, messages, and recital details—clear, calm, and always current." accent={C.blue}>
+        <div className="sq-family-row">
+          {[
+            ['Next class', 'Ballet · Mon 4:00', C.rose],
+            ['Balance', '$195 · Autopay on', C.sage],
+            ['Progress', 'Ready for pointe', C.purple],
+          ].map(([label, value, color]) => <div key={label}><span style={{ color }}>{label}</span><strong>{value}</strong></div>)}
+        </div>
+      </ProductCell>
     </div>
   );
-};
+}
 
-// ─── Spotlight cones ───
-// Blurred layers get their own GPU compositing layer (translateZ + willChange) so
-// they rasterize up-front instead of popping in blocky on first paint.
-const Spotlights = () => (
-  <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-    <div style={{ position: 'absolute', top: -80, left: '18%', width: 420, height: 720, background: 'linear-gradient(180deg, rgba(244,206,206,0.14), transparent 75%)', transform: 'translateZ(0) rotate(16deg)', filter: 'blur(38px)', transformOrigin: 'top center', willChange: 'transform, filter' }} />
-    <div style={{ position: 'absolute', top: -80, right: '18%', width: 420, height: 720, background: 'linear-gradient(180deg, rgba(244,206,206,0.12), transparent 75%)', transform: 'translateZ(0) rotate(-16deg)', filter: 'blur(38px)', transformOrigin: 'top center', willChange: 'transform, filter' }} />
-    <div style={{ position: 'absolute', top: -120, left: '50%', transform: 'translate(-50%, 0) translateZ(0)', width: 560, height: 800, background: 'radial-gradient(ellipse 50% 60% at 50% 0%, rgba(232,180,184,0.16), transparent 70%)', filter: 'blur(20px)', willChange: 'transform, filter' }} />
-  </div>
-);
+function Home({ showPage }) {
+  return (
+    <main>
+      <section className="sq-hero">
+        <div className="sq-hero-glow" />
+        <div style={stage} className="sq-hero-grid">
+          <div>
+            <Eyebrow>Operating system for dance studios</Eyebrow>
+            <h1>Run the studio.<br /><span style={sequinText}>Keep the magic.</span></h1>
+            <div className="sq-hero-actions">
+              <button style={buttonPrimary} onClick={() => showPage('access')}>Book a demo <ArrowRight size={14} /></button>
+              <button style={buttonSecondary} onClick={() => showPage('product')}>Explore the platform</button>
+            </div>
+          </div>
+          <div className="sq-hero-copy">
+            <p>Sequins brings enrollment, scheduling, billing, family communication, and studio intelligence into one beautifully run system.</p>
+            <div className="sq-proof-line"><StatusDot /><span>Built for the 6pm rush, not the quarterly demo.</span></div>
+          </div>
+        </div>
+        <div style={stage}><ProductGrid /></div>
+      </section>
 
-const SecLabel = ({ children }) => (
-  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 24, color: C.roseDark }}>{children}</div>
-);
+      <section className="sq-statement">
+        <div style={stage} className="sq-statement-grid">
+          <Eyebrow>One calm system</Eyebrow>
+          <div><h2>The work disappears.<br /><span>The craft doesn’t.</span></h2><p>Sequins handles the operational choreography so owners can lead, teachers can teach, and families can feel cared for.</p></div>
+        </div>
+      </section>
 
-const Dv = () => <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(232,180,184,0.14), transparent)', margin: '0 44px' }} />;
+      <section className="sq-flow">
+        <div style={stage}>
+          <div className="sq-section-head"><div><Eyebrow>From first inquiry to final bow</Eyebrow><h2>A single thread through the entire season.</h2></div><p>Every handoff stays connected, so no family—or opportunity—falls between tools.</p></div>
+          <div className="sq-flow-list">
+            {[
+              ['01', 'Inquiry arrives', 'Captured with interests, age, source, and availability.'],
+              ['02', 'Trial is booked', 'The right class, teacher, and room are matched automatically.'],
+              ['03', 'Teacher gets context', 'A clean dossier appears before class—not another inbox request.'],
+              ['04', 'Follow-up is drafted', 'Personal, timely, and ready for a human yes.'],
+              ['05', 'Family enrolls', 'Plan, billing, portal, and schedule begin as one connected flow.'],
+            ].map(([number, title, copy], i) => (
+              <div className="sq-flow-row" key={number}><span className="sq-mono">{number}</span><h3>{title}</h3><p>{copy}</p><span className="sq-flow-state">{i === 4 ? 'ENROLLED' : 'AUTOMATED'}</span></div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="sq-cta">
+        <div className="sq-cta-glow" /><div style={stage}><SequinsLogo size="lg" /><h2>Your studio already has a rhythm.<br /><span style={sequinText}>Let the software find it.</span></h2><button style={buttonPrimary} onClick={() => showPage('access')}>Book a private demo <ArrowRight size={14} /></button></div>
+      </section>
+    </main>
+  );
+}
+
+function ProductPage({ showPage }) {
+  return (
+    <main className="sq-inner-page"><div style={stage}>
+      <Eyebrow>Product</Eyebrow>
+      <div className="sq-inner-intro"><h1>Everything a studio needs. Nothing it doesn’t.</h1><p>A connected operating system for the people running the studio, the teachers on the floor, and the families at home.</p></div>
+      <ProductGrid />
+      <div className="sq-principles">
+        {[
+          ['01', 'Ambient, not demanding', 'The right signal appears at the right moment.'],
+          ['02', 'Human in the loop', 'Sequins drafts and flags. You make the call.'],
+          ['03', 'Built for the floor', 'Fast, clear, and useful in the middle of a real class day.'],
+          ['04', 'One source of truth', 'No gaps between scheduling, billing, and communication.'],
+        ].map(([n, title, copy]) => <div key={n}><span className="sq-mono">{n}</span><h3>{title}</h3><p>{copy}</p></div>)}
+      </div>
+      <button style={buttonPrimary} onClick={() => showPage('access')}>See Sequins in action <ArrowRight size={14} /></button>
+    </div></main>
+  );
+}
+
+function PricingPage({ showPage }) {
+  const plans = [
+    ['Under 100 students', '$65', '$50 / mo annual'],
+    ['101–500 students', '$125', '$100 / mo annual'],
+    ['501+ students', '$215', '$185 / mo annual'],
+  ];
+  return (
+    <main className="sq-inner-page"><div style={stage}>
+      <Eyebrow>Pricing</Eyebrow>
+      <div className="sq-inner-intro"><h1>Simple by design. Everything included.</h1><p>One complete product, priced to the size of your studio.</p></div>
+      <div className="sq-pricing-table">{plans.map(([size, monthly, annual]) => <div className="sq-price-row" key={size}><span>{size}</span><strong>{monthly}<small> / month</small></strong><span>{annual}</span><button style={buttonSecondary} onClick={() => showPage('access')}>Book a demo</button></div>)}</div>
+      <div className="sq-included">{['Free onboarding', 'Unlimited staff', 'All product modules', 'No credit card required'].map(item => <span key={item}><Check size={13} /> {item}</span>)}</div>
+    </div></main>
+  );
+}
+
+function CompanyPage() {
+  return (
+    <main className="sq-inner-page"><div style={stage}>
+      <Eyebrow>Company</Eyebrow>
+      <div className="sq-inner-intro sq-company-intro"><h1>Built by people who love the craft.</h1><p>A clunky payment flow and a beautiful recital are experienced as the same studio. We believe how it’s done matters as much as what gets done.</p></div>
+      <div className="sq-beliefs">{[
+        ['Families feel everything.', 'Every operational detail is part of the experience.'],
+        ['Software should know its place.', 'Quiet when it can be. Essential when it needs to be.'],
+        ['Doing it isn’t doing it.', 'Doing it right is.'],
+      ].map(([title, copy]) => <div key={title}><h2>{title}</h2><p>{copy}</p></div>)}</div>
+    </div></main>
+  );
+}
 
 export default function Landing() {
   const [page, setPage] = useState('home');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [annualBilling, setAnnualBilling] = useState(true);
 
   useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', h, { passive: true });
-    return () => window.removeEventListener('scroll', h);
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const showPage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'instant' }); };
-
-  const sec = { padding: '130px 44px', maxWidth: 860, margin: '0 auto', position: 'relative' };
-  const secWide = { ...sec, maxWidth: 1060 };
+  const showPage = (next) => { setPage(next); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }); };
 
   return (
-    <div style={{ fontFamily: "'DM Sans', -apple-system, sans-serif", background: C.bg, minHeight: '100vh', overflowX: 'hidden', WebkitFontSmoothing: 'antialiased', color: C.text }}>
-
-      {/* ── Ambient glow (soft radial gradients — no blur filter, animate opacity/scale on GPU) ── */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-        <div style={{ position: 'absolute', top: '30%', left: '-10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(196,168,232,0.05) 0%, transparent 65%)', animation: 'sqBreathe 14s ease-in-out infinite', willChange: 'transform, opacity', transform: 'translateZ(0)' }} />
-        <div style={{ position: 'absolute', bottom: '-15%', right: '-8%', width: 800, height: 800, borderRadius: '50%', background: 'radial-gradient(circle, rgba(232,180,184,0.06) 0%, transparent 65%)', animation: 'sqBreathe 11s ease-in-out infinite reverse', willChange: 'transform, opacity', transform: 'translateZ(0)' }} />
-        <div style={{ position: 'absolute', inset: 0, opacity: 0.04, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
-      </div>
-
-      {/* ── Nav ── */}
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, padding: scrolled ? '14px 44px' : '26px 44px', transition: 'all 0.4s', backgroundColor: scrolled ? 'rgba(28,20,24,0.88)' : 'transparent', backdropFilter: scrolled ? 'blur(24px)' : 'none', borderBottom: scrolled ? '1px solid rgba(232,180,184,0.1)' : 'none' }}>
-        <div style={{ maxWidth: 1060, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span onClick={() => showPage('home')} style={{ cursor: 'pointer' }}>
-            <SequinsLogo size="sm" />
-          </span>
-
-          <div className="sq-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-            {[['product', 'Product'], ['pricing', 'Pricing'], ['company', 'Company']].map(([id, label]) => (
-              <a key={id} onClick={() => showPage(id)} style={{ textDecoration: 'none', fontSize: 13, fontWeight: 400, color: page === id ? C.roseBright : C.textFaint, borderBottom: page === id ? `1px solid ${C.rose}` : '1px solid transparent', paddingBottom: 2, transition: 'color 0.25s', cursor: 'pointer' }}>{label}</a>
-            ))}
-            <a onClick={() => showPage('access')} style={{ textDecoration: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', ...seqFill, paddingBottom: 2 }}>Get Access</a>
+    <div className="sq-site">
+      <nav className={scrolled ? 'sq-nav is-scrolled' : 'sq-nav'}>
+        <div style={stage} className="sq-nav-inner">
+          <button className="sq-logo-button" onClick={() => showPage('home')}><SequinsLogo size="sm" /></button>
+          <div className={menuOpen ? 'sq-nav-links is-open' : 'sq-nav-links'}>
+            {[['product', 'Product'], ['pricing', 'Pricing'], ['company', 'Company']].map(([id, label]) => <button className={page === id ? 'is-active' : ''} onClick={() => showPage(id)} key={id}>{label}</button>)}
+            <button className="sq-nav-cta" onClick={() => showPage('access')}>Book a demo</button>
           </div>
-
-          <button className="sq-hamburger" onClick={() => setMobileMenuOpen(o => !o)} style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: C.textFaint, padding: '10px', margin: '-10px' }}>
-            {mobileMenuOpen ? <X style={{ width: 24, height: 24 }} /> : <Menu style={{ width: 24, height: 24 }} />}
-          </button>
+          <button className="sq-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
         </div>
-
-        {mobileMenuOpen && (
-          <div style={{ display: 'flex', flexDirection: 'column', background: 'rgba(28,20,24,0.97)', backdropFilter: 'blur(24px)', borderTop: '1px solid rgba(232,180,184,0.1)' }}>
-            {[['product', 'Product'], ['pricing', 'Pricing'], ['company', 'Company']].map(([id, label]) => (
-              <a key={id} onClick={() => { showPage(id); setMobileMenuOpen(false); }} style={{ padding: '20px 28px', fontSize: 16, fontWeight: 400, color: page === id ? C.roseBright : C.textFaint, cursor: 'pointer', borderBottom: '1px solid rgba(232,180,184,0.08)', display: 'block' }}>{label}</a>
-            ))}
-            <a onClick={() => { showPage('access'); setMobileMenuOpen(false); }} style={{ padding: '20px 28px', fontSize: 16, fontWeight: 700, cursor: 'pointer', display: 'block', ...seqFill }}>Get Access</a>
-          </div>
-        )}
       </nav>
 
-      <div style={{ position: 'relative', zIndex: 1 }}>
+      {page === 'home' && <Home showPage={showPage} />}
+      {page === 'product' && <ProductPage showPage={showPage} />}
+      {page === 'pricing' && <PricingPage showPage={showPage} />}
+      {page === 'company' && <CompanyPage />}
+      {page === 'access' && <main className="sq-access"><div className="sq-cta-glow" /><div style={stage}><BookDemoForm /></div></main>}
 
-        {/* ════════════ HOME ════════════ */}
-        {page === 'home' && (
-          <div>
-            {/* Hero — the stage */}
-            <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '140px 44px 80px', position: 'relative' }}>
-              <Spotlights />
-
-              <div style={{ opacity: 0, animation: 'sqFadeUp 0.8s ease 0.1s forwards', position: 'relative' }}>
-                <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 9, padding: '8px 18px', borderRadius: 999, marginBottom: 36, border: '1px solid rgba(232,180,184,0.18)', background: 'linear-gradient(180deg, rgba(232,180,184,0.09) 0%, rgba(232,180,184,0.03) 100%)', boxShadow: '0 4px 20px -6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 18, right: 18, height: 1, background: 'linear-gradient(90deg, transparent, rgba(244,206,206,0.4), transparent)' }} />
-                  <Sparkles style={{ width: 12, height: 12, color: C.rose }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: 'uppercase', color: C.rose }}>Dance Studio Operating System</span>
-                </div>
-              </div>
-
-              <h1 style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.2s forwards', fontSize: 'clamp(52px,8.5vw,108px)', letterSpacing: -1, lineHeight: 1.02, ...serifSeq, marginBottom: 28, maxWidth: 900, position: 'relative' }}>
-                Run your studio without the chaos.
-              </h1>
-
-              <p style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.35s forwards', fontSize: 17, fontWeight: 300, color: C.textFaint, maxWidth: 480, lineHeight: 1.7, marginBottom: 44, position: 'relative' }}>
-                The complete operating system for dance studios — enrollment, scheduling, billing, and AI-powered growth.
-              </p>
-
-              <div style={{ opacity: 0, animation: 'sqFadeUp 0.9s ease 0.5s forwards', display: 'flex', flexWrap: 'wrap', gap: 14, justifyContent: 'center', marginBottom: 72, position: 'relative' }}>
-                <button onClick={() => showPage('access')} style={{ height: 52, padding: '0 38px', borderRadius: 999, fontSize: 15, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', ...pinkButton }}
-                  onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-                  Book a Demo <ArrowRight style={{ display: 'inline', width: 15, height: 15, marginLeft: 4, verticalAlign: -2 }} />
-                </button>
-                <button onClick={() => showPage('product')} style={{ height: 52, padding: '0 32px', borderRadius: 999, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(232,180,184,0.18)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)', color: C.textFaint, transition: 'all 0.2s' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(232,180,184,0.35)'; e.currentTarget.style.color = C.text; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(232,180,184,0.18)'; e.currentTarget.style.color = C.textFaint; }}>
-                  See how it works <ChevronDown style={{ display: 'inline', width: 15, height: 15, marginLeft: 4, verticalAlign: -2 }} />
-                </button>
-              </div>
-
-              <div style={{ position: 'absolute', bottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, opacity: 0, animation: 'sqFadeIn 1s ease 1.4s forwards' }}>
-                <div style={{ width: 1, height: 36, background: 'linear-gradient(to bottom, rgba(232,180,184,0.5), transparent)', animation: 'sqScrollLine 2.5s ease-in-out infinite' }} />
-                <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(232,180,184,0.4)' }}>Scroll</span>
-              </div>
-            </section>
-
-            <Dv />
-
-            {/* Act I — the problem, told in big lines */}
-            <section style={{ ...sec, textAlign: 'center' }}>
-              <Rv><SecLabel>Act I · The old way</SecLabel></Rv>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 56 }}>
-                {[
-                  ['Billing nightmares.', 'Automated.'],
-                  ['Wasted class time.', 'Teachers just teach.'],
-                  ['Silent dropouts.', 'Flagged before they leave.'],
-                  ['Families in the dark.', 'A room of their own.'],
-                ].map(([problem, answer], i) => (
-                  <Rv key={i} delay={i * 0.06}>
-                    <div>
-                      <div style={{ fontSize: 'clamp(22px,3.2vw,34px)', fontWeight: 300, color: C.textFainter, textDecoration: 'line-through', textDecorationColor: 'rgba(196,168,232,0.6)', textDecorationThickness: 2, marginBottom: 10 }}>{problem}</div>
-                      <div style={{ fontSize: 'clamp(30px,4.5vw,48px)', letterSpacing: -0.5, ...serifSeq, display: 'inline-block' }}>{answer}</div>
-                    </div>
-                  </Rv>
-                ))}
-              </div>
-            </section>
-
-            <Dv />
-
-            {/* Act II — the AI, one glowing moment */}
-            <section style={sec}>
-              <Rv style={{ textAlign: 'center' }}><SecLabel>Act II · Built-in intelligence</SecLabel></Rv>
-              <Rv delay={0.05} style={{ textAlign: 'center' }}>
-                <h2 style={{ fontSize: 'clamp(36px,5.5vw,64px)', letterSpacing: -0.5, lineHeight: 1.05, ...serifSeq, marginBottom: 16 }}>
-                  AI that acts.
-                </h2>
-                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7, marginBottom: 64, maxWidth: 440, margin: '0 auto 64px' }}>
-                  Not reports. Action — drafted, flagged, and ready for your yes.
-                </p>
-              </Rv>
-              <Rv delay={0.12}>
-                <div style={{ position: 'relative', maxWidth: 520, margin: '0 auto' }}>
-                  {/* spotlight on card */}
-                  <div style={{ position: 'absolute', top: -140, left: '50%', transform: 'translate(-50%, 0) translateZ(0)', width: 500, height: 400, background: 'radial-gradient(ellipse 55% 60% at 50% 0%, rgba(244,206,206,0.14), transparent 70%)', filter: 'blur(16px)', pointerEvents: 'none', willChange: 'transform, filter' }} />
-                  <div style={{ ...panelStyle, borderRadius: 18 }}>
-                    {/* top-edge highlight */}
-                    <div style={{ position: 'absolute', top: 0, left: 24, right: 24, height: 1, background: 'linear-gradient(90deg, transparent, rgba(244,206,206,0.35), transparent)' }} />
-
-                    {/* Header row */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 22px', borderBottom: '1px solid rgba(232,180,184,0.1)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                        <div style={{ position: 'relative', width: 8, height: 8, flexShrink: 0 }}>
-                          <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: C.sage }} />
-                          <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: `1px solid ${C.sage}`, opacity: 0.4, animation: 'sqRing 2.2s ease-out infinite' }} />
-                        </div>
-                        <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: C.rose }}>Sequins</span>
-                        <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 6, background: 'rgba(232,196,152,0.12)', border: '1px solid rgba(232,196,152,0.25)', color: C.amber }}>Retention risk</span>
-                      </div>
-                      <span style={{ fontFamily: mono, fontSize: 11, color: C.textFainter, letterSpacing: 0.5 }}>just now</span>
-                    </div>
-
-                    {/* Body */}
-                    <div style={{ padding: '20px 22px 22px' }}>
-                      <p style={{ fontSize: 15.5, color: C.text, lineHeight: 1.7, marginBottom: 18, textAlign: 'left' }}>
-                        <span style={{ fontWeight: 600, color: C.roseBright }}>Chloe</span> has missed 3 Ballet classes and has an overdue invoice. She's at high risk of not re-enrolling — a personal check-in is drafted for your review.
-                      </p>
-
-                      {/* Action row */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <button style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: 'pointer', background: 'rgba(143,212,174,0.12)', border: '1px solid rgba(143,212,174,0.3)', color: C.sage, transition: 'all 0.2s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(143,212,174,0.2)'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'rgba(143,212,174,0.12)'}>
-                          <Sparkles style={{ width: 13, height: 13 }} /> Review draft
-                        </button>
-                        <button style={{ padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(232,180,184,0.18)', color: C.textFaint, transition: 'all 0.2s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(232,180,184,0.08)'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          View profile
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Rv>
-            </section>
-
-            <Dv />
-
-            {/* Act III — the platform, four visual vignettes */}
-            <section style={secWide}>
-              <Rv style={{ textAlign: 'center' }}><SecLabel>Act III · One platform</SecLabel></Rv>
-              <Rv delay={0.05} style={{ textAlign: 'center' }}>
-                <h2 style={{ fontSize: 'clamp(36px,5.5vw,64px)', letterSpacing: -0.5, lineHeight: 1.05, ...serifSeq, marginBottom: 64 }}>
-                  Every workflow. One stage.
-                </h2>
-              </Rv>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
-                {[
-                  { icon: Calendar, title: 'Scheduling', line: 'Conflicts caught. Subs matched.', color: C.rose },
-                  { icon: DollarSign, title: 'Billing', line: 'Invoices, discounts, autopay — on rails.', color: C.sage },
-                  { icon: MessageSquare, title: 'Families', line: 'A branded room for every family.', color: C.amber },
-                  { icon: TrendingUp, title: 'Growth', line: 'Every lead nudged at the right moment.', color: C.purple },
-                ].map(({ icon: Icon, title, line, color }, i) => (
-                  <Rv key={title} delay={i * 0.08}>
-                    <div style={{ ...panelStyle, borderRadius: 18, padding: '28px 26px', height: '100%', transition: 'transform 0.25s, box-shadow 0.25s' }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 32px 80px -24px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.09)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = panelStyle.boxShadow; }}>
-                      <div style={{ position: 'absolute', top: 0, left: 24, right: 24, height: 1, background: `linear-gradient(90deg, transparent, ${color}55, transparent)` }} />
-                      <div style={{ width: 42, height: 42, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, background: `linear-gradient(180deg, ${color}22, ${color}0d)`, border: `1px solid ${color}30`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.08)` }}>
-                        <Icon style={{ width: 18, height: 18, color }} />
-                      </div>
-                      <div style={{ fontSize: 17, fontWeight: 700, color: C.text, marginBottom: 8 }}>{title}</div>
-                      <div style={{ fontSize: 14, fontWeight: 300, color: C.textFaint, lineHeight: 1.6 }}>{line}</div>
-                    </div>
-                  </Rv>
-                ))}
-              </div>
-              <Rv delay={0.2} style={{ textAlign: 'center', marginTop: 40 }}>
-                <button onClick={() => showPage('product')} style={{ padding: '13px 30px', borderRadius: 999, fontSize: 14, fontWeight: 500, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(232,180,184,0.25)', color: C.rose, transition: 'all 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(232,180,184,0.08)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                  See the full platform →
-                </button>
-              </Rv>
-            </section>
-
-            <Dv />
-
-            {/* Finale — CTA */}
-            <section style={{ padding: '170px 44px', textAlign: 'center', position: 'relative' }}>
-              <Spotlights />
-              <Rv style={{ position: 'relative' }}>
-                <h2 style={{ fontSize: 'clamp(38px,6vw,68px)', letterSpacing: -0.5, lineHeight: 1.1, ...serifSeq, marginBottom: 20 }}>
-                  It's showtime.
-                </h2>
-              </Rv>
-              <Rv delay={0.1} style={{ position: 'relative' }}>
-                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7, maxWidth: 380, margin: '0 auto 48px' }}>
-                  For dance studios ready to do more with less.
-                </p>
-              </Rv>
-              <Rv delay={0.15} style={{ position: 'relative' }}><WaitlistInput id="home" /></Rv>
-            </section>
-          </div>
-        )}
-
-        {/* ════════════ PRODUCT ════════════ */}
-        {page === 'product' && (
-          <div>
-            <section style={{ ...sec, paddingTop: 180, textAlign: 'center', position: 'relative' }}>
-              <Spotlights />
-              <Rv style={{ position: 'relative' }}><SecLabel>The platform</SecLabel></Rv>
-              <Rv delay={0.05} style={{ position: 'relative' }}>
-                <h1 style={{ fontSize: 'clamp(42px,6.5vw,80px)', letterSpacing: -1, lineHeight: 1.02, ...serifSeq, marginBottom: 20 }}>
-                  One brain. Every workflow.
-                </h1>
-                <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7, maxWidth: 480, margin: '0 auto' }}>
-                  Scheduling, billing, families, and AI — sharing full context, working as one.
-                </p>
-              </Rv>
-            </section>
-            <Dv />
-
-            {/* Teacher Studio */}
-            <section style={sec}>
-              <Rv><SecLabel>Teacher Studio</SecLabel></Rv>
-              <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(30px,4.5vw,52px)', letterSpacing: -0.5, lineHeight: 1.05, ...serifSeq, marginBottom: 56 }}>
-                  Every class, in your pocket.
-                </h2>
-              </Rv>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {[
-                  { time: 'Class starts', event: 'Teacher opens Ballet Advanced', meta: '14 students · Room B · 60 min', type: 'neutral' },
-                  { time: '2 min in', event: 'Trial student spotted — dossier surfaces automatically', meta: 'Interests: Ballet · 2nd visit', type: 'gold' },
-                  { time: '5 min in', event: 'Attendance locked. 12 present, 1 absent, 1 late.', meta: 'Absence auto-flagged for makeup scheduling', type: 'sage' },
-                  { time: 'After class', event: 'Voice note: "Isla is ready for pointe"', meta: 'Transcribed · Tagged · Saved to Isla\'s profile', type: 'purple' },
-                  { time: 'Sub needed', event: 'Sequins suggests 3 qualified teachers.', meta: 'Matched by style, availability, and room familiarity', type: 'neutral' },
-                ].map(({ time, event, meta, type }, i) => (
-                  <Rv key={i} delay={i * 0.08}>
-                    <div style={{ display: 'flex', gap: 20, padding: '16px 0' }}>
-                      <div style={{ fontSize: 11, color: C.textFainter, width: 76, flexShrink: 0, paddingTop: 3, textAlign: 'right' }}>{time}</div>
-                      <div style={{ flex: 1, paddingLeft: 20, borderLeft: `2px solid ${type === 'gold' ? 'rgba(232,196,152,0.4)' : type === 'sage' ? 'rgba(143,212,174,0.35)' : type === 'purple' ? 'rgba(196,168,232,0.35)' : 'rgba(232,180,184,0.18)'}` }}>
-                        <div style={{ fontSize: 15, fontWeight: 500, color: type === 'gold' ? C.amber : type === 'sage' ? C.sage : type === 'purple' ? C.purple : C.text, marginBottom: 3 }}>{event}</div>
-                        <div style={{ fontSize: 12, color: C.textFainter }}>{meta}</div>
-                      </div>
-                    </div>
-                  </Rv>
-                ))}
-              </div>
-            </section>
-            <Dv />
-
-            {/* Billing */}
-            <section style={sec}>
-              <Rv><SecLabel>Automated Billing</SecLabel></Rv>
-              <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(30px,4.5vw,52px)', letterSpacing: -0.5, lineHeight: 1.05, ...serifSeq, marginBottom: 56 }}>
-                  Billing that runs itself.
-                </h2>
-              </Rv>
-              <Rv delay={0.1}>
-                <div style={{ ...cardStyle, borderRadius: 22, padding: '28px 30px', maxWidth: 560 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: C.textFainter, marginBottom: 18 }}>March Invoice · Holloway Family</div>
-                  {[
-                    { label: 'Ballet Advanced · Juno', amount: '$120', note: 'Monthly plan' },
-                    { label: 'Hip Hop Beginner · Wren', amount: '$95', note: 'Monthly plan' },
-                    { label: 'Sibling discount', amount: '−$20', note: 'Auto-applied', color: C.sage },
-                  ].map(({ label, amount, note, color }) => (
-                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '11px 0', borderBottom: '1px solid rgba(232,180,184,0.1)' }}>
-                      <div>
-                        <span style={{ fontSize: 14, color: C.text }}>{label}</span>
-                        <span style={{ fontSize: 11, color: C.textFainter, marginLeft: 10 }}>{note}</span>
-                      </div>
-                      <span style={{ fontSize: 15, fontWeight: 600, color: color || C.text }}>{amount}</span>
-                    </div>
-                  ))}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '16px 0 2px' }}>
-                    <span style={{ fontSize: 15, fontWeight: 600, color: C.text }}>Total due</span>
-                    <span style={{ fontSize: 22, fontWeight: 700, ...etchedText }}>$195</span>
-                  </div>
-                </div>
-              </Rv>
-              <Rv delay={0.16}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '18px 22px', borderRadius: 18, marginTop: 16, maxWidth: 560, ...cardStyle }}>
-                  <Sparkles style={{ width: 14, height: 14, color: C.rose, flexShrink: 0, marginTop: 2 }} />
-                  <div>
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: C.roseDark, marginBottom: 6 }}>Sequins · Billing Alert</div>
-                    <p style={{ fontSize: 13, color: C.text, lineHeight: 1.65 }}>Marco Delgado is overdue ($185). I've queued a gentle reminder with his family's check-in. Send both together?</p>
-                    <div style={{ display: 'flex', gap: 14, marginTop: 12 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: C.sage, cursor: 'pointer' }}>Send together</span>
-                      <span style={{ fontSize: 13, color: C.textFainter, cursor: 'pointer' }}>Send separately</span>
-                    </div>
-                  </div>
-                </div>
-              </Rv>
-            </section>
-            <Dv />
-
-            {/* Scheduling */}
-            <section style={sec}>
-              <Rv><SecLabel>Smart Scheduling</SecLabel></Rv>
-              <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(30px,4.5vw,52px)', letterSpacing: -0.5, lineHeight: 1.05, ...serifSeq, marginBottom: 56 }}>
-                  A schedule that thinks ahead.
-                </h2>
-              </Rv>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                {[
-                  ['Monday', [{ title: 'Ballet Beginner', time: '4:00 PM', room: 'Studio A', teacher: 'Ms. Chen', students: 8, color: C.rose }]],
-                  ['Tuesday', [
-                    { title: 'Jazz Intermediate', time: '5:30 PM', room: 'Studio B', teacher: 'Ms. Okafor', students: 11, color: C.purple },
-                    { title: 'Hip Hop Advanced', time: '6:30 PM', room: 'Studio A', teacher: 'Mr. Reyes', students: 9, color: C.blue },
-                  ]],
-                  ['Wednesday', [
-                    { title: 'Ballet Advanced', time: '6:00 PM', room: 'Studio A', teacher: 'Ms. Chen', students: 14, color: C.rose, conflict: true },
-                  ]],
-                ].map(([day, classes]) => (
-                  <Rv key={day} delay={0.08}>
-                    <div style={{ display: 'flex', gap: 20 }}>
-                      <div style={{ fontSize: 11, color: C.textFainter, width: 80, flexShrink: 0, paddingTop: 20, textAlign: 'right' }}>{day}</div>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 0' }}>
-                        {classes.map(cls => (
-                          <div key={cls.title} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 18px', borderRadius: 14, borderLeft: `3px solid ${cls.color}`, ...cardStyle }}>
-                            <div>
-                              <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{cls.title}</div>
-                              <div style={{ fontSize: 11, color: C.textFainter }}>{cls.time} · {cls.room} · {cls.teacher}</div>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <span style={{ fontSize: 11, color: C.textFainter }}>{cls.students} students</span>
-                              {cls.conflict && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 6, background: 'rgba(232,196,152,0.15)', color: C.amber }}>Sub needed</span>}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </Rv>
-                ))}
-              </div>
-            </section>
-            <Dv />
-
-            {/* Family Portal */}
-            <section style={sec}>
-              <Rv><SecLabel>Family Portal</SecLabel></Rv>
-              <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(30px,4.5vw,52px)', letterSpacing: -0.5, lineHeight: 1.05, ...serifSeq, marginBottom: 56 }}>
-                  A room of their own.
-                </h2>
-              </Rv>
-              <Rv delay={0.1}>
-                <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
-                  {[
-                    { icon: Calendar, label: 'Juno\'s schedule this week', value: 'Ballet Mon · Hip Hop Thu', color: C.rose },
-                    { icon: DollarSign, label: 'March invoice', value: '$195 · Due March 1 · Auto-pay on', color: C.sage },
-                    { icon: TrendingUp, label: 'Juno\'s progress', value: '"Ready to move to pointe" — Ms. Chen', color: C.purple },
-                    { icon: MessageSquare, label: 'Message from studio', value: 'Spring recital costumes due April 5th', color: C.amber },
-                  ].map(({ icon: Icon, label, value, color }) => (
-                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', borderRadius: 16, ...cardStyle }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: `${color}1a`, border: `1px solid ${color}30` }}>
-                        <Icon style={{ width: 16, height: 16, color }} />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 11, color: C.textFainter, marginBottom: 3 }}>{label}</div>
-                        <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{value}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Rv>
-            </section>
-            <Dv />
-
-            {/* Growth */}
-            <section style={sec}>
-              <Rv><SecLabel>Growth Engine</SecLabel></Rv>
-              <Rv delay={0.05}>
-                <h2 style={{ fontSize: 'clamp(30px,4.5vw,52px)', letterSpacing: -0.5, lineHeight: 1.05, ...serifSeq, marginBottom: 56 }}>
-                  From first inquiry to referral.
-                </h2>
-              </Rv>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
-                {[
-                  { stage: 'Lead', name: 'Trial booking — Zoe, 8yo, Ballet interest', meta: 'Came from Instagram', color: C.amber },
-                  { stage: 'Trial', name: 'Zoe attended — trial dossier created', meta: '"Excellent natural turnout." — Ms. Chen', color: C.rose },
-                  { stage: 'AI nudge', name: 'Re-enrollment nudge sent — day 3 post-trial', meta: '"Zoe had a great class! Here\'s how to enroll…"', color: C.sage, gene: true },
-                  { stage: 'Enrolled', name: 'Zoe enrolled in Ballet + Hip Hop', meta: 'Auto-pay on · Sibling discount applied', color: C.purple },
-                  { stage: 'Referral', name: 'Her family referred the Whitfields', meta: 'Referral credit applied automatically', color: C.blue },
-                ].map(({ stage, name, meta, color, gene }, i) => (
-                  <React.Fragment key={i}>
-                    <Rv delay={i * 0.07} style={{ width: '100%' }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 0' }}>
-                        <div style={{ minWidth: 74, textAlign: 'right', paddingTop: 2 }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: gene ? C.sage : color, padding: '3px 8px', borderRadius: 6, background: `${gene ? C.sage : color}18` }}>{stage}</span>
-                        </div>
-                        <div style={{ flex: 1, paddingLeft: 18, borderLeft: `2px solid ${color}35` }}>
-                          <div style={{ fontSize: 15, fontWeight: 500, color: C.text, marginBottom: 4 }}>{name}</div>
-                          <div style={{ fontSize: 12, color: C.textFainter, fontStyle: gene ? 'italic' : 'normal' }}>{meta}</div>
-                        </div>
-                      </div>
-                    </Rv>
-                    {i < 4 && <div style={{ width: 2, height: 12, marginLeft: 90, background: `${color}25` }} />}
-                  </React.Fragment>
-                ))}
-              </div>
-            </section>
-            <Dv />
-
-            <section style={{ padding: '160px 44px', textAlign: 'center', position: 'relative' }}>
-              <Spotlights />
-              <Rv style={{ position: 'relative' }}>
-                <h2 style={{ fontSize: 'clamp(34px,5.5vw,58px)', letterSpacing: -0.5, lineHeight: 1.1, ...serifSeq, marginBottom: 48 }}>
-                  Ready to see it in your studio?
-                </h2>
-              </Rv>
-              <Rv delay={0.15} style={{ position: 'relative' }}><WaitlistInput id="product" /></Rv>
-            </section>
-          </div>
-        )}
-
-        {/* ════════════ COMPANY ════════════ */}
-        {page === 'company' && (
-          <div>
-            <section style={{ ...sec, paddingTop: 180, textAlign: 'center', position: 'relative' }}>
-              <Spotlights />
-              <Rv style={{ position: 'relative' }}><SecLabel>Our story</SecLabel></Rv>
-              <Rv delay={0.05} style={{ position: 'relative' }}>
-                <h1 style={{ fontSize: 'clamp(42px,6.5vw,76px)', letterSpacing: -1, lineHeight: 1.02, ...serifSeq, marginBottom: 40 }}>
-                  Built by people who love the craft.
-                </h1>
-              </Rv>
-            </section>
-            <Dv />
-            <section style={{ ...sec, textAlign: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 72 }}>
-                {[
-                  { big: 'How it\'s done matters', small: 'as much as what gets done. Every dancer knows it. Every studio is built on it.' },
-                  { big: 'Families feel everything', small: 'A clunky billing process and a beautiful recital are the same studio.' },
-                  { big: 'Doing it isn\'t doing it.', small: 'Doing it right is.' },
-                ].map(({ big, small }, i) => (
-                  <Rv key={i} delay={i * 0.08}>
-                    <div style={{ fontSize: 'clamp(28px,4.5vw,46px)', letterSpacing: -0.5, lineHeight: 1.15, ...serifSeq, marginBottom: 14 }}>{big}</div>
-                    <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7, maxWidth: 440, margin: '0 auto' }}>{small}</p>
-                  </Rv>
-                ))}
-                <Rv delay={0.1}>
-                  <div style={{ fontSize: 'clamp(30px,5vw,52px)', fontStyle: 'italic', ...serifSeq }}>It's showtime. All the time.</div>
-                </Rv>
-              </div>
-            </section>
-            <Dv />
-            <section style={secWide}>
-              <Rv style={{ textAlign: 'center' }}><SecLabel>Principles</SecLabel></Rv>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginTop: 16 }}>
-                {[
-                  ['Ambient, not demanding', 'What you need to know, right when you need it.'],
-                  ['Human in the loop', 'Sequins drafts and flags. You make the call.'],
-                  ['Built for the floor', 'If it doesn\'t work at 6pm on a Wednesday, it doesn\'t ship.'],
-                  ['One platform', 'Nothing falls through the cracks between tools.'],
-                ].map(([title, desc], i) => (
-                  <Rv key={i} delay={i * 0.07}>
-                    <div style={{ ...cardStyle, borderRadius: 20, padding: '28px 26px', height: '100%' }}>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 10 }}>{title}</div>
-                      <div style={{ fontSize: 14, fontWeight: 300, color: C.textFaint, lineHeight: 1.7 }}>{desc}</div>
-                    </div>
-                  </Rv>
-                ))}
-              </div>
-            </section>
-            <Dv />
-            <section style={{ padding: '160px 44px', textAlign: 'center', position: 'relative' }}>
-              <Spotlights />
-              <Rv style={{ position: 'relative' }}>
-                <h2 style={{ fontSize: 'clamp(32px,5vw,54px)', letterSpacing: -0.5, lineHeight: 1.1, ...serifSeq, marginBottom: 48 }}>
-                  Build the future of dance with us.
-                </h2>
-              </Rv>
-              <Rv delay={0.15} style={{ position: 'relative' }}><WaitlistInput id="company" /></Rv>
-            </section>
-          </div>
-        )}
-
-        {/* ════════════ PRICING ════════════ */}
-        {page === 'pricing' && (() => {
-          const plans = [
-            { students: 'Under 100 students', monthly: '$65/mo', annual: '$50/mo annual' },
-            { students: '101 – 500 students', monthly: '$125/mo', annual: '$100/mo annual' },
-            { students: '501+ students', monthly: '$215/mo', annual: '$185/mo annual' },
-          ];
-          return (
-            <div>
-              <section style={{ ...secWide, paddingTop: 180, position: 'relative' }}>
-                <Spotlights />
-                <Rv style={{ position: 'relative' }}><SecLabel>Pricing</SecLabel></Rv>
-                <Rv delay={0.05} style={{ position: 'relative' }}>
-                  <h1 style={{ fontSize: 'clamp(42px,7vw,84px)', letterSpacing: -1.5, lineHeight: 1, marginBottom: 12 }}>
-                    <span style={{ ...etchedText, fontFamily: "'Playfair Display', serif", fontWeight: 900 }}>Simple. </span>
-                    <span style={{ ...serifSeq, fontStyle: 'italic' }}>No surprises.</span>
-                  </h1>
-                  <p style={{ fontSize: 16, fontWeight: 300, color: C.textFaint, lineHeight: 1.7, maxWidth: 420, marginTop: 20 }}>
-                    One plan per studio size. Everything included.
-                  </p>
-                </Rv>
-
-                <div style={{ marginTop: 72, position: 'relative' }}>
-                  {plans.map(({ students, monthly, annual: annualPrice }, i) => (
-                    <Rv key={students} delay={i * 0.1}>
-                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', padding: '34px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(232,180,184,0.12)' }}>
-                        <span style={{ fontSize: 'clamp(22px,3vw,30px)', fontWeight: 600, color: C.text, letterSpacing: -0.5 }}>{students}</span>
-                        <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 12 }}>
-                          <span style={{ fontSize: 'clamp(24px,3vw,32px)', fontWeight: 700, ...etchedText }}>{monthly}</span>
-                          <span style={{ fontSize: 13, fontWeight: 300, color: C.textFainter }}>{annualPrice}</span>
-                        </span>
-                      </div>
-                    </Rv>
-                  ))}
-                  <div style={{ borderTop: '1px solid rgba(232,180,184,0.12)' }} />
-                </div>
-
-                <Rv delay={0.35} style={{ position: 'relative', marginTop: 56, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>
-                  <button onClick={() => showPage('access')} style={{ height: 52, padding: '0 38px', borderRadius: 999, fontSize: 15, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', ...pinkButton }}
-                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-                    Book a Demo <ArrowRight style={{ display: 'inline', width: 15, height: 15, marginLeft: 4, verticalAlign: -2 }} />
-                  </button>
-                  <span style={{ fontSize: 13, color: C.textFainter, fontWeight: 300 }}>Free onboarding included · No credit card required</span>
-                </Rv>
-              </section>
-              <div style={{ height: 120 }} />
-            </div>
-          );
-        })()}
-
-        {/* ════════════ ACCESS ════════════ */}
-        {page === 'access' && (
-          <div>
-            <section style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '120px 44px 80px', position: 'relative' }}>
-              <Spotlights />
-              <Rv delay={0.05} style={{ width: '100%', maxWidth: 700, position: 'relative' }}>
-                <BookDemoForm />
-              </Rv>
-            </section>
-          </div>
-        )}
-
-        {/* Footer */}
-        <footer style={{ padding: '36px 44px', borderTop: '1px solid rgba(232,180,184,0.1)' }}>
-          <div style={{ maxWidth: 1060, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-            <SequinsLogo size="sm" />
-            <p style={{ fontSize: 12, color: C.textFainter }}>© 2026 Sequins. Built for dance.</p>
-            <div style={{ display: 'flex', gap: 24 }}>
-              {[['product', 'Product'], ['pricing', 'Pricing'], ['company', 'Company'], [null, 'Privacy'], [null, 'Terms']].map(([id, label], i) => (
-                <a key={i} onClick={id ? () => showPage(id) : undefined} style={{ fontSize: 12, color: C.textFainter, textDecoration: 'none', cursor: id ? 'pointer' : 'default', transition: 'color 0.2s' }}
-                  onMouseEnter={e => { if (id) e.target.style.color = C.roseBright; }}
-                  onMouseLeave={e => { if (id) e.target.style.color = C.textFainter; }}>{label}</a>
-              ))}
-            </div>
-          </div>
-        </footer>
-      </div>
+      <footer className="sq-footer"><div style={stage} className="sq-footer-inner"><SequinsLogo size="sm" /><span>Operating system for dance studios.</span><span>© 2026 Sequins</span></div></footer>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap');
-        @keyframes sqFadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes sqFadeIn { from { opacity:0; } to { opacity:1; } }
-        @keyframes sqBreathe { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:0.8} }
-        @keyframes sqScrollLine { 0%,100%{opacity:0.25;transform:scaleY(1)}50%{opacity:0.8;transform:scaleY(1.2)} }
-        @keyframes sqPulse { 0%,100%{box-shadow:0 0 0 0 rgba(143,212,174,0.3)}50%{box-shadow:0 0 0 5px rgba(143,212,174,0)} }
-        @keyframes sqRing { 0%{transform:scale(1);opacity:0.5}100%{transform:scale(2.6);opacity:0} }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        .sq-nav-links { display: flex; }
-        .sq-hamburger { display: none !important; }
-        @media (max-width:680px) {
-          .sq-nav-links { display:none!important; }
-          .sq-hamburger { display:flex!important; }
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
+        * { box-sizing: border-box; }
+        html { background: ${C.bg}; }
+        body { margin: 0; }
+        button { font-family: inherit; }
+        .sq-site { min-height: 100vh; overflow: hidden; color: ${C.text}; background: ${C.bg}; font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+        .sq-nav { position: fixed; inset: 0 0 auto; height: 72px; z-index: 50; transition: .25s ease; border-bottom: 1px solid transparent; }
+        .sq-nav.is-scrolled { height: 62px; background: rgba(23,16,21,.88); backdrop-filter: blur(18px); border-color: ${C.border}; }
+        .sq-nav-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+        .sq-logo-button, .sq-nav-links button, .sq-menu { border: 0; background: none; color: inherit; cursor: pointer; }
+        .sq-logo-button { padding: 0; }
+        .sq-nav-links { display: flex; align-items: center; gap: 28px; }
+        .sq-nav-links button { padding: 8px 0; color: ${C.muted}; font-size: 12px; font-weight: 500; }
+        .sq-nav-links button:hover, .sq-nav-links button.is-active { color: ${C.text}; }
+        .sq-nav-links .sq-nav-cta { padding: 9px 14px; border: 1px solid ${C.borderStrong}; border-radius: 7px; color: ${C.text}; background: rgba(255,255,255,.035); }
+        .sq-menu { display: none; padding: 8px; }
+        .sq-hero { min-height: 100vh; padding: 164px 0 96px; position: relative; background-image: linear-gradient(${C.border} 1px, transparent 1px), linear-gradient(90deg, ${C.border} 1px, transparent 1px); background-size: 88px 88px; background-position: center top; }
+        .sq-hero:after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, ${C.bg}00 0%, ${C.bg}00 55%, ${C.bg} 100%); }
+        .sq-hero-glow, .sq-cta-glow { position: absolute; width: 760px; height: 560px; border-radius: 50%; top: -200px; left: 18%; background: radial-gradient(circle, rgba(233,181,188,.13), transparent 68%); pointer-events: none; }
+        .sq-hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.25fr .75fr; gap: 90px; align-items: end; margin-bottom: 96px !important; }
+        .sq-hero h1 { ${Object.entries(displayText).map(([k,v]) => `${k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())}:${v}`).join(';')}; font-size: clamp(56px, 7.2vw, 104px); line-height: .96; margin: 0; max-width: 850px; }
+        .sq-hero-copy { padding-bottom: 6px; }
+        .sq-hero-copy > p { color: ${C.muted}; font-size: 17px; line-height: 1.65; margin: 0 0 30px; max-width: 430px; }
+        .sq-proof-line { display: flex; align-items: center; gap: 12px; color: ${C.faint}; font-family: ${mono}; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+        .sq-hero-actions { display: flex; gap: 10px; margin-top: 42px; }
+        .sq-hero-actions button:first-child, .sq-cta button { display: inline-flex; align-items: center; gap: 10px; }
+        .sq-product-grid { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid ${C.borderStrong}; border-left: 1px solid ${C.borderStrong}; border-radius: 12px; overflow: hidden; background: rgba(23,16,21,.86); box-shadow: 0 40px 100px rgba(0,0,0,.26); }
+        .sq-product-cell { min-height: 370px; padding: 30px; border-right: 1px solid ${C.borderStrong}; border-bottom: 1px solid ${C.borderStrong}; background: linear-gradient(180deg, rgba(255,255,255,.025), transparent 45%); position: relative; overflow: hidden; }
+        .sq-product-cell.sq-cell-wide { grid-column: span 2; }
+        .sq-cell-label { display: flex; align-items: center; gap: 10px; color: ${C.muted}; font-family: ${mono}; text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+        .sq-product-cell h3 { margin: 60px 0 12px; font-size: 22px; letter-spacing: -.025em; }
+        .sq-product-cell > p { color: ${C.muted}; line-height: 1.6; font-size: 14px; max-width: 450px; margin: 0; }
+        .sq-calendar { margin-top: 34px; border: 1px solid ${C.border}; border-radius: 8px; overflow: hidden; background: ${C.panel}; }
+        .sq-calendar-head, .sq-calendar-row { display: grid; align-items: center; padding: 11px 14px; border-bottom: 1px solid ${C.border}; font-size: 11px; }
+        .sq-calendar-head { grid-template-columns: 1fr auto; color: ${C.faint}; font-family: ${mono}; }
+        .sq-calendar-row { grid-template-columns: 48px 2px 1fr auto; gap: 12px; color: ${C.muted}; }
+        .sq-calendar-row:last-child { border: 0; }
+        .sq-calendar-row strong { color: ${C.text}; font-size: 12px; }
+        .sq-event-line { height: 20px; border-radius: 10px; }
+        .sq-mono { font-family: ${mono}; color: ${C.faint}; font-size: 10px; }
+        .sq-signal { margin-top: 30px; padding: 16px; border: 1px solid ${C.borderStrong}; border-radius: 8px; background: ${C.panelRaised}; }
+        .sq-signal p { color: ${C.text}; font-size: 12px; line-height: 1.55; margin: 14px 0; }
+        .sq-signal button { display: flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: ${C.sage}; font-size: 11px; cursor: pointer; }
+        .sq-metric { margin-top: 36px; }
+        .sq-metric > span, .sq-metric small { color: ${C.faint}; font-family: ${mono}; font-size: 10px; }
+        .sq-metric strong { display: block; margin: 8px 0 20px; font-size: 34px; font-weight: 500; letter-spacing: -.04em; }
+        .sq-metric > div { height: 4px; border-radius: 10px; background: rgba(255,255,255,.06); margin-bottom: 10px; }
+        .sq-metric > div span { display: block; height: 100%; border-radius: 10px; background: ${C.amber}; }
+        .sq-family-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; margin-top: 40px; border: 1px solid ${C.border}; background: ${C.border}; border-radius: 8px; overflow: hidden; }
+        .sq-family-row > div { padding: 18px; background: ${C.panel}; }
+        .sq-family-row span { display: block; font-family: ${mono}; text-transform: uppercase; font-size: 9px; margin-bottom: 10px; }
+        .sq-family-row strong { font-size: 12px; font-weight: 500; }
+        .sq-statement { padding: 160px 0; }
+        .sq-statement-grid { display: grid; grid-template-columns: .7fr 1.3fr; gap: 80px; }
+        .sq-statement h2, .sq-section-head h2, .sq-cta h2, .sq-inner-intro h1 { ${Object.entries(displayText).map(([k,v]) => `${k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())}:${v}`).join(';')}; margin: 0; font-size: clamp(42px, 5.5vw, 76px); line-height: 1.04; }
+        .sq-statement h2 span { color: ${C.rose}; }
+        .sq-statement p { color: ${C.muted}; font-size: 16px; line-height: 1.7; max-width: 540px; margin: 32px 0 0; }
+        .sq-flow { padding: 120px 0 150px; border-top: 1px solid ${C.border}; }
+        .sq-section-head { display: grid; grid-template-columns: 1.25fr .75fr; gap: 80px; align-items: end; margin-bottom: 70px; }
+        .sq-section-head h2 { font-size: clamp(38px, 4.4vw, 62px); max-width: 720px; }
+        .sq-section-head > p { color: ${C.muted}; line-height: 1.65; margin: 0; }
+        .sq-flow-list { border-top: 1px solid ${C.borderStrong}; }
+        .sq-flow-row { display: grid; grid-template-columns: 70px 1fr 1.4fr 100px; gap: 24px; align-items: center; padding: 25px 0; border-bottom: 1px solid ${C.border}; }
+        .sq-flow-row h3 { margin: 0; font-size: 15px; }
+        .sq-flow-row p { margin: 0; color: ${C.muted}; font-size: 13px; line-height: 1.5; }
+        .sq-flow-state { color: ${C.sage}; border: 1px solid rgba(146,213,174,.2); background: rgba(146,213,174,.07); padding: 5px 7px; border-radius: 5px; font-family: ${mono}; font-size: 8px; text-align: center; letter-spacing: .08em; }
+        .sq-cta { position: relative; text-align: center; padding: 170px 0; border-top: 1px solid ${C.border}; overflow: hidden; }
+        .sq-cta-glow { top: 10%; left: calc(50% - 380px); }
+        .sq-cta > div:last-child { position: relative; z-index: 1; }
+        .sq-cta h2 { font-size: clamp(40px, 5.2vw, 70px); margin: 28px auto 42px; }
+        .sq-inner-page { padding: 170px 0 140px; min-height: calc(100vh - 90px); }
+        .sq-inner-intro { display: grid; grid-template-columns: 1.3fr .7fr; gap: 80px; align-items: end; margin-bottom: 80px; }
+        .sq-inner-intro h1 { font-size: clamp(46px, 6vw, 82px); }
+        .sq-inner-intro > p { color: ${C.muted}; line-height: 1.7; font-size: 16px; margin: 0; }
+        .sq-inner-page .sq-product-grid { margin-bottom: 70px; }
+        .sq-principles { display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid ${C.border}; margin: 80px 0 50px; }
+        .sq-principles > div { padding: 26px 24px 26px 0; border-right: 1px solid ${C.border}; }
+        .sq-principles > div + div { padding-left: 24px; }
+        .sq-principles h3 { font-size: 14px; margin: 24px 0 8px; }
+        .sq-principles p { color: ${C.muted}; font-size: 12px; line-height: 1.6; }
+        .sq-pricing-table { border-top: 1px solid ${C.borderStrong}; }
+        .sq-price-row { display: grid; grid-template-columns: 1.2fr .55fr .7fr 120px; align-items: center; gap: 30px; padding: 26px 0; border-bottom: 1px solid ${C.border}; }
+        .sq-price-row > span { color: ${C.muted}; font-size: 14px; }
+        .sq-price-row > span:first-child { color: ${C.text}; font-size: 18px; font-weight: 600; }
+        .sq-price-row strong { font-size: 26px; }
+        .sq-price-row small { color: ${C.faint}; font-size: 11px; font-weight: 400; }
+        .sq-included { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 32px; color: ${C.muted}; font-size: 12px; }
+        .sq-included span { display: flex; align-items: center; gap: 7px; }
+        .sq-company-intro { grid-template-columns: 1fr 1fr; }
+        .sq-beliefs { border-top: 1px solid ${C.borderStrong}; }
+        .sq-beliefs > div { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; padding: 50px 0; border-bottom: 1px solid ${C.border}; }
+        .sq-beliefs h2 { ${Object.entries(displayText).map(([k,v]) => `${k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())}:${v}`).join(';')}; font-size: 34px; margin: 0; }
+        .sq-beliefs p { color: ${C.muted}; line-height: 1.7; margin: 0; }
+        .sq-access { min-height: 100vh; display: grid; place-items: center; position: relative; padding: 120px 0 70px; }
+        .sq-access > div:last-child { position: relative; z-index: 1; max-width: 700px; }
+        .sq-footer { border-top: 1px solid ${C.border}; padding: 30px 0; }
+        .sq-footer-inner { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; color: ${C.faint}; font-size: 11px; }
+        .sq-footer-inner span:nth-child(2) { text-align: center; }
+        .sq-footer-inner span:last-child { text-align: right; }
+        @media (max-width: 820px) {
+          .sq-nav-links { display: none; position: absolute; top: 62px; left: 0; right: 0; padding: 18px 24px 24px; flex-direction: column; align-items: stretch; gap: 6px; background: rgba(23,16,21,.98); border-bottom: 1px solid ${C.border}; }
+          .sq-nav-links.is-open { display: flex; }
+          .sq-nav-links button { text-align: left; padding: 12px; }
+          .sq-menu { display: block; }
+          .sq-hero { padding-top: 130px; background-size: 64px 64px; }
+          .sq-hero-grid, .sq-statement-grid, .sq-section-head, .sq-inner-intro { grid-template-columns: 1fr; gap: 38px; }
+          .sq-hero-grid { margin-bottom: 66px !important; }
+          .sq-product-grid { grid-template-columns: 1fr; }
+          .sq-product-cell.sq-cell-wide { grid-column: span 1; }
+          .sq-product-cell { min-height: auto; }
+          .sq-family-row { grid-template-columns: 1fr; }
+          .sq-flow-row { grid-template-columns: 44px 1fr; }
+          .sq-flow-row p, .sq-flow-state { grid-column: 2; }
+          .sq-principles { grid-template-columns: 1fr 1fr; }
+          .sq-price-row { grid-template-columns: 1fr 1fr; }
+          .sq-price-row button { width: 120px; }
+        }
+        @media (max-width: 520px) {
+          .sq-hero h1 { font-size: 50px; }
+          .sq-hero-actions { flex-direction: column; }
+          .sq-hero-actions button { justify-content: center; width: 100%; }
+          .sq-product-cell { padding: 24px; }
+          .sq-product-cell h3 { margin-top: 40px; }
+          .sq-statement, .sq-cta { padding: 110px 0; }
+          .sq-flow { padding: 90px 0 110px; }
+          .sq-principles, .sq-price-row { grid-template-columns: 1fr; }
+          .sq-principles > div, .sq-principles > div + div { padding: 24px 0; border-right: 0; border-bottom: 1px solid ${C.border}; }
+          .sq-beliefs > div { grid-template-columns: 1fr; gap: 18px; }
+          .sq-footer-inner { grid-template-columns: 1fr; gap: 14px; }
+          .sq-footer-inner span:nth-child(2), .sq-footer-inner span:last-child { text-align: left; }
         }
       `}</style>
     </div>
