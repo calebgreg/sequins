@@ -32,16 +32,20 @@ const C = {
 const SEQUINS_URL =
   'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a0745a12ebbb83d6190412/d0c8e354b_ChatGPTImageFeb242026at10_46_54AM.png';
 
-const sequinText = {
+const etchedHeroText = {
+  fontFamily: "'Manrope', 'DM Sans', sans-serif",
+  fontWeight: 800,
+  letterSpacing: '-0.055em',
   color: 'transparent',
-  backgroundImage: `url('${SEQUINS_URL}')`,
-  backgroundSize: '92px',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'repeat',
+  backgroundImage:
+    'linear-gradient(180deg, #f8e6e8 0%, #e9b5bc 34%, #b87582 72%, #754651 100%)',
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
-  filter: 'drop-shadow(0 4px 20px rgba(245, 215, 218, 0.16))',
+  textShadow:
+    '0 -1px 0 rgba(35, 16, 24, 0.9), 0 2px 1px rgba(255, 235, 238, 0.2)',
+  filter:
+    'drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.75)) drop-shadow(0 2px 0 rgba(255, 227, 231, 0.18)) drop-shadow(0 12px 32px rgba(184, 117, 130, 0.15))',
 };
 
 const displayText = {
@@ -258,7 +262,7 @@ function Home({ showPage }) {
           <div style={stage} className="sq-hero-grid">
             <div>
               <Eyebrow>Operating system for dance studios</Eyebrow>
-              <h1 style={sequinText}>
+              <h1 style={etchedHeroText}>
                 Run the studio.
                 <br />
                 Keep the magic.
@@ -513,7 +517,7 @@ export default function Landing() {
       </footer>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&family=Manrope:wght@700;800&family=Playfair+Display:wght@700;900&display=swap');
         * { box-sizing: border-box; }
         html { background: ${C.bg}; }
         body { margin: 0; }
